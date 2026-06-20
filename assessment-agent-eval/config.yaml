@@ -1,0 +1,49 @@
+# LLM provider configuration for the eval harness.
+# Swap providers by editing this file + putting the matching key in .env.
+# Nothing in the Python code needs to change to switch models/providers.
+
+provider: gemini              # gemini | openai_compat | mock
+model: gemini-3.1-pro-preview  # paid tier, Preview (exact ID confirmed via list_models)
+temperature: 0               # deterministic-ish; good for evaluation
+max_output_tokens: 4096      # CEILING, not a cost (you pay for tokens generated, not the cap).
+                             # Shared budget with thinking; 2048 truncated, 4096 is ample at
+                             # thinking_level: low. Raise it only if you ever see MAX_TOKENS.
+api_key_env: GEMINI_API_KEY  # name of the env var (in .env) holding the key
+retries: 1                   # retries on JSON-parse / provider error
+
+# Reasoning level for Gemini 3.x (gemini provider): minimal | low | medium | high.
+# Lower = cheaper/faster, less internal reasoning. Test at the SAME level you ship.
+# gemini-3.1-pro cannot fully disable thinking; leave blank to use the model default (high).
+thinking_level: low
+
+# Pricing for the estimated-cost logging (USD per 1M tokens). Thinking tokens bill at the
+# output rate. Update if Google changes pricing. Defaults = gemini-3.1-pro-preview (<=200k).
+price_input_per_1m: 2.00
+price_output_per_1m: 12.00
+
+# Spaces calls to stay under rate limits and auto-waits out any 429.
+# Paid tier has high limits, but Preview models can be capped lower, so keep a
+# moderate value and raise toward 0 (no throttle) once you confirm headroom.
+# (For context: the free tier was only 5 RPM AND 20 requests/DAY -> unusable here.)
+requests_per_minute: 15
+
+# --- provider: openai_compat ---------------------------------------------
+# Works with any OpenAI-compatible endpoint. Set provider: openai_compat above,
+# then uncomment ONE of these blocks (and set the matching key in .env):
+#
+# Groq (free, fast):
+#   base_url: https://api.groq.com/openai/v1
+#   model: llama-3.3-70b-versatile
+#   api_key_env: GROQ_API_KEY
+#
+# OpenRouter (one key, many models incl. free):
+#   base_url: https://openrouter.ai/api/v1
+#   model: meta-llama/llama-3.3-70b-instruct:free
+#   api_key_env: OPENROUTER_API_KEY
+#
+# Local Ollama (no key needed):
+#   base_url: http://localhost:11434/v1
+#   model: llama3.1
+#   api_key_env: OLLAMA_API_KEY
+base_url:                    # leave blank for Gemini / default OpenAI
+json_mode: true             # request JSON object mode (openai_compat only)
