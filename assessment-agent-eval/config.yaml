@@ -2,6 +2,18 @@
 # Swap providers by editing this file + putting the matching key in .env.
 # Nothing in the Python code needs to change to switch models/providers.
 
+# --- Versioned inputs (pinned) -------------------------------------------
+# Every run uses exactly these versions and stamps them on the report,
+# results.json, and results_log.csv. The rubric + example set are a MATCHED
+# PAIR: bump them together when criteria are renamed/removed/redefined.
+# Resolves to: prompts/system_prompt_<prompt_version>.md,
+#              rubric/rubric_<rubric_version>.yaml,
+#              data/example_set_<example_set_version>.csv
+# Override any of them per-run with --prompt / --rubric / --csv (explicit paths).
+prompt_version: v2
+rubric_version: v2
+example_set_version: v2
+
 provider: gemini              # gemini | openai_compat | mock
 model: gemini-3.1-pro-preview  # paid tier, Preview (exact ID confirmed via list_models)
 temperature: 0               # deterministic-ish; good for evaluation

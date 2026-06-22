@@ -1,96 +1,67 @@
-"""Canonical SEE-I rubric data.
+"""Load + query the versioned SEE-I rubric (single source of truth).
 
-This module is the code's source of truth for the *names* of the rubric criteria
-per SEE-I step. It is used to validate the agent's JSON output and to build the
-per-criterion stats in the report.
+The rubric lives in ``rubric/rubric_vN.yaml``. Code reads the criterion NAMES
+(the YAML keys) to validate the agent's output and to build the per-criterion
+stats; the runner also renders the PASS conditions into the system prompt's
+``{{RUBRIC}}`` placeholder, so the model and the code always use the same rubric.
 
-The human-editable copy of the rubric that is actually sent to the model lives in
-the versioned system prompt (prompts/system_prompt_vN.md). When you change a
-criterion there, mirror the name here so validation/stats stay aligned.
+Call :func:`load_rubric` once at startup (the runner does this from the
+config-pinned version). All query functions operate on the loaded rubric.
+
+Schema (v2+): pass-only. Each criterion maps to ``{"pass": "<condition>"}``.
+Older rubrics may also carry a ``fail`` key; it is ignored by the code and only
+kept in the YAML as a historical record.
 """
 
 from __future__ import annotations
 
-# step -> {criterion_name: {"pass": ..., "fail": ...}}
-RUBRIC: dict[str, dict[str, dict[str, str]]] = {
-    "State": {
-        "Length": {
-            "pass": "Exactly 1 or 2 complete sentences.",
-            "fail": "3 or more sentences, or incomplete fragments.",
-        },
-        "Originality": {
-            "pass": "Uses no more than 3 consecutive words directly from the text "
-                    "(excluding specific technical terms or proper nouns).",
-            "fail": "Copies entire clauses or sentences directly from the source text.",
-        },
-        "Scope": {
-            "pass": "States an active relationship, process, or main theme.",
-            "fail": "States a static fact, statistic, or date.",
-        },
-        "Clarity": {
-            "pass": "Subjects are explicitly named.",
-            "fail": "Starts with ambiguous pronouns (e.g., 'It is when...', 'This happens because...').",
-        },
-        "Accuracy": {
-            "pass": "Does not contradict the core premise of the text.",
-            "fail": "Reverses a relationship, states something factually incorrect, "
-                    "or is unrelated to the text.",
-        },
-    },
-    "Elaborate": {
-        "Expansion": {
-            "pass": "Introduces the How, Why, or When of the concept stated in the State step.",
-            "fail": "Merely paraphrases the State step without adding new mechanisms.",
-        },
-        "Jargon Translation": {
-            "pass": "Defines or uses plain language to explain technical terms.",
-            "fail": "Relies on technical jargon without defining what it means.",
-        },
-        "Relationship Accuracy": {
-            "pass": "Accurately identifies cause/effect, part/whole, or chronological steps.",
-            "fail": "Claims a cause/effect that the text does not support.",
-        },
-        "Focus": {
-            "pass": "All details directly serve to explain the central concept.",
-            "fail": "Includes tangents, trivia, or sub-topics unrelated to the central concept.",
-        },
-    },
-    "Exemplify": {
-        "Originality": {
-            "pass": "Provides an example not explicitly mentioned in the source text.",
-            "fail": "Reuses an example provided by the author of the text.",
-        },
-        "Concreteness": {
-            "pass": "Points to a specific, named entity, event, or real-world instance.",
-            "fail": "Uses vague hypotheticals or broad categories.",
-        },
-        "Explicit Mapping": {
-            "pass": "Explicitly connects a feature of the example to a feature of the concept.",
-            "fail": "Drops the example without explaining how it shows the concept.",
-        },
-    },
-    "Illustrate": {
-        "Cross-Domain": {
-            "pass": "Compares the concept to a completely different field, discipline, or everyday life.",
-            "fail": "Provides another literal example from the exact same field/domain.",
-        },
-        "Structural Match": {
-            "pass": "The relationship between parts in the analogy matches the relationship in the concept.",
-            "fail": "Shares only a superficial trait; the underlying mechanism fails to match.",
-        },
-        "Format": {
-            "pass": "Is a written metaphor / simile / analogy.",
-            "fail": "Is literally just text restating the elaboration, with no metaphor or analogy.",
-        },
-    },
-}
+from pathlib import Path
 
-STEPS = list(RUBRIC.keys())
+# Active rubric, populated by load_rubric():  step -> {criterion: {"pass": str, ...}}
+_RUBRIC: dict[str, dict[str, dict]] = {}
+
+
+def load_rubric(path) -> dict:
+    """Load a rubric YAML file and make it the active rubric. Returns the dict."""
+    import yaml
+
+    with open(path, encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+
+    norm: dict[str, dict[str, dict]] = {}
+    for step, crits in data.items():
+        if not isinstance(crits, dict):
+            raise ValueError(f"Rubric step {step!r} must map to criteria, got {type(crits)}")
+        norm[step] = {}
+        for cname, cval in crits.items():
+            # tolerate a bare string value (treated as the pass condition)
+            norm[step][cname] = cval if isinstance(cval, dict) else {"pass": str(cval)}
+    if not norm:
+        raise ValueError(f"Rubric at {path} is empty")
+    set_rubric(norm)
+    return norm
+
+
+def set_rubric(rubric: dict) -> None:
+    """Set the active rubric directly (used by load_rubric and by tests)."""
+    global _RUBRIC
+    _RUBRIC = rubric
+
+
+def _active() -> dict:
+    if not _RUBRIC:
+        raise RuntimeError("Rubric not loaded — call load_rubric(path) first.")
+    return _RUBRIC
+
+
+def steps() -> list[str]:
+    """Canonical SEE-I step names, in rubric order."""
+    return list(_active().keys())
 
 
 def criteria_for(step: str) -> list[str]:
     """Canonical criterion names for a step (raises KeyError on unknown step)."""
-    return list(RUBRIC[step].keys())
+    return list(_active()[step].keys())
 
 
 def normalize(name: str) -> str:
@@ -101,7 +72,7 @@ def normalize(name: str) -> str:
 def canonical_step(step: str) -> str | None:
     """Map a possibly-messy step name to the canonical one, or None if unknown."""
     target = normalize(step)
-    for s in STEPS:
+    for s in _active():
         if normalize(s) == target:
             return s
     return None
@@ -113,7 +84,21 @@ def canonical_criterion(step: str, name: str) -> str | None:
     if cs is None:
         return None
     target = normalize(name)
-    for c in RUBRIC[cs]:
+    for c in _active()[cs]:
         if normalize(c) == target:
             return c
     return None
+
+
+def render_rubric() -> str:
+    """Render the active rubric as Markdown tables for the prompt {{RUBRIC}} slot."""
+    lines: list[str] = []
+    for step in _active():
+        lines.append(f"### {step.upper()}")
+        lines.append("| Criterion | The response PASSES this criterion if... |")
+        lines.append("|---|---|")
+        for cname, cval in _active()[step].items():
+            passtxt = str(cval.get("pass", "")).replace("\n", " ").strip()
+            lines.append(f"| {cname} | {passtxt} |")
+        lines.append("")  # blank line between steps
+    return "\n".join(lines).strip()

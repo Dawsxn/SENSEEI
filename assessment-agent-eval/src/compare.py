@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass, field
 
-from .rubric import STEPS, canonical_criterion, criteria_for
+from .rubric import canonical_criterion, criteria_for, steps
 
 
 def parse_expected_criteria(criterion_targeted: str, step: str) -> list[str]:
@@ -78,7 +78,7 @@ def summarize(records: list[dict]) -> dict:
         status_counts[r["comparison"].status] = status_counts.get(r["comparison"].status, 0) + 1
 
     per_step = []
-    for s in STEPS:
+    for s in steps():
         rs = [r for r in records if r["step"] == s]
         if not rs:
             continue
@@ -99,7 +99,7 @@ def summarize(records: list[dict]) -> dict:
             stat[(s, name)]["false_flag"] += 1
 
     per_criterion = []
-    for s in STEPS:
+    for s in steps():
         for name in criteria_for(s):
             st = stat.get((s, name), {"expected": 0, "caught": 0, "false_flag": 0})
             recall = (st["caught"] / st["expected"]) if st["expected"] else None

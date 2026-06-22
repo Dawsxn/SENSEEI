@@ -2,13 +2,17 @@
 """Run the labeled example set through the Student Assessment Agent and emit an
 HTML report comparing the agent's verdict/criteria against the expected labels.
 
+Versioned inputs (prompt / rubric / example set) are pinned in config.yaml and
+stamped on every output. Override any of them per-run with an explicit path.
+
 Examples
 --------
-  python run_eval.py                      # full run with config.yaml defaults
+  python run_eval.py                      # full run with config.yaml version pins
   python run_eval.py --provider mock      # offline smoke test (no API key)
   python run_eval.py --limit 4            # quick run on the first 4 rows
-  python run_eval.py --prompt prompts/system_prompt_v2.md
-  python run_eval.py --from-run runs/20260618_101500_v1   # rebuild report, no API calls
+  python run_eval.py --prompt prompts/system_prompt_v2.md   # override prompt
+  python run_eval.py --rubric rubric/rubric_v1.yaml --csv data/example_set_v1.csv
+  python run_eval.py --from-run runs/20260618_101500_v2     # rebuild report, no API calls
 """
 
 from __future__ import annotations
@@ -41,7 +45,7 @@ from src.agent import AgentResult, AssessmentAgent  # noqa: E402
 from src.compare import compare, parse_expected_criteria, summarize  # noqa: E402
 from src.providers import get_provider  # noqa: E402
 from src.report import render_report  # noqa: E402
-from src.rubric import STEPS  # noqa: E402
+from src.rubric import load_rubric, render_rubric, steps  # noqa: E402
 
 
 # ---------------------------------------------------------------- config / prompt
@@ -64,8 +68,7 @@ def select_prompt(prompts_dir: Path, explicit: str | None) -> tuple[Path, str, s
             raise FileNotFoundError(f"No system_prompt_v*.md found in {prompts_dir}")
         path = Path(max(files, key=_version_number))
     text = path.read_text(encoding="utf-8")
-    m = re.search(r"v(\d+)", path.name)
-    version = f"v{m.group(1)}" if m else path.stem
+    version = _version_label(path)
     short_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()[:10]
     return path, version, short_hash, text
 
@@ -73,6 +76,20 @@ def select_prompt(prompts_dir: Path, explicit: str | None) -> tuple[Path, str, s
 def _version_number(p: str) -> int:
     m = re.search(r"v(\d+)", Path(p).name)
     return int(m.group(1)) if m else 0
+
+
+def _version_label(path, fallback: str = "custom") -> str:
+    """Pull a 'vN' label out of a filename (e.g. rubric_v2.yaml -> 'v2')."""
+    m = re.search(r"v(\d+)", Path(path).name)
+    return f"v{m.group(1)}" if m else fallback
+
+
+def _resolve_input(cli_value, base_dir: Path, pattern: str, version: str) -> Path:
+    """CLI explicit path wins; otherwise build base_dir / pattern.format(version)."""
+    if cli_value:
+        p = Path(cli_value)
+        return p if p.is_absolute() else BASE / p
+    return base_dir / pattern.format(version)
 
 
 # ---------------------------------------------------------------- record building
@@ -147,8 +164,9 @@ def compute_cost(examples: list[dict], price_in: float, price_out: float) -> dic
 def append_results_log(log_path: Path, meta: dict, summary: dict, report_file: Path):
     per_step = {s["step"]: s["accuracy"] for s in summary["per_step"]}
     cost = meta.get("cost") or {}
-    header = ["timestamp", "prompt_version", "prompt_hash", "provider", "model",
-              "thinking_level", "total", "verdict_accuracy", *STEPS, "criteria_exact_rate",
+    header = ["timestamp", "prompt_version", "rubric_version", "example_set_version",
+              "prompt_hash", "provider", "model", "thinking_level",
+              "total", "verdict_accuracy", *steps(), "criteria_exact_rate",
               "input_tokens", "thinking_tokens", "output_tokens", "est_cost_usd",
               "report_file"]
 
@@ -158,11 +176,12 @@ def append_results_log(log_path: Path, meta: dict, summary: dict, report_file: P
             return ""
         return round(v, ndigits) if ndigits is not None else v
 
-    row = [meta["timestamp"], meta["prompt_version"], meta["prompt_hash"],
+    row = [meta["timestamp"], meta["prompt_version"], meta.get("rubric_version", ""),
+           meta.get("example_set_version", ""), meta["prompt_hash"],
            meta["provider"], meta["model"], meta.get("thinking_level", ""),
            summary["total"],
            round(summary["verdict_accuracy"], 4),
-           *[round(per_step.get(s, 0.0), 4) for s in STEPS],
+           *[round(per_step.get(s, 0.0), 4) for s in steps()],
            round(summary["criteria_exact_rate"], 4),
            cell("input_tokens"), cell("thinking_tokens"), cell("output_tokens"),
            cell("est_cost_usd", 4),
@@ -209,11 +228,28 @@ def run_live(args) -> tuple[dict, list[dict]]:
     if args.model:
         config["model"] = args.model
 
-    csv_path = BASE / args.csv if not Path(args.csv).is_absolute() else Path(args.csv)
+    # Resolve the versioned inputs. An explicit CLI path overrides the config pin.
+    rubric_path = _resolve_input(args.rubric, BASE / "rubric", "rubric_{}.yaml",
+                                 config.get("rubric_version", "v2"))
+    csv_path = _resolve_input(args.csv, BASE / "data", "example_set_{}.csv",
+                              config.get("example_set_version", "v2"))
+    prompt_pin = None if args.prompt else str(
+        BASE / "prompts" / f"system_prompt_{config.get('prompt_version', 'v2')}.md")
     prompts_dir = BASE / "prompts"
     readings_dir = csv_path.parent / "readings"
 
-    prompt_path, version, prompt_hash, system_prompt = select_prompt(prompts_dir, args.prompt)
+    rubric_version = _version_label(rubric_path)
+    example_set_version = _version_label(csv_path)
+    load_rubric(rubric_path)  # active for parsing, validation, and stats
+
+    prompt_path, version, _filehash, prompt_text = select_prompt(prompts_dir, args.prompt or prompt_pin)
+    # Compose the prompt: inject the rubric into the {{RUBRIC}} placeholder (if any),
+    # and hash what the model ACTUALLY sees (prompt + rubric together).
+    system_prompt = prompt_text
+    if "{{RUBRIC}}" in system_prompt:
+        system_prompt = system_prompt.replace("{{RUBRIC}}", render_rubric())
+    prompt_hash = hashlib.sha256(system_prompt.encode("utf-8")).hexdigest()[:10]
+
     provider = get_provider(config)
     agent = AssessmentAgent(provider, system_prompt)
     retries = int(config.get("retries", 1))
@@ -231,7 +267,8 @@ def run_live(args) -> tuple[dict, list[dict]]:
     reading_cache: dict[str, str] = {}
     examples = []
     throttle_note = f" · throttled to {rpm:g}/min" if rpm > 0 else ""
-    print(f"Prompt {version} ({prompt_hash}) · provider={config['provider']} "
+    print(f"Prompt {version} ({prompt_hash}) · rubric {rubric_version} · "
+          f"examples {example_set_version} · provider={config['provider']} "
           f"model={config.get('model')} · {len(rows)} examples{throttle_note}")
     for i, row in enumerate(rows, 1):
         if min_interval:
@@ -260,7 +297,7 @@ def run_live(args) -> tuple[dict, list[dict]]:
             "expected_verdict": row["expected_verdict"].strip(),
             "expected_criteria": parse_expected_criteria(row.get("criterion_targeted", ""), step),
             "criterion_targeted": row.get("criterion_targeted", "").strip(),
-            "notes": row.get("notes", "").strip(),
+            "notes": (row.get("rationale") or row.get("notes") or "").strip(),
             "result": result.to_dict(),
         })
 
@@ -268,6 +305,8 @@ def run_live(args) -> tuple[dict, list[dict]]:
         "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
         "prompt_version": version, "prompt_hash": prompt_hash,
         "prompt_file": prompt_path.name,
+        "rubric_version": rubric_version, "rubric_file": rubric_path.name,
+        "example_set_version": example_set_version,
         "provider": config["provider"], "model": config.get("model", ""),
         "thinking_level": config.get("thinking_level") or "",
         "csv": csv_path.name,
@@ -301,8 +340,12 @@ def load_run(path: str) -> tuple[dict, list[dict]]:
 def main():
     ap = argparse.ArgumentParser(description="SENSEEI Student Assessment Agent eval runner")
     ap.add_argument("--config", default="config.yaml")
-    ap.add_argument("--csv", default="data/example_set.csv")
-    ap.add_argument("--prompt", default=None, help="path to a system_prompt_vN.md (default: latest)")
+    ap.add_argument("--csv", default=None,
+                    help="explicit example-set CSV path (overrides config example_set_version)")
+    ap.add_argument("--prompt", default=None,
+                    help="explicit system_prompt path (overrides config prompt_version)")
+    ap.add_argument("--rubric", default=None,
+                    help="explicit rubric YAML path (overrides config rubric_version)")
     ap.add_argument("--limit", type=int, default=0, help="only run the first N rows")
     ap.add_argument("--provider", default=None, help="override config provider (e.g. mock)")
     ap.add_argument("--model", default=None, help="override config model")
@@ -311,10 +354,16 @@ def main():
 
     if args.from_run:
         meta, examples = load_run(args.from_run)
+        # make the rubric that run used active (for validation + per-criterion stats)
+        cfg = load_config(BASE / args.config)
+        rubric_path = _resolve_input(
+            args.rubric, BASE / "rubric", "rubric_{}.yaml",
+            meta.get("rubric_version") or cfg.get("rubric_version", "v2"))
+        load_rubric(rubric_path)
         # stamp a fresh report timestamp so we don't overwrite the original
         meta = {**meta, "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S")}
     else:
-        meta, examples = run_live(args)
+        meta, examples = run_live(args)  # loads the rubric internally
 
     if not meta.get("cost"):  # e.g. rebuilding from an old run that lacked usage
         cfg = load_config(BASE / args.config)

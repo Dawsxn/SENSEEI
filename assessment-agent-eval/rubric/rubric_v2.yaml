@@ -1,0 +1,51 @@
+# Single source of truth for the SEE-I rubric (version v2).
+#
+# The runner renders the criterion names + PASS conditions below into the system
+# prompt's {{RUBRIC}} placeholder, and src/rubric.py reads the criterion NAMES
+# (the keys) to validate the agent's output and build the per-criterion stats.
+# One file, both jobs — so the model and the code can never use different rubrics.
+#
+# Schema: pass-only. Each criterion has a single PASS condition. The criterion
+# PASSES if the response satisfies that condition; otherwise it FAILS. (There is
+# no separate fail condition — "not meeting PASS" is what failing means.)
+#
+# To change the rubric, copy this file to rubric_v3.yaml and edit that — never
+# edit a released version in place. A rubric that renames/removes/redefines
+# criteria must be paired with a matching example_set_vN.csv (relabeled).
+#
+# NOTE: the "supporting statements" from the source book are intentionally NOT
+# stored here; they live in the design doc, not in the prompt or the code.
+
+State:
+  Brevity:
+    pass: "The statement is concise and straight to the point. It does not contain any unnecessary filler, repetition, or tangents."
+  Clarity:
+    pass: "The statement clearly conveys what the concept essentially is, not just something incidentally true about it, in a way that is not vague or overly general."
+  Accuracy:
+    pass: "The statement is the user's own definition of the concept that is factually correct based on the text/reading, or is a restatement that is from the text/reading."
+
+Elaborate:
+  Expansion:
+    pass: "The elaboration adds substantive explanation that goes beyond the statement and deepens understanding of the concept rather than merely restating it."
+  Own Words:
+    pass: "The elaboration is expressed in the user's own words, showing their personal understanding rather than copying or closely paraphrasing the text."
+  Coherence:
+    pass: "The elaboration stays focused on explaining the stated concept and directly extends from the statement. It does not drift into unrelated tangents or jump ahead to giving examples."
+
+Exemplify:
+  Originality:
+    pass: "The example is the student's own original example. It is not taken from or based on an example in the text/reading."
+  Fit:
+    pass: "The example genuinely displays the concept as stated and elaborated. It is a true instance of the concept, not something only partially or tangentially related."
+  Concreteness:
+    pass: "The example is concrete and specific enough that a reader can understand the concept through it."
+  Explicit Mapping:
+    pass: "The example includes an explanation of how or why it illustrates the concept. It is not simply presented without connecting it back."
+
+Illustrate:
+  Comparison:
+    pass: "The illustration is a comparison to something else, outside of the domain of the text/reading. It could be an analogy, simile, or metaphor and not just a second example of the concept."
+  Match:
+    pass: "The illustration reflects the meaning or essence of the concept and holds in ways that are meaningful, not just superficially similar."
+  Imagery:
+    pass: "The illustration gives the reader something they can picture in their mind. It is concrete and expressive enough to form a mental image."
