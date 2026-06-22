@@ -23,7 +23,8 @@ class CriterionJudgment:
 
 @dataclass
 class AgentResult:
-    verdict: str | None = None                       # "PASS" | "FAIL" | None
+    verdict: str | None = None                       # "PASS" | "FAIL" | None (DERIVED in code)
+    model_verdict: str | None = None                 # what the model stated (cross-check only)
     fail_criteria: list[str] = field(default_factory=list)
     criteria: dict[str, CriterionJudgment] = field(default_factory=dict)
     raw_text: str = ""
@@ -43,6 +44,7 @@ class AgentResult:
         crit = {k: CriterionJudgment(**v) for k, v in (d.get("criteria") or {}).items()}
         return cls(
             verdict=d.get("verdict"),
+            model_verdict=d.get("model_verdict"),
             fail_criteria=list(d.get("fail_criteria") or []),
             criteria=crit,
             raw_text=d.get("raw_text", ""),
@@ -85,14 +87,16 @@ def parse_result(raw_text: str, step: str) -> AgentResult:
         result.error = "Top-level JSON is not an object"
         return result
 
-    # verdict
-    verdict = str(data.get("verdict", "")).strip().upper()
-    if verdict not in ("PASS", "FAIL"):
-        result.warnings.append(f"Invalid/missing verdict: {data.get('verdict')!r}")
-        verdict = None
-    result.verdict = verdict
+    # the model's stated verdict — kept ONLY as a self-consistency cross-check.
+    # The authoritative verdict is derived in code from the per-criterion judgments.
+    model_verdict = str(data.get("verdict", "")).strip().upper()
+    if model_verdict not in ("PASS", "FAIL"):
+        if data.get("verdict") is not None:
+            result.warnings.append(f"Invalid model verdict: {data.get('verdict')!r}")
+        model_verdict = None
+    result.model_verdict = model_verdict
 
-    # per-criterion judgments (optional but expected)
+    # per-criterion judgments (required — we derive the verdict from these)
     raw_criteria = data.get("criteria") or {}
     if isinstance(raw_criteria, dict):
         for name, val in raw_criteria.items():
@@ -108,32 +112,41 @@ def parse_result(raw_text: str, step: str) -> AgentResult:
                 reason = ""
             result.criteria[canon] = CriterionJudgment(passed=passed, reason=reason)
 
-    # fail_criteria list
-    raw_fail = data.get("fail_criteria")
-    fails: list[str] = []
-    if isinstance(raw_fail, list):
-        for name in raw_fail:
-            canon = canonical_criterion(canon_step, str(name))
-            if canon is None:
-                result.warnings.append(f"Unknown criterion in 'fail_criteria': {name!r}")
-                continue
-            if canon not in fails:
-                fails.append(canon)
-    elif raw_fail is not None:
-        result.warnings.append("'fail_criteria' is not a list")
-    result.fail_criteria = fails
-
-    # consistency checks (kept as warnings; fail_criteria stays authoritative)
+    # DERIVE the authoritative verdict + fail list from the per-criterion judgments
+    # (the rubric rule: any failing criterion => FAIL; all passing => PASS).
     if result.criteria:
-        derived = {c for c in valid_names if c in result.criteria and not result.criteria[c].passed}
-        if derived != set(fails):
+        missing = [c for c in valid_names if c not in result.criteria]
+        if missing:
+            result.warnings.append(f"Model did not judge every criterion; missing {missing}")
+        result.fail_criteria = [c for c in valid_names
+                                if c in result.criteria and not result.criteria[c].passed]
+        result.verdict = "FAIL" if result.fail_criteria else "PASS"
+    else:
+        # no per-criterion object to derive from — fall back to the model's own list
+        result.warnings.append("No 'criteria' object returned; falling back to model verdict")
+        raw_fail = data.get("fail_criteria")
+        fails: list[str] = []
+        if isinstance(raw_fail, list):
+            for name in raw_fail:
+                canon = canonical_criterion(canon_step, str(name))
+                if canon and canon not in fails:
+                    fails.append(canon)
+        result.fail_criteria = fails
+        result.verdict = model_verdict if model_verdict else ("FAIL" if fails else None)
+
+    # cross-check: warn when the model's own statements disagree with what we derived
+    if model_verdict and result.verdict and model_verdict != result.verdict:
+        result.warnings.append(
+            f"model stated verdict={model_verdict} but criteria imply {result.verdict}"
+        )
+    raw_fail = data.get("fail_criteria")
+    if isinstance(raw_fail, list) and result.criteria:
+        model_fails = {canonical_criterion(canon_step, str(n)) for n in raw_fail}
+        model_fails.discard(None)
+        if model_fails != set(result.fail_criteria):
             result.warnings.append(
-                f"fail_criteria {sorted(fails)} != criteria-derived {sorted(derived)}"
+                f"model fail_criteria {sorted(model_fails)} != derived {sorted(result.fail_criteria)}"
             )
-    if verdict == "PASS" and fails:
-        result.warnings.append("verdict=PASS but fail_criteria is non-empty")
-    if verdict == "FAIL" and not fails:
-        result.warnings.append("verdict=FAIL but fail_criteria is empty")
 
     return result
 
