@@ -25,17 +25,20 @@ The report lands in `reports/<timestamp>_<promptversion>.html`. Open it in a bro
 ## How it works
 
 ```
-data/example_set.csv ─┐
-data/readings/*.txt  ─┼─► run_eval.py ─► AssessmentAgent ─► provider (LLM) ─► JSON verdict
-prompts/system_*.md  ─┘         │
-                                ├─► compare vs expected labels
-                                ├─► runs/<ts>/results.json   (raw outputs, cached)
-                                ├─► reports/<ts>_<ver>.html  (the review artifact)
-                                └─► results_log.csv          (one row per run, for charting)
+data/example_set_vN.csv ─┐
+data/readings/*.txt      ─┤
+rubric/rubric_vN.yaml    ─┼─► run_eval.py ─► AssessmentAgent ─► provider (LLM) ─► JSON
+prompts/system_*.md      ─┘         │        (rubric rendered into the prompt's {{RUBRIC}} slot)
+                                    ├─► compare vs expected labels
+                                    ├─► runs/<ts>/results.json   (raw outputs, cached)
+                                    ├─► reports/<ts>_<ver>.html  (the review artifact)
+                                    └─► results_log.csv          (one row per run, for charting)
 ```
 
 The agent checks **every** rubric row for the current step and collects **all**
-failing criteria (it does not stop at the first failure), per the project spec.
+failing criteria (it does not stop at the first failure), per the project spec. The
+overall verdict is then **derived in code** (any failing criterion → FAIL); the
+model's own stated verdict is kept only as a self-consistency cross-check.
 
 ## Swapping the LLM provider
 
@@ -65,9 +68,12 @@ The agent returns JSON like:
 ```
 
 `criteria` (per-row reasoning) is included so you can see *why* the agent ruled each
-rubric criterion — invaluable when tuning the prompt. Parsing is defensive
+rubric criterion — invaluable when tuning the prompt. The harness **derives** the
+scored verdict from `criteria` (any `pass: false` → FAIL); the model's `verdict`
+field is recorded only to flag self-contradiction. Parsing is defensive
 (`src/agent.py`): it strips code fences, normalizes criterion names, and records
-warnings (hallucinated criteria, verdict/criteria mismatches) instead of crashing.
+warnings (hallucinated criteria, missing criteria, verdict/criteria mismatches)
+instead of crashing.
 
 ## Reading the report
 
@@ -84,8 +90,15 @@ warnings (hallucinated criteria, verdict/criteria mismatches) instead of crashin
 
 1. Run the set, open the report.
 2. Find the weakest criterion / step in the catch-rate table.
-3. Change **one thing** — copy `prompts/system_prompt_v1.md` → `v2.md` and edit it
-   (old versions are never overwritten). The run stamps the prompt version + hash
+3. Change **one thing**, as a new version (old versions are never overwritten):
+   - prompt wording → copy `prompts/system_prompt_vN.md` → next N
+   - rubric → copy `rubric/rubric_vN.yaml` → next N
+   - examples → copy `data/example_set_vN.csv` → next N
+
+   The rubric and example set are a **matched pair** — a rubric change that
+   renames/removes/redefines criteria needs a matching example-set bump. Then point
+   `config.yaml` (`prompt_version` / `rubric_version` / `example_set_version`) at the
+   versions you want. Each run stamps all three (+ a composed prompt+rubric hash)
    into the report and `results_log.csv`.
 4. Re-run, compare, and log the effect in `CHANGELOG.md`.
 5. Repeat until the (TBD) per-step accuracy threshold is met.
@@ -93,35 +106,32 @@ warnings (hallucinated criteria, verdict/criteria mismatches) instead of crashin
 `python run_eval.py --from-run runs/<dir>` rebuilds a report from saved raw outputs
 without spending any API calls.
 
-## Ground-truth fix (note for adviser review)
+## Ground truth (note for adviser review)
 
-Two Exemplify examples originally labeled "reuses an example from the text" used
-examples that were **not actually in `sunk_cost.txt`** (the reading contains only
-the $5M airplane, $10k ERP training, and $200 snowboarding trip). They have been
-**corrected** to reuse examples that genuinely appear in the reading:
+The active `v2` example set (`data/example_set_v2.csv`) is a fresh, hand-written set
+of **18 examples** — 8 PASS controls + 10 of the most likely natural mistakes —
+covering all 13 rubric criteria, each with a `rationale` column explaining its
+expected label. Like the `v2` rubric, it should be confirmed by Dr. Teehankee before
+being treated as final ground truth.
 
-- `F-EX-O-1` — was "Tom buys a movie ticket for $12.50"; now reuses the **snowboarding
-  trip** (concrete + explicitly mapped, so it fails only Originality).
-- `MC-EX-2` — was "Jennifer paid $100 to join a tutoring club"; now reuses the **ERP
-  training** example, dropped without mapping (fails Originality + Explicit Mapping).
-
-Like the rest of the set, these two should still be confirmed by Dr. Teehankee
-before being treated as final ground truth.
+The earlier `v1` set is preserved as `data/example_set_v1.csv` (its matched rubric is
+`rubric/rubric_v1.yaml`) so the 2026-06-19 baseline run stays reproducible.
 
 ## Layout
 
 ```
 assessment-agent-eval/
 ├─ run_eval.py            entry point
-├─ config.yaml            provider/model settings
+├─ config.yaml            provider/model + pinned input versions
 ├─ .env.example           API keys (copy to .env)
-├─ prompts/               versioned system prompts (system_prompt_vN.md)
+├─ prompts/               versioned system prompts (system_prompt_vN.md; {{RUBRIC}} slot)
+├─ rubric/                versioned rubric — single source of truth (rubric_vN.yaml)
 ├─ data/
-│  ├─ example_set.csv     labeled examples
+│  ├─ example_set_vN.csv  labeled examples (matched to a rubric version)
 │  └─ readings/sunk_cost.txt
 ├─ src/
-│  ├─ rubric.py           canonical criterion names per step
-│  ├─ agent.py            prompt assembly + JSON parse/validate
+│  ├─ rubric.py           loads the rubric YAML; criterion names + prompt rendering
+│  ├─ agent.py            prompt assembly + JSON parse/validate + verdict derivation
 │  ├─ compare.py          expected-vs-actual + stats
 │  ├─ report.py           HTML rendering
 │  └─ providers/          gemini / openai_compat / mock
