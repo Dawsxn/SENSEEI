@@ -1,2 +1,3 @@
-timestamp,prompt_version,prompt_hash,provider,model,thinking_level,total,verdict_accuracy,State,Elaborate,Exemplify,Illustrate,criteria_exact_rate,input_tokens,thinking_tokens,output_tokens,est_cost_usd,report_file
-20260619_170457,v1,0e09397608,gemini,gemini-3.1-pro-preview,high,46,0.8696,1.0,0.8333,0.7,0.9,0.5526,,,,0.76,20260619_170457_v1.html
+timestamp,prompt_version,rubric_version,example_set_version,prompt_hash,provider,model,thinking_level,total,verdict_accuracy,State,Elaborate,Exemplify,Illustrate,criteria_exact_rate,input_tokens,thinking_tokens,output_tokens,est_cost_usd,report_file
+20260619_170457,v1,v1,v1,0e09397608,gemini,gemini-3.1-pro-preview,high,46,0.8696,1.0,0.8333,0.7,0.9,0.5526,,,,0.76,20260619_170457_v1.html
+20260623_030537,v2,v2,v2,4118e47f7c,gemini,gemini-3.1-pro-preview,low,18,0.9444,1.0,1.0,1.0,0.8,0.8,33886,5744,3749,0.1817,20260623_030537_v2.html

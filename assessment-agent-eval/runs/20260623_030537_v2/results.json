@@ -1,0 +1,810 @@
+{
+  "meta": {
+    "timestamp": "20260623_030537",
+    "prompt_version": "v2",
+    "prompt_hash": "4118e47f7c",
+    "prompt_file": "system_prompt_v2.md",
+    "rubric_version": "v2",
+    "rubric_file": "rubric_v2.yaml",
+    "example_set_version": "v2",
+    "provider": "gemini",
+    "model": "gemini-3.1-pro-preview",
+    "thinking_level": "low",
+    "csv": "example_set_v2.csv",
+    "cost": {
+      "input_tokens": 33886,
+      "output_tokens": 3749,
+      "thinking_tokens": 5744,
+      "est_cost_usd": 0.181688,
+      "price_input_per_1m": 2.0,
+      "price_output_per_1m": 12.0
+    }
+  },
+  "examples": [
+    {
+      "id": "S-P-1",
+      "step": "State",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost is money a business has already spent and cannot recover, so it should be ignored when making future decisions.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "Single concise sentence with no filler (Brevity); captures the essence — unrecoverable past spending that should be ignored going forward (Clarity); an accurate own-formulation (Accuracy). Satisfies all STATE criteria.",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Brevity": {
+            "passed": true,
+            "reason": "The statement is a single, concise sentence with no unnecessary filler or tangents."
+          },
+          "Clarity": {
+            "passed": true,
+            "reason": "The statement clearly and specifically conveys the essential definition of a sunk cost and its role in decision-making."
+          },
+          "Accuracy": {
+            "passed": true,
+            "reason": "The statement accurately reflects the reading's definition that sunk costs are unrecoverable past expenses that should not influence future decisions."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": true,\n      \"reason\": \"The statement is a single, concise sentence with no unnecessary filler or tangents.\"\n    },\n    \"Clarity\": {\n      \"pass\": true,\n      \"reason\": \"The statement clearly and specifically conveys the essential definition of a sunk cost and its role in decision-making.\"\n    },\n    \"Accuracy\": {\n      \"pass\": true,\n      \"reason\": \"The statement accurately reflects the reading's definition that sunk costs are unrecoverable past expenses that should not influence future decisions.\"\n    }\n  },\n  \"raw_response\": \"The response is a concise, clear, and accurate statement of the concept.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1856,
+          "output_tokens": 182,
+          "thinking_tokens": 343,
+          "total_tokens": 2381
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "S-P-2",
+      "step": "State",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost is a cost that has already occurred and cannot be recovered, and so it should not be considered when making future decisions.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "A legitimate restatement of the reading's own definition, which STATE explicitly allows ('a restatement that is from the text/reading'), so Accuracy passes even though it is close to the source. Brief (Brevity) and captures the essence (Clarity). Control case: confirms the agent does not wrongly penalize a sourced definition — unlike Elaborate, State has no own-words requirement.",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Brevity": {
+            "passed": true,
+            "reason": "The statement is a single, concise sentence with no unnecessary filler or tangents."
+          },
+          "Clarity": {
+            "passed": true,
+            "reason": "The statement clearly and specifically conveys the essential definition of a sunk cost and its role in decision-making."
+          },
+          "Accuracy": {
+            "passed": true,
+            "reason": "The statement is factually correct and accurately reflects the definition provided in the reading."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": true,\n      \"reason\": \"The statement is a single, concise sentence with no unnecessary filler or tangents.\"\n    },\n    \"Clarity\": {\n      \"pass\": true,\n      \"reason\": \"The statement clearly and specifically conveys the essential definition of a sunk cost and its role in decision-making.\"\n    },\n    \"Accuracy\": {\n      \"pass\": true,\n      \"reason\": \"The statement is factually correct and accurately reflects the definition provided in the reading.\"\n    }\n  },\n  \"raw_response\": \"The student provided a concise, clear, and accurate statement of the concept.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1859,
+          "output_tokens": 173,
+          "thinking_tokens": 370,
+          "total_tokens": 2402
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "S-A-1",
+      "step": "State",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost is money a business has spent that it should try to recover by sticking with the project until it becomes profitable.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Accuracy"
+      ],
+      "criterion_targeted": "Accuracy",
+      "notes": "Clear and brief, but it states the sunk cost fallacy as if it were the definition. The reading says sunk costs 'cannot be recovered by any means' and should be excluded from future decisions, so it fails Accuracy only — this is the central misconception the reading targets ('throwing good money after bad').",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Accuracy"
+        ],
+        "criteria": {
+          "Brevity": {
+            "passed": true,
+            "reason": "The statement is concise and straight to the point without unnecessary filler."
+          },
+          "Clarity": {
+            "passed": true,
+            "reason": "The statement clearly conveys a definition of the concept without being vague."
+          },
+          "Accuracy": {
+            "passed": false,
+            "reason": "The statement is factually incorrect because the reading explicitly states that sunk costs cannot be recovered and should not influence future decisions."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Accuracy\"\n  ],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": true,\n      \"reason\": \"The statement is concise and straight to the point without unnecessary filler.\"\n    },\n    \"Clarity\": {\n      \"pass\": true,\n      \"reason\": \"The statement clearly conveys a definition of the concept without being vague.\"\n    },\n    \"Accuracy\": {\n      \"pass\": false,\n      \"reason\": \"The statement is factually incorrect because the reading explicitly states that sunk costs cannot be recovered and should not influence future decisions.\"\n    }\n  },\n  \"raw_response\": \"The response fails because it provides an inaccurate definition of a sunk cost that contradicts the reading.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1857,
+          "output_tokens": 182,
+          "thinking_tokens": 302,
+          "total_tokens": 2341
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "S-BC-1",
+      "step": "State",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "Sunk costs are a really important part of business and finance that companies always have to think carefully about, because money is involved and businesses spend money all the time, so it is definitely something that matters a lot when running a company.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Brevity",
+        "Clarity"
+      ],
+      "criterion_targeted": "Brevity + Clarity",
+      "notes": "Wordy and repetitive with filler ('really important', 'a lot', 'definitely') (Brevity), and it never conveys what a sunk cost essentially is — only vague generalities that are incidentally true (Clarity). Nothing stated is factually wrong, so Accuracy is intentionally not flagged. A natural 'write a lot to sound knowledgeable' mistake where padding and vagueness co-occur.",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Brevity",
+          "Clarity",
+          "Accuracy"
+        ],
+        "criteria": {
+          "Brevity": {
+            "passed": false,
+            "reason": "The response is entirely composed of unnecessary filler and vague generalizations rather than getting straight to the point."
+          },
+          "Clarity": {
+            "passed": false,
+            "reason": "The statement is overly general and fails to convey what the concept of a sunk cost actually is."
+          },
+          "Accuracy": {
+            "passed": false,
+            "reason": "The response does not provide a factually correct definition of a sunk cost based on the reading."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Brevity\",\n    \"Clarity\",\n    \"Accuracy\"\n  ],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": false,\n      \"reason\": \"The response is entirely composed of unnecessary filler and vague generalizations rather than getting straight to the point.\"\n    },\n    \"Clarity\": {\n      \"pass\": false,\n      \"reason\": \"The statement is overly general and fails to convey what the concept of a sunk cost actually is.\"\n    },\n    \"Accuracy\": {\n      \"pass\": false,\n      \"reason\": \"The response does not provide a factually correct definition of a sunk cost based on the reading.\"\n    }\n  },\n  \"raw_response\": \"The response fails to define the concept, consisting only of vague filler text.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1879,
+          "output_tokens": 199,
+          "thinking_tokens": 301,
+          "total_tokens": 2379
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "E-P-1",
+      "step": "Elaborate",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "The key idea behind a sunk cost is that once the money is gone, no future decision can bring it back, so letting it influence your choices only adds to the loss. A business avoids this trap by weighing each option only on the costs and benefits still ahead of it, since what it already spent stays the same no matter which path it picks.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "Goes beyond the definition by explaining why sunk costs should not influence decisions and how to avoid the trap (Expansion); written in the student's own words (Own Words); stays focused on the concept with no tangent or example (Coherence).",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Expansion": {
+            "passed": true,
+            "reason": "The response deepens understanding by explaining why sunk costs shouldn't influence choices and how businesses should focus on future costs and benefits."
+          },
+          "Own Words": {
+            "passed": true,
+            "reason": "The elaboration is expressed in the student's own words rather than copying the text."
+          },
+          "Coherence": {
+            "passed": true,
+            "reason": "The response stays focused on explaining the concept of sunk costs and does not drift into tangents or provide examples."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Expansion\": {\n      \"pass\": true,\n      \"reason\": \"The response deepens understanding by explaining why sunk costs shouldn't influence choices and how businesses should focus on future costs and benefits.\"\n    },\n    \"Own Words\": {\n      \"pass\": true,\n      \"reason\": \"The elaboration is expressed in the student's own words rather than copying the text.\"\n    },\n    \"Coherence\": {\n      \"pass\": true,\n      \"reason\": \"The response stays focused on explaining the concept of sunk costs and does not drift into tangents or provide examples.\"\n    }\n  },\n  \"raw_response\": \"The response successfully elaborates on the concept of sunk costs in the student's own words, providing a clear and focused explanation of why they should not influence future decisions.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1904,
+          "output_tokens": 203,
+          "thinking_tokens": 235,
+          "total_tokens": 2342
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "E-P-2",
+      "step": "Elaborate",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "Calling a cost 'sunk' is really about recognizing that the money belongs to the past and is beyond anyone's control now. Because that amount stays the same no matter what is decided, the sensible move is to compare the remaining options purely on their own merits and let the already-spent money fall out of the decision entirely.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "Adds genuine depth — frames the cost as beyond control and explains why it drops out of the decision (Expansion); fully in the student's own words (Own Words); stays on the concept with no tangent or example (Coherence).",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Expansion": {
+            "passed": true,
+            "reason": "The response deepens understanding by explaining the rationale behind ignoring sunk costs in decision-making."
+          },
+          "Own Words": {
+            "passed": true,
+            "reason": "The elaboration is written in the student's own words, effectively paraphrasing the source text."
+          },
+          "Coherence": {
+            "passed": true,
+            "reason": "The response stays focused on explaining the concept without drifting into tangents or providing examples."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Expansion\": {\n      \"pass\": true,\n      \"reason\": \"The response deepens understanding by explaining the rationale behind ignoring sunk costs in decision-making.\"\n    },\n    \"Own Words\": {\n      \"pass\": true,\n      \"reason\": \"The elaboration is written in the student's own words, effectively paraphrasing the source text.\"\n    },\n    \"Coherence\": {\n      \"pass\": true,\n      \"reason\": \"The response stays focused on explaining the concept without drifting into tangents or providing examples.\"\n    }\n  },\n  \"raw_response\": \"The student successfully elaborates on the concept of sunk costs in their own words, providing a clear and focused explanation of why they should not influence future decisions.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1901,
+          "output_tokens": 189,
+          "thinking_tokens": 295,
+          "total_tokens": 2385
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "E-EO-1",
+      "step": "Elaborate",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost is a cost that has already happened and cannot be recovered by any means. Sunk costs are independent of any event and should not be considered when making investment or project decisions.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Expansion",
+        "Own Words"
+      ],
+      "criterion_targeted": "Expansion + Own Words",
+      "notes": "Lifts the reading's wording almost verbatim — 'cannot be recovered by any means' and 'independent of any event ... should not be considered' (Own Words) — and adds no new depth beyond the definition itself (Expansion). It stays on topic, so Coherence is not flagged. The two fail together naturally: copying the source means nothing new is added.",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Expansion",
+          "Own Words"
+        ],
+        "criteria": {
+          "Expansion": {
+            "passed": false,
+            "reason": "The response merely provides a basic definition rather than adding substantive explanation to deepen understanding."
+          },
+          "Own Words": {
+            "passed": false,
+            "reason": "The response is copied almost verbatim from the reading text."
+          },
+          "Coherence": {
+            "passed": true,
+            "reason": "The response stays focused on the concept of sunk costs without drifting into tangents or examples."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Expansion\",\n    \"Own Words\"\n  ],\n  \"criteria\": {\n    \"Expansion\": {\n      \"pass\": false,\n      \"reason\": \"The response merely provides a basic definition rather than adding substantive explanation to deepen understanding.\"\n    },\n    \"Own Words\": {\n      \"pass\": false,\n      \"reason\": \"The response is copied almost verbatim from the reading text.\"\n    },\n    \"Coherence\": {\n      \"pass\": true,\n      \"reason\": \"The response stays focused on the concept of sunk costs without drifting into tangents or examples.\"\n    }\n  },\n  \"raw_response\": \"The response fails because it is a direct copy from the text and does not expand on the concept in the student's own words.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1872,
+          "output_tokens": 190,
+          "thinking_tokens": 281,
+          "total_tokens": 2343
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "E-C-1",
+      "step": "Elaborate",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost should not sway a decision because the money is already gone and cannot be changed by what you choose next. By the way, this connects to how businesses handle fixed and variable costs — fixed costs stay the same each month while variable costs rise and fall with output, which is another thing managers have to budget around carefully.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Coherence"
+      ],
+      "criterion_targeted": "Coherence",
+      "notes": "Opens with a valid, own-words explanation of why a sunk cost should not sway a decision (Expansion and Own Words both pass), then drifts into an unrelated tangent about fixed vs. variable costs (Coherence). A natural 'related-topic drift' mistake where the student wanders into adjacent material.",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Coherence"
+        ],
+        "criteria": {
+          "Expansion": {
+            "passed": true,
+            "reason": "The response explains why sunk costs should not influence decisions, deepening the understanding of the concept."
+          },
+          "Own Words": {
+            "passed": true,
+            "reason": "The elaboration is written in the student's own words rather than copied from the text."
+          },
+          "Coherence": {
+            "passed": false,
+            "reason": "The response drifts into an unrelated tangent about fixed and variable costs instead of staying focused on sunk costs."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Coherence\"\n  ],\n  \"criteria\": {\n    \"Expansion\": {\n      \"pass\": true,\n      \"reason\": \"The response explains why sunk costs should not influence decisions, deepening the understanding of the concept.\"\n    },\n    \"Own Words\": {\n      \"pass\": true,\n      \"reason\": \"The elaboration is written in the student's own words rather than copied from the text.\"\n    },\n    \"Coherence\": {\n      \"pass\": false,\n      \"reason\": \"The response drifts into an unrelated tangent about fixed and variable costs instead of staying focused on sunk costs.\"\n    }\n  },\n  \"raw_response\": \"The response fails because it loses focus and drifts into an unrelated tangent about fixed and variable costs.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1900,
+          "output_tokens": 189,
+          "thinking_tokens": 282,
+          "total_tokens": 2371
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "EX-P-1",
+      "step": "Exemplify",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A school spent PHP 1,200,000 building a computer lab that now sits mostly empty after classes moved online. In deciding whether to convert the room into something more useful, the school should ignore that PHP 1,200,000 — it is gone whether the room is repurposed or not, so the decision should rest only on what each option offers from here on. That already-spent PHP 1,200,000 is the sunk cost that should not anchor the choice.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "An original scenario, not the reading's airplane, ERP, or snowboarding examples (Originality); a genuine sunk cost that is already spent and unrecoverable (Fit); concrete and specific (Concreteness); and explicitly tied back to the concept (Explicit Mapping).",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Originality": {
+            "passed": true,
+            "reason": "The example of a school building a computer lab is original and not found in the reading."
+          },
+          "Fit": {
+            "passed": true,
+            "reason": "The example accurately represents a sunk cost and demonstrates why it should not influence future decisions."
+          },
+          "Concreteness": {
+            "passed": true,
+            "reason": "The example provides specific details, such as the exact amount spent and the specific situation of the computer lab."
+          },
+          "Explicit Mapping": {
+            "passed": true,
+            "reason": "The response clearly explains how the example illustrates the concept by stating that the money is gone regardless of the decision and should not anchor the choice."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Originality\": {\n      \"pass\": true,\n      \"reason\": \"The example of a school building a computer lab is original and not found in the reading.\"\n    },\n    \"Fit\": {\n      \"pass\": true,\n      \"reason\": \"The example accurately represents a sunk cost and demonstrates why it should not influence future decisions.\"\n    },\n    \"Concreteness\": {\n      \"pass\": true,\n      \"reason\": \"The example provides specific details, such as the exact amount spent and the specific situation of the computer lab.\"\n    },\n    \"Explicit Mapping\": {\n      \"pass\": true,\n      \"reason\": \"The response clearly explains how the example illustrates the concept by stating that the money is gone regardless of the decision and should not anchor the choice.\"\n    }\n  },\n  \"raw_response\": \"The student provided a clear, original, and concrete example of a sunk cost, and explicitly explained how it connects to the concept.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1943,
+          "output_tokens": 239,
+          "thinking_tokens": 301,
+          "total_tokens": 2483
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "EX-P-2",
+      "step": "Exemplify",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A film studio spent PHP 50,000,000 shooting a movie, but test screenings showed audiences disliked it. Whether to spend more on marketing should depend only on the expected return from here on, not on the PHP 50,000,000 already spent — that money is gone regardless, so it should not pressure them into promoting a film that will not perform.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "An original scenario (Originality); a genuine sunk cost that is already spent and unrecoverable (Fit); concrete and specific — a film studio, PHP 50,000,000, test screenings (Concreteness); and explicitly tied back to the concept (Explicit Mapping).",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Originality": {
+            "passed": true,
+            "reason": "The example of a film studio spending money on a movie is not found in the reading."
+          },
+          "Fit": {
+            "passed": true,
+            "reason": "The example accurately represents a sunk cost and demonstrates why it should not influence future decisions."
+          },
+          "Concreteness": {
+            "passed": true,
+            "reason": "The example provides specific details, such as the PHP 50,000,000 budget and test screenings, making it easy to understand."
+          },
+          "Explicit Mapping": {
+            "passed": true,
+            "reason": "The response clearly explains why the PHP 50,000,000 is a sunk cost and how it applies to the decision-making process."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Originality\": {\n      \"pass\": true,\n      \"reason\": \"The example of a film studio spending money on a movie is not found in the reading.\"\n    },\n    \"Fit\": {\n      \"pass\": true,\n      \"reason\": \"The example accurately represents a sunk cost and demonstrates why it should not influence future decisions.\"\n    },\n    \"Concreteness\": {\n      \"pass\": true,\n      \"reason\": \"The example provides specific details, such as the PHP 50,000,000 budget and test screenings, making it easy to understand.\"\n    },\n    \"Explicit Mapping\": {\n      \"pass\": true,\n      \"reason\": \"The response clearly explains why the PHP 50,000,000 is a sunk cost and how it applies to the decision-making process.\"\n    }\n  },\n  \"raw_response\": \"The student provided a concrete, original example of a sunk cost and explicitly explained how it illustrates the concept.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1918,
+          "output_tokens": 250,
+          "thinking_tokens": 269,
+          "total_tokens": 2437
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "EX-F-1",
+      "step": "Exemplify",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A gym pays PHP 40,000 in rent every month for a branch that barely gets members. Since this monthly rent is a sunk cost the gym cannot avoid, it should ignore it and keep the branch open while focusing only on future profits.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Fit"
+      ],
+      "criterion_targeted": "Fit",
+      "notes": "Concrete (Concreteness), original (Originality), and explicitly connected to the concept (Explicit Mapping), but it is not actually a sunk cost. Future monthly rent is an avoidable, relevant cost — the gym can end the lease or close the branch — not money already spent and unrecoverable, so it fails Fit. A very natural confusion of ongoing or avoidable costs with sunk costs.",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Fit"
+        ],
+        "criteria": {
+          "Originality": {
+            "passed": true,
+            "reason": "The example of a gym paying monthly rent is original and not found in the reading."
+          },
+          "Fit": {
+            "passed": false,
+            "reason": "The example misidentifies an ongoing, potentially avoidable cost (monthly rent) as a sunk cost, failing to accurately represent the concept."
+          },
+          "Concreteness": {
+            "passed": true,
+            "reason": "The example provides specific details, such as a gym and a specific monetary amount (PHP 40,000)."
+          },
+          "Explicit Mapping": {
+            "passed": true,
+            "reason": "The response attempts to connect the example back to the concept by explaining how the gym should treat the cost in its decision-making."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Fit\"\n  ],\n  \"criteria\": {\n    \"Originality\": {\n      \"pass\": true,\n      \"reason\": \"The example of a gym paying monthly rent is original and not found in the reading.\"\n    },\n    \"Fit\": {\n      \"pass\": false,\n      \"reason\": \"The example misidentifies an ongoing, potentially avoidable cost (monthly rent) as a sunk cost, failing to accurately represent the concept.\"\n    },\n    \"Concreteness\": {\n      \"pass\": true,\n      \"reason\": \"The example provides specific details, such as a gym and a specific monetary amount (PHP 40,000).\"\n    },\n    \"Explicit Mapping\": {\n      \"pass\": true,\n      \"reason\": \"The response attempts to connect the example back to the concept by explaining how the gym should treat the cost in its decision-making.\"\n    }\n  },\n  \"raw_response\": \"The response provides an original and concrete example with an explanation, but it fails because it misapplies the concept of a sunk cost to an ongoing, avoidable expense.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1886,
+          "output_tokens": 265,
+          "thinking_tokens": 386,
+          "total_tokens": 2537
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "EX-OE-1",
+      "step": "Exemplify",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A company spent $10,000 training its employees to use a new ERP system that turned out to be unreliable.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Originality",
+        "Explicit Mapping"
+      ],
+      "criterion_targeted": "Originality + Explicit Mapping",
+      "notes": "Reuses the reading's own ERP-training example (Originality) and simply states it without explaining how it shows a sunk cost (Explicit Mapping). It is otherwise a real, concrete instance, so Fit and Concreteness are not flagged. These co-occur naturally — a borrowed textbook example is often dropped in without any mapping because the connection feels self-evident.",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Originality",
+          "Explicit Mapping"
+        ],
+        "criteria": {
+          "Originality": {
+            "passed": false,
+            "reason": "The example is taken directly from the reading rather than being the student's own original example."
+          },
+          "Fit": {
+            "passed": true,
+            "reason": "The scenario describes a true instance of a sunk cost."
+          },
+          "Concreteness": {
+            "passed": true,
+            "reason": "The example provides specific details, such as the $10,000 spent on ERP training."
+          },
+          "Explicit Mapping": {
+            "passed": false,
+            "reason": "The response does not explain why this $10,000 is a sunk cost or how it relates to the concept."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Originality\",\n    \"Explicit Mapping\"\n  ],\n  \"criteria\": {\n    \"Originality\": {\n      \"pass\": false,\n      \"reason\": \"The example is taken directly from the reading rather than being the student's own original example.\"\n    },\n    \"Fit\": {\n      \"pass\": true,\n      \"reason\": \"The scenario describes a true instance of a sunk cost.\"\n    },\n    \"Concreteness\": {\n      \"pass\": true,\n      \"reason\": \"The example provides specific details, such as the $10,000 spent on ERP training.\"\n    },\n    \"Explicit Mapping\": {\n      \"pass\": false,\n      \"reason\": \"The response does not explain why this $10,000 is a sunk cost or how it relates to the concept.\"\n    }\n  },\n  \"raw_response\": \"The response fails because it copies an example directly from the text and does not explain how the example illustrates the concept.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1860,
+          "output_tokens": 244,
+          "thinking_tokens": 180,
+          "total_tokens": 2284
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "EX-C-1",
+      "step": "Exemplify",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "For example, a business might spend a lot of money on a project that ends up failing, and the smart move is to move on rather than keep investing just because of the money already put in.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Concreteness"
+      ],
+      "criterion_targeted": "Concreteness",
+      "notes": "Original (Originality), a true instance of the concept (Fit), and it does connect back to the sunk-cost logic (Explicit Mapping) — but it names no specific entity, amount, or situation ('a business', 'a project', 'a lot of money'), so it is too vague for a reader to grasp the concept through it (Concreteness). Isolated for diagnostic clarity; a natural mistake where the student states the logic correctly but never grounds it in a concrete instance.",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Concreteness"
+        ],
+        "criteria": {
+          "Originality": {
+            "passed": true,
+            "reason": "The example of a generic failing project is not taken from the specific airplane, software, or snowboarding examples in the text."
+          },
+          "Fit": {
+            "passed": true,
+            "reason": "The scenario accurately represents a sunk cost situation where past investments should not dictate future actions."
+          },
+          "Concreteness": {
+            "passed": false,
+            "reason": "The example is too vague and abstract, lacking specific details about the business, the project, or the costs involved."
+          },
+          "Explicit Mapping": {
+            "passed": true,
+            "reason": "The response explains how the example illustrates the concept by noting that the smart move is to move on rather than invest based on past spending."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Concreteness\"\n  ],\n  \"criteria\": {\n    \"Originality\": {\n      \"pass\": true,\n      \"reason\": \"The example of a generic failing project is not taken from the specific airplane, software, or snowboarding examples in the text.\"\n    },\n    \"Fit\": {\n      \"pass\": true,\n      \"reason\": \"The scenario accurately represents a sunk cost situation where past investments should not dictate future actions.\"\n    },\n    \"Concreteness\": {\n      \"pass\": false,\n      \"reason\": \"The example is too vague and abstract, lacking specific details about the business, the project, or the costs involved.\"\n    },\n    \"Explicit Mapping\": {\n      \"pass\": true,\n      \"reason\": \"The response explains how the example illustrates the concept by noting that the smart move is to move on rather than invest based on past spending.\"\n    }\n  },\n  \"raw_response\": \"The response provides an original and accurate example with a good explanation, but it is too vague and lacks the concrete details needed to clearly illustrate the concept.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1874,
+          "output_tokens": 260,
+          "thinking_tokens": 502,
+          "total_tokens": 2636
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "I-P-1",
+      "step": "Illustrate",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost is like a hiker who has climbed halfway up the wrong trail: the hours already spent climbing are gone no matter what, so the smart move is to turn back and take the right trail instead of pushing on just to avoid 'wasting' the climb. The effort already burned should not decide which path actually leads to the summit.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "A cross-domain analogy from hiking rather than business (Comparison); the structure matches the concept — sunk effort is unrecoverable and should not dictate the forward decision (Match); and it paints a clear mental picture (Imagery).",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Comparison": {
+            "passed": true,
+            "reason": "The response compares a sunk cost to a hiker climbing the wrong trail, which is an analogy outside the domain of business and finance."
+          },
+          "Match": {
+            "passed": true,
+            "reason": "The analogy accurately reflects the concept that past unrecoverable investments (time spent climbing) should not dictate future decisions (which path to take)."
+          },
+          "Imagery": {
+            "passed": true,
+            "reason": "The image of a hiker halfway up a mountain trail provides a clear and concrete mental picture."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Comparison\": {\n      \"pass\": true,\n      \"reason\": \"The response compares a sunk cost to a hiker climbing the wrong trail, which is an analogy outside the domain of business and finance.\"\n    },\n    \"Match\": {\n      \"pass\": true,\n      \"reason\": \"The analogy accurately reflects the concept that past unrecoverable investments (time spent climbing) should not dictate future decisions (which path to take).\"\n    },\n    \"Imagery\": {\n      \"pass\": true,\n      \"reason\": \"The image of a hiker halfway up a mountain trail provides a clear and concrete mental picture.\"\n    }\n  },\n  \"raw_response\": \"The student provided a strong analogy of a hiker on the wrong trail that accurately captures the essence of a sunk cost and creates a vivid mental image.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1902,
+          "output_tokens": 205,
+          "thinking_tokens": 242,
+          "total_tokens": 2349
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "I-P-2",
+      "step": "Illustrate",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost is like paying for a movie ticket and realizing halfway through that the film is terrible: walking out to save the rest of your evening is smarter than staying just because you paid, since the ticket money is gone whether you sit through it or not.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "A cross-domain analogy from everyday life rather than business (Comparison); the structure matches — the ticket money is unrecoverable and should not dictate whether you stay (Match); and it paints a clear mental picture (Imagery).",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Comparison": {
+            "passed": true,
+            "reason": "The response uses a simile comparing a sunk cost to buying a movie ticket, which is outside the business domain of the reading."
+          },
+          "Match": {
+            "passed": true,
+            "reason": "The analogy perfectly captures the essence of a sunk cost, showing that the money is gone regardless of future actions and shouldn't dictate the decision to stay."
+          },
+          "Imagery": {
+            "passed": true,
+            "reason": "Sitting in a movie theater watching a terrible film and deciding to walk out provides a clear and relatable mental image."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Comparison\": {\n      \"pass\": true,\n      \"reason\": \"The response uses a simile comparing a sunk cost to buying a movie ticket, which is outside the business domain of the reading.\"\n    },\n    \"Match\": {\n      \"pass\": true,\n      \"reason\": \"The analogy perfectly captures the essence of a sunk cost, showing that the money is gone regardless of future actions and shouldn't dictate the decision to stay.\"\n    },\n    \"Imagery\": {\n      \"pass\": true,\n      \"reason\": \"Sitting in a movie theater watching a terrible film and deciding to walk out provides a clear and relatable mental image.\"\n    }\n  },\n  \"raw_response\": \"The student provided a strong illustration using a relatable movie ticket analogy that accurately reflects the concept and provides clear imagery.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1885,
+          "output_tokens": 203,
+          "thinking_tokens": 323,
+          "total_tokens": 2411
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "I-M-1",
+      "step": "Illustrate",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost is like spilled milk — once it hits the floor, there is no way to scoop it back into the glass.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Match"
+      ],
+      "criterion_targeted": "Match",
+      "notes": "A vivid (Imagery), cross-domain comparison (Comparison), but it captures only the surface trait 'you cannot get it back' and misses the essential mechanism: that a sunk cost should not influence the decision still ahead of you (Match). The most common illustrate mistake — analogizing the 'unrecoverable' feature while losing the decision logic.",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Comparison": {
+            "passed": true,
+            "reason": "The response compares a sunk cost to spilled milk, which is outside the domain of business and finance."
+          },
+          "Match": {
+            "passed": true,
+            "reason": "The inability to put spilled milk back into the glass perfectly captures the unrecoverable nature of a sunk cost."
+          },
+          "Imagery": {
+            "passed": true,
+            "reason": "The image of milk hitting the floor and trying to scoop it back into a glass provides clear and concrete mental imagery."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Comparison\": {\n      \"pass\": true,\n      \"reason\": \"The response compares a sunk cost to spilled milk, which is outside the domain of business and finance.\"\n    },\n    \"Match\": {\n      \"pass\": true,\n      \"reason\": \"The inability to put spilled milk back into the glass perfectly captures the unrecoverable nature of a sunk cost.\"\n    },\n    \"Imagery\": {\n      \"pass\": true,\n      \"reason\": \"The image of milk hitting the floor and trying to scoop it back into a glass provides clear and concrete mental imagery.\"\n    }\n  },\n  \"raw_response\": \"The student successfully illustrates the concept of a sunk cost using the vivid and fitting analogy of spilled milk.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1859,
+          "output_tokens": 188,
+          "thinking_tokens": 186,
+          "total_tokens": 2233
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "I-C-1",
+      "step": "Illustrate",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost is like when a company keeps pouring money into a failing product line just because it has already invested millions in developing it.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Comparison"
+      ],
+      "criterion_targeted": "Comparison",
+      "notes": "Phrased as 'is like ...' but it is really just another business example of the sunk cost fallacy, not a comparison to something outside the reading's domain (Comparison). A natural confusion of Illustrate with Exemplify — a second same-domain example instead of a cross-domain analogy. Only Comparison is flagged: the content captures the fallacy correctly, so the failure is the form, not the logic.",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Comparison"
+        ],
+        "criteria": {
+          "Comparison": {
+            "passed": false,
+            "reason": "The response provides another business example of a sunk cost rather than a comparison to something outside the domain of the reading."
+          },
+          "Match": {
+            "passed": true,
+            "reason": "The scenario accurately reflects the essence of the sunk cost fallacy."
+          },
+          "Imagery": {
+            "passed": true,
+            "reason": "The phrase 'pouring money into a failing product line' provides a clear mental picture of the situation."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Comparison\"\n  ],\n  \"criteria\": {\n    \"Comparison\": {\n      \"pass\": false,\n      \"reason\": \"The response provides another business example of a sunk cost rather than a comparison to something outside the domain of the reading.\"\n    },\n    \"Match\": {\n      \"pass\": true,\n      \"reason\": \"The scenario accurately reflects the essence of the sunk cost fallacy.\"\n    },\n    \"Imagery\": {\n      \"pass\": true,\n      \"reason\": \"The phrase 'pouring money into a failing product line' provides a clear mental picture of the situation.\"\n    }\n  },\n  \"raw_response\": \"The response fails because it provides another example of the concept from the same domain rather than an analogy or metaphor.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1860,
+          "output_tokens": 188,
+          "thinking_tokens": 435,
+          "total_tokens": 2483
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "I-IM-1",
+      "step": "Illustrate",
+      "learning_objective": "Understand what a sunk cost is and why it should not influence future business decisions.",
+      "user_response": "A sunk cost is like a constant added to both sides of an equation: it is identical across every option you are weighing, so it cancels out and should not change which choice you make.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Imagery"
+      ],
+      "criterion_targeted": "Imagery",
+      "notes": "A valid cross-domain comparison (Comparison) whose structure actually matches the concept — a sunk cost is the same across all options, so it should not affect the decision (Match) — but 'a constant added to both sides of an equation' is abstract and forms no mental picture (Imagery). Isolated; a natural 'tries to be clever or technical' mistake where the analogy is logically sound but not picturable.",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Imagery"
+        ],
+        "criteria": {
+          "Comparison": {
+            "passed": true,
+            "reason": "The response compares a sunk cost to a mathematical equation, which is outside the domain of business and finance."
+          },
+          "Match": {
+            "passed": true,
+            "reason": "The analogy perfectly captures how a sunk cost is identical across all options and should not affect the final decision."
+          },
+          "Imagery": {
+            "passed": false,
+            "reason": "A mathematical equation is an abstract concept rather than a concrete, expressive scenario that the reader can easily picture in their mind."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Imagery\"\n  ],\n  \"criteria\": {\n    \"Comparison\": {\n      \"pass\": true,\n      \"reason\": \"The response compares a sunk cost to a mathematical equation, which is outside the domain of business and finance.\"\n    },\n    \"Match\": {\n      \"pass\": true,\n      \"reason\": \"The analogy perfectly captures how a sunk cost is identical across all options and should not affect the final decision.\"\n    },\n    \"Imagery\": {\n      \"pass\": false,\n      \"reason\": \"A mathematical equation is an abstract concept rather than a concrete, expressive scenario that the reader can easily picture in their mind.\"\n    }\n  },\n  \"raw_response\": \"The response provides a strong and accurate analogy, but it relies on an abstract mathematical concept rather than a concrete image.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 1871,
+          "output_tokens": 200,
+          "thinking_tokens": 511,
+          "total_tokens": 2582
+        },
+        "finish_reason": "STOP"
+      }
+    }
+  ]
+}
