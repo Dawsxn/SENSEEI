@@ -1,0 +1,68 @@
+# Single source of truth for the SEE-I rubric (version v3).
+#
+# The runner renders the criterion names + PASS conditions below into the system
+# prompt's {{RUBRIC}} placeholder, and src/rubric.py reads the criterion NAMES
+# (the keys) to validate the agent's output and build the per-criterion stats.
+#
+# Schema: pass-only. A criterion PASSES if the response satisfies its condition;
+# otherwise it FAILS. Supporting statements from the source book are NOT stored
+# here (they live in the design doc), by design.
+#
+# New in v3 (vs v2):
+#   - Accuracy: a universal grounding check added to ALL four steps (faithful to
+#     the reading). Same wording everywhere.
+#   - Completeness: added to State and Elaborate; judged against the per-reading
+#     "core components" reference (see data/readings/_concepts.yaml).
+#   - State: added Own Words and Clarity; Accuracy is now pure grounding.
+#   - Exemplify: added Contrast (a required contrasting non-example).
+#   - Illustrate: "Comparison" renamed to "Analogy".
+#
+# To change the rubric, copy this file to rubric_v4.yaml and edit that — never
+# edit a released version in place. Pair a rubric change with a matching
+# example_set_vN.csv.
+
+State:
+  Brevity:
+    pass: "The statement is concise and straight to the point. It does not contain any unnecessary filler, repetition, or tangents."
+  Own Words:
+    pass: "The statement is the user's own definition of the concept, in their own words. It is not directly copied or closely paraphrasing the text from the reading."
+  Clarity:
+    pass: "The statement is clear and precise. It is well-formulated and not vague."
+  Completeness:
+    pass: "The statement captures the concept's essential core component/s, not just one facet (if multiple)."
+  Accuracy:
+    pass: "The response is faithful to the reading: everything it asserts about the concept is correct and consistent with the source. It does not contradict the reading, misrepresent the concept, or rely on claims the source does not support."
+
+Elaborate:
+  Completeness:
+    pass: "The elaboration explains the concept in its fullness: it goes beyond merely restating the statement and captures the essence of all the concept's core component/s in greater detail and length."
+  Own Words:
+    pass: "The elaboration is expressed in the user's own words, showing their personal understanding rather than copying or closely paraphrasing the text."
+  Coherence:
+    pass: "The elaboration stays focused on explaining the stated concept and directly extends from the statement. It does not drift into unrelated tangents or jump ahead to giving examples."
+  Accuracy:
+    pass: "The response is faithful to the reading: everything it asserts about the concept is correct and consistent with the source. It does not contradict the reading, misrepresent the concept, or rely on claims the source does not support."
+
+Exemplify:
+  Originality:
+    pass: "The example is the student's own original example. It is not taken from or based on an example in the text/reading."
+  Fit:
+    pass: "The example genuinely displays the concept as stated and elaborated. It is a true instance of the concept, not something only partially or tangentially related."
+  Concreteness:
+    pass: "The example is concrete and points to a real or realistic instance the reader can connect with."
+  Explicit Mapping:
+    pass: "The example includes an explanation of how or why it illustrates the concept. It is not simply presented without connecting it back."
+  Contrast:
+    pass: "The response includes a contrasting example: a genuine non-example (something that is not an instance of the concept) that clarifies the concept's boundary."
+  Accuracy:
+    pass: "The response is faithful to the reading: everything it asserts about the concept is correct and consistent with the source. It does not contradict the reading, misrepresent the concept, or rely on claims the source does not support."
+
+Illustrate:
+  Analogy:
+    pass: "The illustration is a comparison to something else, outside of the context of the text/reading. It could be an analogy, simile, or metaphor and not just a second example of the concept."
+  Match:
+    pass: "The illustration captures the meaning or essence of the concept and it holds in ways that are meaningful, not just superficially similar."
+  Imagery:
+    pass: "The illustration gives the reader something they can picture in their mind. It is concrete and expressive enough to form a mental image."
+  Accuracy:
+    pass: "The response is faithful to the reading: everything it asserts about the concept is correct and consistent with the source. It does not contradict the reading, misrepresent the concept, or rely on claims the source does not support."

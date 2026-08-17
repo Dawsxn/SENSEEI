@@ -1,0 +1,13 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.python-version
+
+# Keep runs/ and reports/ tracked (they are the iteration trail), but ignore noise
+.DS_Store
+Thumbs.db

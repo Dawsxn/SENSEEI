@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SENSEEI Assessment Agent — v2 — 20260623_030537</title>
+<style>
+  :root {
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2128; --line:#30363d;
+    --ink:#e6edf3; --muted:#8b949e; --accent:#58a6ff;
+    --agree:#3fb950; --agree-bg:rgba(63,185,80,.15); --agree-bd:rgba(63,185,80,.4);
+    --criteria:#d29922; --criteria-bg:rgba(210,153,34,.15); --criteria-bd:rgba(210,153,34,.4);
+    --verdict:#f85149; --verdict-bg:rgba(248,81,73,.15); --verdict-bd:rgba(248,81,73,.4);
+    --error:#8b949e; --error-bg:rgba(139,148,158,.15); --error-bd:rgba(139,148,158,.4);
+  }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+         color:var(--ink); margin:0; padding:24px; background:var(--bg); }
+  h1 { font-size:20px; margin:0 0 4px; }
+  h2 { font-size:15px; margin:30px 0 6px; font-weight:600; }
+  a { color:var(--accent); }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:4px; }
+  .hint { color:var(--muted); font-size:12px; margin:10px 0 0; font-style:italic; }
+  .meta { font-size:12px; color:var(--muted); margin-top:10px; line-height:1.7; }
+  .meta code { background:var(--panel2); padding:1px 6px; border-radius:5px; color:var(--ink); }
+  .secdesc { color:var(--muted); font-size:12.5px; margin:0 0 10px; max-width:760px; }
+
+  .cards { display:flex; flex-wrap:wrap; gap:12px; margin:14px 0 4px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+          padding:14px 16px; min-width:160px; }
+  .card .big { font-size:26px; font-weight:600; }
+  .card .lbl { font-size:12px; color:var(--muted); margin-top:2px; }
+  .card .sub2 { font-size:11px; color:var(--muted); margin-top:3px; }
+
+  .chips { display:flex; flex-wrap:wrap; gap:10px; margin:6px 0 2px; }
+  .chip { display:inline-flex; align-items:center; gap:8px; padding:8px 13px;
+          border-radius:999px; font-size:13px; font-weight:600; border:1px solid var(--line); }
+  .chip .n { font-size:15px; }
+  .c-agree { background:var(--agree-bg); color:var(--agree); border-color:var(--agree-bd); }
+  .c-criteria_diff { background:var(--criteria-bg); color:var(--criteria); border-color:var(--criteria-bd); }
+  .c-verdict_diff { background:var(--verdict-bg); color:var(--verdict); border-color:var(--verdict-bd); }
+  .c-error { background:var(--error-bg); color:var(--error); border-color:var(--error-bd); }
+
+  table { width:100%; border-collapse:collapse; background:var(--panel);
+          border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:13px; }
+  th,td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--panel2); font-weight:600; color:var(--ink); }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--panel2); }
+
+  .pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px;
+          font-weight:600; white-space:nowrap; }
+  .s-agree { background:var(--agree-bg); color:var(--agree); }
+  .s-criteria_diff { background:var(--criteria-bg); color:var(--criteria); }
+  .s-verdict_diff { background:var(--verdict-bg); color:var(--verdict); }
+  .s-error { background:var(--error-bg); color:var(--error); }
+  td.status-agree { border-left:3px solid var(--agree); }
+  td.status-criteria_diff { border-left:3px solid var(--criteria); }
+  td.status-verdict_diff { border-left:3px solid var(--verdict); }
+  td.status-error { border-left:3px solid var(--error); }
+
+  .crit { display:inline-block; padding:1px 7px; margin:1px 2px; border-radius:6px;
+          font-size:11px; border:1px solid var(--line); color:var(--ink); }
+  .c-match { background:var(--agree-bg); color:var(--agree); border-color:var(--agree-bd); }
+  .c-miss  { background:var(--verdict-bg); color:var(--verdict); border-color:var(--verdict-bd); }
+  .c-extra { background:var(--criteria-bg); color:var(--criteria); border-color:var(--criteria-bd); }
+  .resp { max-width:430px; }
+  .muted { color:var(--muted); }
+  .bar { background:var(--panel2); border-radius:4px; height:8px; width:90px; display:inline-block;
+         vertical-align:middle; overflow:hidden; border:1px solid var(--line); }
+  .bar > span { display:block; height:100%; background:var(--agree); }
+  details { margin-top:6px; }
+  summary { cursor:pointer; color:var(--accent); font-size:12px; }
+  details .reason { margin-top:4px; }
+  .warn { color:var(--criteria); font-size:11px; }
+  .err { color:var(--verdict); font-size:12px; }
+  .key { font-family:ui-monospace,Consolas,monospace; font-size:12px; }
+
+  /* filter bar */
+  .toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin:10px 0; font-size:13px; }
+  .toolbar label { color:var(--muted); display:inline-flex; align-items:center; gap:6px; }
+  .toolbar select { background:var(--panel2); color:var(--ink); border:1px solid var(--line);
+                    border-radius:6px; padding:5px 8px; font-size:13px; }
+  #counter { margin-left:auto; }
+
+  /* hover tooltip (the ⓘ) */
+  .info { display:inline-block; width:14px; height:14px; line-height:13px; text-align:center;
+          border:1px solid var(--line); border-radius:50%; font-size:9px; font-style:normal;
+          color:var(--muted); background:var(--panel2); cursor:help; vertical-align:middle; }
+  .tip { position:relative; }
+  .tip:hover::after {
+    content:attr(data-tip); position:absolute; left:0; top:140%; z-index:20;
+    width:max-content; max-width:300px; white-space:normal;
+    background:#000; color:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:8px 10px; font-size:12px; font-weight:400; line-height:1.45;
+    box-shadow:0 6px 20px rgba(0,0,0,.5);
+  }
+  th.tip:hover::after { font-weight:400; }
+</style>
+</head>
+<body>
+  <h1>SENSEEI — Student Assessment Agent</h1>
+  <div class="sub">Evaluation report · 20260623_030537</div>
+  <div class="meta">
+    Prompt: <code>v2</code> (<code>4118e47f7c</code>) ·
+    Rubric: <code>v2</code> ·
+    Example set: <code>v2</code> ·
+    Provider: <code>gemini</code> · Model: <code>gemini-3.1-pro-preview</code> · Thinking: <code>low</code> ·
+    Examples: <code>18</code> · Source: <code>example_set_v2.csv</code>
+  </div>
+  <p class="hint">Hover any ⓘ for a plain-language explanation of the metric.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="big">94.4%</div>
+      <div class="lbl tip" data-tip="Share of responses where the agent's overall PASS/FAIL verdict matched the human label. This is the headline number.">Verdict accuracy <span class="info">i</span></div>
+      <div class="sub2">17/18 responses correct</div>
+    </div>
+    
+    <div class="card">
+      <div class="big">$0.1817</div>
+      <div class="lbl tip" data-tip="Estimated cost of this run in USD, from token usage at the configured prices (thinking + output are billed at the output rate).">Est. cost <span class="info">i</span></div>
+      <div class="sub2">this run</div>
+    </div>
+    <div class="card">
+      <div class="big" style="font-size:15px;line-height:1.6">
+        33,886 in<br>
+        5,744 thinking<br>
+        3,749 out</div>
+      <div class="lbl tip" data-tip="Tokens consumed this run: prompt input sent to the model, the model's internal thinking, and its visible output.">Tokens <span class="info">i</span></div>
+    </div>
+    
+  </div>
+
+  <h2 class="tip" data-tip="Every response falls into exactly one of these outcomes. The colors match the left border of each row in the per-example table below.">Outcome breakdown <span class="info">i</span></h2>
+  <div class="chips">
+    <span class="chip c-agree tip" data-tip="Verdict AND the exact set of failing criteria both match the label. A full, clean agreement.">agree <span class="n">16</span></span>
+    <span class="chip c-criteria_diff tip" data-tip="The PASS/FAIL verdict matches, but the agent flagged a different set of criteria than expected.">criteria differ <span class="n">1</span></span>
+    <span class="chip c-verdict_diff tip" data-tip="The agent's PASS/FAIL disagrees with the label. This is the most serious kind of error.">verdict mismatch <span class="n">1</span></span>
+    <span class="chip c-error tip" data-tip="No usable verdict was produced (a JSON-parse or provider error, e.g. a truncated response).">error <span class="n">0</span></span>
+  </div>
+
+  <h2 class="tip" data-tip="Verdict accuracy split by SEE-I step, so you can see which step the agent judges best and worst.">Accuracy by SEE-I step <span class="info">i</span></h2>
+  <table>
+    <thead><tr><th>Step</th><th>Examples</th><th>Correct</th><th>Accuracy</th></tr></thead>
+    <tbody>
+    
+    <tr>
+      <td>State</td><td>4</td><td>4/4</td>
+      <td><span class="bar"><span style="width:100.0%"></span></span>
+          100.0%</td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>4</td><td>4/4</td>
+      <td><span class="bar"><span style="width:100.0%"></span></span>
+          100.0%</td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>5</td><td>5/5</td>
+      <td><span class="bar"><span style="width:100.0%"></span></span>
+          100.0%</td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>5</td><td>4/5</td>
+      <td><span class="bar"><span style="width:80.0%"></span></span>
+          80.0%</td>
+    </tr>
+    
+    </tbody>
+  </table>
+
+  <h2 class="tip" data-tip="Per rubric criterion: of the examples that SHOULD fail it, how many the agent caught — and how often it flagged the criterion when it shouldn't have. Your guide to which criterion to tune next.">Per-criterion catch rate <span class="info">i</span></h2>
+  <table>
+    <thead><tr>
+      <th>Step</th><th>Criterion</th>
+      <th class="tip" data-tip="Of the examples expected to fail this criterion, how many the agent flagged. (— means no example targets it.)">Caught <span class="info">i</span></th>
+      <th class="tip" data-tip="Times the agent flagged this criterion on an example that was NOT expected to fail it (over-flagging).">False flags <span class="info">i</span></th>
+    </tr></thead>
+    <tbody>
+    
+    <tr>
+      <td>State</td><td>Brevity</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Clarity</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Accuracy</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="warn">1</span></td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Expansion</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Own Words</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Coherence</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Originality</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Fit</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Concreteness</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Explicit Mapping</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Comparison</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Match</td>
+      <td>0/1
+          <span class="muted">(0%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Imagery</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    </tbody>
+  </table>
+
+  <h2>Per-example results</h2>
+  <p class="secdesc">One row per labeled response. The colored left border and the Status pill show the
+    outcome (see the breakdown above). Use the agent reasoning toggle to see why each criterion was judged.</p>
+  <div class="toolbar">
+    <label>Status
+      <select id="f-status" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="agree">Agree</option>
+        <option value="criteria_diff">Criteria differ</option>
+        <option value="verdict_diff">Verdict mismatch</option>
+        <option value="error">Error</option>
+      </select>
+    </label>
+    <label>SEE-I step
+      <select id="f-step" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="State">State</option><option value="Elaborate">Elaborate</option><option value="Exemplify">Exemplify</option><option value="Illustrate">Illustrate</option>
+      </select>
+    </label>
+    <span class="muted" id="counter">Showing 18 of 18</span>
+  </div>
+  <table id="results">
+    <thead><tr>
+      <th>ID</th><th>Step</th><th>Response</th>
+      <th>Expected</th><th>Agent</th>
+      <th class="tip" data-tip="How the agent's failing criteria compare to the expected ones. ✓ matched = expected to fail and flagged; ✗ missed = expected to fail but not flagged; + extra = flagged but not expected.">Criteria diff <span class="info">i</span></th>
+      <th>Status</th>
+    </tr></thead>
+    <tbody>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">S-P-1</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost is money a business has already spent and cannot recover, so it should be ignored when making future decisions.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is a single, concise sentence with no unnecessary filler or tangents.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement clearly and specifically conveys the essential definition of a sunk cost and its role in decision-making.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the reading's definition that sunk costs are unrecoverable past expenses that should not influence future decisions.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">S-P-2</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost is a cost that has already occurred and cannot be recovered, and so it should not be considered when making future decisions.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is a single, concise sentence with no unnecessary filler or tangents.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement clearly and specifically conveys the essential definition of a sunk cost and its role in decision-making.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct and accurately reflects the definition provided in the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">S-A-1</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost is money a business has spent that it should try to recover by sticking with the project until it becomes profitable.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and straight to the point without unnecessary filler.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement clearly conveys a definition of the concept without being vague.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The statement is factually incorrect because the reading explicitly states that sunk costs cannot be recovered and should not influence future decisions.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="State">
+      <td class="status-criteria_diff key">S-BC-1</td>
+      <td>State</td>
+      <td class="resp">
+        Sunk costs are a really important part of business and finance that companies always have to think carefully about, because money is involved and businesses spend money all the time, so it is definitely something that matters a lot when running a company.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: FAIL — <span class="muted">The response is entirely composed of unnecessary filler and vague generalizations rather than getting straight to the point.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The statement is overly general and fails to convey what the concept of a sunk cost actually is.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response does not provide a factually correct definition of a sunk cost based on the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Brevity</span><span class="crit">Clarity</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Brevity</span><span class="crit">Clarity</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Brevity</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span>
+        
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Accuracy</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">E-P-1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        The key idea behind a sunk cost is that once the money is gone, no future decision can bring it back, so letting it influence your choices only adds to the loss. A business avoids this trap by weighing each option only on the costs and benefits still ahead of it, since what it already spent stays the same no matter which path it picks.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Expansion</b>: PASS — <span class="muted">The response deepens understanding by explaining why sunk costs shouldn't influence choices and how businesses should focus on future costs and benefits.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The elaboration is expressed in the student's own words rather than copying the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on explaining the concept of sunk costs and does not drift into tangents or provide examples.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">E-P-2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        Calling a cost 'sunk' is really about recognizing that the money belongs to the past and is beyond anyone's control now. Because that amount stays the same no matter what is decided, the sensible move is to compare the remaining options purely on their own merits and let the already-spent money fall out of the decision entirely.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Expansion</b>: PASS — <span class="muted">The response deepens understanding by explaining the rationale behind ignoring sunk costs in decision-making.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The elaboration is written in the student's own words, effectively paraphrasing the source text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on explaining the concept without drifting into tangents or providing examples.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">E-EO-1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A sunk cost is a cost that has already happened and cannot be recovered by any means. Sunk costs are independent of any event and should not be considered when making investment or project decisions.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Expansion</b>: FAIL — <span class="muted">The response merely provides a basic definition rather than adding substantive explanation to deepen understanding.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: FAIL — <span class="muted">The response is copied almost verbatim from the reading text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on the concept of sunk costs without drifting into tangents or examples.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span><span class="crit">Own Words</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span><span class="crit">Own Words</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Expansion</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Own Words</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">E-C-1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A sunk cost should not sway a decision because the money is already gone and cannot be changed by what you choose next. By the way, this connects to how businesses handle fixed and variable costs — fixed costs stay the same each month while variable costs rise and fall with output, which is another thing managers have to budget around carefully.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Expansion</b>: PASS — <span class="muted">The response explains why sunk costs should not influence decisions, deepening the understanding of the concept.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The elaboration is written in the student's own words rather than copied from the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: FAIL — <span class="muted">The response drifts into an unrelated tangent about fixed and variable costs instead of staying focused on sunk costs.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Coherence</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Coherence</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Coherence</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-P-1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A school spent PHP 1,200,000 building a computer lab that now sits mostly empty after classes moved online. In deciding whether to convert the room into something more useful, the school should ignore that PHP 1,200,000 — it is gone whether the room is repurposed or not, so the decision should rest only on what each option offers from here on. That already-spent PHP 1,200,000 is the sunk cost that should not anchor the choice.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a school building a computer lab is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example accurately represents a sunk cost and demonstrates why it should not influence future decisions.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example provides specific details, such as the exact amount spent and the specific situation of the computer lab.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response clearly explains how the example illustrates the concept by stating that the money is gone regardless of the decision and should not anchor the choice.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-P-2</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A film studio spent PHP 50,000,000 shooting a movie, but test screenings showed audiences disliked it. Whether to spend more on marketing should depend only on the expected return from here on, not on the PHP 50,000,000 already spent — that money is gone regardless, so it should not pressure them into promoting a film that will not perform.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a film studio spending money on a movie is not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example accurately represents a sunk cost and demonstrates why it should not influence future decisions.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example provides specific details, such as the PHP 50,000,000 budget and test screenings, making it easy to understand.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response clearly explains why the PHP 50,000,000 is a sunk cost and how it applies to the decision-making process.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-F-1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A gym pays PHP 40,000 in rent every month for a branch that barely gets members. Since this monthly rent is a sunk cost the gym cannot avoid, it should ignore it and keep the branch open while focusing only on future profits.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a gym paying monthly rent is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: FAIL — <span class="muted">The example misidentifies an ongoing, potentially avoidable cost (monthly rent) as a sunk cost, failing to accurately represent the concept.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example provides specific details, such as a gym and a specific monetary amount (PHP 40,000).</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response attempts to connect the example back to the concept by explaining how the gym should treat the cost in its decision-making.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Fit</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-OE-1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A company spent $10,000 training its employees to use a new ERP system that turned out to be unreliable.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The example is taken directly from the reading rather than being the student's own original example.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The scenario describes a true instance of a sunk cost.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example provides specific details, such as the $10,000 spent on ERP training.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response does not explain why this $10,000 is a sunk cost or how it relates to the concept.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Originality</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-C-1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        For example, a business might spend a lot of money on a project that ends up failing, and the smart move is to move on rather than keep investing just because of the money already put in.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a generic failing project is not taken from the specific airplane, software, or snowboarding examples in the text.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The scenario accurately represents a sunk cost situation where past investments should not dictate future actions.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The example is too vague and abstract, lacking specific details about the business, the project, or the costs involved.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explains how the example illustrates the concept by noting that the smart move is to move on rather than invest based on past spending.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Concreteness</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Concreteness</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Concreteness</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">I-P-1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A sunk cost is like a hiker who has climbed halfway up the wrong trail: the hours already spent climbing are gone no matter what, so the smart move is to turn back and take the right trail instead of pushing on just to avoid 'wasting' the climb. The effort already burned should not decide which path actually leads to the summit.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Comparison</b>: PASS — <span class="muted">The response compares a sunk cost to a hiker climbing the wrong trail, which is an analogy outside the domain of business and finance.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The analogy accurately reflects the concept that past unrecoverable investments (time spent climbing) should not dictate future decisions (which path to take).</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The image of a hiker halfway up a mountain trail provides a clear and concrete mental picture.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">I-P-2</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A sunk cost is like paying for a movie ticket and realizing halfway through that the film is terrible: walking out to save the rest of your evening is smarter than staying just because you paid, since the ticket money is gone whether you sit through it or not.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Comparison</b>: PASS — <span class="muted">The response uses a simile comparing a sunk cost to buying a movie ticket, which is outside the business domain of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The analogy perfectly captures the essence of a sunk cost, showing that the money is gone regardless of future actions and shouldn't dictate the decision to stay.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">Sitting in a movie theater watching a terrible film and deciding to walk out provides a clear and relatable mental image.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="verdict_diff" data-step="Illustrate">
+      <td class="status-verdict_diff key">I-M-1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A sunk cost is like spilled milk — once it hits the floor, there is no way to scoop it back into the glass.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Comparison</b>: PASS — <span class="muted">The response compares a sunk cost to spilled milk, which is outside the domain of business and finance.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The inability to put spilled milk back into the glass perfectly captures the unrecoverable nature of a sunk cost.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The image of milk hitting the floor and trying to scoop it back into a glass provides clear and concrete mental imagery.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span>
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Match</span>
+        
+      </td>
+      <td><span class="pill s-verdict_diff">✗ verdict</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">I-C-1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A sunk cost is like when a company keeps pouring money into a failing product line just because it has already invested millions in developing it.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Comparison</b>: FAIL — <span class="muted">The response provides another business example of a sunk cost rather than a comparison to something outside the domain of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The scenario accurately reflects the essence of the sunk cost fallacy.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The phrase 'pouring money into a failing product line' provides a clear mental picture of the situation.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Comparison</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Comparison</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Comparison</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">I-IM-1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A sunk cost is like a constant added to both sides of an equation: it is identical across every option you are weighing, so it cancels out and should not change which choice you make.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Comparison</b>: PASS — <span class="muted">The response compares a sunk cost to a mathematical equation, which is outside the domain of business and finance.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The analogy perfectly captures how a sunk cost is identical across all options and should not affect the final decision.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: FAIL — <span class="muted">A mathematical equation is an abstract concept rather than a concrete, expressive scenario that the reader can easily picture in their mind.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Imagery</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Imagery</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Imagery</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    </tbody>
+  </table>
+
+  <script>
+    function applyFilters() {
+      var st = document.getElementById('f-status').value;
+      var sp = document.getElementById('f-step').value;
+      var rows = document.querySelectorAll('#results tbody tr');
+      var shown = 0;
+      rows.forEach(function(tr){
+        var ok = (st === 'all' || tr.dataset.status === st) &&
+                 (sp === 'all' || tr.dataset.step === sp);
+        tr.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      });
+      document.getElementById('counter').textContent = 'Showing ' + shown + ' of ' + rows.length;
+    }
+  </script>
+</body>
+</html>

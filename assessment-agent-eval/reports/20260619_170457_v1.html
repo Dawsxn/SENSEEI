@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SENSEEI Assessment Agent — v1 — 20260619_170457</title>
+<style>
+  :root {
+    --agree:#1a7f37; --agree-bg:#e6f4ea;
+    --criteria:#9a6700; --criteria-bg:#fff8e1;
+    --verdict:#cf222e; --verdict-bg:#ffebe9;
+    --error:#57606a; --error-bg:#eaeef2;
+    --line:#d0d7de; --ink:#1f2328; --muted:#57606a; --bg:#ffffff;
+  }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+         color:var(--ink); margin:0; padding:24px; background:#f6f8fa; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  h2 { font-size:15px; margin:28px 0 10px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:16px; }
+  .meta { font-size:12px; color:var(--muted); }
+  .meta code { background:#eaeef2; padding:1px 5px; border-radius:4px; }
+  .cards { display:flex; flex-wrap:wrap; gap:12px; margin:8px 0 4px; }
+  .card { background:var(--bg); border:1px solid var(--line); border-radius:8px;
+          padding:12px 16px; min-width:150px; }
+  .card .big { font-size:24px; font-weight:600; }
+  .card .lbl { font-size:12px; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; background:var(--bg);
+          border:1px solid var(--line); border-radius:8px; overflow:hidden; font-size:13px; }
+  th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:#f6f8fa; font-weight:600; position:sticky; top:0; }
+  tr:last-child td { border-bottom:none; }
+  .pill { display:inline-block; padding:1px 8px; border-radius:999px; font-size:11px;
+          font-weight:600; white-space:nowrap; }
+  .s-agree { background:var(--agree-bg); color:var(--agree); }
+  .s-criteria_diff { background:var(--criteria-bg); color:var(--criteria); }
+  .s-verdict_diff { background:var(--verdict-bg); color:var(--verdict); }
+  .s-error { background:var(--error-bg); color:var(--error); }
+  td.status-agree { border-left:4px solid var(--agree); }
+  td.status-criteria_diff { border-left:4px solid var(--criteria); }
+  td.status-verdict_diff { border-left:4px solid var(--verdict); }
+  td.status-error { border-left:4px solid var(--error); }
+  .crit { display:inline-block; padding:1px 7px; margin:1px 2px; border-radius:6px;
+          font-size:11px; border:1px solid var(--line); }
+  .c-match { background:var(--agree-bg); color:var(--agree); border-color:#acd9b8; }
+  .c-miss  { background:var(--verdict-bg); color:var(--verdict); border-color:#f3b6ba; }
+  .c-extra { background:var(--criteria-bg); color:var(--criteria); border-color:#ecd9a0; }
+  .resp { max-width:420px; }
+  .muted { color:var(--muted); }
+  .bar { background:#eaeef2; border-radius:4px; height:8px; width:80px; display:inline-block; vertical-align:middle; overflow:hidden; }
+  .bar > span { display:block; height:100%; background:var(--agree); }
+  details { margin-top:6px; }
+  summary { cursor:pointer; color:var(--muted); font-size:12px; }
+  .warn { color:var(--criteria); font-size:11px; }
+  .err { color:var(--verdict); font-size:12px; }
+  .toolbar { margin:12px 0; font-size:13px; }
+  .legend span { margin-right:14px; font-size:12px; }
+  .key { font-family:ui-monospace,Consolas,monospace; font-size:12px; }
+</style>
+</head>
+<body>
+  <h1>SENSEEI — Student Assessment Agent</h1>
+  <div class="sub">Evaluation report · 20260619_170457</div>
+  <div class="meta">
+    Prompt: <code>v1</code> (<code>0e09397608</code>) ·
+    Provider: <code>gemini</code> · Model: <code>gemini-3.1-pro-preview</code> ·
+    Examples: <code>46</code> · Source: <code>example_set.csv</code>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="big">87.0%</div>
+      <div class="lbl">Verdict accuracy (40/46)</div></div>
+    <div class="card"><div class="big">55.3%</div>
+      <div class="lbl">Criteria exact-match (21/38 FAILs)</div></div>
+    <div class="card"><div class="big" style="color:var(--agree)">27</div>
+      <div class="lbl">Full agreement</div></div>
+    <div class="card"><div class="big" style="color:var(--criteria)">13</div>
+      <div class="lbl">Criteria differ</div></div>
+    <div class="card"><div class="big" style="color:var(--verdict)">2</div>
+      <div class="lbl">Verdict mismatch</div></div>
+    
+    <div class="card"><div class="big" style="color:var(--error)">4</div>
+      <div class="lbl">Errors</div></div>
+    
+  </div>
+
+  <h2>Accuracy by SEE-I step</h2>
+  <table>
+    <tr><th>Step</th><th>n</th><th>Verdict correct</th><th>Accuracy</th></tr>
+    
+    <tr>
+      <td>State</td><td>14</td><td>14/14</td>
+      <td><span class="bar"><span style="width:100.0%"></span></span>
+          100.0%</td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>12</td><td>10/12</td>
+      <td><span class="bar"><span style="width:83.0%"></span></span>
+          83.3%</td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>10</td><td>7/10</td>
+      <td><span class="bar"><span style="width:70.0%"></span></span>
+          70.0%</td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>10</td><td>9/10</td>
+      <td><span class="bar"><span style="width:90.0%"></span></span>
+          90.0%</td>
+    </tr>
+    
+  </table>
+
+  <h2>Per-criterion catch rate <span class="muted">(how often the agent flags a criterion that should fail)</span></h2>
+  <table>
+    <tr><th>Step</th><th>Criterion</th><th>Expected fails</th><th>Caught (recall)</th><th>False flags</th></tr>
+    
+    <tr>
+      <td>State</td><td>Length</td>
+      <td>2</td>
+      <td>2/2
+          (100%)</td>
+      <td>0</td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Originality</td>
+      <td>2</td>
+      <td>2/2
+          (100%)</td>
+      <td><span class="warn">3</span></td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Scope</td>
+      <td>2</td>
+      <td>2/2
+          (100%)</td>
+      <td>0</td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Clarity</td>
+      <td>4</td>
+      <td>4/4
+          (100%)</td>
+      <td>0</td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Accuracy</td>
+      <td>4</td>
+      <td>4/4
+          (100%)</td>
+      <td>0</td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Expansion</td>
+      <td>4</td>
+      <td>4/4
+          (100%)</td>
+      <td>0</td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Jargon Translation</td>
+      <td>2</td>
+      <td>2/2
+          (100%)</td>
+      <td>0</td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Relationship Accuracy</td>
+      <td>2</td>
+      <td>1/2
+          (50%)</td>
+      <td><span class="warn">2</span></td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Focus</td>
+      <td>4</td>
+      <td>3/4
+          (75%)</td>
+      <td>0</td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Originality</td>
+      <td>4</td>
+      <td>4/4
+          (100%)</td>
+      <td>0</td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Concreteness</td>
+      <td>2</td>
+      <td>1/2
+          (50%)</td>
+      <td><span class="warn">5</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Explicit Mapping</td>
+      <td>4</td>
+      <td>4/4
+          (100%)</td>
+      <td><span class="warn">1</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Cross-Domain</td>
+      <td>4</td>
+      <td>4/4
+          (100%)</td>
+      <td><span class="warn">2</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Structural Match</td>
+      <td>4</td>
+      <td>2/4
+          (50%)</td>
+      <td><span class="warn">2</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Format</td>
+      <td>2</td>
+      <td>2/2
+          (100%)</td>
+      <td>0</td>
+    </tr>
+    
+  </table>
+
+  <h2>Per-example results</h2>
+  <div class="toolbar">
+    <label><input type="checkbox" id="mmOnly" onchange="toggleMM()"> Show mismatches only</label>
+    <span class="legend" style="margin-left:18px;">
+      <span class="pill s-agree">agree</span>
+      <span class="pill s-criteria_diff">criteria differ</span>
+      <span class="pill s-verdict_diff">verdict mismatch</span>
+      <span class="pill s-error">error</span>
+    </span>
+  </div>
+  <table id="results">
+    <tr>
+      <th>ID</th><th>Step</th><th>Response</th>
+      <th>Expected</th><th>Agent</th><th>Criteria diff</th><th>Status</th>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">P-S-1</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost is money or resources a business has already spent that cannot be recovered, and because it cannot be changed, it should be left out of future decision-making.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response adequately paraphrases the text without copying more than three consecutive non-technical words.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response captures the main theme of what a sunk cost is and its active relationship to business decision-making.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the sentence.</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's core premise that sunk costs cannot be recovered and should not influence future decisions.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">P-S-2</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost is a past expense a company can no longer recover, so it should not shape what the business decides to do next.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response successfully paraphrases the text without using more than three consecutive non-technical words from the source.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response captures the main theme of the text by defining the concept and its active relationship to future business decisions.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the sentence.</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the core premise of the text that unrecoverable past expenses should not influence future decisions.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-S-L-1</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost is a cost that cannot be recovered. It has already been spent. Businesses should not consider it when making decisions.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: FAIL — <span class="muted">The response contains three sentences, violating the rule that it must be exactly one or two sentences.</span></div>
+          
+            <div><b>Originality</b>: FAIL — <span class="muted">The phrase 'is a cost that' copies four consecutive non-technical words directly from the source text.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response correctly identifies the main theme of the text regarding sunk costs and decision-making.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the response.</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct based on the text and does not contradict the core premise.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Length</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Length</span><span class="crit">Originality</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Length</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Originality</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-S-L-2</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost being money already spent and cannot be recovered.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: FAIL — <span class="muted">The response is an incomplete sentence fragment because it uses the participle 'being' instead of a main verb.</span></div>
+          
+            <div><b>Originality</b>: FAIL — <span class="muted">The response copies four consecutive words ('and cannot be recovered') directly from the source text.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response correctly captures the main theme by defining the core concept of a sunk cost.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'sunk cost' is explicitly named at the beginning of the response.</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the text's definition that sunk costs are unrecoverable past expenses.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Length</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Length</span><span class="crit">Originality</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Length</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Originality</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-S-O-1</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost is a cost that has already occurred and cannot be recovered by any means.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: FAIL — <span class="muted">The response copies an entire sentence verbatim from the source text ('A sunk cost is a cost that has already occurred and cannot be recovered by any means.').</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response successfully states the main theme of the text by defining the core concept.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the sentence.</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct and aligns perfectly with the text's definition.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Originality</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-S-O-2</td>
+      <td>State</td>
+      <td class="resp">
+        Sunk costs are independent of any event and should not be considered when making investment or project decisions.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: FAIL — <span class="muted">The response copies an entire sentence verbatim from the source text.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response states the main theme of how sunk costs relate to decision-making.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'Sunk costs' is explicitly named at the beginning of the sentence.</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the core premise of the text regarding sunk costs.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Originality</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-S-SC-1</td>
+      <td>State</td>
+      <td class="resp">
+        Sunk costs are also called past costs, embedded costs, prior year costs, stranded costs, sunk capital, or retrospective costs.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy more than three consecutive words from the source text.</span></div>
+          
+            <div><b>Scope</b>: FAIL — <span class="muted">The response merely lists alternative names for the concept, which is a static fact rather than stating the main theme or active relationship of what a sunk cost is.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'Sunk costs' is explicitly named at the beginning of the sentence.</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The response does not contradict the core premise of the text, even though it introduces synonyms not explicitly mentioned in the reading.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Scope</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Scope</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Scope</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-S-SC-2</td>
+      <td>State</td>
+      <td class="resp">
+        The term sunk cost is used in economics and business decision-making.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy entire clauses from the text.</span></div>
+          
+            <div><b>Scope</b>: FAIL — <span class="muted">The response states a static fact about where the term is used rather than explaining the main theme or active relationship of what a sunk cost actually is.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'sunk cost' is explicitly named and the sentence does not start with an ambiguous pronoun.</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct and does not contradict the text.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Scope</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Scope</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Scope</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-S-CL-1</td>
+      <td>State</td>
+      <td class="resp">
+        It is when a business spends money on something they can no longer get back, and it should not affect what they do next.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response is written in the student's own words and does not copy more than 3 consecutive words from the text.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response states the main theme of the concept and its active relationship to future actions.</span></div>
+          
+            <div><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun phrase 'It is when...' instead of explicitly naming the subject (sunk cost).</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's core premise that unrecoverable costs should not influence future decisions.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Clarity</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-S-CL-2</td>
+      <td>State</td>
+      <td class="resp">
+        This is when resources have already been used up and are unrecoverable, so they should be excluded from future decisions.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: FAIL — <span class="muted">The response copies the four-word phrase "excluded from future decisions" directly from the source text.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response states the main theme of how unrecoverable resources relate to future choices rather than just a static fact.</span></div>
+          
+            <div><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun "This" instead of explicitly naming the subject "sunk cost".</span></div>
+          
+            <div><b>Accuracy</b>: PASS — <span class="muted">The response accurately captures the core premise that unrecoverable costs should not influence future decisions.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Clarity</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Clarity</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Originality</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-S-A-1</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost is a future expense that a business plans to recover through future revenue.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy clauses directly from the source text.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response attempts to state the main definition and mechanism of the concept rather than a static statistic or date.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named rather than starting with an ambiguous pronoun.</span></div>
+          
+            <div><b>Accuracy</b>: FAIL — <span class="muted">The response completely contradicts the text by claiming a sunk cost is a future, recoverable expense rather than a past, unrecoverable one.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-S-A-2</td>
+      <td>State</td>
+      <td class="resp">
+        A sunk cost is money a business has spent but can recover if the project succeeds.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy clauses directly from the source text.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response attempts to define the main concept rather than stating a static fact or statistic.</span></div>
+          
+            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named and the response does not start with an ambiguous pronoun.</span></div>
+          
+            <div><b>Accuracy</b>: FAIL — <span class="muted">The response incorrectly claims that a sunk cost can be recovered, which directly contradicts the text's core premise that it cannot be recovered by any means.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">P-E-1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        Sunk costs matter in business because they tempt decision-makers to keep investing in a failing project just to feel like the initial spending was worth it. This is irrational because no matter what you decide next, that money is already gone. Rational decision-making means looking only at what each option will cost and return going forward, not trying to recover what was lost.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: PASS — <span class="muted">The response expands on the basic definition by explaining why sunk costs tempt decision-makers and how rational decisions should be made.</span></div>
+          
+            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language, such as 'money is already gone' and 'looking only at what each option will cost', to explain the concept without relying on undefined jargon.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately captures the cause-and-effect relationship between sunk costs and irrational decision-making as described in the text.</span></div>
+          
+            <div><b>Focus</b>: PASS — <span class="muted">All details in the response directly serve to explain the central concept of sunk costs and their impact on decision-making, with no tangents.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">P-E-2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        The danger of a sunk cost is that it pulls attention backward toward money that is already gone instead of forward toward the best available option. A business avoids this by asking which choice produces the better outcome from this point on, treating the past spending as irrelevant because nothing can bring it back.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: PASS — <span class="muted">The response expands on the concept by explaining why sunk costs are dangerous and how businesses can actively avoid letting them influence decisions.</span></div>
+          
+            <div><b>Jargon Translation</b>: PASS — <span class="muted">The student uses clear, plain language such as 'money that is already gone' and 'past spending' rather than relying on undefined technical terms.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's premise that because past spending cannot be recovered, it must be treated as irrelevant to future outcomes.</span></div>
+          
+            <div><b>Focus</b>: PASS — <span class="muted">Every sentence directly serves to explain the central concept of sunk costs and their role in decision-making, with no tangents or minor trivia.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-E-EX-1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A sunk cost is money that has been spent and cannot be recovered. Businesses should not include it in their decisions because it is already gone.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: FAIL — <span class="muted">The response merely paraphrases the basic definition of a sunk cost without explaining the underlying mechanism of why it shouldn't affect future decisions.</span></div>
+          
+            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language and does not rely on undefined technical jargon.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's premise that unrecoverable costs should not influence business decisions.</span></div>
+          
+            <div><b>Focus</b>: PASS — <span class="muted">All details in the response directly relate to the central concept of sunk costs without introducing tangents.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Expansion</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-E-EX-2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        Sunk costs are past costs that are unrecoverable. They should be left out of future decision-making because they cannot be gotten back.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: FAIL — <span class="muted">The response merely paraphrases the basic definition of a sunk cost without expanding on the underlying mechanisms or deeper reasons why it shouldn't affect future decisions.</span></div>
+          
+            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language, such as 'past costs that are unrecoverable', to explain the concept.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately identifies the cause-and-effect relationship that unrecoverable costs should be excluded from future decision-making.</span></div>
+          
+            <div><b>Focus</b>: PASS — <span class="muted">All details in the response directly serve to explain the central concept without introducing tangents or minor trivia.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Expansion</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-E-JT-1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        Sunk costs lead to irrational decisions because of loss aversion and escalation of commitment, which cause managers to keep investing in a negative NPV project.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: PASS — <span class="muted">The response successfully expands on the concept by attempting to explain the 'why' behind irrational decisions related to sunk costs.</span></div>
+          
+            <div><b>Jargon Translation</b>: FAIL — <span class="muted">The response relies heavily on undefined technical jargon, specifically 'loss aversion', 'escalation of commitment', and 'negative NPV project'.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: FAIL — <span class="muted">The response claims causes and effects, such as 'escalation of commitment' and 'negative NPV project', that are not mentioned or supported by the provided text.</span></div>
+          
+            <div><b>Focus</b>: PASS — <span class="muted">The details provided, although flawed in other areas, are directly focused on explaining the central concept rather than introducing minor trivia from the text.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Jargon Translation</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Jargon Translation</span><span class="crit">Relationship Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Jargon Translation</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Relationship Accuracy</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-E-JT-2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        The sunk cost fallacy occurs due to cognitive biases like loss aversion and status quo bias, making it a retrospective cost that distorts decision-making.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: PASS — <span class="muted">The response successfully introduces the 'why' of the concept by attempting to explain the underlying causes of the sunk cost fallacy.</span></div>
+          
+            <div><b>Jargon Translation</b>: FAIL — <span class="muted">The response relies on undefined technical jargon such as 'loss aversion', 'status quo bias', and 'retrospective cost'.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: FAIL — <span class="muted">The response claims the fallacy is caused by 'status quo bias', which is a cause-and-effect relationship not supported or mentioned in the provided text.</span></div>
+          
+            <div><b>Focus</b>: PASS — <span class="muted">Although it uses outside terms, the details provided are directly aimed at explaining the central concept of the sunk cost fallacy.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Jargon Translation</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Jargon Translation</span><span class="crit">Relationship Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Jargon Translation</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Relationship Accuracy</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="error">
+      <td class="status-error key">F-E-RA-1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        Sunk costs are important because tracking them helps businesses calculate their total return on investment more accurately over time.
+        
+        
+        <div class="err">⚠ JSON parse failed: Unterminated string starting at: line 11 column 17 (char 187)</div>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Relationship Accuracy</span>
+      </td>
+      <td>
+        <b>—</b>
+        
+      </td>
+      <td>
+        
+        <span class="crit c-miss" title="expected but not flagged">✗ Relationship Accuracy</span>
+        
+      </td>
+      <td><span class="pill s-error">⚠ error</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-E-RA-2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        Businesses consider sunk costs in decisions to ensure that past investments are eventually recovered through future profits.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: PASS — <span class="muted">The response introduces a 'why' mechanism by attempting to explain the rationale behind considering past investments.</span></div>
+          
+            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language like 'past investments' and 'future profits' without relying on undefined technical jargon.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: FAIL — <span class="muted">The response claims sunk costs are considered to recover past investments, directly contradicting the text which states they cannot be recovered and should not be considered.</span></div>
+          
+            <div><b>Focus</b>: PASS — <span class="muted">The response remains focused on the central concept of sunk costs in business decisions without introducing unrelated tangents.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Relationship Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Relationship Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Relationship Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="error">
+      <td class="status-error key">F-E-F-1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        Sunk costs are past expenses that should not influence decisions. This is similar to how opportunity costs work, where businesses weigh what they give up by choosing one option over another. Both concepts are important in financial modeling and help analysts build better DCF projections.
+        
+        
+        <div class="err">⚠ JSON parse failed: Expecting ',' delimiter: line 26 column 4 (char 978)</div>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Focus</span>
+      </td>
+      <td>
+        <b>—</b>
+        
+      </td>
+      <td>
+        
+        <span class="crit c-miss" title="expected but not flagged">✗ Focus</span>
+        
+      </td>
+      <td><span class="pill s-error">⚠ error</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-E-F-2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        The reason sunk costs should be ignored is that they are unrecoverable. On a related note, businesses also need to manage their variable costs carefully, since those do change with output and can be controlled unlike sunk costs.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: PASS — <span class="muted">The response explains the 'why' of the concept by stating that sunk costs should be ignored because they are unrecoverable.</span></div>
+          
+            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language and does not rely on undefined technical jargon to explain the concept.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately identifies the cause-and-effect relationship described in the text (sunk costs are ignored because they cannot be recovered).</span></div>
+          
+            <div><b>Focus</b>: FAIL — <span class="muted">The response introduces a tangent about managing variable costs, which does not directly serve to explain the central concept of sunk costs.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Focus</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Focus</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Focus</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="error">
+      <td class="status-error key">P-EX-1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A restaurant owner spent PHP 500,000 renovating a dining area to attract more customers. Six months later, foot traffic has not increased and the location is underperforming. Even though the PHP 500,000 was already spent, the owner should decide whether to keep the location based only on whether it can be profitable going forward, not because of the renovation cost already sunk into it.
+        
+        
+        <div class="err">⚠ JSON parse failed: Unterminated string starting at: line 9 column 17 (char 141)</div>
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>—</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-error">⚠ error</span></td>
+    </tr>
+    
+    <tr data-status="verdict_diff">
+      <td class="status-verdict_diff key">P-EX-2</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A gym owner paid PHP 1,000,000 for specialized equipment that members rarely use. Rather than keeping it just because it was expensive, the owner should decide whether replacing it with popular equipment brings in more revenue from here on. The PHP 1,000,000 is gone either way, so it should not drive the decision.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The gym equipment example is original and does not appear in the source text.</span></div>
+          
+            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a hypothetical scenario about an unnamed 'gym owner' rather than pointing to a specific, named real-world entity or event.</span></div>
+          
+            <div><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the PHP 1,000,000 to the concept by explaining that the money is gone and should not drive future decisions.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Concreteness</span>
+      </td>
+      <td>
+        
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+      </td>
+      <td><span class="pill s-verdict_diff">✗ verdict</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-EX-O-1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A person spends $200 on a snowboarding trip, then finds a better trip they would enjoy more but cannot get a refund on the first one. Since that $200 is already spent and cannot be recovered, it should not influence which trip they choose now.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Originality</b>: FAIL — <span class="muted">The response reuses the $200 snowboarding trip example that was explicitly provided in the source text.</span></div>
+          
+            <div><b>Concreteness</b>: PASS — <span class="muted">The response uses a specific, concrete scenario involving a $200 snowboarding trip.</span></div>
+          
+            <div><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the $200 spent to the concept by stating it is already spent, cannot be recovered, and should not influence the choice.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Originality</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-EX-O-2</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A company spent $10,000 training employees on an ERP system that turned out to be unreliable. That $10,000 is a sunk cost and should not affect the decision to discontinue the software.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Originality</b>: FAIL — <span class="muted">The response reuses the exact $10,000 ERP training example provided in the source text.</span></div>
+          
+            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A company') rather than pointing to a specific, named real-world entity or event.</span></div>
+          
+            <div><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the $10,000 spent in the example to the concept of a sunk cost that should not affect future decisions.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Concreteness</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Originality</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-EX-C-1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Imagine if a company invested a lot of money in a project that didn't work out. They would have to decide whether to keep going even though the money is already gone.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response provides a new scenario rather than reusing the airplane, ERP software, or snowboarding examples from the text.</span></div>
+          
+            <div><b>Concreteness</b>: FAIL — <span class="muted">The response relies on a vague hypothetical ('Imagine if a company...') rather than pointing to a specific, named entity or real-world event.</span></div>
+          
+            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explicitly explaining how the scenario demonstrates the principle that the lost money should not influence the company's decision.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Concreteness</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Concreteness</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Explicit Mapping</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="error">
+      <td class="status-error key">F-EX-C-2</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        If a business spent resources on something that failed, they should not let that past spending influence what they do next.
+        
+        
+        <div class="err">⚠ JSON parse failed: Expecting ',' delimiter: line 20 column 4 (char 684)</div>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Concreteness</span>
+      </td>
+      <td>
+        <b>—</b>
+        
+      </td>
+      <td>
+        
+        <span class="crit c-miss" title="expected but not flagged">✗ Concreteness</span>
+        
+      </td>
+      <td><span class="pill s-error">⚠ error</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-EX-EM-1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A startup spent PHP 2,000,000 developing a mobile app that failed to gain users after launch. They shut it down after three months.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The example of a startup developing a mobile app is not mentioned in the source text.</span></div>
+          
+            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A startup') rather than pointing to a specific, named entity or real-world instance.</span></div>
+          
+            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explaining how the PHP 2,000,000 represents a sunk cost or how it relates to the concept.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Explicit Mapping</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-EX-EM-2</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A clothing brand paid PHP 800,000 for a celebrity endorsement deal. The campaign ran for one month before being pulled due to controversy.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The example of a clothing brand's celebrity endorsement deal is not mentioned in the source text.</span></div>
+          
+            <div><b>Concreteness</b>: PASS — <span class="muted">The response provides a specific scenario with concrete details, such as the PHP 800,000 cost and the one-month timeline.</span></div>
+          
+            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explaining how the PHP 800,000 spent on the endorsement represents a sunk cost that cannot be recovered.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Explicit Mapping</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">P-I-1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        The sunk cost fallacy is like continuing to dig a hole just because you already spent an hour digging it, even after you realize you're digging in the wrong spot. The hole already dug represents the unrecoverable past investment, and the right move is to stop and start fresh somewhere better, not keep digging just to justify the time already spent.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: PASS — <span class="muted">The response compares the financial concept of sunk costs to the everyday physical act of digging a hole.</span></div>
+          
+            <div><b>Structural Match</b>: PASS — <span class="muted">The analogy correctly maps the unrecoverable time spent digging to a sunk cost and the irrational continuation of digging to the sunk cost fallacy.</span></div>
+          
+            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a clear simile using the phrase 'is like'.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">P-I-2</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A sunk cost is like a non-refundable bus ticket to a town you no longer want to visit. The ticket money is already gone whether you board or not, so the smart move is to go where you actually want to go, not ride a pointless trip just because you paid for the seat.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: PASS — <span class="muted">The response compares the corporate finance concept to an everyday life scenario of buying a bus ticket.</span></div>
+          
+            <div><b>Structural Match</b>: PASS — <span class="muted">The unrecoverable ticket money perfectly mirrors an unrecoverable business cost, and choosing a different destination mirrors making a rational future decision.</span></div>
+          
+            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a clear simile using the phrase 'is like'.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-I-CD-1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        The sunk cost fallacy is like a company that keeps funding a failing product line just because they already spent millions developing it, even when a new product has more market potential.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response provides a literal business example rather than comparing the concept to a completely different field or everyday life.</span></div>
+          
+            <div><b>Structural Match</b>: PASS — <span class="muted">The mechanism of continuing a failing endeavor due to past investment accurately matches the sunk cost fallacy.</span></div>
+          
+            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the word 'like'.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Cross-Domain</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-I-CD-2</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        It is like a retailer who continues stocking a slow-moving inventory item because they already paid for the initial bulk order, even when demand has clearly dropped.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response provides another literal business example (a retailer stocking inventory) rather than comparing the concept to a completely different field or everyday life.</span></div>
+          
+            <div><b>Structural Match</b>: PASS — <span class="muted">The scenario accurately reflects the mechanism of the sunk cost fallacy, where past unrecoverable expenses drive irrational future actions.</span></div>
+          
+            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the phrase 'It is like'.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Cross-Domain</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">F-I-SM-1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        The sunk cost fallacy is like a broken umbrella; once it is damaged, it cannot protect you from the rain anymore, just like sunk costs cannot be recovered.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: PASS — <span class="muted">The response successfully compares the financial concept to an everyday object, a broken umbrella.</span></div>
+          
+            <div><b>Structural Match</b>: FAIL — <span class="muted">The analogy only captures the unrecoverable nature of the cost but fails to match the underlying mechanism of the sunk cost fallacy, which involves making irrational future decisions based on that past loss.</span></div>
+          
+            <div><b>Format</b>: PASS — <span class="muted">The response is correctly formatted as a simile using the phrase 'is like'.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Structural Match</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Structural Match</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Structural Match</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="verdict_diff">
+      <td class="status-verdict_diff key">F-I-SM-2</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        It is like a melted ice cream cone; once it melts, it is gone and you cannot get it back, just like money that has been spent.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: PASS — <span class="muted">The response compares a business and finance concept to an everyday experience of a melted ice cream cone.</span></div>
+          
+            <div><b>Structural Match</b>: PASS — <span class="muted">The analogy correctly maps the unrecoverable nature of a melted ice cream cone to the unrecoverable nature of a sunk cost.</span></div>
+          
+            <div><b>Format</b>: PASS — <span class="muted">The response is explicitly formatted as a simile using the phrase 'It is like a'.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Structural Match</span>
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        <span class="crit c-miss" title="expected but not flagged">✗ Structural Match</span>
+        
+      </td>
+      <td><span class="pill s-verdict_diff">✗ verdict</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-I-F-1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        The sunk cost fallacy happens when a business keeps investing in a failing project because they have already spent money on it, even when it is clear the investment will not pay off.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response describes a literal business scenario rather than comparing the concept to a completely different field or everyday life.</span></div>
+          
+            <div><b>Structural Match</b>: FAIL — <span class="muted">Because there is no analogy or metaphor provided, there is no structural match to evaluate.</span></div>
+          
+            <div><b>Format</b>: FAIL — <span class="muted">The response is a literal restatement of the concept's definition rather than a metaphor, simile, or analogy.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Format</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span><span class="crit">Structural Match</span><span class="crit">Format</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Format</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Cross-Domain</span><span class="crit c-extra" title="flagged but not expected">+ Structural Match</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">F-I-F-2</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        Businesses fall into the sunk cost fallacy when they let past spending guide future decisions instead of focusing on what will generate the best outcome going forward.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response stays within the original domain of business and finance rather than introducing a comparison from a completely different field.</span></div>
+          
+            <div><b>Structural Match</b>: FAIL — <span class="muted">Because there is no analogy or metaphor provided, there is no structural match to evaluate.</span></div>
+          
+            <div><b>Format</b>: FAIL — <span class="muted">The response is a literal restatement of the concept's definition rather than a metaphor, simile, or analogy.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Format</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span><span class="crit">Structural Match</span><span class="crit">Format</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Format</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Cross-Domain</span><span class="crit c-extra" title="flagged but not expected">+ Structural Match</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">MC-S-1</td>
+      <td>State</td>
+      <td class="resp">
+        It is a future cost that a business expects to earn back later on.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy more than three consecutive words from the text.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response attempts to state the main theme of the concept rather than listing a static fact, statistic, or date.</span></div>
+          
+            <div><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun 'It' instead of explicitly naming the subject.</span></div>
+          
+            <div><b>Accuracy</b>: FAIL — <span class="muted">The response completely contradicts the text by claiming a sunk cost is a future, recoverable cost rather than a past, unrecoverable one.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Clarity</span><span class="crit c-match" title="matched">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">MC-S-2</td>
+      <td>State</td>
+      <td class="resp">
+        This is money a company can still get back once the project starts making a profit.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+          
+            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy more than three consecutive words from the text.</span></div>
+          
+            <div><b>Scope</b>: PASS — <span class="muted">The response attempts to state a conceptual definition rather than a static date or statistic.</span></div>
+          
+            <div><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun 'This' instead of explicitly naming the subject as a sunk cost.</span></div>
+          
+            <div><b>Accuracy</b>: FAIL — <span class="muted">The response directly contradicts the text by claiming the money can be recovered, whereas the text explicitly states sunk costs cannot be recovered.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Clarity</span><span class="crit c-match" title="matched">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">MC-E-1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A sunk cost is money already spent that cannot be recovered. Speaking of costs, businesses also deal with fixed and variable costs, which are important categories every business student should learn about.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: FAIL — <span class="muted">The response merely restates the basic definition of a sunk cost without explaining why it should not influence future decisions or how the fallacy works.</span></div>
+          
+            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language to describe a sunk cost as money already spent that cannot be recovered.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response does not claim any inaccurate cause-and-effect relationships regarding the text.</span></div>
+          
+            <div><b>Focus</b>: FAIL — <span class="muted">The response includes an irrelevant tangent about fixed and variable costs that does not serve to explain the central concept.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span><span class="crit">Focus</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span><span class="crit">Focus</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Expansion</span><span class="crit c-match" title="matched">✓ Focus</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">MC-E-2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        Sunk costs are past expenses that cannot be gotten back. On a related note, opportunity cost is another key idea in business that deals with the value of the next best alternative you give up.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Expansion</b>: FAIL — <span class="muted">The response merely restates the basic definition of a sunk cost without explaining the 'why' or 'how' of its role in decision-making.</span></div>
+          
+            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response defines the new term it introduces and does not rely on unexplained technical jargon.</span></div>
+          
+            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response does not claim any cause-and-effect relationships that contradict or are unsupported by the text.</span></div>
+          
+            <div><b>Focus</b>: FAIL — <span class="muted">The response introduces a tangent about opportunity cost, which is not in the text and does not help explain the central concept of sunk costs.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span><span class="crit">Focus</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Expansion</span><span class="crit">Focus</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Expansion</span><span class="crit c-match" title="matched">✓ Focus</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">MC-EX-1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A company spent $5 million building an airplane nobody wanted.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Originality</b>: FAIL — <span class="muted">The response reuses the exact $5 million airplane example provided in the source text.</span></div>
+          
+            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A company') rather than pointing to a specific, named real-world entity or event.</span></div>
+          
+            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response simply states the scenario without explaining how the $5 million spent demonstrates the concept of a sunk cost.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Originality</span><span class="crit c-match" title="matched">✓ Explicit Mapping</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">MC-EX-2</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A company spent $10,000 training its employees to use a new ERP system that turned out to be unreliable.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Originality</b>: FAIL — <span class="muted">The response reuses the exact ERP system training example provided in the source text.</span></div>
+          
+            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A company') rather than pointing to a specific, named real-world entity or event.</span></div>
+          
+            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explaining how the $10,000 spent relates to the concept of a sunk cost.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Originality</span><span class="crit c-match" title="matched">✓ Explicit Mapping</span>
+        
+        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff">
+      <td class="status-criteria_diff key">MC-I-1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        It is like a business that keeps an old delivery truck just because it was expensive, even though it breaks down a lot.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response provides another literal business example rather than comparing the concept to a completely different field or everyday life.</span></div>
+          
+            <div><b>Structural Match</b>: PASS — <span class="muted">The analogy correctly captures the underlying mechanism of holding onto a failing asset due to past expenses.</span></div>
+          
+            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the phrase 'It is like'.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span><span class="crit">Structural Match</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Cross-Domain</span>
+        <span class="crit c-miss" title="expected but not flagged">✗ Structural Match</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree">
+      <td class="status-agree key">MC-I-2</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        The sunk cost fallacy is like a shop that holds onto unsold expensive stock, similar to how the stock just sits there gathering dust.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The analogy uses a shop holding unsold stock, which is another literal business example rather than a comparison to a completely different field or domain.</span></div>
+          
+            <div><b>Structural Match</b>: FAIL — <span class="muted">The analogy only describes stock gathering dust, failing to match the core mechanism of making an irrational future decision based on unrecoverable past costs.</span></div>
+          
+            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the phrase 'is like'.</span></div>
+          
+        </details>
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span><span class="crit">Structural Match</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Cross-Domain</span><span class="crit">Structural Match</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched">✓ Cross-Domain</span><span class="crit c-match" title="matched">✓ Structural Match</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+  </table>
+
+  <script>
+    function toggleMM() {
+      var only = document.getElementById('mmOnly').checked;
+      document.querySelectorAll('#results tr[data-status]').forEach(function(tr){
+        tr.style.display = (only && tr.getAttribute('data-status') === 'agree') ? 'none' : '';
+      });
+    }
+  </script>
+</body>
+</html>

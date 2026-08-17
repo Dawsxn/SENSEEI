@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SENSEEI System Architecture</title>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif; background: #ffffff; margin: 0; padding: 20px; }
+    svg { max-width: 100%; }
+    .title { font-size: 34px; font-weight: 800; fill: #4F46E5; text-anchor: middle; }
+    .subtitle { font-size: 15px; fill: #6B7280; text-anchor: middle; }
+    .box-header { font-size: 19px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .box-sub { font-size: 13px; fill: #ffffff; text-anchor: middle; }
+    .backend-label { font-size: 20px; font-weight: 700; fill: #6D3FC4; text-anchor: middle; }
+    .arrow-label { font-size: 13px; fill: #4B5563; text-anchor: middle; }
+    .legend-text { font-size: 14px; fill: #374151; }
+    .icon { fill: none; stroke: #ffffff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+</head>
+<body>
+  <svg viewBox="0 0 900 830" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#4B5563"/>
+      </marker>
+    </defs>
+
+    <text class="title" x="450" y="48">SENSEEI System Architecture</text>
+    <text class="subtitle" x="450" y="80">Request flow across frontend, backend agents, and data services</text>
+
+    <!-- Frontend -->
+    <rect x="300" y="115" width="300" height="105" rx="16" fill="#3B82C4" stroke="#1E5C8C" stroke-width="2"/>
+    <g class="icon" transform="translate(450,150)">
+      <rect x="-14" y="-10" width="28" height="18" rx="2"/>
+      <line x1="0" y1="8" x2="0" y2="13"/>
+      <line x1="-8" y1="13" x2="8" y2="13"/>
+    </g>
+    <text class="box-header" x="450" y="185">Frontend</text>
+    <text class="box-sub" x="450" y="206">React SPA (Vite + React Router)</text>
+
+    <line x1="450" y1="220" x2="450" y2="246" stroke="#4B5563" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- Backend container -->
+    <rect x="90" y="250" width="720" height="330" rx="20" fill="#F5EFFC" stroke="#A78BFA" stroke-width="2.5"/>
+    <text class="backend-label" x="450" y="288">Backend — Python / FastAPI</text>
+
+    <!-- Tutor Agent -->
+    <rect x="130" y="312" width="310" height="228" rx="14" fill="#E8823A" stroke="#B85F1F" stroke-width="2"/>
+    <circle cx="285" cy="360" r="18" class="icon"/>
+    <text x="285" y="367" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="700">?</text>
+    <text class="box-header" x="285" y="415">Tutor Agent</text>
+    <text class="box-sub" x="285" y="440">Asks questions and explains</text>
+    <text class="box-sub" x="285" y="460">feedback, rephrases on retry</text>
+
+    <!-- Assessment Agent -->
+    <rect x="460" y="312" width="310" height="228" rx="14" fill="#34A972" stroke="#1F7A4F" stroke-width="2"/>
+    <circle cx="615" cy="360" r="18" class="icon"/>
+    <path d="M606,361 L612,368 L625,352" class="icon"/>
+    <text class="box-header" x="615" y="415">Assessment Agent</text>
+    <text class="box-sub" x="615" y="440">Grades against the rubric,</text>
+    <text class="box-sub" x="615" y="460">derives verdict</text>
+
+    <!-- Backend to Database (bidirectional) -->
+    <line x1="285" y1="580" x2="285" y2="612" stroke="#4B5563" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <text class="arrow-label" x="285" y="600" dx="150">reads readings, writes sessions</text>
+
+    <!-- Backend agents to LLM Provider -->
+    <line x1="615" y1="580" x2="615" y2="612" stroke="#4B5563" stroke-width="2" marker-end="url(#arrow)"/>
+    <text class="arrow-label" x="615" y="600" dx="115">interactive sessions only</text>
+
+    <!-- Database -->
+    <rect x="135" y="616" width="300" height="105" rx="16" fill="#3B82C4" stroke="#1E5C8C" stroke-width="2"/>
+    <g class="icon" transform="translate(285,650)">
+      <ellipse cx="0" cy="-8" rx="14" ry="5"/>
+      <path d="M-14,-8 L-14,8 A14,5 0 0 0 14,8 L14,-8"/>
+    </g>
+    <text class="box-header" x="285" y="686">Database</text>
+    <text class="box-sub" x="285" y="706">PostgreSQL</text>
+
+    <!-- LLM Provider -->
+    <rect x="465" y="616" width="300" height="105" rx="16" fill="#8B5CF6" stroke="#6D3FC4" stroke-width="2"/>
+    <g class="icon" transform="translate(615,650)">
+      <rect x="-13" y="-13" width="26" height="26" rx="4"/>
+      <circle cx="-5" cy="-5" r="1.5" fill="#ffffff" stroke="none"/>
+      <circle cx="5" cy="-5" r="1.5" fill="#ffffff" stroke="none"/>
+      <circle cx="-5" cy="5" r="1.5" fill="#ffffff" stroke="none"/>
+      <circle cx="5" cy="5" r="1.5" fill="#ffffff" stroke="none"/>
+    </g>
+    <text class="box-header" x="615" y="686">LLM Provider</text>
+    <text class="box-sub" x="615" y="706">Cloud-based LLM API</text>
+
+    <!-- Legend -->
+    <rect x="130" y="760" width="20" height="20" rx="4" fill="#3B82C4"/>
+    <text class="legend-text" x="158" y="775">Frontend &amp; Database</text>
+
+    <rect x="380" y="760" width="20" height="20" rx="4" fill="#E8823A"/>
+    <text class="legend-text" x="408" y="775">Tutor Agent</text>
+
+    <rect x="580" y="760" width="20" height="20" rx="4" fill="#34A972"/>
+    <text class="legend-text" x="608" y="775">Assessment Agent</text>
+
+    <rect x="130" y="796" width="20" height="20" rx="4" fill="#8B5CF6"/>
+    <text class="legend-text" x="158" y="811">LLM Provider</text>
+
+    <rect x="380" y="796" width="20" height="20" rx="4" fill="#F5EFFC" stroke="#A78BFA" stroke-width="2"/>
+    <text class="legend-text" x="408" y="811">Backend boundary (FastAPI)</text>
+  </svg>
+</body>
+</html>
