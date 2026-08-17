@@ -10,9 +10,9 @@
 #              rubric/rubric_<rubric_version>.yaml,
 #              data/example_set_<example_set_version>.csv
 # Override any of them per-run with --prompt / --rubric / --csv (explicit paths).
-prompt_version: v2
-rubric_version: v2
-example_set_version: v2
+prompt_version: v3
+rubric_version: v3
+example_set_version: v3
 
 provider: gemini              # gemini | openai_compat | mock
 model: gemini-3.1-pro-preview  # paid tier, Preview (exact ID confirmed via list_models)
