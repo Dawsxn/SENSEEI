@@ -1,0 +1,98 @@
+name: Conventions
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pr-title:
+    name: PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            refactor
+            chore
+            docs
+            test
+          scopes: |
+            api
+            session
+            analytics
+            orchestrator
+            agent
+            ui
+            db
+            eval
+            release
+          requireScope: false
+          subjectPattern: '^(?![A-Z])(?!.*\.$).{3,}$'
+          subjectPatternError: |
+            The subject "{subject}" is invalid. It must start with a lowercase
+            letter, not end with a period, and be at least 3 characters.
+
+  pr-description:
+    name: PR description
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+            const required = ["Summary", "Changes", "How to test"];
+            const problems = [];
+
+            // split the body on "## " headings into { heading -> content }
+            const sections = {};
+            for (const part of body.split(/^##[ \t]+/m).slice(1)) {
+              const nl = part.indexOf("\n");
+              const heading = (nl === -1 ? part : part.slice(0, nl)).trim();
+              sections[heading.toLowerCase()] = nl === -1 ? "" : part.slice(nl + 1);
+            }
+
+            for (const heading of required) {
+              const raw = sections[heading.toLowerCase()];
+
+              if (raw === undefined) {
+                problems.push(`Missing required section: "## ${heading}"`);
+                continue;
+              }
+
+              // strip HTML comments and empty bullets, then see if anything is left
+              const content = raw
+                .replace(/<!--[\s\S]*?-->/g, "")
+                .replace(/^\s*[-*]\s*$/gm, "")
+                .trim();
+
+              if (!content) {
+                problems.push(`Section "## ${heading}" is empty. Fill it in.`);
+              }
+            }
+
+            if (problems.length) {
+              core.setFailed(
+                "PR description does not follow the template:\n" +
+                problems.map((p) => `  - ${p}`).join("\n") +
+                "\n\nSee docs/conventions/pull-requests.md"
+              );
+            }
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
