@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Theoretical Framework</title>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif; background: #ffffff; margin: 0; padding: 20px; }
+    svg { max-width: 100%; }
+    .title { font-size: 34px; font-weight: 800; fill: #4F46E5; text-anchor: middle; }
+    .subtitle { font-size: 15px; fill: #6B7280; text-anchor: middle; }
+    .box-header { font-size: 19px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .box-sub { font-size: 13.5px; fill: #ffffff; text-anchor: middle; }
+    .arrow-label { font-size: 13px; fill: #4B5563; text-anchor: middle; font-weight: 600; }
+    .icon { fill: none; stroke: #ffffff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+</head>
+<body>
+  <svg viewBox="0 0 900 760" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#4B5563"/>
+      </marker>
+    </defs>
+
+    <text class="title" x="450" y="48">Theoretical Framework</text>
+    <text class="subtitle" x="450" y="80">How Constructivism, Scaffolding, and ZPD ground the SEE-I framework</text>
+
+    <!-- Arrows (behind boxes) -->
+    <line x1="400" y1="235" x2="255" y2="325" stroke="#4B5563" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="500" y1="235" x2="645" y2="325" stroke="#4B5563" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="235" y1="480" x2="360" y2="555" stroke="#4B5563" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="665" y1="480" x2="540" y2="555" stroke="#4B5563" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <text class="arrow-label" x="290" y="270">support active</text>
+    <text class="arrow-label" x="290" y="286">learning</text>
+    <text class="arrow-label" x="610" y="270">guided</text>
+    <text class="arrow-label" x="610" y="286">construction</text>
+    <text class="arrow-label" x="255" y="530">targets support</text>
+    <text class="arrow-label" x="255" y="546">by stage</text>
+    <text class="arrow-label" x="645" y="530">identifies next</text>
+    <text class="arrow-label" x="645" y="546">learning gap</text>
+
+    <!-- Constructivism -->
+    <rect x="340" y="115" width="220" height="118" rx="16" fill="#34A972" stroke="#1F7A4F" stroke-width="2"/>
+    <g class="icon" transform="translate(450,150)">
+      <rect x="-14" y="-2" width="12" height="12" rx="1.5"/>
+      <rect x="2" y="-2" width="12" height="12" rx="1.5"/>
+      <rect x="-6" y="-16" width="12" height="12" rx="1.5"/>
+    </g>
+    <text class="box-header" x="450" y="188">Constructivism</text>
+    <text class="box-sub" x="450" y="210">Learners actively construct</text>
+    <text class="box-sub" x="450" y="228">knowledge</text>
+
+    <!-- Scaffolding -->
+    <rect x="60" y="330" width="320" height="150" rx="14" fill="#3B82C4" stroke="#1E5C8C" stroke-width="2"/>
+    <g class="icon" transform="translate(220,368)">
+      <line x1="-14" y1="-16" x2="-14" y2="16"/>
+      <line x1="14" y1="-16" x2="14" y2="16"/>
+      <line x1="-14" y1="-10" x2="14" y2="-10"/>
+      <line x1="-14" y1="0" x2="14" y2="0"/>
+      <line x1="-14" y1="10" x2="14" y2="10"/>
+    </g>
+    <text class="box-header" x="220" y="418">Scaffolding</text>
+    <text class="box-sub" x="220" y="440">Support must be limited and</text>
+    <text class="box-sub" x="220" y="458">directed toward the learner's</text>
+    <text class="box-sub" x="220" y="476">specific gap</text>
+
+    <!-- ZPD -->
+    <rect x="520" y="330" width="320" height="150" rx="14" fill="#3B82C4" stroke="#1E5C8C" stroke-width="2"/>
+    <g class="icon" transform="translate(680,368)">
+      <circle cx="0" cy="0" r="16"/>
+      <circle cx="0" cy="0" r="9"/>
+      <circle cx="0" cy="0" r="2.2" fill="#ffffff" stroke="none"/>
+    </g>
+    <text class="box-header" x="680" y="418">ZPD</text>
+    <text class="box-sub" x="680" y="440">Some concepts cannot yet be</text>
+    <text class="box-sub" x="680" y="458">demonstrated independently but</text>
+    <text class="box-sub" x="680" y="476">can be achieved with guidance</text>
+
+    <!-- SEE-I -->
+    <rect x="210" y="558" width="480" height="180" rx="16" fill="#34A972" stroke="#1F7A4F" stroke-width="2"/>
+    <g class="icon" transform="translate(450,596)">
+      <rect x="-22" y="4" width="9" height="8"/>
+      <rect x="-10" y="-2" width="9" height="14"/>
+      <rect x="2" y="-8" width="9" height="20"/>
+      <rect x="14" y="-14" width="9" height="26"/>
+    </g>
+    <text class="box-header" x="450" y="636">SEE-I</text>
+    <text class="box-sub" x="450" y="660">State, Elaborate, Exemplify, Illustrate</text>
+    <text class="box-sub" x="450" y="692">Provides the stages and criteria for</text>
+    <text class="box-sub" x="450" y="710">demonstrating conceptual understanding</text>
+  </svg>
+</body>
+</html>
