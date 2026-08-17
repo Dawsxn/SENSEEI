@@ -107,7 +107,7 @@ def build_records(examples: list[dict]):
         })
         template_records.append({
             "id": ex["id"], "step": ex["step"],
-            "learning_objective": ex.get("learning_objective", ""),
+            "core_components": ex.get("core_components", ""),
             "user_response": ex["user_response"],
             "expected_verdict": comp.expected_verdict,
             "expected_criteria": comp.expected_criteria,
@@ -282,17 +282,17 @@ def run_live(args) -> tuple[dict, list[dict]]:
         step = row["seei_step"].strip()
         result = agent.assess(
             reading=reading_cache[fname],
-            learning_objective=row["learning_objective"].strip(),
             seei_step=step,
             user_response=row["user_response"].strip(),
             retries=retries,
+            key_concept=(row.get("core_components") or "").strip() or None,
         )
         flag = "ok " if result.parse_ok and result.verdict else "ERR"
         print(f"  [{i:>2}/{len(rows)}] {row['id']:<10} {step:<10} -> "
               f"{result.verdict or '—':<4} {flag}")
         examples.append({
             "id": row["id"], "step": step,
-            "learning_objective": row["learning_objective"].strip(),
+            "core_components": (row.get("core_components") or "").strip(),
             "user_response": row["user_response"].strip(),
             "expected_verdict": row["expected_verdict"].strip(),
             "expected_criteria": parse_expected_criteria(row.get("criterion_targeted", ""), step),

@@ -174,19 +174,29 @@ class AssessmentAgent:
         self.system_prompt = system_prompt
 
     @staticmethod
-    def build_user_prompt(reading, learning_objective, seei_step, user_response) -> str:
+    def build_user_prompt(reading, seei_step, user_response, key_concept=None) -> str:
+        kc = ""
+        if key_concept:
+            # a reading may have several core components in one cell, separated by "||"
+            parts = [p.strip() for p in str(key_concept).split("||") if p.strip()]
+            items = "\n".join(f"- {p}" for p in parts)
+            kc = ("# KEY CONCEPT (authoritative reference)\n"
+                  "The reading's core component(s) of the concept — use these when judging "
+                  "Accuracy (the response must be faithful to them) and Completeness (State must "
+                  "name them; Elaborate must explain them):\n"
+                  f"{items}\n\n")
         return (
             f"# READING\n{reading}\n\n"
-            f"# LEARNING OBJECTIVE\n{learning_objective}\n\n"
+            f"{kc}"
             f"# CURRENT SEE-I STEP\n{seei_step}\n\n"
             f"# STUDENT RESPONSE\n{user_response}\n\n"
             "Assess the STUDENT RESPONSE against the rubric criteria for the CURRENT "
             "SEE-I STEP only, and return the JSON object specified in your instructions."
         )
 
-    def assess(self, reading, learning_objective, seei_step, user_response,
-               retries=1, max_rate_limit_retries=3) -> AgentResult:
-        prompt = self.build_user_prompt(reading, learning_objective, seei_step, user_response)
+    def assess(self, reading, seei_step, user_response,
+               retries=1, max_rate_limit_retries=3, key_concept=None) -> AgentResult:
+        prompt = self.build_user_prompt(reading, seei_step, user_response, key_concept)
         last: AgentResult | None = None
         for _ in range(retries + 1):
             raw, err = self._complete(prompt, max_rate_limit_retries)
