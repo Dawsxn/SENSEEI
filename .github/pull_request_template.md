@@ -1,21 +1,16 @@
 ## Summary
-<!-- 1–3 sentences: what this PR does and why. -->
+<!-- 1–3 sentences: what this PR does and why. Required. -->
 
-## What's included
-<!-- The key pieces / components added or changed. -->
+## Changes
+<!-- Key pieces added or changed, one bullet each. Required. -->
 -
 
-<!-- Optional — delete this section if not relevant to the change. -->
 ## How to test
-```bash
-python run_eval.py --provider mock   # offline, no API key / no cost
-```
+<!-- Steps a reviewer follows to verify this works. Required. -->
+-
+
+## Screenshots
+<!-- UI changes only. Before/after if replacing something. Delete this section if not a UI change. -->
 
 ## Notes & caveats
-<!-- e.g. preview model, cost, ground-truth fixes, follow-ups. -->
--
-
-## Checklist
-- [ ] Runs locally (mock provider)
-- [ ] No secrets committed (`.env` is gitignored)
-- [ ] Docs updated (README / CHANGELOG)
+<!-- Follow-ups, known limitations, anything reviewers should watch for. Delete this section if empty. -->
