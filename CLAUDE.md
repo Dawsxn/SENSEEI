@@ -27,8 +27,15 @@ third agent.
 
 ## Reference — open when relevant
 
+- `agents/` — the shared agent package: the Assessment Agent (`assessment.py`),
+  the rubric loader (`rubric.py`), the swappable LLM `providers/`, and the
+  versioned `prompts/` and `rubrics/`. Installed via the root `pyproject.toml`
+  (`pip install -e ".[gemini]"`), so the eval harness and the future FastAPI
+  backend import the *same* code — the eval must never validate a separate
+  implementation from the one that ships. The Tutor Agent will join it here.
 - `assessment-agent-eval/` — the standalone Assessment Agent evaluation harness
-  (rubric, labeled dataset, eval runner). Has its own README and CHANGELOG.
+  (labeled dataset, eval runner, comparison + reporting). Measures the agent in
+  `agents/`; does not contain it. Has its own README and CHANGELOG.
 - `docs/thesis/` — thesis artifacts: diagrams and presentation decks. Not code.
 
 ## Skills
