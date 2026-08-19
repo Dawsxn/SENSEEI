@@ -1,6 +1,6 @@
 """Load + query the versioned SEE-I rubric (single source of truth).
 
-The rubric lives in ``rubric/rubric_vN.yaml``. Code reads the criterion NAMES
+The rubric lives in ``agents/rubrics/rubric_vN.yaml``. Code reads the criterion NAMES
 (the YAML keys) to validate the agent's output and to build the per-criterion
 stats; the runner also renders the PASS conditions into the system prompt's
 ``{{RUBRIC}}`` placeholder, so the model and the code always use the same rubric.

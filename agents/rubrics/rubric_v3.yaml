@@ -1,7 +1,7 @@
 # Single source of truth for the SEE-I rubric (version v3).
 #
 # The runner renders the criterion names + PASS conditions below into the system
-# prompt's {{RUBRIC}} placeholder, and src/rubric.py reads the criterion NAMES
+# prompt's {{RUBRIC}} placeholder, and agents/rubric.py reads the criterion NAMES
 # (the keys) to validate the agent's output and build the per-criterion stats.
 #
 # Schema: pass-only. A criterion PASSES if the response satisfies its condition;
