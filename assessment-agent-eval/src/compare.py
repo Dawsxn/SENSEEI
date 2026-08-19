@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass, field
 
-from .rubric import canonical_criterion, criteria_for, steps
+from agents.rubric import canonical_criterion, criteria_for, steps
 
 
 def parse_expected_criteria(criterion_targeted: str, step: str) -> list[str]:

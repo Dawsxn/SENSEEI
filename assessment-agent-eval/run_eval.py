@@ -10,8 +10,8 @@ Examples
   python run_eval.py                      # full run with config.yaml version pins
   python run_eval.py --provider mock      # offline smoke test (no API key)
   python run_eval.py --limit 4            # quick run on the first 4 rows
-  python run_eval.py --prompt prompts/system_prompt_v2.md   # override prompt
-  python run_eval.py --rubric rubric/rubric_v1.yaml --csv data/example_set_v1.csv
+  python run_eval.py --prompt ../agents/prompts/system_prompt_v2.md   # override prompt
+  python run_eval.py --rubric ../agents/rubrics/rubric_v1.yaml --csv data/example_set_v1.csv
   python run_eval.py --from-run runs/20260618_101500_v2     # rebuild report, no API calls
 """
 
@@ -41,11 +41,18 @@ for _stream in (sys.stdout, sys.stderr):
     except Exception:
         pass
 
-from src.agent import AgentResult, AssessmentAgent  # noqa: E402
+import agents  # noqa: E402
+from agents.assessment import AgentResult, AssessmentAgent  # noqa: E402
+from agents.providers import get_provider  # noqa: E402
+from agents.rubric import load_rubric, render_rubric, steps  # noqa: E402
 from src.compare import compare, parse_expected_criteria, summarize  # noqa: E402
-from src.providers import get_provider  # noqa: E402
 from src.report import render_report  # noqa: E402
-from src.rubric import load_rubric, render_rubric, steps  # noqa: E402
+
+# The agent, its prompts, and its rubrics live in the installed `agents` package
+# (shared with the backend), so anchor those to it rather than to this directory —
+# they then resolve from any working directory. The eval's own inputs and outputs
+# (data/, runs/, reports/) still hang off BASE.
+AGENTS = Path(agents.__file__).resolve().parent
 
 
 # ---------------------------------------------------------------- config / prompt
@@ -229,13 +236,13 @@ def run_live(args) -> tuple[dict, list[dict]]:
         config["model"] = args.model
 
     # Resolve the versioned inputs. An explicit CLI path overrides the config pin.
-    rubric_path = _resolve_input(args.rubric, BASE / "rubric", "rubric_{}.yaml",
+    rubric_path = _resolve_input(args.rubric, AGENTS / "rubrics", "rubric_{}.yaml",
                                  config.get("rubric_version", "v2"))
     csv_path = _resolve_input(args.csv, BASE / "data", "example_set_{}.csv",
                               config.get("example_set_version", "v2"))
     prompt_pin = None if args.prompt else str(
-        BASE / "prompts" / f"system_prompt_{config.get('prompt_version', 'v2')}.md")
-    prompts_dir = BASE / "prompts"
+        AGENTS / "prompts" / f"system_prompt_{config.get('prompt_version', 'v2')}.md")
+    prompts_dir = AGENTS / "prompts"
     readings_dir = csv_path.parent / "readings"
 
     rubric_version = _version_label(rubric_path)
@@ -357,7 +364,7 @@ def main():
         # make the rubric that run used active (for validation + per-criterion stats)
         cfg = load_config(BASE / args.config)
         rubric_path = _resolve_input(
-            args.rubric, BASE / "rubric", "rubric_{}.yaml",
+            args.rubric, AGENTS / "rubrics", "rubric_{}.yaml",
             meta.get("rubric_version") or cfg.get("rubric_version", "v2"))
         load_rubric(rubric_path)
         # stamp a fresh report timestamp so we don't overwrite the original
