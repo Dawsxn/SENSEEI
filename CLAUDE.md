@@ -38,9 +38,10 @@ third agent.
   `agents/`; does not contain it. Has its own README and CHANGELOG.
 - `docs/context/` holds the design context for the app itself:
   `student-tutoring-loop.md` (session state machine, dialogue moves, fallback),
-  `agent-contracts.md` (what each agent receives and returns), and
-  `data-model.md` (entities, relationships, retention). Open these before writing
-  app code. They record decisions that are not derivable from the codebase.
+  `agent-contracts.md` (what each agent receives and returns),
+  `data-model.md` (entities, relationships, retention), and `tech-stack.md`
+  (libraries, auth, visual tokens, open choices). Open these before writing app
+  code. They record decisions that are not derivable from the codebase.
 - `docs/thesis/` — thesis artifacts: diagrams and presentation decks. Not code.
 
 ## Skills
