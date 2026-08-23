@@ -36,6 +36,13 @@ third agent.
 - `assessment-agent-eval/` — the standalone Assessment Agent evaluation harness
   (labeled dataset, eval runner, comparison + reporting). Measures the agent in
   `agents/`; does not contain it. Has its own README and CHANGELOG.
+- `docs/context/` holds the design context for the app itself:
+  `student-tutoring-loop.md` (session state machine, dialogue moves, fallback),
+  `agent-contracts.md` (what each agent receives and returns),
+  `data-model.md` (entities, relationships, retention), `tech-stack.md`
+  (libraries, auth, deployment), and `design-system.md` (tokens, type scale,
+  component conventions). Open these before writing app code. They record
+  decisions that are not derivable from the codebase.
 - `docs/thesis/` — thesis artifacts: diagrams and presentation decks. Not code.
 
 ## Skills
