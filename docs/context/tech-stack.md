@@ -1,88 +1,96 @@
 # Tech stack
 
-What the app is built with, and what is still open.
+What the app is built with.
 
-The manuscript fixes the four components (§4.4.1, Table 4.6) but nothing below
-them. Everything at library level was decided during development and is recorded
-here because it is not derivable from the repo yet.
+The manuscript fixes the four architecture components (§4.4.1, Table 4.6) but
+nothing below them. Everything at library level was decided during development
+and is recorded here because it is not derivable from the repo yet.
 
-## Decided
-
-### Frontend
+## Frontend
 
 | Choice | Notes |
 | --- | --- |
 | React, single page app | From Table 4.6 |
+| Vite | Build tool |
 | Tailwind CSS | |
 | shadcn/ui | Components are copied into the repo rather than imported, so they are ours to edit |
 | Geist | Typeface, via Google Fonts. Not Inter |
+| TanStack Query | Server state. The tutoring loop is request-response, which is what it is for |
+| Recharts | Instructor dashboard charts. shadcn's chart components wrap it |
+
+**No client state library.** React state plus TanStack Query's cache covers what
+this app does. Add one only when something concrete forces it.
 
 shadcn was chosen over Mantine and MUI because the two signature screens, the
 split-screen tutoring view and the chat, are custom regardless of library, and
 because owning the component source suits agent-assisted development. MUI and Ant
 Design were rejected for carrying a visual identity that takes real work to shed.
 
-### Backend
+Visual tokens, type scale, and component conventions live in
+`design-system.md`.
+
+## Backend
 
 | Choice | Notes |
 | --- | --- |
 | Python, FastAPI | From Table 4.6 |
 | PostgreSQL | From Table 4.6 |
+| SQLModel | Models are Pydantic models, so one definition serves both database and API |
+| Alembic | Migrations |
+| pydantic-settings | Configuration, read from environment variables at startup |
 
-### Authentication
+SQLModel rather than Prisma: Prisma is a Node and TypeScript ORM, and using it
+from Python means a third-party community client that lags upstream and has had
+intermittent maintenance. SQLModel is written by FastAPI's author, sits on
+SQLAlchemy, and keeps the declarative typed-model feel without leaving the
+ecosystem.
+
+## Authentication
 
 Google OAuth, restricted to DLSU addresses. A non-DLSU Google account cannot sign
 in at all, so enrolment is not the only gate. See `data-model.md`.
 
-### LLM provider
+## LLM provider
 
 The provider layer lives in `agents/providers/`, shared between the eval harness
-and the backend. The model itself is still open, and the eval's `config.yaml`
-configures eval runs only. See `agent-contracts.md`.
+and the backend. Settings reach it through `pydantic-settings`, never from the
+eval's `config.yaml`, which configures eval runs only. See `agent-contracts.md`.
 
-## Interim visual tokens
+The model itself is still open. Preliminary results used Gemini 3.1 Pro at a low
+thinking level, which the manuscript notes is not necessarily what ships.
 
-Recorded here so they are not lost while the screens are still moving. These move
-to `design-system.md` once the design settles, and that file supersedes this
-section when it exists.
+## Testing
 
-| Token | Value |
+| Layer | Tool |
 | --- | --- |
-| Foreground | `#09090b` |
-| Muted foreground | `#71717a` |
-| Placeholder | `#a1a1aa` |
-| Border | `#e4e4e7` |
-| Muted surface | `#f4f4f5` |
-| Primary | `#16a34a` |
-| Card radius | 8px |
-| Control radius | 6px |
-| Button height | 36px default, 32px small |
-| Raised shadow | `0 1px 2px 0 rgba(0,0,0,0.05)` |
+| Backend | pytest, already used by the eval harness |
+| Frontend | Vitest with React Testing Library, comes with Vite |
+| End to end | None |
 
-These are shadcn's own defaults apart from the primary, which is green per the
-project's accent choice. Type runs 24px semibold for page titles against 14px
-body and 13px muted, a deliberately moderate ramp.
+End-to-end tests are deliberately skipped. Playwright is real work and a thesis
+timeline spends it better elsewhere.
 
-Structural decisions made alongside them: a top bar with no sidebar, and the
-SEE-I progression rendered as a Tabs row rather than bespoke chrome.
+The one place tests are not optional is the **Orchestrator**. Attempt counting and
+step advancement fail silently and corrupt the data they produce, which is the
+worst possible failure mode for a study whose results depend on that data.
 
-## Open
+## Deployment
 
-| # | Question | Recommendation |
-| --- | --- | --- |
-| 1 | Build tool | Vite. It is what shadcn documents for a React SPA and needs no argument |
-| 2 | ORM and migrations | SQLAlchemy with Alembic, unless you want something lighter |
-| 3 | Data fetching on the client | TanStack Query. The tutoring loop is request-response with server state, which is what it is for |
-| 4 | Client state management | Probably none beyond React state. Reach for a library only if something forces it |
-| 5 | Charts for the instructor dashboard | Recharts. Carried in with the shadcn choice rather than decided on its own, so say if you want otherwise |
-| 6 | Testing | Open |
-| 7 | Deployment target | Open. The manuscript never mentions deployment |
-| 8 | How the backend reads provider settings at startup | Environment variables into a settings object. Tracked as open question 1 in `agent-contracts.md` |
+Render or Railway for the FastAPI service plus managed PostgreSQL, in a Singapore
+region for latency from Manila. Decide between the two when it comes time.
 
-Nothing in this list blocks the frontend work.
+Two constraints:
+
+1. **Do not run data collection on a free tier.** Free instances sleep, and a
+   cold start mid-session costs a participant.
+2. **Serve the built SPA as static files from FastAPI** rather than deploying it
+   separately. That removes CORS and leaves one thing to deploy.
+
+The manuscript never mentions deployment, so none of this contradicts it.
 
 ## Related
 
+- `docs/context/design-system.md`, tokens and component conventions
 - `docs/context/data-model.md`, what PostgreSQL holds
 - `docs/context/agent-contracts.md`, the provider layer and its configuration
 - `docs/context/student-tutoring-loop.md`, the behaviour the frontend implements
