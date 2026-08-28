@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: {{primary}}; text-decoration: none; }
+    a:hover { color: #15803d; }
+
+    .scroll { overflow-y: scroll; scrollbar-width: thin; scrollbar-color: #d4d4d8 transparent; }
+    .scroll::-webkit-scrollbar { width: 11px; }
+    .scroll::-webkit-scrollbar-track { background: transparent; }
+    .scroll::-webkit-scrollbar-thumb {
+      background: #d4d4d8; border-radius: 999px;
+      border: 3px solid #ffffff; background-clip: padding-box;
+    }
+    .scroll-dark::-webkit-scrollbar-thumb { border-color: #e9e9ec; }
+
+    /* the rendered page itself, at roughly 74% of A4 width */
+    .pdfbody { font-family: Georgia, 'Times New Roman', serif; font-size: 11px; line-height: 1.62; color: #1a1a1a; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 16px 0 20px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" style="cursor: pointer;">
+        <path d="M18 6L6 18M6 6l12 12"></path>
+      </svg>
+      <span style="font-size: 14px; font-weight: 500; letter-spacing: -0.005em;">Cognitive Offloading</span>
+      <span style="font-size: 13px; color: #71717a;">STRAMA K31</span>
+      <div style="width: 1px; height: 16px; background: #e4e4e7;"></div>
+      <div style="display: flex; align-items: center; gap: 3px;">
+        <sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+          <div style="width: 18px; height: 2px; border-radius: 1px; background: {{s.color}};"></div>
+        </sc-for>
+      </div>
+    </div>
+    <button style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px; background: #ffffff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); font-family: inherit; font-size: 13px; font-weight: 500; color: #09090b; cursor: pointer;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path>
+      </svg>
+      Rubric
+    </button>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; min-height: 0;">
+
+    <div style="width: 660px; border-right: 1px solid #e4e4e7; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; background: #e9e9ec;">
+
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 12px; background: #ffffff; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+          <span style="font-size: 12px; color: #71717a;">47 of 58</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;">
+            <path d="M9 18l6-6-6-6"></path>
+          </svg>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 12px; color: #71717a;">74%</span>
+          <div style="width: 1px; height: 14px; background: #e4e4e7;"></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="scroll scroll-dark" style="flex-grow: 1; min-height: 0;">
+        <div style="padding: 20px 24px 28px;">
+
+          <div style="width: 588px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.14); padding: 56px 62px 40px; box-sizing: border-box;">
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 26px;">
+              <span style="font-family: Georgia, serif; font-size: 9px; letter-spacing: 0.08em; color: #8a8a8a;">CHAPTER 3 &nbsp;·&nbsp; COGNITIVE LOAD</span>
+              <span style="font-family: Georgia, serif; font-size: 9px; color: #8a8a8a;">47</span>
+            </div>
+
+            <p style="font-family: Georgia, serif; font-size: 14px; font-weight: 700; color: #1a1a1a; margin: 0 0 14px;">3.2&nbsp;&nbsp;Cognitive Offloading</p>
+
+            <div class="pdfbody">
+              <p style="margin: 0 0 10px; text-align: justify;">Cognitive offloading is the act of delegating a mental task to something outside the mind. Writing a phone number on a slip of paper, setting an alarm instead of remembering an appointment, or letting a spreadsheet hold a running total are all instances of the same move: work that could be done internally is handed to an external tool.</p>
+              <p style="margin: 0 0 10px; text-indent: 16px; text-align: justify;">The appeal is obvious. Working memory is narrow and easily disrupted, and offloading frees it for whatever the person considers the real task. A navigator who no longer has to hold a route in mind can attend to traffic instead. In this sense offloading is not a failure of memory but a sensible allocation of a scarce resource.</p>
+              <p style="margin: 0 0 18px; text-indent: 16px; text-align: justify;">The cost appears later, and it is easy to miss. Retrieving information from memory is itself what strengthens the memory, so a mind that never retrieves never consolidates.</p>
+            </div>
+
+            <div style="margin-bottom: 18px;">
+              <p style="font-family: Georgia, serif; font-size: 9.5px; font-weight: 700; color: #1a1a1a; margin: 0 0 6px;">Table 3.1&nbsp;&nbsp;Forms of offloading and what they displace</p>
+              <div style="border-top: 1.5px solid #1a1a1a; border-bottom: 1.5px solid #1a1a1a;">
+                <div style="display: grid; grid-template-columns: 1.1fr 1fr 1fr; border-bottom: 0.75px solid #1a1a1a;">
+                  <span style="font-family: Georgia, serif; font-size: 9.5px; font-weight: 700; padding: 5px 6px;">Form</span>
+                  <span style="font-family: Georgia, serif; font-size: 9.5px; font-weight: 700; padding: 5px 6px;">Displaces</span>
+                  <span style="font-family: Georgia, serif; font-size: 9.5px; font-weight: 700; padding: 5px 6px;">Recoverable</span>
+                </div>
+                <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+                  <div style="display: grid; grid-template-columns: 1.1fr 1fr 1fr;">
+                    <span style="font-family: Georgia, serif; font-size: 9.5px; padding: 4px 6px; color: #1a1a1a;">{{r.form}}</span>
+                    <span style="font-family: Georgia, serif; font-size: 9.5px; padding: 4px 6px; color: #1a1a1a;">{{r.displaces}}</span>
+                    <span style="font-family: Georgia, serif; font-size: 9.5px; padding: 4px 6px; color: #1a1a1a;">{{r.rec}}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div class="pdfbody">
+              <p style="margin: 0 0 10px; text-indent: 16px; text-align: justify;">This is why the same behaviour can be either efficient or corrosive depending on what is being offloaded and why. Delegating a total you will never need again costs nothing. Delegating the reasoning you were meant to do yourself costs the understanding you were meant to build.</p>
+              <p style="margin: 0 0 10px; text-indent: 16px; text-align: justify;">Researchers describe a related pattern as the search engine effect: when people expect information to remain available, they remember where to find it rather than what it says. Their memory does not fail so much as change target. They become excellent at retrieving the location of an answer and poor at holding the answer itself.</p>
+              <p style="margin: 0; text-indent: 16px; text-align: justify;">That trade is often worth making. Nobody benefits from memorising a train timetable. It becomes a problem when the material is the thing a person is supposed to understand.</p>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div style="flex-grow: 1; display: flex; flex-direction: column; min-height: 0;">
+
+      <div class="scroll" style="flex-grow: 1; min-height: 0;">
+        <div style="padding: 24px 16px 24px 24px; display: flex; flex-direction: column; gap: 20px;">
+
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 12px; font-weight: 500; color: #71717a;">State</span>
+            <div style="flex-grow: 1; height: 1px; background: #e4e4e7;"></div>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{primary}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 540px; text-wrap: pretty;">Let's start by defining "Cognitive Offloading". State what it is briefly, clearly, and as precisely as possible.</p>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 500px; background: {{bubble}}; border-radius: 8px; padding: 12px 14px;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #27272a; text-wrap: pretty;">Cognitive offloading is a thing where people use phones and the internet so they don't have to remember things, which can be bad for learning because they just rely on the Google effect all the time instead of building their own schemas in their brain.</p>
+            </div>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 540px; text-wrap: pretty;">You have the right idea, but your statement contains unnecessary tangents. That leaves <span style="font-weight: 500; color: #b91c1c;">Brevity</span> and <span style="font-weight: 500; color: #b91c1c;">Clarity</span> unmet. Try stating what cognitive offloading is again, this time in a single focused sentence.</p>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 500px; background: {{bubble}}; border-radius: 8px; padding: 12px 14px;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #27272a; text-wrap: pretty;">Cognitive offloading is the act of delegating mental tasks to external tools to reduce the need for internal information processing.</p>
+            </div>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 540px; text-wrap: pretty;">Excellent. That is a concise and accurate statement in your own words, and it names both core components. That completes <span style="font-weight: 500; color: #15803d;">State</span>.</p>
+
+          <div style="display: flex; align-items: center; gap: 12px; padding-top: 6px;">
+            <span style="font-size: 12px; font-weight: 500; color: #71717a;">Elaborate</span>
+            <div style="flex-grow: 1; height: 1px; background: #e4e4e7;"></div>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <sc-for list="{{attempts}}" as="a" hint-placeholder-count="3">
+                <div style="width: 5px; height: 5px; border-radius: 999px; background: {{a.color}};"></div>
+              </sc-for>
+            </div>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 540px; text-wrap: pretty;">Now, let's elaborate. Expand on your statement at greater length so that the reader gets more of the fullness of what is meant.</p>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 500px; background: {{bubble}}; border-radius: 8px; padding: 12px 14px;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #27272a; text-wrap: pretty;">In other words, cognitive offloading is like when I use a calculator to do math homework instead of doing it in my head.</p>
+            </div>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 540px; text-wrap: pretty;">That is a start, but your response drifted into giving an example rather than extending the explanation of the concept itself. That leaves <span style="font-weight: 500; color: #b91c1c;">Coherence</span> unmet. Try expanding on your statement again, staying on the concept itself rather than moving to an instance of it.</p>
+
+        </div>
+      </div>
+
+      <div style="padding: 12px 24px 20px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 10px; border: 1px solid #e4e4e7; border-radius: 8px; background: #ffffff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); padding: 7px 7px 7px 14px;">
+          <span style="flex-grow: 1; font-size: 14px; color: #a1a1aa;">Write your elaboration</span>
+          <button style="height: 32px; padding: 0 14px; border: none; border-radius: 6px; background: {{primary}}; color: #ffffff; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; flex-shrink: 0;">Submit</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#16a34a';
+    const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(primary);
+    const bubble = m
+      ? `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, 0.10)`
+      : 'rgba(22, 163, 74, 0.10)';
+    return {
+      primary,
+      bubble,
+      steps: [
+        { color: primary },
+        { color: '#09090b' },
+        { color: '#e4e4e7' },
+        { color: '#e4e4e7' }
+      ],
+      attempts: [
+        { color: '#d4d4d8' },
+        { color: '#09090b' },
+        { color: '#e4e4e7' }
+      ],
+      // the thing plain text cannot carry
+      rows: [
+        { form: 'Written note', displaces: 'Recall', rec: 'Yes' },
+        { form: 'Calculator', displaces: 'Computation', rec: 'Partly' },
+        { form: 'Search engine', displaces: 'Retrieval', rec: 'No' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

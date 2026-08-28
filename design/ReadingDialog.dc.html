@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: {{primary}}; text-decoration: none; }
+    a:hover { color: #15803d; }
+  </style>
+</helmet>
+<div style="width: 1360px; height: 900px; background: #ffffff; color: #09090b; position: relative; overflow: hidden;">
+
+  <div style="position: absolute; inset: 0; display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="21" height="21" viewBox="0 0 100 100" fill="{{primary}}" style="flex-shrink: 0;">
+          <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+          <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+          <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+          <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+        </svg>
+        <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="height: 32px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px; display: flex; align-items: center; font-size: 13px; font-weight: 500; color: #09090b;">Join a class</div>
+        <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">MR</div>
+      </div>
+    </div>
+    <div style="flex-grow: 1; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;">Readings</h1>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 200px; height: 36px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px;">
+          <span style="font-size: 13px; font-weight: 500;">All classes</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+        </div>
+      </div>
+      <div style="border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
+        <div style="display: grid; grid-template-columns: 1fr 140px 150px 96px; gap: 16px; align-items: center; height: 40px; padding: 0 16px; border-bottom: 1px solid #e4e4e7;">
+          <span style="font-size: 12px; font-weight: 500; color: #71717a;">Reading</span>
+          <span style="font-size: 12px; font-weight: 500; color: #71717a;">Class</span>
+          <span style="font-size: 12px; font-weight: 500; color: #71717a;">Status</span>
+          <span></span>
+        </div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+          <div style="display: grid; grid-template-columns: 1fr 140px 150px 96px; gap: 16px; align-items: center; padding: 14px 16px; border-bottom: 1px solid {{r.divider}};">
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 14px; font-weight: 500;">{{r.title}}</span>
+              <span style="font-size: 13px; color: #71717a;">{{r.components}}</span>
+            </div>
+            <span style="font-size: 13px; color: #71717a;">{{r.klass}}</span>
+            <span style="font-size: 12px; color: #71717a;">{{r.status}}</span>
+            <span></span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; inset: 0; background: rgba(9, 9, 11, 0.55);"></div>
+
+  <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+    <div style="width: 520px; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 10px; box-shadow: 0 18px 40px -12px rgba(0,0,0,0.35); padding: 24px;">
+
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 13px; color: #71717a;">STRAMA K31</span>
+          <span style="font-size: 18px; font-weight: 600; letter-spacing: -0.02em;">Cognitive Offloading</span>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" style="cursor: pointer; margin-top: 4px;">
+          <path d="M18 6L6 18M6 6l12 12"></path>
+        </svg>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <span style="font-size: 12px; font-weight: 500; color: #71717a;">Core components</span>
+        <sc-for list="{{components}}" as="c" hint-placeholder-count="2">
+          <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <div style="width: 4px; height: 4px; border-radius: 999px; background: #a1a1aa; margin-top: 8px; flex-shrink: 0;"></div>
+            <span style="font-size: 14px; line-height: 1.55;">{{c.text}}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{hasHistory}}" hint-placeholder-val="{{true}}">
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 12px; font-weight: 500; color: #71717a;">Past sessions</span>
+            <span style="font-size: 12px; color: #a1a1aa;">{{historyNote}}</span>
+          </div>
+          <div style="border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
+            <sc-for list="{{sessions}}" as="s" hint-placeholder-count="3">
+              <div style="display: grid; grid-template-columns: 78px 1fr 90px 14px; gap: 10px; align-items: center; padding: 9px 12px; border-bottom: 1px solid {{s.divider}}; cursor: pointer;">
+                <span style="font-size: 13px; font-weight: 500;">{{s.label}}</span>
+                <div>
+                  <span style="display: inline-flex; align-items: center; height: 19px; padding: 0 7px; border-radius: 999px; border: 1px solid {{s.ob}}; background: {{s.obg}}; font-size: 11px; font-weight: 500; color: {{s.ofg}};">{{s.outcome}}</span>
+                </div>
+                <span style="font-size: 12px; color: #71717a; text-align: right;">{{s.date}}</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <span style="font-size: 12px; color: #a1a1aa;">Four steps, three attempts each.</span>
+        <button style="height: 36px; padding: 0 16px; border: none; border-radius: 6px; background: {{primary}}; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;">{{cta}}</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"},"scenario":{"editor":"enum","options":["Never attempted","Completed","All failed","Mixed"],"default":"Mixed","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#16a34a';
+    const scenario = this.props.scenario ?? 'Mixed';
+
+    const ok  = { outcome: 'Complete', obg: '#f0fdf4', ob: '#bbf7d0', ofg: '#15803d' };
+    const bad = { outcome: 'Failed',   obg: '#fef2f2', ob: '#fecaca', ofg: '#b91c1c' };
+    const row = (n, date, res) => ({ label: 'Attempt ' + n, date, ...res, divider: '#e4e4e7' });
+
+    const sets = {
+      'Never attempted': [],
+      'Completed':       [row(2, '14 Aug', ok), row(1, '11 Aug', ok)],
+      'All failed':      [row(3, '14 Aug', bad), row(2, '12 Aug', bad), row(1, '11 Aug', bad)],
+      'Mixed':           [row(3, '14 Aug', ok), row(2, '12 Aug', bad), row(1, '11 Aug', bad)]
+    };
+    const sessions = sets[scenario] || [];
+    if (sessions.length) sessions[sessions.length - 1].divider = 'transparent';
+    const done = sessions.filter((s) => s.outcome === 'Complete').length;
+
+    return {
+      primary,
+      sessions,
+      hasHistory: sessions.length > 0,
+      historyNote: sessions.length
+        ? (done ? done + ' of ' + sessions.length + ' completed' : 'None completed')
+        : '',
+      cta: sessions.length ? 'Start a new attempt' : 'Start',
+      components: [
+        { text: 'Delegating mental tasks to external tools rather than processing them internally' },
+        { text: 'Reduced mental effort at the cost of bypassing productive struggle' }
+      ],
+      rows: [
+        { title: 'Cognitive Offloading', components: 'Delegating mental tasks to external tools',
+          klass: 'STRAMA K31', status: 'Not started', divider: '#e4e4e7' },
+        { title: 'Business Model', components: 'Customer value proposition, profit formula',
+          klass: 'STRAMA K31', status: 'Complete', divider: '#e4e4e7' },
+        { title: 'Strategic Vision', components: 'Direction, market position, future course',
+          klass: 'BUSANA S15', status: 'Failed', divider: 'transparent' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

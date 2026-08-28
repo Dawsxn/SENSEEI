@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: {{primary}}; text-decoration: none; }
+    a:hover { color: #15803d; }
+    .scroll { overflow-y: scroll; scrollbar-width: thin; scrollbar-color: #d4d4d8 transparent; }
+    .scroll::-webkit-scrollbar { width: 11px; }
+    .scroll::-webkit-scrollbar-track { background: transparent; }
+    .scroll::-webkit-scrollbar-thumb {
+      background: #d4d4d8; border-radius: 999px;
+      border: 3px solid #ffffff; background-clip: padding-box;
+    }
+  </style>
+</helmet>
+<div style="width: 1360px; height: 1000px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+      <span style="font-size: 13px; color: #71717a;">Readings</span>
+    </div>
+    <button style="height: 32px; padding: 0 12px; border: none; border-radius: 6px; background: {{primary}}; font-family: inherit; font-size: 13px; font-weight: 500; color: #ffffff; cursor: pointer;">Start a new attempt</button>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; justify-content: center; min-height: 0;">
+    <div style="width: 780px; display: flex; flex-direction: column; min-height: 0;">
+
+      <div style="padding: 32px 0 20px; display: flex; flex-direction: column; gap: 18px; flex-shrink: 0;">
+
+        <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <span style="font-size: 13px; color: #71717a;">STRAMA K31</span>
+            <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;">Cognitive Offloading</h1>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 230px; height: 36px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); cursor: pointer;">
+            <span style="font-size: 13px; font-weight: 500;">Attempt 3</span>
+            <span style="font-size: 13px; color: #71717a;">14 Aug 2026</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fafafa; border-bottom: 1px solid #e4e4e7;">
+            <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: 999px; border: 1px solid {{ob}}; background: {{obg}}; font-size: 12px; font-weight: 500; color: {{ofg}};">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="{{ofg}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6L9 17l-5-5"></path>
+              </svg>
+              {{outcome}}
+            </span>
+            <span style="font-size: 13px; color: #71717a;">21 minutes &nbsp;·&nbsp; 6 attempts across 4 steps</span>
+          </div>
+
+          <sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: 1fr 150px 110px; gap: 16px; align-items: center; padding: 11px 16px; border-bottom: 1px solid {{s.divider}};">
+              <span style="font-size: 14px; font-weight: 500; color: {{s.name_fg}};">{{s.name}}</span>
+              <span style="font-size: 13px; color: {{s.state_fg}};">{{s.state}}</span>
+              <span style="font-size: 13px; color: {{s.state_fg}}; text-align: right;">{{s.attempts}}</span>
+            </div>
+          </sc-for>
+
+        </div>
+
+      </div>
+
+      <div class="scroll" style="flex-grow: 1; min-height: 0; border-top: 1px solid #e4e4e7;">
+        <div style="padding: 22px 16px 32px 0; display: flex; flex-direction: column; gap: 20px;">
+
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 12px; font-weight: 500; color: #71717a;">State</span>
+            <div style="flex-grow: 1; height: 1px; background: #e4e4e7;"></div>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{primary}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 560px; text-wrap: pretty;">Let's start by defining "Cognitive Offloading". State what it is briefly, clearly, and as precisely as possible.</p>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 520px; background: {{bubble}}; border-radius: 8px; padding: 12px 14px;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #27272a; text-wrap: pretty;">Cognitive offloading is a thing where people use phones and the internet so they don't have to remember things, which can be bad for learning because they just rely on the Google effect all the time instead of building their own schemas in their brain.</p>
+            </div>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 560px; text-wrap: pretty;">You have the right idea, but your statement contains unnecessary tangents. That leaves <span style="font-weight: 500; color: #b91c1c;">Brevity</span> and <span style="font-weight: 500; color: #b91c1c;">Clarity</span> unmet. Try stating what cognitive offloading is again, this time in a single focused sentence.</p>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 520px; background: {{bubble}}; border-radius: 8px; padding: 12px 14px;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #27272a; text-wrap: pretty;">Cognitive offloading is the act of delegating mental tasks to external tools to reduce the need for internal information processing.</p>
+            </div>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 560px; text-wrap: pretty;">Excellent. That is a concise and accurate statement in your own words, and it names both core components. That completes <span style="font-weight: 500; color: #15803d;">State</span>.</p>
+
+          <div style="display: flex; align-items: center; gap: 12px; padding-top: 6px;">
+            <span style="font-size: 12px; font-weight: 500; color: #71717a;">Elaborate</span>
+            <div style="flex-grow: 1; height: 1px; background: #e4e4e7;"></div>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{primary}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 560px; text-wrap: pretty;">Now, let's elaborate. Expand on your statement at greater length so that the reader gets more of the fullness of what is meant.</p>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 520px; background: {{bubble}}; border-radius: 8px; padding: 12px 14px;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #27272a; text-wrap: pretty;">In other words, cognitive offloading is like when I use a calculator to do math homework instead of doing it in my head.</p>
+            </div>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 560px; text-wrap: pretty;">That is a start, but your response drifted into giving an example rather than extending the explanation of the concept itself. That leaves <span style="font-weight: 500; color: #b91c1c;">Coherence</span> unmet. Try expanding on your statement again, staying on the concept itself rather than moving to an instance of it.</p>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 520px; background: {{bubble}}; border-radius: 8px; padding: 12px 14px;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #27272a; text-wrap: pretty;">In other words, rather than using our own working memory to store or process information, we rely on technology or physical objects to hold that information for us. This minimises the mental effort required, but it also bypasses the productive struggle needed to actually learn and retain the information long term.</p>
+            </div>
+          </div>
+
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 560px; text-wrap: pretty;">Great elaboration. You explained the concept in its fullness and captured the essential core components. That completes <span style="font-weight: 500; color: #15803d;">Elaborate</span>.</p>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"},"outcome":{"editor":"enum","options":["Complete","Failed"],"default":"Complete","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#16a34a';
+    const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(primary);
+    const bubble = m
+      ? `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, 0.10)`
+      : 'rgba(22, 163, 74, 0.10)';
+
+    const outcome = this.props.outcome ?? 'Complete';
+    const done = outcome === 'Complete';
+
+    // a session that ran out of attempts stops where it stopped; the steps after
+    // it were never reached, and are shown rather than omitted
+    const passed = (name, n) => ({
+      name, state: 'passed', attempts: n + (n === 1 ? ' attempt' : ' attempts'),
+      name_fg: '#09090b', state_fg: '#71717a', divider: '#e4e4e7'
+    });
+    const exhausted = (name) => ({
+      name, state: 'out of attempts', attempts: '3 attempts',
+      name_fg: '#09090b', state_fg: '#b91c1c', divider: '#e4e4e7'
+    });
+    const unreached = (name, last) => ({
+      name, state: 'not reached', attempts: '',
+      name_fg: '#a1a1aa', state_fg: '#a1a1aa', divider: last ? 'transparent' : '#e4e4e7'
+    });
+
+    const steps = done
+      ? [passed('State', 2), passed('Elaborate', 2), passed('Exemplify', 1),
+         { ...passed('Illustrate', 1), divider: 'transparent' }]
+      : [passed('State', 2), exhausted('Elaborate'),
+         unreached('Exemplify', false), unreached('Illustrate', true)];
+
+    return {
+      primary, bubble, outcome, steps,
+      obg: done ? '#f0fdf4' : '#fef2f2',
+      ob:  done ? '#bbf7d0' : '#fecaca',
+      ofg: done ? '#15803d' : '#b91c1c'
+    };
+  }
+}
+</script>
+</body>
+</html>
