@@ -1,0 +1,101 @@
+{
+  "artboards": [
+    {
+      "file": "SignIn.dc.html",
+      "title": "1 · Sign in",
+      "x": 0,
+      "y": 0,
+      "w": 1360,
+      "h": 900
+    },
+    {
+      "file": "ReadingList.dc.html",
+      "title": "2 · Reading list",
+      "x": 1460,
+      "y": 0,
+      "w": 1360,
+      "h": 900
+    },
+    {
+      "file": "PreReading.dc.html",
+      "title": "3 · Reading detail (4 states)",
+      "x": 2920,
+      "y": 0,
+      "w": 1360,
+      "h": 960
+    },
+    {
+      "file": "Main.dc.html",
+      "title": "4 · Tutoring session",
+      "x": 4380,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "SessionReview.dc.html",
+      "title": "5 · Session review",
+      "x": 5920,
+      "y": 0,
+      "w": 1360,
+      "h": 1000
+    },
+    {
+      "file": "MainPdf.dc.html",
+      "title": "4b · Tutoring, PDF reading (comparison)",
+      "x": 4380,
+      "y": 1060,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "SessionReviewInstructor.dc.html",
+      "title": "5b · Session review, instructor",
+      "x": 7380,
+      "y": 0,
+      "w": 1360,
+      "h": 1000
+    },
+    {
+      "file": "ReadingDialog.dc.html",
+      "title": "3b · Reading detail as dialog",
+      "x": 2920,
+      "y": 1060,
+      "w": 1360,
+      "h": 900
+    }
+  ],
+  "annotations": [
+    {
+      "id": "flow-note",
+      "x": 0,
+      "y": -150,
+      "w": 470,
+      "text": "SENSEE-I student flow, left to right.\n\nshadcn token values: #09090b foreground, #71717a muted, #e4e4e7 border, #f4f4f5 muted surface. 8px cards, 6px controls, 36px buttons. Geist.\n\nStatic mockups: each screen is one representative moment."
+    },
+    {
+      "id": "tutoring-note",
+      "x": 4380,
+      "y": -150,
+      "w": 450,
+      "text": "Mid-session: State passed, Elaborate on attempt 2 of 3.\n\nStep position is the four ticks in the header. Attempts are the three dots on the step divider. Criteria are named inside the message rather than in a separate row."
+    },
+    {
+      "id": "pdf-note",
+      "x": 5900,
+      "y": 1060,
+      "w": 430,
+      "text": "Comparison only, not a proposal.\n\nSame screen with the reading as a rendered PDF page. Shows what the format buys (Table 3.1 survives) and what it costs (11px justified serif, page chrome, a zoom control).\n\nThe Assessment Agent would still receive extracted text, so anything the student reads here that the text loses is invisible to the grader."
+    },
+    {
+      "id": "detail-note",
+      "x": 2920,
+      "y": 2000,
+      "w": 440,
+      "text": "Same content, two containers.\n\n3 is a full page, 3b is a dialog over the reading list.\n\nBoth carry the Scenario chip: never attempted, completed, all failed, mixed."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

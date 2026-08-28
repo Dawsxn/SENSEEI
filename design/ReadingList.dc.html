@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: {{primary}}; text-decoration: none; }
+    a:hover { color: #15803d; }
+  </style>
+</helmet>
+<div style="width: 1360px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="21" height="21" viewBox="0 0 100 100" fill="{{primary}}" style="flex-shrink: 0;">
+        <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+        <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+        <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+        <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+      </svg>
+      <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button style="height: 32px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px; background: #ffffff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); font-family: inherit; font-size: 13px; font-weight: 500; color: #09090b; cursor: pointer;">Join a class</button>
+      <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">MR</div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 0;">
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;">Readings</h1>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 200px; height: 36px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); cursor: pointer;">
+        <span style="font-size: 13px; font-weight: 500;">All classes</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9l6 6 6-6"></path>
+        </svg>
+      </div>
+    </div>
+
+    <div style="border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
+
+      <div style="display: grid; grid-template-columns: 1fr 140px 150px 96px; gap: 16px; align-items: center; height: 40px; padding: 0 16px; border-bottom: 1px solid #e4e4e7; background: #ffffff;">
+        <span style="font-size: 12px; font-weight: 500; color: #71717a;">Reading</span>
+        <span style="font-size: 12px; font-weight: 500; color: #71717a;">Class</span>
+        <span style="font-size: 12px; font-weight: 500; color: #71717a;">Status</span>
+        <span></span>
+      </div>
+
+      <sc-for list="{{readings}}" as="r" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: 1fr 140px 150px 96px; gap: 16px; align-items: center; padding: 14px 16px; border-bottom: 1px solid {{r.divider}}; background: {{r.rowBg}};">
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <span style="font-size: 14px; font-weight: 500; letter-spacing: -0.005em;">{{r.title}}</span>
+            <span style="font-size: 13px; color: #71717a;">{{r.components}}</span>
+          </div>
+          <span style="font-size: 13px; color: #71717a;">{{r.klass}}</span>
+          <div>
+            <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 999px; border: 1px solid {{r.badgeBorder}}; background: {{r.badgeBg}}; font-size: 12px; font-weight: 500; color: {{r.badgeFg}};">{{r.status}}</span>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button style="height: 32px; padding: 0 12px; border: {{r.btnBorder}}; border-radius: 6px; background: {{r.btnBg}}; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); font-family: inherit; font-size: 13px; font-weight: 500; color: {{r.btnFg}}; cursor: pointer;">{{r.action}}</button>
+          </div>
+        </div>
+      </sc-for>
+
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#16a34a';
+    return {
+      primary,
+      readings: [
+        {
+          title: 'Cognitive Offloading',
+          components: 'Delegating mental tasks to external tools',
+          klass: 'STRAMA K31',
+          status: 'Not started', badgeBg: '#ffffff', badgeFg: '#71717a', badgeBorder: '#e4e4e7',
+          rowBg: '#ffffff', divider: '#e4e4e7',
+          action: 'Start', btnBg: primary, btnFg: '#ffffff', btnBorder: 'none'
+        },
+        {
+          title: 'Business Model',
+          components: 'Customer value proposition, profit formula',
+          klass: 'STRAMA K31',
+          status: 'Complete', badgeBg: '#f0fdf4', badgeFg: '#15803d', badgeBorder: '#bbf7d0',
+          rowBg: '#ffffff', divider: '#e4e4e7',
+          action: 'Review', btnBg: '#ffffff', btnFg: '#09090b', btnBorder: '1px solid #e4e4e7'
+        },
+        {
+          title: 'Strategic Vision',
+          components: 'Direction, market position, future course',
+          klass: 'BUSANA S15',
+          status: 'Failed', badgeBg: '#fef2f2', badgeFg: '#b91c1c', badgeBorder: '#fecaca',
+          rowBg: '#ffffff', divider: 'transparent',
+          action: 'Review', btnBg: '#ffffff', btnFg: '#09090b', btnBorder: '1px solid #e4e4e7'
+        }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

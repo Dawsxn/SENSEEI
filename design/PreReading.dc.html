@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: {{primary}}; text-decoration: none; }
+    a:hover { color: #15803d; }
+  </style>
+</helmet>
+<div style="width: 1360px; height: 960px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+      <span style="font-size: 13px; color: #71717a;">Readings</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; justify-content: center; padding: 40px 24px; min-height: 0;">
+    <div style="width: 640px; display: flex; flex-direction: column; gap: 20px;">
+
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 13px; color: #71717a;">STRAMA K31</span>
+        <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;">Cognitive Offloading</h1>
+      </div>
+
+      <div style="border: 1px solid #e4e4e7; border-radius: 8px; background: #ffffff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);">
+        <div style="padding: 18px 20px 12px;">
+          <span style="font-size: 14px; font-weight: 500;">Core components</span>
+        </div>
+        <div style="padding: 0 20px 18px; display: flex; flex-direction: column; gap: 10px;">
+          <sc-for list="{{components}}" as="c" hint-placeholder-count="2">
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+              <div style="width: 4px; height: 4px; border-radius: 999px; background: #a1a1aa; margin-top: 8px; flex-shrink: 0;"></div>
+              <span style="font-size: 14px; line-height: 1.55;">{{c.text}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{hasHistory}}" hint-placeholder-val="{{true}}">
+        <div style="border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #e4e4e7;">
+            <span style="font-size: 14px; font-weight: 500;">Past sessions</span>
+            <span style="font-size: 13px; color: #71717a;">{{historyNote}}</span>
+          </div>
+          <sc-for list="{{sessions}}" as="s" hint-placeholder-count="3">
+            <div style="display: grid; grid-template-columns: 88px 96px 1fr 110px 16px; gap: 14px; align-items: center; padding: 12px 20px; border-bottom: 1px solid {{s.divider}}; cursor: pointer;">
+              <span style="font-size: 14px; font-weight: 500;">{{s.label}}</span>
+              <span style="font-size: 13px; color: #71717a;">{{s.date}}</span>
+              <div>
+                <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 999px; border: 1px solid {{s.ob}}; background: {{s.obg}}; font-size: 12px; font-weight: 500; color: {{s.ofg}};">{{s.outcome}}</span>
+              </div>
+              <span style="font-size: 13px; color: #71717a; text-align: right;">{{s.attempts}}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button style="height: 36px; padding: 0 16px; border: none; border-radius: 6px; background: {{primary}}; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;">{{cta}}</button>
+        <span style="font-size: 13px; color: #71717a;">Four steps, three attempts each.</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"},"scenario":{"editor":"enum","options":["Never attempted","Completed","All failed","Mixed"],"default":"Mixed","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#16a34a';
+    const scenario = this.props.scenario ?? 'Mixed';
+
+    const ok   = { outcome: 'Complete', obg: '#f0fdf4', ob: '#bbf7d0', ofg: '#15803d' };
+    const bad  = { outcome: 'Failed',   obg: '#fef2f2', ob: '#fecaca', ofg: '#b91c1c' };
+
+    const row = (n, date, res, attempts) => ({
+      label: 'Attempt ' + n, date, attempts: attempts + ' attempts', ...res, divider: '#e4e4e7'
+    });
+
+    // newest first
+    const sets = {
+      'Never attempted': [],
+      'Completed':       [row(2, '14 Aug', ok, 5), row(1, '11 Aug', ok, 7)],
+      'All failed':      [row(3, '14 Aug', bad, 9), row(2, '12 Aug', bad, 9), row(1, '11 Aug', bad, 8)],
+      'Mixed':           [row(3, '14 Aug', ok, 6), row(2, '12 Aug', bad, 9), row(1, '11 Aug', bad, 9)]
+    };
+
+    const sessions = sets[scenario] || [];
+    if (sessions.length) sessions[sessions.length - 1].divider = 'transparent';
+
+    const done = sessions.filter((s) => s.outcome === 'Complete').length;
+    const note = sessions.length
+      ? (done ? done + ' of ' + sessions.length + ' completed' : 'None completed')
+      : '';
+
+    return {
+      primary,
+      sessions,
+      hasHistory: sessions.length > 0,
+      historyNote: note,
+      cta: sessions.length ? 'Start a new attempt' : 'Start',
+      components: [
+        { text: 'Delegating mental tasks to external tools rather than processing them internally' },
+        { text: 'Reduced mental effort at the cost of bypassing productive struggle' }
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

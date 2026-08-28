@@ -26,6 +26,11 @@ build/
 !.vscode/extensions.json
 *.swp
 
+# Design canvases are assembled from design/*.dc.html by the seeding helper.
+# The output embeds the whole editor (~2MB), so keep the sources and not the build.
+design/**/*.html
+!design/**/*.dc.html
+
 # OS
 .DS_Store
 Thumbs.db
