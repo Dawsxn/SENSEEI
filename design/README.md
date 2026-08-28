@@ -12,20 +12,30 @@ about 2 MB per build, so `.gitignore` keeps `design/**/*.html` out while allowin
 Rebuilding is done by the `/design` skill in Claude Code, which owns the assembly
 step. Ask it to rebuild the canvas from the sources in this directory.
 
+## The screens
+
+Click any of these to view it. `png/` is regenerated from the sources whenever a
+design changes, so it always matches.
+
+| Screen | Image |
+| --- | --- |
+| Sign in | [png/01-sign-in.png](png/01-sign-in.png) |
+| Reading list | [png/02-reading-list.png](png/02-reading-list.png) |
+| Reading detail, full page | [png/03-reading-detail.png](png/03-reading-detail.png) |
+| Reading detail, dialog | [png/03b-reading-detail-dialog.png](png/03b-reading-detail-dialog.png) |
+| Tutoring session | [png/04-tutoring-session.png](png/04-tutoring-session.png) |
+| Tutoring session, PDF reading | [png/04b-tutoring-pdf-reading.png](png/04b-tutoring-pdf-reading.png) |
+| Session review, student | [png/05-session-review.png](png/05-session-review.png) |
+| Session review, instructor | [png/05b-session-review-instructor.png](png/05b-session-review-instructor.png) |
+
+Do not open a `.dc.html` in a browser expecting to see the screen. It renders a
+grey skeleton with `{{placeholder}}` text, because repeated rows and every
+colour come from template values the canvas runtime supplies. The PNGs are what
+the screens look like.
+
 ## What is here
 
 `design/` holds the app screens, `design/logo/` holds logo explorations.
-
-| Artboard | Screen |
-| --- | --- |
-| 1 | Sign in |
-| 2 | Reading list |
-| 3 | Reading detail, full page |
-| 3b | Reading detail, dialog |
-| 4 | Tutoring session |
-| 4b | Tutoring session with a PDF reading |
-| 5 | Session review, student |
-| 5b | Session review, instructor |
 
 Several artboards carry a Scenario or State control above them, which switches
 between cases rather than duplicating the artboard. Artboard 3 and 3b cover four
