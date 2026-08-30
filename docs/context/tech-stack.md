@@ -74,17 +74,86 @@ The one place tests are not optional is the **Orchestrator**. Attempt counting a
 step advancement fail silently and corrupt the data they produce, which is the
 worst possible failure mode for a study whose results depend on that data.
 
+## Environments
+
+Three branches, two environments. A branch is a version of the code; an
+environment is somewhere it runs. They are not the same thing, and every branch
+can be run locally.
+
+| | Local | Development | Production |
+| --- | --- | --- | --- |
+| Runs from | Any branch you check out | `develop` | `main` |
+| Where | `localhost:5173` | `senseei-dev.<host>` | `senseei.<host>` |
+| Database | Docker Postgres, one per developer | `senseei-dev` | `senseei-prod` |
+| Data | Seeded synthetic | Seeded synthetic, reset freely | Real |
+| LLM provider | `mock` by default | `mock` | Real provider |
+| Deploys | Never | On merge to `develop` | On merge to `main` |
+| Migrations | Run by hand | On deploy | On deploy |
+| Instance tier | n/a | Free, sleeping is fine | Paid, must not sleep |
+
+**One database per environment, never shared.** This is the rule the rest of the
+structure exists to enforce. A migration run against development must not be able
+to reach production data.
+
+**Data never flows down from production.** If development needs realistic data,
+seed it. Production holds student session transcripts.
+
+**Three sets of secrets, no overlap.** Database URL, Google client ID and secret,
+LLM API key. A leaked development key must not open production.
+
+**Use the `mock` provider everywhere except production.** Every environment that
+runs the tutoring loop against a real model costs tokens, and a development
+environment left running is a bill for nothing. Switch to the real provider
+deliberately, when testing agent behaviour specifically.
+
+**Development can sleep, production cannot.** A cold start in development costs
+fifteen seconds of your own time. A cold start in production happens partway
+through somebody's session.
+
+### Deliberately not doing
+
+**Preview environments per pull request.** Google does not permit wildcards in
+OAuth redirect URIs and preview URLs are generated per PR, so sign-in would break
+on every preview unless each URL were registered by hand.
+
+**A separate staging tier.** Development doubles as it. Add a third environment
+when there is a release worth rehearsing somewhere that is not the environment
+people are using.
+
+### Seeding
+
+A student sees nothing until an instructor has created a class and uploaded a
+reading with core components. Every fresh database is unusable until that exists,
+so the seed script is not a convenience and should be written alongside the
+schema rather than after it becomes annoying.
+
+### Migrations
+
+Alembic runs automatically on deploy, in the same order everywhere, so
+development rehearses exactly what production will do.
+
+Two branches that each add a migration will produce two revision heads, and
+Alembic refuses to run until they are reconciled. Say when you are adding one.
+
 ## Deployment
 
 Render or Railway for the FastAPI service plus managed PostgreSQL, in a Singapore
 region for latency from Manila. Decide between the two when it comes time.
 
-Two constraints:
+**Serve the built SPA as static files from FastAPI** rather than deploying it
+separately:
 
-1. **Do not run data collection on a free tier.** Free instances sleep, and a
-   cold start mid-session costs a participant.
-2. **Serve the built SPA as static files from FastAPI** rather than deploying it
-   separately. That removes CORS and leaves one thing to deploy.
+```
+npm run build      ->  dist/
+FastAPI  /api/*    ->  the API
+         /*        ->  dist/, falling back to index.html
+```
+
+One service, one deploy, one origin, no CORS. The cost is that a frontend-only
+change redeploys everything, which does not matter at this size.
+
+Register a Google OAuth redirect URI for each environment, including
+`http://localhost:5173`, or sign-in will not work outside production.
 
 The manuscript never mentions deployment, so none of this contradicts it.
 
