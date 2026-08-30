@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import json
 import re
-import time
 from dataclasses import asdict, dataclass, field
 
+from .retry import complete_with_backoff
 from .rubric import canonical_criterion, canonical_step, criteria_for
 
 
@@ -151,23 +151,6 @@ def parse_result(raw_text: str, step: str) -> AgentResult:
     return result
 
 
-def _is_rate_limit(msg: str) -> bool:
-    m = msg.lower()
-    return ("429" in m or "rate limit" in m or "resource_exhausted" in m
-            or "quota" in m or "exceeded" in m)
-
-
-def _retry_after_seconds(msg: str) -> float | None:
-    """Pull a wait hint out of a provider error, if it gives one."""
-    m = re.search(r"retry in ([\d.]+)\s*s", msg, re.IGNORECASE)
-    if m:
-        return float(m.group(1))
-    m = re.search(r"retry_delay\s*\{\s*seconds:\s*(\d+)", msg)
-    if m:
-        return float(m.group(1))
-    return None
-
-
 class AssessmentAgent:
     def __init__(self, provider, system_prompt: str):
         self.provider = provider
@@ -218,22 +201,5 @@ class AssessmentAgent:
         return last if last is not None else AgentResult(parse_ok=False, error="No response")
 
     def _complete(self, prompt: str, max_rate_limit_retries: int):
-        """Call the provider, transparently waiting out rate-limit (429) errors.
-
-        Returns (raw_text, None) on success or (None, error_message) on failure.
-        """
-        for attempt in range(max_rate_limit_retries + 1):
-            try:
-                return self.provider.complete(self.system_prompt, prompt), None
-            except Exception as e:  # provider/network error
-                msg = str(e)
-                if _is_rate_limit(msg) and attempt < max_rate_limit_retries:
-                    wait = _retry_after_seconds(msg)
-                    if wait is None:
-                        wait = min(60.0, 5.0 * (2 ** attempt))  # exponential fallback
-                    print(f"        rate limited — waiting {wait:.0f}s and retrying...",
-                          flush=True)
-                    time.sleep(wait + 1)
-                    continue
-                return None, f"Provider error: {e}"
-        return None, "Provider error: rate-limit retries exhausted"
+        return complete_with_backoff(self.provider, self.system_prompt, prompt,
+                                     max_rate_limit_retries)
