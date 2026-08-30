@@ -122,7 +122,13 @@ Composition:
 | --- | --- |
 | First attempt at a step | Prompt |
 | Failed, retries remain | Acknowledgement + Criterion-Based Feedback + Re-Prompt |
+| Failed, no retries remain | Acknowledgement + Criterion-Based Feedback |
 | Passed | Acknowledgement + Transition |
+
+The third row is not a fifth dialogue move. It is the second with `Re-Prompt`
+dropped, since there is no attempt left to invite. The student still gets the
+feedback, because they and their instructor both need to know what went wrong on
+the last try.
 
 The Tutor Agent never supplies the answer. Feedback names what was missed and
 redirects. The student revises their own response.
@@ -180,7 +186,9 @@ When a student exhausts their attempts on a step:
 
 1. The session ends immediately. Remaining steps are not attempted.
 2. A message advises the student to contact their instructor for further
-   clarification.
+   clarification. **This message is static, not written by the Tutor Agent.** It
+   is identical every time, and generating it would invite the model to soften
+   it or add a hint that cannot be acted on.
 3. A flag appears next to that student's name on the instructor's class roster.
 
 The flag is half the purpose. The fallback prevents endless loops and student

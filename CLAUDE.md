@@ -27,12 +27,13 @@ third agent.
 
 ## Reference — open when relevant
 
-- `agents/` — the shared agent package: the Assessment Agent (`assessment.py`),
-  the rubric loader (`rubric.py`), the swappable LLM `providers/`, and the
-  versioned `prompts/` and `rubrics/`. Installed via the root `pyproject.toml`
+- `agents/` — the shared agent package: both agents (`assessment.py` grades a
+  response, `tutor.py` writes what the student reads), the rubric loader
+  (`rubric.py`), shared provider backoff (`retry.py`), the swappable LLM
+  `providers/`, and the versioned `prompts/` and `rubrics/`. Installed via the root `pyproject.toml`
   (`pip install -e ".[gemini]"`), so the eval harness and the future FastAPI
   backend import the *same* code — the eval must never validate a separate
-  implementation from the one that ships. The Tutor Agent will join it here.
+  implementation from the one that ships.
 - `assessment-agent-eval/` — the standalone Assessment Agent evaluation harness
   (labeled dataset, eval runner, comparison + reporting). Measures the agent in
   `agents/`; does not contain it. Has its own README and CHANGELOG.
@@ -43,6 +44,10 @@ third agent.
   (libraries, auth, deployment), and `design-system.md` (tokens, type scale,
   component conventions). Open these before writing app code. They record
   decisions that are not derivable from the codebase.
+- `scripts/session.py` — plays one tutoring session in the terminal, so the
+  agents can be exercised without a database, server or UI. `--offline` stubs
+  both and costs nothing. The loop rules live there until the Orchestrator is
+  built with the backend.
 - `docs/thesis/` — thesis artifacts: diagrams and presentation decks. Not code.
 
 ## Skills
