@@ -31,6 +31,9 @@ build/
 design/**/*.html
 !design/**/*.dc.html
 
+# Terminal session transcripts from scripts/session.py
+scripts/runs/
+
 # OS
 .DS_Store
 Thumbs.db
