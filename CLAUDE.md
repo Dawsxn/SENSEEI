@@ -44,6 +44,10 @@ third agent.
   (libraries, auth, deployment), and `design-system.md` (tokens, type scale,
   component conventions). Open these before writing app code. They record
   decisions that are not derivable from the codebase.
+- `backend/` — the FastAPI app: `settings.py` (environment config), `db.py`
+  (async engine and the per-request session), `main.py` (the app). Imports the
+  agents rather than reimplementing them. Run it with
+  `uvicorn backend.main:app --reload`, after `docker compose up -d --wait`.
 - `scripts/session.py` — plays one tutoring session in the terminal, so the
   agents can be exercised without a database, server or UI. `--offline` stubs
   both and costs nothing. The loop rules live there until the Orchestrator is
