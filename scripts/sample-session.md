@@ -1,99 +1,98 @@
 # Sample session
 
-One real run of `scripts/session.py`, kept so the Tutor Agent's output can be read
-without spending anything. Illustrative, not a fixture: nothing tests against it.
+One real run of `scripts/session.py`, kept so the Tutor Agent's output can be
+read without spending anything. Illustrative, not a fixture: nothing tests
+against it.
+
+Regenerate with `python scripts/render_sample.py` after a session worth keeping.
 
 | | |
 | --- | --- |
 | Text | strategy |
+| Steps | all |
 | Tutor prompt | `v1` |
 | Assessment prompt | `v3` |
 | Rubric | `v3` |
 | Model | gemini-3.1-pro-preview |
 | Attempts per step | 3 |
 | Outcome | complete |
+| Calls | 20 (12 tutor, 8 assessment) |
+| Tokens | 55,845 in, 9,549 thinking, 3,091 out |
+| Estimated cost | $0.2634 |
 
-Regenerate with `python scripts/session.py --reading strategy`. Answers below are
-deliberate: some are written to fail a specific criterion.
-
-**This run predates the no-pinpointing rule and breaks it twice.** The Tutor
-quotes the student back at them, once with "the stuff a company decides to do"
-and once with "position the company in its industry". The prompt now forbids
-that: name the fault, never the phrase that caused it. Left in place because it
-is the clearest illustration of why the rule exists.
+Some answers below are written to fail a specific criterion on purpose.
 
 ---
-
 
 ## State
 
 **Tutor**
 
-> Let's start by defining a company's strategy. State what it is briefly, clearly, and as precisely as possible in your own words.
+> Let's start by defining a "company's strategy." Please state what it is briefly, clearly, and in your own words.
 
 **Student**
 
-> Strategy is basically the stuff a company decides to do, like whether they want to be cheap or fancy, or whether they sell in one country or everywhere, and it matters a lot because if you get it wrong your competitors will beat you and then you won't make money in the long run.
+> Strategy is sort of the overall vibe a company is going for, the general direction they head in, which honestly changes a lot depending on who is running things and what is happening in the market that year, so it is quite hard to pin down exactly, but you know it when you see it.
 
-**Assessment Agent:** FAIL on `Brevity`, `Clarity`
+**Assessment Agent:** FAIL on `Brevity`, `Clarity`, `Completeness`, `Accuracy`
 
 **Tutor**
 
-> You have the right general idea, but your statement includes unnecessary examples and uses vague language like "the stuff a company decides to do." Here's what you failed: Brevity, Clarity. Try stating the concept again, this time making sure your definition is concise, straight to the point, and uses precise language rather than vague terms.
+> That is an attempt, but your statement is too conversational, vague, and misses the essential elements of the concept while contradicting the text's definition. Here is what you failed: Brevity, Clarity, Completeness, Accuracy. Try stating the concept again in a concise, precise sentence that captures the essential core components and remains faithful to the reading.
 
 **Student**
 
-> A company's strategy is the coordinated set of choices its managers make about how to compete, aimed at outperforming rivals and earning superior profitability.
-
-**Assessment Agent:** FAIL on `Own Words`
-
-**Tutor**
-
-> You have the right idea, but your statement relies too heavily on the exact phrasing from the text, just swapping out a few words like 'choices' and 'rivals'. Here is what you failed: Own Words. Try stating the definition again, this time expressing the concept entirely in your own unique way without copying the original sentence structure.
-
-**Student**
-
-> A company's stragety is a set of cohesives moves that managers choose to set out in order to decide how they will go toe to toe with their rival and earn more than them.
+> A company's strategy is a set of cohesive moves that managers choose to set out in order to decide how they will go toe to toe with their rivals and earn more than them.
 
 **Assessment Agent:** PASS
 
 **Tutor**
 
-> Excellent work. You provided a clear, concise definition of a company's strategy in your own words, capturing the core idea perfectly. That completes the State step.
+> That is an excellent statement. You captured the core idea of a company's strategy clearly and concisely in your own words. That completes the State step.
 
 
 ## Elaborate
 
 **Tutor**
 
-> Now, let's elaborate. Expand on your statement at greater length so that the reader gets a fuller picture of what a company's strategy entails.
+> Now, let's elaborate. Expand on your statement at greater length so that the reader gets a fuller understanding of what a company's strategy entails. Explain the concept in more detail, going beyond just your initial definition.
 
 **Student**
 
-> Expanding on that, strategy is not a single decision but a coherent set of commitments that hang together: what products to build, where to position the company in its industry, which capabilities to invest in, and how each function is run. Those choices are deliberate and mutually reinforcing, and the aim is lasting advantage rather than a good quarter, because success that cannot be sustained does not secure the company's future.
+> So for instance if Jollibee decides to open a hundred more branches this year, that is their strategy. Meanwhile McDonald's might spend on advertising instead. Every company just picks whatever seems to work for them at the time and runs with it.
 
-**Assessment Agent:** FAIL on `Own Words`
+**Assessment Agent:** FAIL on `Completeness`, `Coherence`, `Accuracy`
 
 **Tutor**
 
-> You have a good grasp of the details, but your response closely paraphrases the text and uses exact phrases like "position the company in its industry" and "secure the company's future." Here is what you failed: Own Words. Try expanding on your statement again, this time expressing the elaboration entirely in your own words to show your personal understanding.
+> You have made an attempt, but your response jumps straight into giving examples rather than expanding on the concept itself, misses the core elements of the definition, and includes a claim that contradicts the reading. Here is what you failed: Completeness, Coherence, Accuracy. Try elaborating again by staying focused on explaining the concept in greater detail without moving to examples, ensuring that you capture the essence of the core components and that everything you state is consistent with the source text.
 
 **Student**
 
-> Expanding on that, strategy is not a single decision but a coherent set of commitments that hang together: what products to build, where the company should place itself in the domain of its competitors, which capabilities to invest in, and how each function is run. Those choices are deliberate and mutually reinforcing, and the aim is lasting advantage rather than a good quarter, because success that cannot be sustained does not guarantee the success of the company going forward..
+> Expanding on that, strategy is not a single decision but a coherent set of commitments that hang together: what products to build, where the company should place itself in the domain of its competitors, which capabilities to invest in, and how each function is run. Those choices are deliberate and mutually reinforcing, and the aim is lasting advantage rather than a good quarter, because success that cannot be sustained does not guarantee the success of the company going forward.
 
 **Assessment Agent:** PASS
 
 **Tutor**
 
-> That is an excellent elaboration. You captured the fullness of the concept by explaining how these coordinated choices work together for long-term success, all in your own words. That completes the Elaborate step.
+> Excellent elaboration. You successfully expanded on the concept in your own words, capturing the fullness of how these coordinated choices work together for long-term success. That completes the Elaborate step.
 
 
 ## Exemplify
 
 **Tutor**
 
-> Let's move on to exemplification. Provide a well-chosen, original example of a company's strategy that clarifies what you mean, along with a contrasting example of something that is not an instance of the concept. Be sure to explain exactly how or why each example illustrates your point.
+> Let's move on to exemplification. Please provide a well-chosen, original example of a company's strategy that clarifies what you mean, along with a contrasting example of something that is not a strategy. Be sure to explain exactly why your examples do and do not represent the concept.
+
+**Student**
+
+> A good example is a big tech company that does tech really well and stays ahead of everyone. A contrasting example would be a company that does not do that.
+
+**Assessment Agent:** FAIL on `Fit`, `Concreteness`, `Explicit Mapping`, `Contrast`
+
+**Tutor**
+
+> You are on the right track, but your response describes a generic outcome of success rather than a specific set of actions, lacks an explanation of how it connects to the concept, and provides a non-example that simply states the opposite. Here is what you failed: Fit, Concreteness, Explicit Mapping, Contrast. Please try again by providing a realistic instance that genuinely displays the concept, explaining exactly how it illustrates it, and including a true non-example that clarifies the concept's boundaries.
 
 **Student**
 
@@ -103,14 +102,24 @@ is the clearest illustration of why the rule exists.
 
 **Tutor**
 
-> Excellent work. Your original example of IKEA perfectly illustrates a coordinated set of actions, and your contrasting example clearly shows the boundary between a true strategy and an isolated tactic. That completes the Exemplify step.
+> Excellent work. Your example of IKEA perfectly illustrates a coordinated set of actions, and your contrasting example clearly shows the boundary between a true strategy and a short-term tactic. That completes the Exemplify step.
 
 
 ## Illustrate
 
 **Tutor**
 
-> Finally, let's illustrate the concept of a company's strategy. Provide a picture in words, such as an analogy, simile, or metaphor, that captures the essence of what a strategy is. Make sure your comparison draws from outside the world of business and management.
+> Finally, let's illustrate the concept of a company's strategy. Provide a picture in words, such as an analogy, simile, or metaphor, that captures the meaning of the concept.
+
+**Student**
+
+> It is kind of like when a business plans out what it is going to do before actually doing it.
+
+**Assessment Agent:** FAIL on `Analogy`, `Match`, `Imagery`
+
+**Tutor**
+
+> That is a fair start, but your response gives a literal description of business planning rather than a figurative comparison, misses the competitive aspect of the concept, and lacks a concrete picture. Here's what you failed: Analogy, Match, Imagery. Try illustrating the concept again by comparing it to something completely outside the world of business that paints a vivid mental picture of coordinating actions to outperform rivals.
 
 **Student**
 
@@ -120,4 +129,4 @@ is the clearest illustration of why the rule exists.
 
 **Tutor**
 
-> That is a fantastic illustration. Your sailing analogy provides a vivid mental picture and perfectly captures how a coordinated set of choices is necessary to outperform competitors over the long term. That completes the Illustrate step, and you have now finished the entire SEE-I process for this concept.
+> That is a fantastic illustration. Comparing strategy to a skipper's sailing line perfectly captures how a coordinated set of choices is necessary to navigate competition and achieve a long-term goal. That completes the Illustrate step, and with it, our session on this concept.
