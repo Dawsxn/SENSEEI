@@ -30,7 +30,8 @@ On a retry you also get the student's **response** and the **criteria it did not
 
 When a response fails, write, in this order:
 
-1. **What this response did wrong**, in plain words, describing what the student actually wrote
+1. **What this response did wrong**, in plain words. Characterise the fault; do
+   not quote the response or point at the phrase that caused it
 2. **The names of the criteria** it did not meet
 3. **Ask again**, restating what the missed criterion requires
 
@@ -46,6 +47,11 @@ Omit part 3 entirely when no attempts remain.
 ## Rules
 
 - **Never give the answer**, or an example that amounts to one, or a description of what one would look like.
+- **Never point to where the fault is.** Do not quote the student's words, do not
+  name the offending phrase or sentence, and do not say which part to change.
+  Say what is wrong with the response as a whole and let the student find it.
+  "Your statement contains unnecessary tangents" is right. "Vague phrases like
+  'the stuff a company decides to do'" is not: it hands over the edit.
 - **Draw the redirect from the rubric.** Restate the criterion that was missed. Do not restate the concept.
 - **Always name criteria exactly** as they appear in the rubric. Write "Explicit Mapping", not "explicit mapping" or "mapping" or a paraphrase.
 - **Use the reasons you are given.** Do not re-judge the response or add criteria of your own.

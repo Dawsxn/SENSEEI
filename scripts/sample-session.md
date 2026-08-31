@@ -16,6 +16,12 @@ without spending anything. Illustrative, not a fixture: nothing tests against it
 Regenerate with `python scripts/session.py --reading strategy`. Answers below are
 deliberate: some are written to fail a specific criterion.
 
+**This run predates the no-pinpointing rule and breaks it twice.** The Tutor
+quotes the student back at them, once with "the stuff a company decides to do"
+and once with "position the company in its industry". The prompt now forbids
+that: name the fault, never the phrase that caused it. Left in place because it
+is the clearest illustration of why the rule exists.
+
 ---
 
 
