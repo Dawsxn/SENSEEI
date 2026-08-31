@@ -2,7 +2,8 @@
 
 `google-genai` is Google's current GA SDK (the older `google-generativeai` is
 deprecated as of 2025-11-30). This backend:
-  - forces JSON output (response_mime_type=application/json),
+  - requests JSON output by default (response_mime_type=application/json), which
+    `json_mode: false` turns off for agents that return prose,
   - supports Gemini 3.x reasoning control via `thinking_level`
     (minimal | low | medium | high),
   - records per-call token usage (incl. thinking tokens) in `self.last_usage`.
@@ -42,6 +43,8 @@ class GeminiProvider(LLMProvider):
         self.max_output_tokens = int(config.get("max_output_tokens", 8192))
         # minimal | low | medium | high (Gemini 3.x). Blank/None -> model default.
         self.thinking_level = config.get("thinking_level") or None
+        # The Assessment Agent returns JSON; the Tutor Agent returns prose.
+        self.json_mode = bool(config.get("json_mode", True))
         self.last_usage = None
         self.last_finish_reason = None
 
@@ -51,8 +54,9 @@ class GeminiProvider(LLMProvider):
             system_instruction=system_prompt,
             temperature=self.temperature,
             max_output_tokens=self.max_output_tokens,
-            response_mime_type="application/json",
         )
+        if self.json_mode:
+            cfg_kwargs["response_mime_type"] = "application/json"
         if self.thinking_level:
             cfg_kwargs["thinking_config"] = types.ThinkingConfig(
                 thinking_level=self.thinking_level

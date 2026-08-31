@@ -14,8 +14,9 @@ verdict + failing criteria against the expected labels.
 python -m venv .venv && .venv\Scripts\activate     # Windows (PowerShell: .venv\Scripts\Activate.ps1)
 pip install -e ".[gemini]"            # use ".[openai]" instead for the openai_compat provider
 
-cd assessment-agent-eval
 cp .env.example .env        # then paste your Gemini key (free: https://aistudio.google.com/app/apikey)
+
+cd assessment-agent-eval
 
 python run_eval.py --provider mock    # offline smoke test, no key needed
 python run_eval.py                    # real run with Gemini (config.yaml default)
@@ -130,16 +131,20 @@ The earlier `v1` set is preserved as `data/example_set_v1.csv` (its matched rubr
 ```
 SENSEEI/
 ├─ pyproject.toml            installs the `agents` package: pip install -e ".[gemini]"
+├─ .env.example              API keys, copy to .env (one for the whole repo)
 ├─ agents/                   THE AGENT — shared with the future backend
 │  ├─ assessment.py          prompt assembly + JSON parse/validate + verdict derivation
+│  ├─ tutor.py               builds each turn the student reads
 │  ├─ rubric.py              loads the rubric YAML; criterion names + prompt rendering
+│  ├─ retry.py               provider call with rate-limit backoff, used by both agents
 │  ├─ providers/             gemini / openai_compat / mock
-│  ├─ prompts/               versioned system prompts (system_prompt_vN.md; {{RUBRIC}} slot)
+│  ├─ prompts/               versioned prompts (system_prompt_vN.md, tutor_prompt_vN.md)
 │  └─ rubrics/               versioned rubric — single source of truth (rubric_vN.yaml)
+├─ scripts/
+│  └─ session.py             play one tutoring session in the terminal
 └─ assessment-agent-eval/    THE HARNESS — measures the agent above
    ├─ run_eval.py            entry point
    ├─ config.yaml            provider/model + pinned input versions (eval runs only)
-   ├─ .env.example           API keys (copy to .env)
    ├─ data/
    │  ├─ example_set_vN.csv  labeled examples (matched to a rubric version)
    │  └─ readings/*.txt      the source texts the examples respond to

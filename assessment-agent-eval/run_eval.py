@@ -227,7 +227,7 @@ def print_summary(summary: dict):
 
 def run_live(args) -> tuple[dict, list[dict]]:
     from dotenv import load_dotenv
-    load_dotenv(BASE / ".env")
+    load_dotenv(BASE.parent / ".env")   # one .env at the repo root
 
     config = load_config(BASE / args.config)
     if args.provider:

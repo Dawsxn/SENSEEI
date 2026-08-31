@@ -64,7 +64,7 @@ stops at the first one.
 
 ## Tutor Agent
 
-Not yet implemented. This is its specification.
+Implemented in `agents/tutor.py`. Returns prose, so there is nothing to parse.
 
 **Inputs:**
 
@@ -73,16 +73,25 @@ Not yet implemented. This is its specification.
 | Reading | Always |
 | Core components | Always |
 | Current SEE-I step | Always |
-| The student's response text | Retries only |
-| Failed criteria and their reasons from that response | Retries only |
+| The student's response text | Whenever a response has been graded |
+| Failed criteria and their reasons from that response | When it did not pass |
 
-**Output.** A natural language message addressed to the student, composed of one
-or more dialogue moves: `Prompt`, `Acknowledgement`, `Criterion-Based Feedback`,
-`Re-Prompt`, `Transition`. Which moves apply in which situation, and what each
-one is for, is in `docs/context/student-tutoring-loop.md`.
+**Output.** Plain text, the message the student reads. No JSON, no markup.
 
-On a first attempt the output is a question. On a retry it is an account of what
-was missed followed by a rephrased question for the same step.
+The Orchestrator names the **situation** and the agent writes for it. Since the
+Orchestrator chose the situation, it already knows which dialogue moves the
+message is composed of and records them itself. The agent is never asked which
+moves it used.
+
+| Situation | Moves | Output |
+| --- | --- | --- |
+| `FIRST_ATTEMPT` | Prompt | The question that opens the step |
+| `RETRY` | Acknowledgement + Criterion-Based Feedback + Re-Prompt | What was missed, then ask again |
+| `FINAL_FAIL` | Acknowledgement + Criterion-Based Feedback | What was missed, and nothing more |
+| `PASSED` | Acknowledgement + Transition | What was done well, step complete |
+
+`FINAL_FAIL` is not a new dialogue move. It is `RETRY` with `Re-Prompt` dropped,
+because there is no attempt left to invite.
 
 **Constraints:**
 
@@ -165,6 +174,15 @@ alignment describes software nobody used.
    same step with the same attempt count, and let them resubmit. A student losing
    one of three attempts to a network timeout would be invisible in the data and
    would quietly corrupt the per-step attempt statistics.
+5. **The fallback message is not written by the Tutor.** When attempts run out
+   the agent writes the feedback, and the "contact your instructor" message that
+   follows is static copy. It is the same sentence every time, and generating it
+   invites the model to soften it or add a hint the student cannot act on.
+6. **Both agents share `agents/retry.py`** for rate-limit backoff, so the two
+   cannot drift in how they handle a 429.
+7. **`json_mode` separates them at the provider.** The Assessment Agent needs
+   JSON output; the Tutor Agent needs prose. Gemini forced JSON unconditionally
+   until this was made configurable, defaulting to on.
 
 ## Open questions
 
