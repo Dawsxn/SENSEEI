@@ -51,6 +51,41 @@ FALLBACK = ("You have used all your attempts for this step. Your instructor has 
 DIM, BOLD, GREEN, RED, RESET = "\033[2m", "\033[1m", "\033[32m", "\033[31m", "\033[0m"
 
 
+class Tally:
+    """Token usage per agent. Thinking tokens bill at the output rate."""
+
+    def __init__(self, price_in: float, price_out: float):
+        self.price_in, self.price_out = price_in, price_out
+        self.by_agent = {"tutor": self._zero(), "assessment": self._zero()}
+
+    @staticmethod
+    def _zero():
+        return {"input_tokens": 0, "output_tokens": 0, "thinking_tokens": 0, "calls": 0}
+
+    def add(self, agent: str, usage: dict | None):
+        row = self.by_agent[agent]
+        row["calls"] += 1
+        for k in ("input_tokens", "output_tokens", "thinking_tokens"):
+            row[k] += (usage or {}).get(k, 0) or 0
+
+    def cost(self, row: dict) -> float:
+        billed_out = row["output_tokens"] + row["thinking_tokens"]
+        return row["input_tokens"] / 1e6 * self.price_in + billed_out / 1e6 * self.price_out
+
+    def report(self) -> dict:
+        total = self._zero()
+        for row in self.by_agent.values():
+            for k in total:
+                total[k] += row[k]
+        return {
+            "price_input_per_1m": self.price_in,
+            "price_output_per_1m": self.price_out,
+            **{a: {**row, "est_cost_usd": round(self.cost(row), 4)}
+               for a, row in self.by_agent.items()},
+            "total": {**total, "est_cost_usd": round(self.cost(total), 4)},
+        }
+
+
 # ----------------------------------------------------------------- offline stubs
 
 class _StubProvider:
@@ -158,6 +193,7 @@ def run(args) -> dict:
     reading = choose_reading(readings, args.reading)
     text = (DATA / "readings" / reading["filename"]).read_text(encoding="utf-8")
     assessor, tutor = build_agents(args)
+    tally = Tally(args.price_in, args.price_out)
 
     print(f"\n{'=' * 72}\n{BOLD}{reading['name']}{RESET}")
     for c in reading["core_components"].split("||"):
@@ -187,9 +223,11 @@ def run(args) -> dict:
                               core_components=reading["core_components"],
                               user_response=response, unmet=unmet,
                               attempts_left=left if situation == RETRY else None)
+            tally.add("tutor", msg.usage)
             if not msg.ok:
                 print(f"{RED}Tutor failed: {msg.error}{RESET}")
-                return {"outcome": "error", "turns": turns}
+                return {"outcome": "error", "turns": turns, "usage": tally.report(),
+                        "reading": reading["name"]}
             say(msg.text)
             turns.append({"step": step, "situation": situation, "attempt": attempt,
                           "tutor": msg.text, "student": response, "unmet": unmet})
@@ -205,6 +243,7 @@ def run(args) -> dict:
             print(f"{DIM}       grading...{RESET}")
             result = assessor.assess(text, step, response,
                                      key_concept=reading["core_components"])
+            tally.add("assessment", result.usage)
             if not result.parse_ok or result.verdict not in ("PASS", "FAIL"):
                 # A provider failure must never consume an attempt.
                 print(f"{RED}       grading failed: {result.error or 'no verdict'}{RESET}")
@@ -222,12 +261,20 @@ def run(args) -> dict:
 
         if situation == FINAL_FAIL:
             print(f"{RED}{FALLBACK}{RESET}\n")
+            turns.append({"step": step, "situation": "fallback", "attempt": attempt,
+                          "tutor": FALLBACK, "student": None, "unmet": None})
             outcome = "failed"
             break
 
     print(f"\n{'=' * 72}")
+    usage = tally.report()
     print(f"Session {outcome}.")
-    return {"outcome": outcome, "turns": turns}
+    tot = usage["total"]
+    print(f"{DIM}{tot['calls']} calls, in {tot['input_tokens']:,}, "
+          f"thinking {tot['thinking_tokens']:,}, out {tot['output_tokens']:,}, "
+          f"est ${tot['est_cost_usd']:.4f}{RESET}")
+    return {"outcome": outcome, "turns": turns, "usage": usage,
+            "reading": reading["name"]}
 
 
 def main():
@@ -242,6 +289,10 @@ def main():
     ap.add_argument("--tutor-prompt", default="v1")
     ap.add_argument("--assessment-prompt", default="v3")
     ap.add_argument("--offline", action="store_true", help="stub both agents, no API calls")
+    ap.add_argument("--price-in", type=float, default=2.0,
+                    help="USD per 1M input tokens (default: gemini-3.1-pro-preview)")
+    ap.add_argument("--price-out", type=float, default=12.0,
+                    help="USD per 1M output tokens; thinking bills at this rate")
     ap.add_argument("--pass-on", type=int, default=2,
                     help="offline only: attempt number that passes (set high to force fallback)")
     args = ap.parse_args()
@@ -257,7 +308,8 @@ def main():
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = out_dir / f"{stamp}_{args.tutor_prompt}.json"
     path.write_text(json.dumps({
-        "meta": {"tutor_prompt": args.tutor_prompt, "rubric": args.rubric,
+        "meta": {"reading": session.get("reading"),
+                 "tutor_prompt": args.tutor_prompt, "rubric": args.rubric,
                  "step": args.step or "all",
                  "assessment_prompt": args.assessment_prompt,
                  "provider": "offline" if args.offline else args.provider,
