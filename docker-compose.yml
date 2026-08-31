@@ -1,0 +1,29 @@
+# Local Postgres only. The app itself runs on the host with uvicorn, so a code
+# change does not need a container rebuild.
+#
+#   docker compose up -d --wait   start it and wait until it accepts
+#                                 connections, not just until it starts
+#   docker compose down      stop it, keep the data
+#   docker compose down -v   stop it and wipe the data
+
+services:
+  db:
+    image: postgres:16
+    container_name: senseei-db
+    environment:
+      POSTGRES_USER: senseei
+      POSTGRES_PASSWORD: senseei
+      POSTGRES_DB: senseei
+    ports:
+      - "5432:5432"
+    volumes:
+      - senseei-db-data:/var/lib/postgresql/data
+    healthcheck:
+      # compose waits for this before reporting the service healthy
+      test: ["CMD-SHELL", "pg_isready -U senseei -d senseei"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  senseei-db-data:
