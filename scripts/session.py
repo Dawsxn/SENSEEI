@@ -7,6 +7,7 @@ the Orchestrator when the backend is built.
 
     python scripts/session.py                     pick a text, real models
     python scripts/session.py --reading strategy
+    python scripts/session.py --step Illustrate   one step only
     python scripts/session.py --offline           no API calls, no cost
     python scripts/session.py --offline --pass-on 9   never passes, hits fallback
 """
@@ -33,7 +34,8 @@ for _stream in (sys.stdout, sys.stderr):
 import agents  # noqa: E402
 from agents.assessment import AssessmentAgent  # noqa: E402
 from agents.providers import get_provider  # noqa: E402
-from agents.rubric import criteria_for, load_rubric, render_rubric, steps  # noqa: E402
+from agents.rubric import (canonical_step, criteria_for, load_rubric,  # noqa: E402
+                           render_rubric, steps)
 from agents.tutor import FINAL_FAIL, FIRST_ATTEMPT, PASSED, RETRY, TutorAgent  # noqa: E402
 
 AGENTS = Path(agents.__file__).resolve().parent
@@ -167,7 +169,15 @@ def run(args) -> dict:
 
     turns, outcome = [], "complete"
 
-    for step in steps():
+    running = steps()
+    if args.step:
+        one = canonical_step(args.step)
+        if one is None:
+            sys.exit(f"No step matching {args.step!r}. Have: {', '.join(steps())}")
+        running = [one]
+        print(f"{DIM}Running {one} only.{RESET}")
+
+    for step in running:
         attempt = 0
         situation, response, unmet = FIRST_ATTEMPT, None, None
 
@@ -223,6 +233,7 @@ def run(args) -> dict:
 def main():
     ap = argparse.ArgumentParser(description="Play one SEE-I session in the terminal")
     ap.add_argument("--reading", help="match part of a reading name")
+    ap.add_argument("--step", help="run one step only, e.g. Elaborate")
     ap.add_argument("--provider", default="gemini")
     ap.add_argument("--model", default="gemini-3.1-pro-preview")
     ap.add_argument("--api-key-env", default="GEMINI_API_KEY")
@@ -247,6 +258,7 @@ def main():
     path = out_dir / f"{stamp}_{args.tutor_prompt}.json"
     path.write_text(json.dumps({
         "meta": {"tutor_prompt": args.tutor_prompt, "rubric": args.rubric,
+                 "step": args.step or "all",
                  "assessment_prompt": args.assessment_prompt,
                  "provider": "offline" if args.offline else args.provider,
                  "model": "offline" if args.offline else args.model,
