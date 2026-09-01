@@ -18,6 +18,7 @@ Usage::
 
     python -m study.instruments.review               # writes review.html
     python -m study.instruments.review out/doc.html  # or somewhere specific
+    python -m study.instruments.review --example     # the worked example set
 
 It writes the file itself rather than printing to stdout. On Windows a shell
 redirect encodes stdout as cp1252, which mangles every em dash and section sign
@@ -30,7 +31,7 @@ import html
 from datetime import date
 from pathlib import Path
 
-from .loader import CONTENT_DIR, load_all, readiness
+from .loader import CONTENT_DIR, EXAMPLE_DIR, load_all, readiness
 from .schema import Instrument, Item, ItemType
 
 STYLE = """
@@ -187,19 +188,28 @@ def _item_block(item: Item) -> str:
     return "\n".join(parts)
 
 
-def write(path: str | Path = "review.html") -> Path:
+def write(
+    path: str | Path = "review.html",
+    content_dir: str | Path | None = None,
+) -> Path:
     """Render the document to ``path``, always as UTF-8. Returns the path."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render(), encoding="utf-8")
+    path.write_text(render(load_all(content_dir)), encoding="utf-8")
     return path
 
 
 def main(argv: list[str] | None = None) -> None:
     import sys
 
-    args = sys.argv[1:] if argv is None else argv
-    path = write(args[0] if args else "review.html")
+    args = list(sys.argv[1:] if argv is None else argv)
+
+    content_dir = None
+    if "--example" in args:
+        args.remove("--example")
+        content_dir = EXAMPLE_DIR
+
+    path = write(args[0] if args else "review.html", content_dir)
     print(f"Wrote {path.resolve()}")
 
 

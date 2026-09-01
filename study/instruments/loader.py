@@ -32,6 +32,12 @@ from .schema import (
 
 CONTENT_DIR = Path(__file__).parent / "content"
 
+#: A complete worked instrument set, written against the sample reading. Never
+#: served to a participant — it exists so the team can see what a finished set
+#: looks like, and so whoever writes the real one has a model rather than a
+#: blank file.
+EXAMPLE_DIR = Path(__file__).parent / "example"
+
 #: The five instruments of Table 4.11, in the order a participant meets them.
 INSTRUMENT_ORDER = ("demographics", "pre_test", "post_test_a", "sba", "sus")
 

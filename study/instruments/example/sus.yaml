@@ -1,0 +1,111 @@
+# System Usability Scale — Table 4.11, SENSEE-I arm only.
+#
+# §4.6.5: "the usability data collected exclusively from the SENSEE-I group will
+# be analyzed by calculating the composite score (0-100) of the System Usability
+# Scale". Only that arm answers it — there is no platform for a control
+# participant to rate.
+#
+# This is a standardised instrument, so unlike the other four it is not the
+# researchers' to write and is not subject to content-validity review. Its ten
+# statements are reproduced as published, with "the system" read as SENSEE-I,
+# which is the normal way it is administered.
+#
+# THE ALTERNATION IS THE INSTRUMENT. Odd items are worded positively and even
+# items negatively, so a participant agreeing with everything lands in the middle
+# rather than at the top. `polarity` records which way each runs, and the loader
+# refuses a SUS item without one: a composite computed with a flipped polarity is
+# wrong by a wide margin while still looking like a plausible score.
+#
+# Scoring (scoring.sus_composite): positive items contribute position - 1,
+# negative items contribute 5 - position, and the total is multiplied by 2.5.
+#
+# No attention check is embedded here. The alternating polarity already catches
+# straight-lining, and adding an eleventh item would no longer be the SUS.
+
+id: sus
+title: About using SENSEE-I
+phase: sus
+version: 1
+status: reviewed
+
+source: >-
+  Brooke, J. (1996). SUS: A "quick and dirty" usability scale. Standardised
+  instrument, reproduced as published; not subject to §4.6.4 content review.
+
+scoring: sus
+
+instructions: |
+  For each statement, choose the point that best matches how you feel about
+  using SENSEE-I today. There are no right answers.
+
+items:
+  - id: sus1
+    type: likert
+    polarity: positive
+    text: I think that I would like to use this system frequently.
+    options: &scale
+      - {id: "1", text: "Strongly disagree"}
+      - {id: "2", text: "Disagree"}
+      - {id: "3", text: "Neither agree nor disagree"}
+      - {id: "4", text: "Agree"}
+      - {id: "5", text: "Strongly agree"}
+
+  - id: sus2
+    type: likert
+    polarity: negative
+    text: I found the system unnecessarily complex.
+    options: *scale
+
+  - id: sus3
+    type: likert
+    polarity: positive
+    text: I thought the system was easy to use.
+    options: *scale
+
+  - id: sus4
+    type: likert
+    polarity: negative
+    text: >-
+      I think that I would need the support of a technical person to be able to
+      use this system.
+    options: *scale
+
+  - id: sus5
+    type: likert
+    polarity: positive
+    text: I found the various functions in this system were well integrated.
+    options: *scale
+
+  - id: sus6
+    type: likert
+    polarity: negative
+    text: I thought there was too much inconsistency in this system.
+    options: *scale
+
+  - id: sus7
+    type: likert
+    polarity: positive
+    text: >-
+      I would imagine that most people would learn to use this system very
+      quickly.
+    options: *scale
+
+  - id: sus8
+    type: likert
+    polarity: negative
+    text: I found the system very cumbersome to use.
+    options: *scale
+
+  - id: sus9
+    type: likert
+    polarity: positive
+    text: I felt very confident using the system.
+    options: *scale
+
+  - id: sus10
+    type: likert
+    polarity: negative
+    text: >-
+      I needed to learn a lot of things before I could get going with this
+      system.
+    options: *scale

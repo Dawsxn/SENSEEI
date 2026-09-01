@@ -1,0 +1,94 @@
+# EXAMPLE ONLY — written against content/reading.sample.txt (Switching Costs).
+#
+# This is not the trial's pre-test. It exists so the team can see a complete
+# instrument set and the review document it produces, and so whoever writes the
+# real one has a worked model rather than a blank file.
+#
+# Copy the shape, not the content. Every item here is about switching costs
+# because the sample reading is; the real items are about whatever concept the
+# chosen reading covers.
+
+id: pre_test
+title: Before you read
+phase: pre_test
+version: 1
+status: reviewed
+
+instructions: |
+  Answer as best you can. If you do not know something, say so rather than
+  guessing — knowing what is unfamiliar is exactly what this part is for.
+
+items:
+  # Familiarity ratings. These set the baseline of knowledge equivalence across
+  # arms (§4.6.4) and carry the eligibility screening (§4.6.3): a participant
+  # who has already studied the concept is not eligible.
+  - id: fam_concept
+    type: likert
+    screening: true
+    text: How familiar are you with the term "switching costs"?
+    options: &familiarity
+      - {id: "1", text: "I have never heard of it"}
+      - {id: "2", text: "I have heard of it but could not explain it"}
+      - {id: "3", text: "I could give a rough explanation"}
+      - {id: "4", text: "I could explain it clearly"}
+      - {id: "5", text: "I have studied it formally"}
+
+  - id: fam_course
+    type: likert
+    screening: true
+    text: >-
+      How much has switching costs been covered in courses you have taken?
+    options:
+      - {id: "1", text: "Not at all"}
+      - {id: "2", text: "Mentioned in passing"}
+      - {id: "3", text: "Covered in one session"}
+      - {id: "4", text: "Covered in depth"}
+      - {id: "5", text: "It was a major topic"}
+
+  # Factual items. Each has a partner in post_test_a.yaml — write the pair
+  # together, or the retention comparison has nothing to compare.
+  - id: pre_q1
+    type: multiple_choice
+    text: A switching cost is best described as...
+    options:
+      - {id: a, text: "The price a supplier charges for its product"}
+      - {id: b, text: "What a customer gives up to move to another supplier"}
+      - {id: c, text: "The discount a supplier offers to keep a customer"}
+      - {id: d, text: "The cost of producing a product in-house instead"}
+    answer: b
+
+  - id: pre_q2
+    type: multiple_choice
+    text: >-
+      Two suppliers charge the same price, and a customer stays with the one it
+      already uses. What does this most likely indicate?
+    options:
+      - {id: a, text: "The customer has not compared the two"}
+      - {id: b, text: "Leaving would cost more than the price difference"}
+      - {id: c, text: "The other supplier's product is worse"}
+      - {id: d, text: "The customer has a long-term contract"}
+    answer: b
+
+  - id: pre_q3
+    type: multiple_choice
+    text: Which is an example of a non-financial switching cost?
+    options:
+      - {id: a, text: "A penalty for breaking a contract early"}
+      - {id: b, text: "A higher monthly fee from the new supplier"}
+      - {id: c, text: "Staff having to relearn how to do their work"}
+      - {id: d, text: "A setup charge from the new supplier"}
+    answer: c
+
+  # Attention check (§4.6.3). Unmissable if read, invisible if skimmed. It is
+  # not a factual item and is never counted as one.
+  - id: pre_attn
+    type: multiple_choice
+    text: >-
+      To show you are reading carefully, please choose "Disagree" for this item.
+    options:
+      - {id: a, text: "Strongly disagree"}
+      - {id: b, text: "Disagree"}
+      - {id: c, text: "Agree"}
+      - {id: d, text: "Strongly agree"}
+    attention_check:
+      expected: b

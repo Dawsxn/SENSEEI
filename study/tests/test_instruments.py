@@ -365,3 +365,47 @@ def test_the_review_document_is_written_as_utf8(tmp_path):
 
     assert path.exists()
     assert "—" in path.read_text(encoding="utf-8")
+
+
+# --- the worked example set -----------------------------------------------
+
+
+def test_the_example_set_is_complete_and_consistent():
+    """It doubles as the template for the real instruments, so it must be a
+    model of a finished set — every pairing resolving, nothing outstanding."""
+    from study.instruments.loader import EXAMPLE_DIR
+
+    example = load_all(EXAMPLE_DIR)
+
+    assert readiness(example) == []
+    assert validate_pairings(example) == []
+
+
+def test_every_example_factual_post_test_item_answers_a_pretest_item():
+    from study.instruments.loader import EXAMPLE_DIR
+
+    example = load_all(EXAMPLE_DIR)
+    pre_ids = {i.id for i in example["pre_test"].items}
+
+    paired = [i for i in example["post_test_a"].items if i.pairs_with]
+    assert paired
+    assert all(i.pairs_with in pre_ids for i in paired)
+
+
+def test_the_example_sba_never_names_the_concept():
+    """Naming it turns transfer into retrieval: the participant would know
+    which tool to reach for rather than having to recognise the need for it."""
+    from study.instruments.loader import EXAMPLE_DIR
+
+    sba = load_all(EXAMPLE_DIR)["sba"]
+    shown = (sba.stimulus + " " + " ".join(i.text for i in sba.items)).lower()
+
+    assert "switching cost" not in shown
+
+
+def test_the_example_set_is_not_what_the_app_serves():
+    """A sample must never be mistaken for the trial's real instruments."""
+    from study.instruments.loader import EXAMPLE_DIR
+
+    assert EXAMPLE_DIR != CONTENT_DIR
+    assert load_all()["pre_test"].is_placeholder

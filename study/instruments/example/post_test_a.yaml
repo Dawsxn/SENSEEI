@@ -1,0 +1,94 @@
+# EXAMPLE ONLY — the partner to example/pre_test.yaml.
+#
+# Note what every factual item does: it answers a specific pre-test item, named
+# in `pairs_with`. That correspondence is what makes retention measurable, and
+# the loader refuses a pointer that does not resolve.
+#
+# The paired items are deliberately NOT the same questions reworded. Each asks
+# about the same knowledge from a different angle, so a participant cannot score
+# by remembering the pre-test rather than the reading.
+#
+# Keep this instrument at the Remembering tier. §4.6.1 is explicit that
+# multiple-choice "measure[s] fact retrieval but not a student's ability to
+# construct and use a concept" — this exists to show the groups did not differ on
+# the easy thing, so that a difference on the SBA means something.
+
+id: post_test_a
+title: What you remember
+phase: post_test_a
+version: 1
+status: reviewed
+
+instructions: |
+  A short set of questions about the reading. Choose the best answer for each.
+
+items:
+  - id: post_q1
+    type: multiple_choice
+    pairs_with: pre_q1
+    text: >-
+      According to the reading, which of these is NOT part of a switching cost?
+    options:
+      - {id: a, text: "Time spent learning a new system"}
+      - {id: b, text: "The price of the product itself"}
+      - {id: c, text: "Moving data to the new supplier"}
+      - {id: d, text: "Retraining staff"}
+    answer: b
+
+  - id: post_q2
+    type: multiple_choice
+    pairs_with: pre_q2
+    text: >-
+      The reading says switching costs "change what a price means". What does it
+      mean by this?
+    options:
+      - {id: a, text: "Suppliers with loyal customers can charge less"}
+      - {id: b, text: "Prices become harder for customers to compare"}
+      - id: c
+        text: >-
+          A cheaper rival may still not be worth moving to, once the cost of
+          leaving is counted
+      - {id: d, text: "Customers stop paying attention to price entirely"}
+    answer: c
+
+  - id: post_q3
+    type: multiple_choice
+    pairs_with: pre_q3
+    text: >-
+      The reading says the switching costs that hold customers most firmly often
+      are not financial. Which example does it give?
+    options:
+      - {id: a, text: "A long contract with an early-termination penalty"}
+      - {id: b, text: "A loyalty scheme that pays out annually"}
+      - id: c
+        text: >-
+          A team whose accumulated habits and workarounds do not transfer
+      - {id: d, text: "A proprietary file format"}
+    answer: c
+
+  - id: post_q4
+    type: multiple_choice
+    text: >-
+      The reading describes a consequence that "runs in both directions". What
+      is it?
+    options:
+      - id: a
+        text: >-
+          A firm protected by switching costs is also shut out of its rivals'
+          customers
+      - {id: b, text: "Customers and suppliers both pay to switch"}
+      - {id: c, text: "Switching costs rise and fall with the market"}
+      - {id: d, text: "Both new and established firms benefit equally"}
+    answer: a
+
+  - id: post_attn
+    type: multiple_choice
+    text: >-
+      To show you are reading carefully, please choose "Rarely" for this item.
+    options:
+      - {id: a, text: "Never"}
+      - {id: b, text: "Rarely"}
+      - {id: c, text: "Sometimes"}
+      - {id: d, text: "Often"}
+    attention_check:
+      expected: b

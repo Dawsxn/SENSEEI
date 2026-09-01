@@ -1,0 +1,67 @@
+# EXAMPLE ONLY — the Scenario-Based Assessment, against the sample reading.
+#
+# THIS IS THE STUDY'S PRIMARY OUTCOME MEASURE (§4.6.5). Read the notes in
+# content/sba.yaml before writing the real one.
+#
+# Two properties this case is built to have, and the real one must share:
+#
+#   NOVEL. The reading's own examples are software teams and a hospital records
+#   system. This case is a bakery and a flour supplier — physical goods, no
+#   technology — so a participant cannot succeed by recalling an example. They
+#   have to abstract the concept and carry it somewhere it has not been applied,
+#   which is the High Road Transfer §4.6.1 requires.
+#
+#   SOLVABLE FROM THE READING ALONE. Nothing here needs supply-chain knowledge,
+#   accounting, or any business coursework. A participant who understood the text
+#   can reason about it; one who did not, cannot. Anything requiring outside
+#   knowledge would advantage participants by prior exposure, which the
+#   eligibility screening exists to rule out.
+#
+# The question deliberately does not use the phrase "switching cost". Naming the
+# concept would turn transfer into retrieval — the participant would know which
+# tool to reach for instead of having to recognise that the situation calls for
+# it. Table 4.12's Scenario Application dimension is precisely the ability to
+# make that recognition unprompted.
+#
+# Not scored here. Graded afterwards by two RVRCOB faculty, blind and
+# independently, on the three-point rubric of Table 4.12, with Cohen's Kappa.
+
+id: sba
+title: Applying what you read
+phase: sba
+version: 1
+status: reviewed
+
+instructions: |
+  Read the situation below and write your response. Use the concepts from the
+  reading. There is no single correct answer — explain your reasoning.
+
+stimulus: |
+  Pan de Oro is a chain of eleven bakeries. For the last six years it has bought
+  all of its flour from a single mill, Santina Grains.
+
+  A newer mill, Riverbend, has approached Pan de Oro offering the same grade of
+  flour at 8% below what Santina charges, with no minimum order and no contract.
+  On paper the saving is roughly ₱40,000 a month.
+
+  Pan de Oro's head baker is not enthusiastic. Over six years her team has
+  adjusted every recipe to how Santina's flour behaves — its absorption, its
+  proving time, how it handles in the humidity of the bakery floor. The recipes
+  are not written down in any complete form; they live in what the bakers know.
+  She estimates several weeks of inconsistent product while the team adapts, and
+  she is not certain the results would be identical afterwards.
+
+  There is also the standing arrangement. Santina delivers before 5am, which is
+  what lets the morning bake start on time, and has twice covered a shortfall at
+  short notice when Pan de Oro underestimated demand for a holiday. Nothing about
+  either practice is written into the supply agreement.
+
+  The owner is inclined to take the 8%.
+
+items:
+  - id: sba_response
+    type: long_text
+    text: >-
+      What would you advise the owner, and why? In your answer, identify what
+      Pan de Oro would actually be giving up by moving to Riverbend, and explain
+      what makes the 8% saving a smaller advantage than it appears.
