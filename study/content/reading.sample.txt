@@ -1,0 +1,43 @@
+[SAMPLE READING — REPLACE BEFORE COLLECTION]
+
+Switching Costs
+
+A switching cost is whatever a customer gives up in order to move from one
+supplier to another. The price of the product is not part of it. What counts is
+everything that sits around the purchase: the time spent learning a new system,
+the data that has to be moved, the contract that has to be broken, the staff who
+have to be retrained, and the risk that the new supplier turns out to be worse
+than the old one.
+
+Switching costs matter because they change what a price means. Two suppliers may
+charge the same, and a customer may still stay with the more expensive one,
+because leaving would cost more than the difference. A firm that has built up
+switching costs has bought itself room to raise prices, tolerate a slower
+product, or lose a feature comparison, without losing the customer immediately.
+The customer's inertia is doing work that the product itself is not.
+
+The costs are not always financial, and the ones that hold customers most firmly
+often are not. A team that has spent two years learning a piece of software has
+accumulated habits, shortcuts, and workarounds that do not transfer. A hospital
+that has recorded a decade of patient histories in one system faces a migration
+whose true cost is not the invoice but the chance of losing something. In both
+cases the customer is held less by a contract than by the accumulated fit
+between themselves and what they already use.
+
+Switching costs can be built deliberately. Long contracts, proprietary formats,
+loyalty schemes, and deep integration into a customer's own processes all raise
+the cost of leaving. They can also arise without anyone intending them, simply
+because a customer has used something long enough to become good at it.
+
+The strategic consequence runs in both directions. A firm protected by high
+switching costs is insulated from competitors, but it is equally shut out of
+rivals' customers, who face the same barrier in reverse. This is why an incumbent
+with loyal customers can be slow to grow: the market it would need to take is
+held by the same force that holds its own.
+
+---
+
+This sample exists so the harness's screens can be seen before the real trial
+text is chosen. It is not the study's reading. Replace it, and delete the marker
+on the first line — the pre-flight refuses a live run while that marker is
+present.

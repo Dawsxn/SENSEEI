@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}SENSEE-I session{% endblock %}
+{% block heading %}SENSEE-I session{% endblock %}
+{% block subheading %}{% include "_timer.html" %} remaining{% endblock %}
+
+{# The SENSEE-I arm's intervention happens in the application, not here.
+
+   The harness only sends the participant there and reads telemetry back
+   afterwards through senseei_link. It does not proxy the session, embed it, or
+   ask the application to enforce the clock — the timer above is the harness's
+   own, and it governs all three arms identically. #}
+
+{% block content %}
+<div class="panel">
+  <h2>Your tutoring session</h2>
+  <p>Open SENSEE-I and work through the reading. Come back to this tab when you
+     are finished, or when the time runs out.</p>
+  <p>
+    <a href="{{ senseei_url }}" target="_blank" rel="noopener">
+      <button type="button">Open SENSEE-I &rarr;</button>
+    </a>
+  </p>
+  <p class="small muted">
+    Your participant identifier is <code>{{ participant.participant_id }}</code>.
+  </p>
+</div>
+
+<form method="post" action="/p/{{ participant.access_code }}/finished-early">
+  <button class="ghost" type="submit">I am finished</button>
+  <span class="small muted">
+    The session still runs for the full period &mdash; everyone gets the same time.
+  </span>
+</form>
+{% endblock %}

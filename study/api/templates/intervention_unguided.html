@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Assistant{% endblock %}
+{% block heading %}Assistant{% endblock %}
+{% block subheading %}{% include "_timer.html" %} remaining{% endblock %}
+{% block mainclass %}wide{% endblock %}
+
+{# The unguided arm (§4.6.2): a general-purpose chat with no pedagogical system
+   prompt and no constraint on use. Nothing on this page instructs the
+   participant how to study, names the SEE-I framework, or suggests what to ask.
+   Any of that would be the scaffolding the trial exists to isolate. #}
+
+{% block content %}
+<div class="split">
+
+  <div class="panel">
+    <h2>{{ reading.title or "Reading" }}</h2>
+    {% if reading.missing %}
+      <div class="notice">
+        No reading is configured. Set <code>reading.path</code> in
+        <code>study/trial.yaml</code> and put the text in
+        <code>study/content/</code>.
+      </div>
+    {% else %}
+      <div class="scroller reading">{{ reading.text }}</div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    {% set turns = participant.unguided.conversation.turns if participant.unguided else [] %}
+    <div class="chat scroller" id="chat">
+      {% if not turns %}
+        <p class="muted small">You can use this assistant however you like.</p>
+      {% endif %}
+      {% for turn in turns %}
+        {% if turn.failed %}
+          <div class="bubble failed">
+            The assistant could not be reached. Your message was kept &mdash;
+            send it again.
+          </div>
+        {% elif turn.speaker.value == 'participant' %}
+          <div class="bubble you">{{ turn.text }}</div>
+        {% else %}
+          <div class="bubble model">{{ turn.text }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <form method="post" action="/p/{{ participant.access_code }}/chat"
+          style="margin-top:1rem;">
+      <textarea name="message" rows="3" placeholder="Type a message"
+                autofocus></textarea>
+      <div class="row" style="margin-top:.5rem;">
+        <span class="shrink"><button type="submit">Send</button></span>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<form method="post" action="/p/{{ participant.access_code }}/finished-early">
+  <button class="ghost" type="submit">I am finished</button>
+  <span class="small muted">
+    The session still runs for the full period &mdash; everyone gets the same time.
+  </span>
+</form>
+
+<script>
+  var chat = document.getElementById('chat');
+  if (chat) { chat.scrollTop = chat.scrollHeight; }
+</script>
+{% endblock %}

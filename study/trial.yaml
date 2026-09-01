@@ -39,9 +39,9 @@ one_sitting: true
 # §4.6.3 requires participants who have not previously studied the concept it
 # covers, so the choice of text and the screening question are one decision.
 reading:
-  path: content/reading.txt   # relative to this file
-  title: ""
-  core_components: []         # the essential defining parts of the concept
+  path: content/reading.sample.txt   # relative to this file. REPLACE THIS.
+  title: "Switching Costs (sample)"
+  core_components: []                # the essential defining parts of the concept
 
 # --- The model ------------------------------------------------------------
 # §4.6.2 requires the unguided arm to run "the same underlying model as

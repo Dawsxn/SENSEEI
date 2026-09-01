@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Proctor console{% endblock %}
+{% block heading %}Proctor console{% endblock %}
+{% block subheading %}
+  {{ store.checked_in }} checked in &middot; {{ store.remaining_slots }} slots left
+  &middot; {{ config.intervention_minutes }}-minute intervention
+{% endblock %}
+{% block mainclass %}wide{% endblock %}
+
+{% block content %}
+
+{% for warning in warnings %}
+  <div class="notice">{{ warning }}</div>
+{% endfor %}
+
+{% if new_participant %}
+<div class="panel" style="border-color: var(--accent);">
+  <h2>{{ new_participant.participant_id }} &mdash;
+      <span class="pill">{{ new_participant.arm.label }}</span></h2>
+  <p class="small muted">
+    Assignment came from the pre-generated allocation sequence, not chosen here.
+    Give this participant their link; they need nothing else.
+  </p>
+  <p><strong>Their link:</strong>
+     <code>/p/{{ new_participant.access_code }}</code></p>
+  <p><a href="/p/{{ new_participant.access_code }}">Open their session &rarr;</a></p>
+</div>
+{% endif %}
+
+<div class="panel">
+  <h2>Check in a participant</h2>
+  <p class="small muted">
+    Consent is signed on paper before this point &mdash; the participant keeps one
+    copy, you retain the second. Record only the form's serial here.
+  </p>
+  <form method="post" action="/check-in" class="row">
+    <label style="flex: 2 1 16rem;">
+      <span class="small muted">Name (held separately, never exported)</span>
+      <input type="text" name="name" autocomplete="off">
+    </label>
+    <label style="flex: 1 1 10rem;">
+      <span class="small muted">Consent form serial</span>
+      <input type="text" name="consent_form_serial" autocomplete="off">
+    </label>
+    <span class="shrink">
+      <button type="submit" {% if store.remaining_slots <= 0 %}disabled{% endif %}>
+        Check in &amp; assign
+      </button>
+    </span>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>Allocation</h2>
+  <p class="small muted">
+    Blocks of {{ config.block_size }} from seed <code>{{ config.allocation_seed }}</code>.
+    Totals are exact by construction; the arms stay balanced even if the sitting
+    ends early.
+  </p>
+  <table>
+    <tr><th>Arm</th><th>Checked in</th><th>Total slots</th></tr>
+    {% for arm, count in counts.items() %}
+    <tr>
+      <td>{{ arm.label }}</td>
+      <td class="num">{{ count }}</td>
+      <td class="num muted">{{ (store.allocation.counts()[arm]) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="panel">
+  <h2>Roster</h2>
+  {% if not rows %}
+    <p class="muted">Nobody checked in yet.</p>
+  {% else %}
+  <table>
+    <tr>
+      <th>ID</th><th>Name</th><th>Arm</th><th>Phase</th>
+      <th>In phase</th><th>Gate</th><th></th>
+    </tr>
+    {% for row in rows %}
+    {% set p = row.participant %}
+    <tr>
+      <td><a href="/p/{{ p.access_code }}">{{ p.participant_id }}</a></td>
+      <td>{{ p.display_name }}</td>
+      <td>{{ p.arm.label }}</td>
+      <td>
+        {{ p.state.phase.value.replace('_', ' ') }}
+        {% if p.incidents %}<span class="pill">incident</span>{% endif %}
+      </td>
+      <td class="num">{{ '%d:%02d'|format(row.in_phase.total_seconds()//60,
+                                          row.in_phase.total_seconds()%60) }}</td>
+      <td class="small">
+        {% if row.gate.allowed %}
+          <span class="muted">open</span>
+        {% else %}
+          {{ '%d:%02d'|format(row.gate.seconds_remaining//60,
+                              row.gate.seconds_remaining%60) }} left
+        {% endif %}
+      </td>
+      <td>
+        {% if not row.gate.allowed and row.gate.seconds_remaining > 0 %}
+        <form method="post" action="/participants/{{ p.participant_id }}/release">
+          <button class="ghost" type="submit"
+                  title="Breaks equal exposure. Recorded on their record.">
+            Release early
+          </button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="small muted" style="margin-top:.8rem;">
+    Releasing someone before their gate opens is recorded permanently, because it
+    means they did not get the same exposure as everyone else.
+  </p>
+  {% endif %}
+</div>
+
+<meta http-equiv="refresh" content="10">
+{% endblock %}

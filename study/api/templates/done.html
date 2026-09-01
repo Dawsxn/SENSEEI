@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Finished{% endblock %}
+{% block heading %}Finished{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <h2>Thank you</h2>
+  <p>Your session is complete. Please let the researcher know.</p>
+  <p class="small muted">
+    Participant {{ participant.participant_id }}. You may withdraw at any point
+    and have your record deleted &mdash; just ask.
+  </p>
+</div>
+{% endblock %}

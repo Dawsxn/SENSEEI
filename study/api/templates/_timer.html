@@ -1,0 +1,27 @@
+{# Countdown shown during the intervention.
+
+   Display only. The server re-derives the gate from its own timestamps on every
+   request, so a stopped clock or a hand-edited page changes nothing about when
+   someone may actually move on. When it reaches zero it asks the server to
+   advance, and the server decides. #}
+<span class="timer" id="timer">--:--</span>
+<form method="post" action="/p/{{ participant.access_code }}/advance"
+      id="advance-form" style="display:none;"></form>
+<script>
+  (function () {
+    var left = {{ gate.seconds_remaining }};
+    var el = document.getElementById('timer');
+    function tick() {
+      if (left <= 0) {
+        el.textContent = "time";
+        document.getElementById('advance-form').submit();
+        return;
+      }
+      var m = Math.floor(left / 60), s = left % 60;
+      el.textContent = m + ":" + (s < 10 ? "0" : "") + s;
+      left -= 1;
+      setTimeout(tick, 1000);
+    }
+    tick();
+  })();
+</script>

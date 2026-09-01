@@ -101,6 +101,32 @@ without touching a caller.
 Still to come, in order: the instruments, the proctor console, export and
 deletion, and the blind grading tool.
 
+## Seeing it
+
+```bash
+pip install -e ".[study]" && python -m uvicorn study.api.app:app --reload
+```
+
+Open <http://127.0.0.1:8000>. That is the **proctor console**: check someone in
+and it assigns their arm from the pre-generated allocation and hands you their
+participant link. Open the link to see what that participant sees — which of the
+three intervention screens they get depends on the arm they drew.
+
+The console shows a pre-flight banner listing whatever would stop this being real
+collection: records held in memory, no trial id, the sample reading still in
+place, no model reachable. A proctor should never have to guess whether they are
+looking at a rehearsal or the real thing.
+
+Two things are deliberately not real yet. Participants live in memory, so a
+restart loses them — the persistence layer is a later step, and building it
+before the flow settled would mean migrating a moving schema. And the instrument
+phases render a placeholder, pending their content and its faculty review.
+
+**Server-rendered HTML, not a SPA.** The application is React because it is a
+long-lived product. This is a lab instrument used by 45 people on one afternoon,
+and a build toolchain would be machinery to maintain for nothing a participant
+would ever notice.
+
 ## Running the tests
 
 ```bash

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Reading{% endblock %}
+{% block heading %}Reading{% endblock %}
+{% block subheading %}{% include "_timer.html" %} remaining{% endblock %}
+
+{# The passive control arm (§4.6.2): the same text, no tool of any kind.
+
+   The page reports what the phase engine cannot see. Phase duration is the same
+   whether the participant read throughout or closed the tab at minute six, so
+   tab-away, return, and scroll depth are sent as they happen. None of it is
+   shown to the participant, and none of it applies a threshold — the cutoffs
+   come from the pilot. #}
+
+{% block content %}
+<div class="panel">
+  <h2>{{ reading.title or "Reading" }}</h2>
+  {% if reading.missing %}
+    <div class="notice">
+      No reading is configured. Set <code>reading.path</code> in
+      <code>study/trial.yaml</code> and put the text in
+      <code>study/content/</code>.
+    </div>
+  {% else %}
+    <div class="scroller reading" id="reading">{{ reading.text }}</div>
+  {% endif %}
+</div>
+
+<form method="post" action="/p/{{ participant.access_code }}/finished-early">
+  <button class="ghost" type="submit">I am finished</button>
+  <span class="small muted">
+    The session still runs for the full period &mdash; everyone gets the same time.
+  </span>
+</form>
+
+<script>
+  (function () {
+    var url = "/p/{{ participant.access_code }}/reading-event";
+
+    function send(kind, depth) {
+      var body = new URLSearchParams();
+      body.set("kind", kind);
+      body.set("depth", depth === undefined ? 0 : depth);
+      // keepalive so the final "away" still lands when the tab is closing.
+      fetch(url, { method: "POST", body: body, keepalive: true });
+    }
+
+    document.addEventListener("visibilitychange", function () {
+      send(document.hidden ? "away" : "back");
+    });
+    window.addEventListener("blur", function () { send("away"); });
+    window.addEventListener("focus", function () { send("back"); });
+
+    var box = document.getElementById("reading");
+    if (box) {
+      var deepest = 0, pending = false;
+      box.addEventListener("scroll", function () {
+        var span = box.scrollHeight - box.clientHeight;
+        var depth = span > 0 ? box.scrollTop / span : 1;
+        if (depth > deepest) { deepest = depth; }
+        // Throttled: a scroll fires dozens of times a second, and the measure
+        // only needs to know how far they got.
+        if (!pending) {
+          pending = true;
+          setTimeout(function () { send("scroll", deepest); pending = false; }, 2000);
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

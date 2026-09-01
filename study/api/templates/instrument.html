@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ phase.value.replace('_', ' ')|title }}{% endblock %}
+{% block heading %}{{ phase.value.replace('_', ' ')|title }}{% endblock %}
+
+{# Placeholder for the instrument phases: demographics, pre-test, post-test A,
+   the SBA, and the SUS.
+
+   These render from versioned YAML in study/instruments/ once that lands, which
+   is the next step. Keeping them as content rather than templates is what lets
+   the two faculty reviewing them for content validity (§4.6.4) read exactly what
+   the tool will serve, and what makes the pre-test / post-test A item pairing a
+   declared fact rather than something buried in markup. #}
+
+{% block content %}
+<div class="panel">
+  <div class="notice">
+    This instrument is not built yet. It will render from
+    <code>study/instruments/</code>, pending the content and its faculty
+    content-validity review.
+  </div>
+  <h2>{{ phase.value.replace('_', ' ')|title }}</h2>
+  <p class="muted small">
+    Participant {{ participant.participant_id }} &middot;
+    {{ participant.arm.label }}
+  </p>
+  <form method="post" action="/p/{{ participant.access_code }}/advance">
+    <button type="submit">Continue</button>
+    <span class="small muted">Skips ahead; nothing is recorded.</span>
+  </form>
+</div>
+{% endblock %}

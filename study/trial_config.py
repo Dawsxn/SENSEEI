@@ -42,6 +42,11 @@ from .randomisation import DEFAULT_BLOCK_SIZE, Allocation, generate_allocation
 #: Providers that cannot produce real data. Allowed only in a dry run.
 SYNTHETIC_PROVIDERS = frozenset({"mock"})
 
+#: Marker on the first line of the sample reading. A live run is refused while it
+#: is present, so the placeholder text cannot be put in front of participants by
+#: forgetting to swap it — the failure mode a filename convention would not catch.
+SAMPLE_READING_MARKER = "[SAMPLE READING"
+
 
 class TrialConfigError(ValueError):
     """The configuration cannot produce a valid trial."""
@@ -186,8 +191,15 @@ class TrialConfig:
 
         if not self.reading.path.exists():
             problems.append(f"Reading not found at {self.reading.path}.")
-        elif not self.reading.path.read_text(encoding="utf-8").strip():
-            problems.append(f"Reading at {self.reading.path} is empty.")
+        else:
+            text = self.reading.path.read_text(encoding="utf-8")
+            if not text.strip():
+                problems.append(f"Reading at {self.reading.path} is empty.")
+            elif SAMPLE_READING_MARKER in text and not self.dry_run:
+                problems.append(
+                    f"The reading at {self.reading.path} is still the sample text. "
+                    "Replace it with the trial's expository text before collecting."
+                )
 
         try:
             self.allocation()
