@@ -73,6 +73,12 @@ check-in: exact totals, and near-balance at every prefix if a batch ends early.
 | `randomisation.py` | Permuted-block allocation |
 | `phases.py` | The session sequence and the 40-minute gate |
 | `senseei_link.py` | The only seam to the application |
+| `trial_config.py` | Loads and validates `trial.yaml` |
+| `trial.yaml` | **The one file to edit**: reading, model, timing, seed |
+
+Changing the trial reading is one line in `trial.yaml`; the text itself goes in
+`content/`. The model is pinned there too, and `assert_model_parity` checks the
+pin against what SENSEE-I actually runs rather than trusting two files to agree.
 
 Still to come, in order: the control-arm tools, the instruments, the proctor
 console, export and deletion, and the blind grading tool. See the plan for

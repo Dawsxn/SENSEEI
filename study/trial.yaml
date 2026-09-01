@@ -1,0 +1,85 @@
+# Pinned settings for one trial run of the SENSEE-I RCT (manuscript §4.6).
+#
+# Everything that must be identical for all 45 participants lives here. Loaded by
+# study/trial_config.py, validated before a run starts, and stamped onto the
+# exported data so any result traces back to the inputs that produced it.
+
+trial_id: ""                  # e.g. "pilot-2026-10" or "main-2026-11". Keys the export.
+dry_run: true                 # true relaxes the checks that refuse a fake model or link.
+                              # Set false for the pilot and for real collection.
+
+# --- Cohort and allocation ------------------------------------------------
+# §4.6.3: 45 participants, 15 per arm, assignment random. Allocation is a
+# permuted-block sequence generated once from the seed below and consumed one
+# slot per check-in, which is what makes the totals exact. See randomisation.py.
+participants: 45
+block_size: 9                 # must divide `participants` and cover all 3 arms
+                              # evenly. For n=45: 3, 9, 15 or 45.
+allocation_seed: 0            # SET THIS DELIBERATELY AND WRITE IT DOWN. It is what
+                              # lets anyone re-derive the assignment and verify it
+                              # was not adjusted mid-study. 0 is refused for a real run.
+
+# --- Timing ---------------------------------------------------------------
+# §4.6.4. The gate out of the intervention is time, not completion: a participant
+# who finishes SEE-I early waits at their station so exposure stays equal across
+# arms. Lower this for a rehearsal; leave it at 40 for the real thing.
+intervention_minutes: 40
+
+# The whole cohort runs at once, in one lab sitting. This is a capacity fact, not
+# just scheduling — see the rate-limit note under `llm` below.
+one_sitting: true
+
+# --- The reading ----------------------------------------------------------
+# One expository text, identical for all three arms (§4.6.2). The harness serves
+# it directly to the passive and unguided arms; the SENSEE-I arm gets it through
+# the application's own reading upload, so the two copies must match exactly.
+# The pre-flight compares checksums — see ReadingConfig.checksum.
+#
+# Swapping the trial reading is this one path. Note the eligibility constraint:
+# §4.6.3 requires participants who have not previously studied the concept it
+# covers, so the choice of text and the screening question are one decision.
+reading:
+  path: content/reading.txt   # relative to this file
+  title: ""
+  core_components: []         # the essential defining parts of the concept
+
+# --- The model ------------------------------------------------------------
+# §4.6.2 requires the unguided arm to run "the same underlying model as
+# SENSEE-I's agents", so that what separates the two AI arms is the SEE-I
+# scaffolding rather than model capability.
+#
+# These settings are passed straight to agents.providers.get_provider, so the
+# unguided arm reaches the model through the same code the agents use.
+#
+# WHERE THIS PIN COMES FROM: the SENSEE-I application has no settings source yet
+# ("where does the backend read its provider, model and API key from at startup?"
+# is still open in docs/context/agent-contracts.md). Until it does, the only other
+# place a model is fixed is assessment-agent-eval/config.yaml, and these values
+# mirror it. Once the app can report what it runs, wire it into
+# assert_model_parity() rather than trusting these two files to agree.
+llm:
+  provider: gemini            # gemini | openai_compat | mock
+  model: gemini-3.1-pro-preview
+  api_key_env: GEMINI_API_KEY # the key lives in .env at the repo root
+  max_output_tokens: 4096
+
+  # Deliberately left unset, so the provider default applies. The eval pins
+  # temperature 0 for reproducible grading; the unguided arm is meant to be an
+  # ordinary chat ("no constraint on how the tool is used"), which is a
+  # different job.
+  # temperature:
+
+  # CAPACITY. This is shared across every concurrent participant, and one sitting
+  # puts 30 of the 45 (both AI arms) on the provider at the same time for forty
+  # minutes. For comparison the eval harness runs at 15 rpm, sequentially, with
+  # one user. Preview models are often capped well below general-availability
+  # ones, so confirm the actual quota on the trial account BEFORE the pilot — a
+  # 429 storm mid-session is unrecoverable, because the forty minutes cannot be
+  # re-run.
+  requests_per_minute: 60
+
+# --- The SENSEE-I application ---------------------------------------------
+# Where to send participants assigned to the SENSEE-I arm. The harness only ever
+# links to it, reads telemetry from it afterwards, and asks it to delete a
+# withdrawn participant's data. See senseei_link.py.
+senseei_base_url: ""
