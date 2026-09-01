@@ -89,6 +89,23 @@ class IdentityRow(Base):
     recorded_at = Column(DateTime(timezone=True))
 
 
+class ScoreRow(Base):
+    """One rater's judgment of one SBA response (§4.6.5).
+
+    Keyed by the blind ``response_id``, not by participant, so the grading data
+    holds no link back to who wrote the response. The key that maps them lives
+    with the research team, in the export, and never in this table.
+    """
+
+    __tablename__ = "sba_score"
+
+    rater = Column(String(64), primary_key=True)
+    response_id = Column(String(64), primary_key=True)
+    levels = Column(Text, nullable=False)
+    note = Column(Text, nullable=False, default="")
+    recorded_at = Column(DateTime(timezone=True))
+
+
 class Repository:
     """Reads and writes participants. The only thing that touches the database."""
 
@@ -187,9 +204,49 @@ class Repository:
             session.commit()
             return row is not None
 
+    # --- SBA scores -------------------------------------------------------
+
+    def save_score(self, score) -> None:
+        """Record one rater's judgment, replacing any earlier one for that pair."""
+        with Session(self.engine) as session:
+            row = session.get(ScoreRow, (score.rater, score.response_id))
+            if row is None:
+                row = ScoreRow(rater=score.rater, response_id=score.response_id)
+                session.add(row)
+            row.levels = json.dumps(score.levels)
+            row.note = score.note or ""
+            row.recorded_at = datetime.now()
+            session.commit()
+
+    def load_scores(self) -> list:
+        """Every recorded score, as :class:`~study.grading.Score` objects."""
+        from .grading import Score
+
+        with Session(self.engine) as session:
+            rows = session.scalars(select(ScoreRow)).all()
+            return [
+                Score(
+                    response_id=row.response_id,
+                    rater=row.rater,
+                    levels={k: int(v) for k, v in json.loads(row.levels).items()},
+                    note=row.note or "",
+                )
+                for row in rows
+            ]
+
+    def scored_by(self, rater: str) -> set[str]:
+        """Which responses this rater has already judged."""
+        with Session(self.engine) as session:
+            return set(
+                session.scalars(
+                    select(ScoreRow.response_id).where(ScoreRow.rater == rater)
+                ).all()
+            )
+
     def delete_everything(self) -> None:
         """Drop all study data, for the end of the retention period (§4.6.6)."""
         with Session(self.engine) as session:
+            session.execute(delete(ScoreRow))
             session.execute(delete(IdentityRow))
             session.execute(delete(ParticipantRow))
             session.commit()

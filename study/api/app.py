@@ -30,6 +30,19 @@ from fastapi.templating import Jinja2Templates
 
 from ..arms import Arm
 from ..exclusion import build_engagement_record, median_of, summarise
+from ..export import _sba_responses
+from ..grading import (
+    DIMENSION_LABELS,
+    DIMENSIONS,
+    LEVELS,
+    RUBRIC,
+    GradingError,
+    Score,
+    agreement,
+    build_blind_set,
+    disagreements,
+    order_for,
+)
 from ..instruments import load_all, readiness, score
 from ..interventions.unguided import build_chat_backend
 from ..phases import (
@@ -76,6 +89,11 @@ INTERVENTION_TEMPLATES = {
     Arm.UNGUIDED_LLM: "intervention_unguided.html",
     Arm.PASSIVE: "intervention_passive.html",
 }
+
+#: The two RVRCOB faculty who grade the SBA (§4.6.5). Names are placeholders
+#: until they are known; what matters is that there are exactly two, since
+#: Cohen's Kappa compares a pair.
+RATERS: tuple[str, ...] = ("rater-a", "rater-b")
 
 
 def create_app(
@@ -336,6 +354,106 @@ def create_app(
             session.scrolled(max(0.0, min(1.0, depth)), now)
         store.save(participant)
         return {"ok": True}
+
+    # --- blind SBA grading (§4.6.5) --------------------------------------
+
+    def _blind_set():
+        """The grading set, rebuilt on demand from the stored responses."""
+        responses = {
+            participant_id: text
+            for participant_id, _, text in _sba_responses(
+                sorted(store.all(), key=lambda p: p.participant_id)
+            )
+        }
+        salt = config.trial_id or "trial"
+        blind, key = build_blind_set(responses, salt, RATERS, seed=config.allocation_seed)
+        return blind, key
+
+    @app.get("/rate/{rater}", response_class=HTMLResponse)
+    def rate(request: Request, rater: str):
+        """One response at a time, in this rater's own order.
+
+        Never shows more than one, and never shows the arm. Presenting the set
+        as a list would let a rater read ahead, compare, and drift toward
+        scoring relative to what they had just seen rather than to the rubric.
+        """
+        if rater not in RATERS:
+            raise HTTPException(status_code=404, detail="Unknown rater.")
+
+        blind, _ = _blind_set()
+        done = (
+            store.repository.scored_by(rater) if store.repository else set()
+        )
+        queue = [r for r in order_for(blind, rater, seed=config.allocation_seed)
+                 if r.response_id not in done]
+
+        return render(
+            request,
+            "rate.html",
+            rater=rater,
+            response=queue[0] if queue else None,
+            remaining=len(queue),
+            total=len(blind),
+            dimensions=DIMENSIONS,
+            dimension_labels=DIMENSION_LABELS,
+            rubric=RUBRIC,
+            levels=LEVELS,
+        )
+
+    @app.post("/rate/{rater}")
+    async def record_score(request: Request, rater: str):
+        if rater not in RATERS:
+            raise HTTPException(status_code=404, detail="Unknown rater.")
+        if store.repository is None:
+            raise HTTPException(status_code=503, detail="No store to record into.")
+
+        form = await request.form()
+        try:
+            score = Score(
+                response_id=str(form["response_id"]),
+                rater=rater,
+                levels={d: int(form[d]) for d in DIMENSIONS if form.get(d)},
+                note=str(form.get("note", "")),
+            )
+        except (GradingError, KeyError, ValueError):
+            # A missing dimension re-renders rather than erroring: Table 4.12
+            # has three, and a partial score cannot be compared with the other
+            # rater's, so it must not be stored.
+            return RedirectResponse(f"/rate/{rater}", status_code=303)
+
+        store.repository.save_score(score)
+        return RedirectResponse(f"/rate/{rater}", status_code=303)
+
+    @app.get("/agreement", response_class=HTMLResponse)
+    def agreement_view(request: Request):
+        """Inter-rater reliability, for the research team rather than the raters."""
+        scores = store.repository.load_scores() if store.repository else []
+        raters = sorted({s.rater for s in scores})
+
+        results, differences, error = {}, [], ""
+        if len(raters) == 2:
+            try:
+                results = agreement(scores)
+                differences = disagreements(scores)
+            except GradingError as exc:
+                error = str(exc)
+        elif scores:
+            error = (
+                f"Cohen's Kappa compares two raters; {len(raters)} have scored "
+                "so far."
+            )
+
+        return render(
+            request,
+            "agreement.html",
+            results=results,
+            disagreements=differences,
+            raters=raters,
+            scores=scores,
+            error=error,
+            dimension_labels=DIMENSION_LABELS,
+            levels=LEVELS,
+        )
 
     return app
 

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Inter-rater reliability{% endblock %}
+{% block heading %}Inter-rater reliability{% endblock %}
+{% block subheading %}§4.6.5 &middot; {{ scores|length }} scores from {{ raters|length }} rater(s){% endblock %}
+
+{# For the research team, not the raters. It shows both raters' scores side by
+   side, which a rater must not see before their own grading is finished. #}
+
+{% block content %}
+
+{% if error %}
+  <div class="notice">{{ error }}</div>
+{% endif %}
+
+{% if results %}
+<div class="panel">
+  <h2>Cohen's Kappa, per dimension</h2>
+  <p class="small muted">
+    Computed only over responses both raters scored. A response one rater never
+    reached cannot say anything about whether they agreed.
+  </p>
+  <table>
+    <tr>
+      <th>Dimension</th><th>n</th><th>Observed</th><th>Expected</th>
+      <th>Cohen's κ</th><th>Weighted κ</th><th></th>
+    </tr>
+    {% for dimension, result in results.items() %}
+    <tr>
+      <td>{{ dimension_labels[dimension] }}</td>
+      <td class="num">{{ result.n }}</td>
+      <td class="num">{{ '%.3f'|format(result.observed) }}</td>
+      <td class="num muted">{{ '%.3f'|format(result.expected) }}</td>
+      <td class="num"><strong>
+        {% if result.kappa is none %}undefined{% else %}{{ '%.3f'|format(result.kappa) }}{% endif %}
+      </strong></td>
+      <td class="num muted">
+        {% if result.weighted is none %}—{% else %}{{ '%.3f'|format(result.weighted) }}{% endif %}
+      </td>
+      <td class="small muted">{{ result.interpretation }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h3>Reading these</h3>
+  <p class="small muted">
+    Cohen's κ is what §4.6.5 specifies and what to report. It counts every
+    disagreement equally, which on an ordered three-point scale is harsh:
+    Developing against Proficient is a smaller gap than Beginning against
+    Proficient, and unweighted κ cannot tell them apart. The weighted column is
+    there to look at alongside, not instead.
+  </p>
+  <p class="small muted">
+    <strong>"undefined"</strong> means both raters used a single category
+    throughout, so chance agreement is already total and there is no room above
+    it to measure. It is not perfect reliability and must not be reported as 1.0.
+  </p>
+</div>
+{% endif %}
+
+{% if disagreements %}
+<div class="panel">
+  <h2>Disagreements &mdash; {{ disagreements|length }}</h2>
+  <p class="small muted">
+    §4.6.5 resolves these "through a structured discussion until a consensus is
+    reached", so this is the agenda for it. Two-level gaps first: those are a
+    different conversation from one-level gaps.
+  </p>
+  <table>
+    <tr><th>Response</th><th>Dimension</th><th>Scores</th><th>Gap</th></tr>
+    {% for item in disagreements %}
+    <tr {% if item.distance > 1 %}style="background: var(--warn-soft);"{% endif %}>
+      <td><code>{{ item.response_id }}</code></td>
+      <td>{{ dimension_labels[item.dimension] }}</td>
+      <td class="small">
+        {% for rater, level in item.levels.items() %}
+          {{ rater }}: <strong>{{ levels[level] }}</strong>{% if not loop.last %} &middot; {% endif %}
+        {% endfor %}
+      </td>
+      <td class="num">{{ item.distance }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% elif results %}
+<div class="panel">
+  <h2>No disagreements</h2>
+  <p class="muted">The raters scored every dimension of every shared response
+     identically.</p>
+</div>
+{% endif %}
+
+{% if not scores %}
+<div class="panel">
+  <h2>Nothing graded yet</h2>
+  <p class="muted">
+    Scores appear here once the raters have started. Their links are
+    <code>/rate/&lt;rater&gt;</code>.
+  </p>
+</div>
+{% endif %}
+
+{% endblock %}

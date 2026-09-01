@@ -145,6 +145,37 @@ The SUS is the one instrument not subject to §4.6.4 review — it is standardis
 not the researchers' to validate. Its alternating polarity is the instrument:
 straight-lining lands at 50 whichever way you go, and there are tests for that.
 
+## Export and blind grading
+
+```bash
+python -m study.export                        # analysis bundle
+python -m study.export --raters rater-a,rater-b   # plus blind grading files
+```
+
+**Two bundles, and they must not be one.** The analysis bundle carries
+everything: per-item answers (long form), the §4.6.3 measures, per-phase
+durations, transcripts, and SBA responses with their arm attached. The rater
+bundle carries almost nothing — SBA text under a blind key, shuffled per rater,
+with empty score columns. §4.6.5 requires the two faculty to grade
+"independently and blindly", and a file where the arm is visible is not blind.
+
+**Nothing carries a name.** The identity table is simply never read, and a test
+asserts no exported file contains a participant's name.
+
+Raters grade at `/rate/<rater>` — one response at a time, in their own shuffled
+order. Not a list: seeing the set together lets a rater read ahead and score
+each response relative to its neighbours rather than against the rubric.
+`/agreement` shows Cohen's Kappa per dimension and the disagreements, sorted
+widest-gap first, as the agenda for the consensus discussion §4.6.5 requires.
+
+Two things about the statistic. §4.6.5 specifies **Cohen's Kappa**, which is what
+to report; linear-weighted Kappa sits beside it because unweighted Kappa counts
+Developing-vs-Proficient as the same failure as Beginning-vs-Proficient, which on
+an ordered scale overstates it. And Kappa comes back **undefined**, not 1.0, when
+both raters used a single category throughout — chance agreement is already total
+and there is no room above it to measure. Reporting that as perfect reliability
+would claim something the data cannot show.
+
 ## What is here
 
 | Module | Holds |
@@ -153,7 +184,9 @@ straight-lining lands at 50 whichever way you go, and there are tests for that.
 | `randomisation.py` | Permuted-block allocation |
 | `phases.py` | The session sequence and the 40-minute ceiling |
 | `exclusion.py` | The §4.6.3 measures, gathered per arm |
-| `persistence.py` | Two tables: research data, and identity held apart |
+| `persistence.py` | Three tables: research data, identity held apart, SBA scores |
+| `export.py` | The analysis bundle and the blind rater bundle |
+| `grading.py` | Table 4.12's rubric, Cohen's Kappa, disagreements |
 | `senseei_link.py` | The only seam to the application |
 | `trial_config.py` | Loads and validates `trial.yaml` |
 | `trial.yaml` | **The one file to edit**: reading, model, timing, seed |
@@ -182,7 +215,11 @@ same model either way, so §4.6.2's parity requirement holds. If native multi-tu
 fidelity later matters, a second `ChatBackend` slots in behind the same protocol
 without touching a caller.
 
-Still to come: the export, and the blind SBA grading tool.
+What remains is not code. The trial reading and the three reading-dependent
+instruments have to be written and pass §4.6.4 faculty review; `trial.yaml` needs
+its `trial_id`, `allocation_seed` and `senseei_base_url`; the application has to
+expose telemetry, survive a reload, and report its model; and the pilot has to
+run, because §4.6.3's exclusion thresholds are derived from it.
 
 ## Seeing it
 

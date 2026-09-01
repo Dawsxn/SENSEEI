@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Grading{% endblock %}
+{% block heading %}Scenario-Based Assessment &mdash; grading{% endblock %}
+{% block subheading %}
+  {{ rater }} &middot; {{ total - remaining }} of {{ total }} scored
+{% endblock %}
+
+{# Blind grading (§4.6.5). One response, no arm, no participant identifier, and
+   an order shuffled for this rater alone.
+
+   Deliberately not a list. Showing the set together would let a rater read
+   ahead and start scoring each response relative to the ones beside it rather
+   than against the rubric, and the two raters would drift toward whatever
+   ordering they shared. #}
+
+{% block content %}
+
+{% if not response %}
+  <div class="panel">
+    <h2>Nothing left to score</h2>
+    <p class="muted">You have scored all {{ total }} responses. Thank you.</p>
+  </div>
+
+{% else %}
+  <form method="post" action="/rate/{{ rater }}">
+    <input type="hidden" name="response_id" value="{{ response.response_id }}">
+
+    <div class="panel">
+      <p class="small muted" style="margin-bottom:.5rem;">
+        Response {{ response.response_id }} &middot; {{ response.word_count }} words
+      </p>
+      <div class="reading" style="max-height:40vh; overflow-y:auto;">{{ response.text }}</div>
+    </div>
+
+    {% for dimension in dimensions %}
+    <div class="panel">
+      <p style="font-weight:600; margin-bottom:.5rem;">
+        {{ dimension_labels[dimension] }}
+      </p>
+      {% for level, name in levels.items() %}
+        <label style="display:block; padding:.35rem 0; cursor:pointer;">
+          <input type="radio" name="{{ dimension }}" value="{{ level }}" required>
+          <strong>{{ name }}</strong>
+          <span class="small muted">&mdash; {{ rubric[dimension][level] }}</span>
+        </label>
+      {% endfor %}
+    </div>
+    {% endfor %}
+
+    <div class="panel">
+      <p class="small muted">Note (optional) &mdash; useful if this one comes up
+         in the consensus discussion.</p>
+      <textarea name="note" rows="2"></textarea>
+    </div>
+
+    <button type="submit">Save &amp; next</button>
+    <span class="small muted">{{ remaining }} remaining.</span>
+  </form>
+{% endif %}
+
+{% endblock %}
