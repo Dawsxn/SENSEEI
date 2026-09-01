@@ -55,20 +55,16 @@ A participant who finishes the reading early continues straight to the post-test
 Nobody waits for the room. The period's only job is to end a session still
 running when time is up.
 
-> **This departs from the manuscript.** §4.6.4 as written says a participant who
-> finishes early "remain[s] at their station until the period ends, so that
-> exposure time is held constant across groups". That sentence needs revising to
-> match, or the written method and the implementation disagree.
->
-> The consequence: time-on-task now varies between participants and is no longer
-> controlled by design, so the analysis has to account for it rather than the
-> procedure having handled it. Recording per-phase durations is what makes that
-> possible — see below.
->
-> One thing it buys. §4.6.3's passive-arm criterion excludes someone who
-> "advances to the post-test before a realistic minimum reading time has
-> elapsed", which could never fire while everyone was held for the full period.
-> It is live now.
+§4.6.4 was revised to allow this. An earlier draft held early finishers at their
+station so exposure time stayed constant across groups; that is no longer the
+procedure.
+
+Two consequences. Time-on-task now varies between participants and is not
+controlled by design, so the analysis accounts for it rather than the procedure
+having handled it — which is why every phase records its own duration. And
+§4.6.3's passive-arm criterion is live: excluding someone who "advances to the
+post-test before a realistic minimum reading time has elapsed" could never fire
+while everyone was held for the full period.
 
 **Group sizes must still come out 15/15/15.** Drawing each arm independently gets
 there only 1.8% of the time. [`randomisation.py`](randomisation.py) generates a

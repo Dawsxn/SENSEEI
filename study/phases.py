@@ -12,19 +12,19 @@ that is still running when time is up, which Section 4.6.2 anticipates ("time
 expires while a stage is in progress") and which the intention-to-treat analysis
 absorbs.
 
-    Note for whoever maintains this: as written, Section 4.6.4 says the opposite
-    — that a participant who finishes early "remain[s] at their station until the
-    period ends, so that exposure time is held constant across groups". This
-    engine implements the decision to let them proceed, so that sentence in the
-    manuscript needs revising to match. The methodological consequence is that
-    time-on-task now varies between participants and is no longer controlled by
-    design, which makes it something the analysis has to account for rather than
-    something the procedure has already handled.
+    Section 4.6.4 was revised to allow this. An earlier draft held early
+    finishers at their station so that exposure time was constant across groups;
+    that is no longer the procedure, and this engine implements the revision.
 
-    The one benefit is that it makes the passive arm's exclusion criterion live.
-    Section 4.6.3 excludes a passive participant who "advances to the post-test
-    before a realistic minimum reading time has elapsed" — a criterion that could
-    never fire while everyone was held for the full period.
+    Two consequences worth keeping in view. Time-on-task now varies between
+    participants and is not controlled by design, so it is something the analysis
+    accounts for rather than something the procedure has already handled — which
+    is why every phase records its own duration.
+
+    And the passive arm's exclusion criterion is live. Section 4.6.3 excludes a
+    passive participant who "advances to the post-test before a realistic minimum
+    reading time has elapsed", which could never fire while everyone was held for
+    the full period.
 
 Two rules follow from the data this produces being evidence:
 
