@@ -75,14 +75,31 @@ check-in: exact totals, and near-balance at every prefix if a batch ends early.
 | `senseei_link.py` | The only seam to the application |
 | `trial_config.py` | Loads and validates `trial.yaml` |
 | `trial.yaml` | **The one file to edit**: reading, model, timing, seed |
+| `interventions/unguided.py` | The unguided-LLM arm |
+| `interventions/passive.py` | The passive control arm |
+| `interventions/conversation.py` | The chat transcript and what is measured from it |
 
 Changing the trial reading is one line in `trial.yaml`; the text itself goes in
 `content/`. The model is pinned there too, and `assert_model_parity` checks the
 pin against what SENSEE-I actually runs rather than trusting two files to agree.
 
-Still to come, in order: the control-arm tools, the instruments, the proctor
-console, export and deletion, and the blind grading tool. See the plan for
-sequencing.
+## No model is baked in
+
+The unguided arm reaches the model through `agents/providers/`, so switching
+model or provider is a line in `trial.yaml` and never a code change. The seam is
+`ChatBackend` rather than the provider itself, because the shared provider
+interface is single-turn and a chat is not: `ProviderChatBackend` bridges the two
+by rendering the transcript into the prompt, which needed no change to the agent
+code the eval measures.
+
+That bridge is an approximation — a provider given structured messages applies
+its own chat template, which flattening does not reproduce exactly. It is the
+same model either way, so §4.6.2's parity requirement holds. If native multi-turn
+fidelity later matters, a second `ChatBackend` slots in behind the same protocol
+without touching a caller.
+
+Still to come, in order: the instruments, the proctor console, export and
+deletion, and the blind grading tool.
 
 ## Running the tests
 
