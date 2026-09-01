@@ -54,6 +54,10 @@ class Participant:
     #: Anything the proctor logged against this participant during the run.
     incidents: list[str] = field(default_factory=list)
 
+    #: Set when their arm's tool could not be started at all. A technical
+    #: failure, not a measurement — kept distinct from low engagement.
+    unavailable: str = ""
+
     @property
     def display_name(self) -> str:
         return self.name or self.participant_id
@@ -140,9 +144,15 @@ class TrialStore:
         """
         if participant.arm is Arm.UNGUIDED_LLM and participant.unguided is None:
             if self.chat_backend is None:
-                raise RuntimeError(
-                    "No chat backend configured; the unguided arm cannot run."
+                # Record it rather than raise. Raising here left the participant
+                # advanced into an intervention with no session behind it, which
+                # then read on the console as zero engagement — a broken tool
+                # wearing the costume of a disengaged participant, which is the
+                # one confusion this console exists to prevent.
+                participant.unavailable = (
+                    "The assistant is not configured on this server."
                 )
+                return
             participant.unguided = UnguidedSession(
                 participant.participant_id, self.chat_backend, started_at=now
             )

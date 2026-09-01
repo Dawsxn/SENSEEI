@@ -3,7 +3,7 @@
 {% block heading %}Proctor console{% endblock %}
 {% block subheading %}
   {{ store.checked_in }} checked in &middot; {{ store.remaining_slots }} slots left
-  &middot; {{ config.intervention_minutes }}-minute intervention
+  &middot; up to {{ config.intervention_minutes }} min per intervention
 {% endblock %}
 {% block mainclass %}wide{% endblock %}
 
@@ -63,61 +63,122 @@
     <tr>
       <td>{{ arm.label }}</td>
       <td class="num">{{ count }}</td>
-      <td class="num muted">{{ (store.allocation.counts()[arm]) }}</td>
+      <td class="num muted">{{ store.allocation.counts()[arm] }}</td>
     </tr>
     {% endfor %}
   </table>
 </div>
 
 <div class="panel">
-  <h2>Roster</h2>
+  <h2>Engagement measures
+    <span class="small muted" style="font-weight:400;">&mdash; §4.6.3</span></h2>
+  <p class="small muted">
+    The raw quantities each arm's exclusion criterion is judged on. <strong>No
+    threshold is applied here and none is stored.</strong> §4.6.3 derives the
+    cutoffs empirically from the pilot, so these are numbers to be analysed
+    later, not verdicts. Nobody is excluded by this screen.
+  </p>
+
   {% if not rows %}
     <p class="muted">Nobody checked in yet.</p>
   {% else %}
   <table>
     <tr>
       <th>ID</th><th>Name</th><th>Arm</th><th>Phase</th>
-      <th>In phase</th><th>Gate</th><th></th>
+      <th>In phase</th><th>Left</th>
+      <th>Measures &mdash; per §4.6.3</th>
+      <th>Attn.</th><th></th>
     </tr>
     {% for row in rows %}
     {% set p = row.participant %}
-    <tr>
+    {% set r = row.record %}
+    <tr {% if r.needs_a_look %}style="background: var(--warn-soft);"{% endif %}>
       <td><a href="/p/{{ p.access_code }}">{{ p.participant_id }}</a></td>
       <td>{{ p.display_name }}</td>
       <td>{{ p.arm.label }}</td>
       <td>
-        {{ p.state.phase.value.replace('_', ' ') }}
-        {% if p.incidents %}<span class="pill">incident</span>{% endif %}
+        {{ p.state.phase.label }}
+        {% if r.ran_out_of_time %}<span class="pill">timed out</span>{% endif %}
+        {% if r.unavailable %}
+          <span class="pill" style="background: var(--warn-soft); color: var(--warn);"
+                title="{{ r.unavailable }}">tool failed</span>
+        {% endif %}
       </td>
       <td class="num">{{ '%d:%02d'|format(row.in_phase.total_seconds()//60,
                                           row.in_phase.total_seconds()%60) }}</td>
+      <td class="num muted">
+        {% if row.remaining %}{{ '%d:%02d'|format(row.remaining//60,
+                                                  row.remaining%60) }}{% else %}&mdash;{% endif %}
+      </td>
       <td class="small">
-        {% if row.gate.allowed %}
-          <span class="muted">open</span>
-        {% else %}
-          {{ '%d:%02d'|format(row.gate.seconds_remaining//60,
-                              row.gate.seconds_remaining%60) }} left
-        {% endif %}
+        {% for m in r.measures %}
+          <span class="muted">{{ m.label }}</span>
+          <strong {% if m.is_zero %}style="color: var(--warn);"{% endif %}>{{ m.display }}</strong>{% if not loop.last %} &middot; {% endif %}
+        {% endfor %}
+      </td>
+      <td class="small {% if r.failed_attention_check %}" style="color: var(--warn);{% endif %}">
+        {{ r.attention_display }}
       </td>
       <td>
-        {% if not row.gate.allowed and row.gate.seconds_remaining > 0 %}
-        <form method="post" action="/participants/{{ p.participant_id }}/release">
-          <button class="ghost" type="submit"
-                  title="Breaks equal exposure. Recorded on their record.">
-            Release early
-          </button>
+        <form method="post" action="/participants/{{ p.participant_id }}/incident"
+              class="row">
+          <input type="text" name="note" placeholder="log an incident"
+                 style="font-size:.8rem; min-width: 9rem;">
         </form>
+        {% if p.incidents %}
+          <span class="pill">{{ p.incidents|length }}</span>
         {% endif %}
       </td>
     </tr>
     {% endfor %}
   </table>
-  <p class="small muted" style="margin-top:.8rem;">
-    Releasing someone before their gate opens is recorded permanently, because it
-    means they did not get the same exposure as everyone else.
+
+  <h3>Watch for, but do not act on</h3>
+  <p class="small muted">
+    A highlighted row means a measure is sitting at <strong>zero</strong>, or an
+    incident is logged. Zero usually means something is broken rather than that
+    the participant is idle &mdash; an unguided participant with no turns twenty
+    minutes in is most likely looking at a failed model connection, which is
+    worth fixing while the session is still running.
+  </p>
+  <p class="small muted">
+    It is not a reason to prompt someone to engage more. Judging engagement
+    mid-run and nudging accordingly would be an intervention, and an unblinded
+    one. Fix broken tools; leave participants alone.
+  </p>
+
+  <h3>Running medians</h3>
+  <p class="small muted">
+    The pilot's job is to turn these distributions into the thresholds §4.6.3
+    calls for. Shown here so the shape of the data is visible while it is being
+    collected &mdash; not to be used as a cutoff.
+  </p>
+  <table>
+    <tr><th>Measure</th><th>Median</th></tr>
+    {% for key, value in medians.items() %}
+      {% if value is not none %}
+      <tr>
+        <td>{{ key.replace('_', ' ') }}</td>
+        <td class="num">
+          {% if key.endswith('seconds') %}
+            {{ '%d:%02d'|format(value//60, value%60) }}
+          {% else %}
+            {{ '%g'|format(value) }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endif %}
+    {% endfor %}
+  </table>
+
+  <p class="small muted" style="margin-top:.9rem;">
+    {{ summary.participants }} checked in &middot;
+    {{ summary.needing_a_look }} worth a look &middot;
+    {{ summary.ran_out_of_time }} ran out of time &middot;
+    {{ summary.failed_attention }} failed an attention check
   </p>
   {% endif %}
 </div>
 
-<meta http-equiv="refresh" content="10">
+<meta http-equiv="refresh" content="15">
 {% endblock %}

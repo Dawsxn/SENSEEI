@@ -41,7 +41,7 @@ phase ever advances because the app said so.
 Every participant runs the same sequence (Table 4.11):
 
 ```
-demographics (5m) -> pre-test (5m) -> intervention (40m)
+demographics (5m) -> pre-test (5m) -> intervention (up to 40m)
     -> post-test A (10m) -> SBA (20m) -> [SUS (5m), SENSEE-I arm only]
 ```
 
@@ -49,21 +49,65 @@ Consent is not a phase. It is signed on paper before check-in — the participan
 keeps one copy, the researchers retain the second (§4.6.4) — and the harness
 records only that it was given, plus the form serial.
 
-## Two things that would silently ruin the study
+## The 40 minutes are a ceiling, not a floor
 
-Both are covered by tests, because both fail quietly.
+A participant who finishes the reading early continues straight to the post-test.
+Nobody waits for the room. The period's only job is to end a session still
+running when time is up.
 
-**Exposure time must be equal across arms.** §4.6.4 gives everyone the same 40
-minutes and holds early finishers at their station. If a fast SENSEE-I
-participant could start the post-test at minute 25 while a passive-arm
-participant read for the full 40, the arms would differ in time-on-task as well
-as in instructional mode, and the independent variable would no longer be the one
-the study claims. [`phases.py`](phases.py) gates on time, not completion.
+> **This departs from the manuscript.** §4.6.4 as written says a participant who
+> finishes early "remain[s] at their station until the period ends, so that
+> exposure time is held constant across groups". That sentence needs revising to
+> match, or the written method and the implementation disagree.
+>
+> The consequence: time-on-task now varies between participants and is no longer
+> controlled by design, so the analysis has to account for it rather than the
+> procedure having handled it. Recording per-phase durations is what makes that
+> possible — see below.
+>
+> One thing it buys. §4.6.3's passive-arm criterion excludes someone who
+> "advances to the post-test before a realistic minimum reading time has
+> elapsed", which could never fire while everyone was held for the full period.
+> It is live now.
 
-**Group sizes must come out 15/15/15.** Drawing each arm independently gets there
-only 1.8% of the time. [`randomisation.py`](randomisation.py) generates a
+**Group sizes must still come out 15/15/15.** Drawing each arm independently gets
+there only 1.8% of the time. [`randomisation.py`](randomisation.py) generates a
 permuted-block sequence once, from a recorded seed, and consumes it one slot per
-check-in: exact totals, and near-balance at every prefix if a batch ends early.
+check-in: exact totals, and near-balance at every prefix if the sitting ends
+early.
+
+## Exclusion measures (§4.6.3)
+
+[`exclusion.py`](exclusion.py) gathers the quantities each arm's criterion is
+judged on, and the console shows them live:
+
+| Arm | Measured | From |
+| --- | --- | --- |
+| SENSEE-I | Session time, conversational turns | the app, via `senseei_link` |
+| Unguided LLM | Session length, words typed | the chat transcript |
+| Passive | Time before the post-test, time with the text open, scroll depth | the reader |
+| All | Attention checks, per-phase durations, timed-out flag | the phase engine |
+
+**No threshold is applied, and none is stored.** §4.6.3 derives the cutoffs
+empirically from the pilot; one compiled into the tool could not be revised
+without invalidating everything collected under it, and excluding a participant
+would become a deployment artefact rather than an analytical decision. The module
+reports numbers and computes running medians. Someone else decides what they
+mean.
+
+Three distinctions the console keeps apart, because collapsing any of them would
+turn a technical failure into a finding about a participant:
+
+- **Unknown is not zero.** A SENSEE-I participant who never opened the app has no
+  telemetry; that reads as `—`, not as zero turns.
+- **A failed tool is not disengagement.** If the arm's tool cannot start, the row
+  says *tool failed* rather than showing zeros.
+- **Running out of time is not low engagement.** It is flagged separately.
+
+A row highlights when a measure sits at zero — almost always a broken tool rather
+than an idle participant, and worth fixing while the session is still running.
+It is explicitly *not* a cue to prompt someone to engage more: judging engagement
+mid-run and nudging accordingly would be an unblinded intervention.
 
 ## What is here
 
@@ -71,7 +115,8 @@ check-in: exact totals, and near-balance at every prefix if a batch ends early.
 | --- | --- |
 | `arms.py` | The three arms |
 | `randomisation.py` | Permuted-block allocation |
-| `phases.py` | The session sequence and the 40-minute gate |
+| `phases.py` | The session sequence and the 40-minute ceiling |
+| `exclusion.py` | The §4.6.3 measures, gathered per arm |
 | `senseei_link.py` | The only seam to the application |
 | `trial_config.py` | Loads and validates `trial.yaml` |
 | `trial.yaml` | **The one file to edit**: reading, model, timing, seed |
@@ -98,8 +143,9 @@ same model either way, so §4.6.2's parity requirement holds. If native multi-tu
 fidelity later matters, a second `ChatBackend` slots in behind the same protocol
 without touching a caller.
 
-Still to come, in order: the instruments, the proctor console, export and
-deletion, and the blind grading tool.
+Still to come, in order: the instruments (which is also when attention checks
+come into existence), persistence, export and deletion, and the blind grading
+tool.
 
 ## Seeing it
 

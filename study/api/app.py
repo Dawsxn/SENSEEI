@@ -8,16 +8,16 @@ JavaScript are enough, and the whole thing starts with one command.
 
 Two routes into the system:
 
-- ``/`` is the **proctor console**: check people in, watch the roster, release a
-  held gate, log an incident.
+- ``/`` is the **proctor console**: check people in, watch the roster and the
+  engagement measures Section 4.6.3 will be applied to, log an incident.
 - ``/p/{code}`` is the **participant flow**. One URL for the whole session; what
   it renders depends on the phase they are in, so nobody has to be told where to
   go next and nobody can navigate somewhere they should not be.
 
-Every gate is enforced here, on the server. The countdown a participant sees is a
-convenience; the decision about whether they may move on is re-made from
-server-side timestamps on every request, so a fiddled clock or a hand-typed URL
-changes nothing.
+The 40 minutes are a ceiling: a participant who finishes early continues to the
+post-test rather than waiting for the room. The clock's only job is to end a
+session still running when time is up, and it is enforced on the server from its
+own timestamps, so the countdown a participant sees is display only.
 """
 
 from __future__ import annotations
@@ -29,13 +29,13 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from ..arms import Arm
+from ..exclusion import build_engagement_record, median_of, summarise
 from ..interventions.unguided import build_chat_backend
 from ..phases import (
     Phase,
     PhaseError,
-    check_gate,
-    hold,
-    phase_durations,
+    is_expired,
+    seconds_remaining,
     utcnow,
 )
 from ..phases import advance as advance_phase
@@ -50,7 +50,6 @@ TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 PHASE_TEMPLATES = {
     Phase.DEMOGRAPHICS: "instrument.html",
     Phase.PRE_TEST: "instrument.html",
-    Phase.HOLD: "hold.html",
     Phase.POST_TEST_A: "instrument.html",
     Phase.SBA: "instrument.html",
     Phase.SUS: "instrument.html",
@@ -68,16 +67,15 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
     config = config or load_trial_config()
 
     if store is None:
+        backend_error = ""
         backend = None
         try:
             backend = build_chat_backend(config.llm)
-        except Exception as exc:  # missing key, unknown provider
+        except Exception as exc:  # missing key, unknown provider, SDK absent
             # Surfaced on the console rather than raised: the passive and
             # SENSEE-I arms are still runnable, and a proctor needs to be told
             # what is broken rather than met with a stack trace at start-up.
             backend_error = str(exc)
-        else:
-            backend_error = ""
         store = TrialStore(config, chat_backend=backend)
         store.backend_error = backend_error
 
@@ -99,19 +97,45 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
             request=request, name=template, context={"config": config, **context}
         )
 
+    def _advance(participant):
+        """Move a participant on, closing whatever their arm had open."""
+        now = utcnow()
+        if participant.state.phase is Phase.INTERVENTION:
+            store.end_intervention(participant, now)
+        participant.state = advance_phase(participant.state, now, config.timing)
+        if participant.state.phase is Phase.INTERVENTION:
+            store.begin_intervention(participant, now)
+
+    def _expire_if_due(participant) -> None:
+        """End an intervention whose time is up.
+
+        Applied whenever a participant's page is served, so the clock is enforced
+        even if their browser never fired the countdown — a closed laptop lid, a
+        stalled tab, a page left on a phone.
+        """
+        if participant.state.phase is Phase.INTERVENTION and is_expired(
+            participant.state, utcnow(), config.timing
+        ):
+            _advance(participant)
+
     # --- proctor console --------------------------------------------------
 
     @app.get("/", response_class=HTMLResponse)
     def console(request: Request, new: str = ""):
         now = utcnow()
         rows = []
+        records = []
         for participant in store.all():
-            gate = check_gate(participant.state, now, config.timing)
+            record = build_engagement_record(participant, now, app.state.link)
+            records.append(record)
             rows.append(
                 {
                     "participant": participant,
-                    "gate": gate,
+                    "record": record,
                     "in_phase": now - participant.state.entered_at,
+                    "remaining": seconds_remaining(
+                        participant.state, now, config.timing
+                    ),
                 }
             )
         return render(
@@ -122,30 +146,30 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
             counts=store.counts_by_arm(),
             new_participant=store.get(new) if new else None,
             warnings=_preflight(config, store),
+            summary=summarise(records),
+            medians={
+                key: median_of(records, key)
+                for key in (
+                    "session_seconds",
+                    "turn_count",
+                    "word_count",
+                    "intervention_seconds",
+                    "time_on_text_seconds",
+                )
+            },
         )
 
     @app.post("/check-in")
     def check_in(name: str = Form(""), consent_form_serial: str = Form("")):
         try:
             participant = store.check_in(
-                utcnow(), name=name.strip(), consent_form_serial=consent_form_serial.strip()
+                utcnow(),
+                name=name.strip(),
+                consent_form_serial=consent_form_serial.strip(),
             )
         except IndexError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         return RedirectResponse(f"/?new={participant.participant_id}", status_code=303)
-
-    @app.post("/participants/{participant_id}/release")
-    def release(participant_id: str):
-        """Proctor override: let someone past a gate that has not opened.
-
-        Recorded on the phase they were released from, because it means that
-        participant did not get the same exposure as everyone else.
-        """
-        participant = store.get(participant_id)
-        if participant is None:
-            raise HTTPException(status_code=404, detail="Unknown participant.")
-        _advance(participant, force=True)
-        return RedirectResponse("/", status_code=303)
 
     @app.post("/participants/{participant_id}/incident")
     def incident(participant_id: str, note: str = Form(...)):
@@ -157,34 +181,25 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
 
     # --- the participant flow --------------------------------------------
 
-    def _advance(participant, force: bool = False):
-        now = utcnow()
-        if participant.state.phase in (Phase.INTERVENTION, Phase.HOLD):
-            store.end_intervention(participant, now)
-        participant.state = advance_phase(
-            participant.state, now, config.timing, force=force
-        )
-        if participant.state.phase is Phase.INTERVENTION:
-            store.begin_intervention(participant, now)
-
     @app.get("/p/{code}", response_class=HTMLResponse)
     def participant_view(request: Request, code: str):
         participant = participant_or_404(code)
+        _expire_if_due(participant)
+
         now = utcnow()
         phase = participant.state.phase
+        template = (
+            INTERVENTION_TEMPLATES[participant.arm]
+            if phase is Phase.INTERVENTION
+            else PHASE_TEMPLATES[phase]
+        )
 
-        if phase is Phase.INTERVENTION:
-            template = INTERVENTION_TEMPLATES[participant.arm]
-        else:
-            template = PHASE_TEMPLATES[phase]
-
-        gate = check_gate(participant.state, now, config.timing)
         return render(
             request,
             template,
             participant=participant,
             phase=phase,
-            gate=gate,
+            remaining=seconds_remaining(participant.state, now, config.timing),
             reading=_reading(config),
             senseei_url=app.state.link.session_url(participant.participant_id),
             store=store,
@@ -192,31 +207,25 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
 
     @app.post("/p/{code}/advance")
     def participant_advance(code: str):
+        """Move on. Available whenever the session is running.
+
+        A participant who has finished the reading proceeds straight to the
+        post-test; nobody waits for the room.
+        """
         participant = participant_or_404(code)
         try:
             _advance(participant)
         except PhaseError:
-            # The gate is closed, or the session is over. Re-render rather than
-            # error: the participant did nothing wrong, and the page they land
-            # on tells them what they are waiting for.
+            # Already finished, or a double-submitted form. Re-render rather
+            # than error: the participant did nothing wrong.
             pass
-        return RedirectResponse(f"/p/{code}", status_code=303)
-
-    @app.post("/p/{code}/finished-early")
-    def finished_early(code: str):
-        """The participant says they are done before the period ends.
-
-        Moves them to HOLD. It does not shorten their exposure — the clock keeps
-        running — it records that they stopped working, which is itself signal.
-        """
-        participant = participant_or_404(code)
-        if participant.state.phase is Phase.INTERVENTION:
-            participant.state = hold(participant.state, utcnow())
         return RedirectResponse(f"/p/{code}", status_code=303)
 
     @app.post("/p/{code}/chat")
     def chat(code: str, message: str = Form(...)):
         participant = participant_or_404(code)
+        _expire_if_due(participant)
+
         if participant.arm is not Arm.UNGUIDED_LLM:
             raise HTTPException(status_code=403, detail="Not this participant's arm.")
         if participant.state.phase is not Phase.INTERVENTION:
@@ -230,7 +239,7 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
         """Tab-away, return, and scroll depth from the passive arm's reader.
 
         Phase duration cannot tell whether the text was open, so the page reports
-        what the phase engine cannot see.
+        what the phase engine cannot see (§4.6.3).
         """
         participant = participant_or_404(code)
         session = participant.passive

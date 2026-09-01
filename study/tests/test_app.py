@@ -7,12 +7,15 @@ URL, a resubmitted form, a participant who simply keeps clicking.
 
 from __future__ import annotations
 
+from dataclasses import replace
+from datetime import timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 
 from study.arms import Arm
 from study.interventions.unguided import OfflineChatBackend
-from study.phases import Phase
+from study.phases import Phase, ran_out_of_time, utcnow
 from study.api.app import create_app
 from study.api.store import TrialStore
 from study.trial_config import load_trial_config
@@ -96,52 +99,53 @@ def advance_to_intervention(client, code):
     return client.app.state.store.by_code(code)
 
 
-def test_a_participant_cannot_click_past_the_gate(client):
+def test_a_participant_who_finishes_early_goes_straight_on(client):
+    """Nobody waits for the room."""
     _, code = check_in(client)
     participant = advance_to_intervention(client, code)
-
-    for _ in range(5):
-        client.post(f"/p/{code}/advance")
-
-    assert participant.state.phase is Phase.INTERVENTION
-
-
-def test_a_held_participant_cannot_click_past_the_gate_either(client):
-    _, code = check_in(client)
-    participant = advance_to_intervention(client, code)
-    client.post(f"/p/{code}/finished-early")
 
     client.post(f"/p/{code}/advance")
 
-    assert participant.state.phase is Phase.HOLD
+    assert participant.state.phase is Phase.POST_TEST_A
 
 
-def test_finishing_early_does_not_shorten_the_clock(client):
+def test_finishing_early_is_not_recorded_as_running_out_of_time(client):
     _, code = check_in(client)
     participant = advance_to_intervention(client, code)
-    started = participant.state.intervention_started_at
 
-    client.post(f"/p/{code}/finished-early")
+    client.post(f"/p/{code}/advance")
 
-    assert participant.state.intervention_started_at == started
+    assert not ran_out_of_time(participant.state)
 
 
-def test_the_hold_screen_says_why_they_are_waiting(client):
+def test_the_period_ends_a_session_that_is_still_running(client):
+    """Enforced when their page is served, so a stalled tab does not evade it."""
     _, code = check_in(client)
-    advance_to_intervention(client, code)
-    client.post(f"/p/{code}/finished-early")
-
-    assert "same amount of time" in client.get(f"/p/{code}").text
-
-
-def test_a_proctor_can_release_someone_and_it_is_recorded(client):
-    participant_id, code = check_in(client)
     participant = advance_to_intervention(client, code)
 
-    client.post(f"/participants/{participant_id}/release")
+    participant.state = replace(
+        participant.state,
+        intervention_started_at=utcnow() - timedelta(minutes=41),
+    )
+    client.get(f"/p/{code}")
 
     assert participant.state.phase is Phase.POST_TEST_A
-    assert any(visit.forced for visit in participant.state.history)
+    assert ran_out_of_time(participant.state)
+
+
+def test_the_period_also_ends_a_session_on_a_chat_attempt(client):
+    """Not only on a page load: the deadline must hold on every route."""
+    code = check_in_arm(client, Arm.UNGUIDED_LLM)
+    participant = advance_to_intervention(client, code)
+
+    participant.state = replace(
+        participant.state,
+        intervention_started_at=utcnow() - timedelta(minutes=41),
+    )
+    response = client.post(f"/p/{code}/chat", data={"message": "one more"})
+
+    assert response.status_code == 409
+    assert participant.state.phase is Phase.POST_TEST_A
 
 
 # --- the unguided arm -----------------------------------------------------

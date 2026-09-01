@@ -1,15 +1,15 @@
 {# Countdown shown during the intervention.
 
-   Display only. The server re-derives the gate from its own timestamps on every
-   request, so a stopped clock or a hand-edited page changes nothing about when
-   someone may actually move on. When it reaches zero it asks the server to
-   advance, and the server decides. #}
+   Display only. The server re-derives the deadline from its own timestamps
+   whenever the participant's page is served, so a stopped clock or a hand-edited
+   page changes nothing about when the period actually ends. When it reaches zero
+   it asks the server to move on, and the server decides. #}
 <span class="timer" id="timer">--:--</span>
 <form method="post" action="/p/{{ participant.access_code }}/advance"
       id="advance-form" style="display:none;"></form>
 <script>
   (function () {
-    var left = {{ gate.seconds_remaining }};
+    var left = {{ remaining }};
     var el = document.getElementById('timer');
     function tick() {
       if (left <= 0) {

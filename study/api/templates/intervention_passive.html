@@ -25,10 +25,10 @@
   {% endif %}
 </div>
 
-<form method="post" action="/p/{{ participant.access_code }}/finished-early">
-  <button class="ghost" type="submit">I am finished</button>
+<form method="post" action="/p/{{ participant.access_code }}/advance">
+  <button type="submit">I am finished &mdash; continue</button>
   <span class="small muted">
-    The session still runs for the full period &mdash; everyone gets the same time.
+    Goes straight on to the next part. You do not wait for anyone else.
   </span>
 </form>
 
