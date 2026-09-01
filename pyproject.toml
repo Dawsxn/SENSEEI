@@ -15,12 +15,14 @@ dependencies = [
 # Install only the provider you actually use:
 #   pip install -e ".[gemini]"   provider: gemini (default) — supports thinking_level
 #   pip install -e ".[openai]"   provider: openai_compat (Groq / OpenRouter / Together / Ollama / OpenAI)
+#   pip install -e ".[study]"    the human-evaluation harness in study/
 [project.optional-dependencies]
 gemini = ["google-genai>=2.9.0"]
 openai = ["openai>=1.40.0"]
+study = ["pytest>=8.0"]
 
 [tool.setuptools]
-packages = ["agents", "agents.providers"]
+packages = ["agents", "agents.providers", "study"]
 
 [tool.setuptools.package-data]
 agents = ["prompts/*.md", "rubrics/*.yaml"]
