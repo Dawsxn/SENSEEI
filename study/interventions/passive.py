@@ -140,6 +140,45 @@ class PassiveSession:
             sample_count=len(self._samples),
         )
 
+    # --- persistence ------------------------------------------------------
+
+    def snapshot(self) -> dict:
+        """Everything needed to reconstruct this reading session exactly.
+
+        The accumulated total and the open interval are stored separately, so a
+        participant who is mid-read when the server restarts keeps both the time
+        already banked and the fact that their clock is still running.
+        """
+        return {
+            "participant_id": self.participant_id,
+            "started_at": self.started_at.isoformat(),
+            "ended_at": self.ended_at.isoformat() if self.ended_at else None,
+            "accumulated_seconds": self._accumulated.total_seconds(),
+            "open_since": self._open_since.isoformat() if self._open_since else None,
+            "away_count": self._away_count,
+            "samples": [
+                {"at": s.at.isoformat(), "depth": s.depth} for s in self._samples
+            ],
+        }
+
+    @classmethod
+    def restore(cls, data: dict) -> PassiveSession:
+        from ..phases import parse_time
+
+        session = cls(
+            participant_id=data["participant_id"],
+            started_at=parse_time(data["started_at"]),
+        )
+        session.ended_at = parse_time(data.get("ended_at"))
+        session._accumulated = timedelta(seconds=data.get("accumulated_seconds", 0))
+        session._open_since = parse_time(data.get("open_since"))
+        session._away_count = int(data.get("away_count", 0))
+        session._samples = [
+            ScrollSample(at=parse_time(s["at"]), depth=float(s["depth"]))
+            for s in data.get("samples", [])
+        ]
+        return session
+
     @staticmethod
     def _elapsed_since(start: datetime, end: datetime) -> timedelta:
         """Elapsed time, never negative.

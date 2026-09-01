@@ -153,6 +153,7 @@ straight-lining lands at 50 whichever way you go, and there are tests for that.
 | `randomisation.py` | Permuted-block allocation |
 | `phases.py` | The session sequence and the 40-minute ceiling |
 | `exclusion.py` | The §4.6.3 measures, gathered per arm |
+| `persistence.py` | Two tables: research data, and identity held apart |
 | `senseei_link.py` | The only seam to the application |
 | `trial_config.py` | Loads and validates `trial.yaml` |
 | `trial.yaml` | **The one file to edit**: reading, model, timing, seed |
@@ -181,8 +182,7 @@ same model either way, so §4.6.2's parity requirement holds. If native multi-tu
 fidelity later matters, a second `ChatBackend` slots in behind the same protocol
 without touching a caller.
 
-Still to come, in order: persistence, export and deletion, and the blind SBA
-grading tool.
+Still to come: the export, and the blind SBA grading tool.
 
 ## Seeing it
 
@@ -200,10 +200,14 @@ collection: records held in memory, no trial id, the sample reading still in
 place, no model reachable. A proctor should never have to guess whether they are
 looking at a rehearsal or the real thing.
 
-Two things are deliberately not real yet. Participants live in memory, so a
-restart loses them — the persistence layer is a later step, and building it
-before the flow settled would mean migrating a moving schema. And the instrument
-phases render a placeholder, pending their content and its faculty review.
+Participants are stored, so a restart resumes where the process died — including
+the intervention clock, which keeps running rather than handing anyone a fresh
+forty minutes. Locally that is a SQLite file; **set `STUDY_DATABASE_URL` to a
+managed PostgreSQL URL before a real sitting**, because a container filesystem
+does not survive a redeploy and that is the failure persistence exists to remove.
+
+The instrument phases still render a placeholder, pending their content and its
+faculty review.
 
 **Server-rendered HTML, not a SPA.** The application is React because it is a
 long-lived product. This is a lab instrument used by 45 people on one afternoon,

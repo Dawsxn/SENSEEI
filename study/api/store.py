@@ -1,14 +1,14 @@
-"""Where a running trial keeps its participants. In memory, for now.
+"""Where a running trial keeps its participants.
 
-Deliberately not a database yet. The persistence layer is a later step, and
-wiring one in before the flow is settled would mean migrating a schema that is
-still moving. Everything here is behind :class:`TrialStore`, so swapping in
-Postgres is one class rather than a rewrite.
+Held in memory for speed, and written through to a :class:`~study.persistence.
+Repository` on every change so a restart does not lose them. Without a
+repository the store still works and still says so — :attr:`TrialStore.
+is_durable` reports False and the console warns — which is what makes a
+rehearsal possible without a database.
 
-**This must not run a real session.** A process restart loses every participant,
-which during collection would mean 45 people with no data and no way to redo the
-sitting. :meth:`TrialStore.is_durable` reports False, and the pre-flight refuses
-a live run against it.
+Restoring is not automatic on construction. :meth:`TrialStore.reload` is called
+explicitly at start-up, so a test can build a store, populate it, and rebuild
+from the same repository to check the round trip holds.
 """
 
 from __future__ import annotations
@@ -102,15 +102,92 @@ class Participant:
 class TrialStore:
     """The participants of one trial run."""
 
-    #: In-memory only: a restart loses everything. See the module docstring.
-    is_durable = False
-
-    def __init__(self, config, chat_backend: ChatBackend | None = None):
+    def __init__(
+        self,
+        config,
+        chat_backend: ChatBackend | None = None,
+        repository=None,
+    ):
         self.config = config
         self.chat_backend = chat_backend
+        self.repository = repository
         self.allocation = config.allocation()
         self._participants: dict[str, Participant] = {}
         self._by_code: dict[str, str] = {}
+
+    @property
+    def is_durable(self) -> bool:
+        """Whether a restart would keep these participants.
+
+        False means the console warns and the pre-flight refuses a live run: in
+        a single-sitting trial an in-memory store is 45 people with no data and
+        no second chance at the lab booking.
+        """
+        return self.repository is not None
+
+    # --- persistence ------------------------------------------------------
+
+    def save(self, participant: Participant) -> None:
+        """Write a participant through to storage, if there is any.
+
+        Called after every change rather than at the end. A crash gives no
+        warning, so anything not yet written is gone.
+        """
+        if self.repository is not None:
+            self.repository.save(participant, trial_id=self.config.trial_id)
+
+    def reload(self) -> int:
+        """Rebuild from storage. Returns how many participants came back.
+
+        Called at start-up. Replaces whatever is in memory, so a restart
+        mid-sitting resumes exactly where the process died.
+        """
+        if self.repository is None:
+            return 0
+
+        self._participants.clear()
+        self._by_code.clear()
+        for participant in self.repository.load_all(self._restore):
+            self._participants[participant.participant_id] = participant
+            self._by_code[participant.access_code] = participant.participant_id
+        return len(self._participants)
+
+    def _restore(self, data: dict, name: str = "", consent_form_serial: str = ""):
+        """Turn a stored snapshot back into a participant.
+
+        Lives here rather than in the repository because rebuilding an unguided
+        session needs the chat backend, which is this store's wiring and not the
+        database's business.
+        """
+        from ..instruments.scoring import InstrumentResult
+        from ..interventions.passive import PassiveSession
+        from ..interventions.unguided import UnguidedSession
+        from ..phases import parse_time, state_from_dict
+
+        participant = Participant(
+            participant_id=data["participant_id"],
+            arm=Arm(data["arm"]),
+            state=state_from_dict(data["state"]),
+            access_code=data["access_code"],
+            name=name,
+            consent_form_serial=consent_form_serial,
+            checked_in_at=parse_time(data.get("checked_in_at")),
+            incidents=list(data.get("incidents") or []),
+            unavailable=data.get("unavailable", "") or "",
+        )
+
+        if data.get("unguided") and self.chat_backend is not None:
+            participant.unguided = UnguidedSession.restore(
+                data["unguided"], self.chat_backend
+            )
+        if data.get("passive"):
+            participant.passive = PassiveSession.restore(data["passive"])
+
+        participant.responses = {
+            Phase(phase): InstrumentResult.restore(result)
+            for phase, result in (data.get("responses") or {}).items()
+        }
+        return participant
 
     # --- check-in ---------------------------------------------------------
 
@@ -142,6 +219,7 @@ class TrialStore:
 
         self._participants[participant_id] = participant
         self._by_code[participant.access_code] = participant_id
+        self.save(participant)
         return participant
 
     # --- lookup -----------------------------------------------------------
@@ -217,6 +295,8 @@ class TrialStore:
         if participant is None:
             return False
         self._by_code.pop(participant.access_code, None)
+        if self.repository is not None:
+            self.repository.delete(participant_id)
         if link is not None:
             link.delete_participant_data(participant_id)
         return True

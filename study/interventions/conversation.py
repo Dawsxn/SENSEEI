@@ -131,5 +131,44 @@ class Conversation:
         return "\n\n".join(lines)
 
 
+    # --- persistence ------------------------------------------------------
+
+    def snapshot(self) -> dict:
+        """Everything needed to reconstruct this transcript exactly."""
+        return {
+            "participant_id": self.participant_id,
+            "started_at": self.started_at.isoformat(),
+            "ended_at": self.ended_at.isoformat() if self.ended_at else None,
+            "turns": [
+                {
+                    "speaker": turn.speaker.value,
+                    "text": turn.text,
+                    "at": turn.at.isoformat(),
+                    "error": turn.error,
+                }
+                for turn in self.turns
+            ],
+        }
+
+    @classmethod
+    def restore(cls, data: dict) -> Conversation:
+        from ..phases import parse_time
+
+        return cls(
+            participant_id=data["participant_id"],
+            started_at=parse_time(data["started_at"]),
+            ended_at=parse_time(data.get("ended_at")),
+            turns=[
+                Turn(
+                    speaker=Speaker(turn["speaker"]),
+                    text=turn["text"],
+                    at=parse_time(turn["at"]),
+                    error=turn.get("error"),
+                )
+                for turn in data.get("turns", [])
+            ],
+        )
+
+
 class ConversationClosed(RuntimeError):
     """The intervention period is over; nothing further may be recorded."""

@@ -279,5 +279,68 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
+# --- persistence ----------------------------------------------------------
+#
+# A state and its history describe themselves completely, so that storing a
+# participant does not require the storage layer to know how a phase engine
+# works. Round-tripping is what makes a server restart survivable, and there is
+# a test that a walked-through participant comes back identical.
+
+
+def state_to_dict(state: ParticipantState) -> dict:
+    return {
+        "participant_id": state.participant_id,
+        "arm": state.arm.value,
+        "phase": state.phase.value,
+        "entered_at": state.entered_at.isoformat(),
+        "intervention_started_at": (
+            state.intervention_started_at.isoformat()
+            if state.intervention_started_at
+            else None
+        ),
+        "history": [
+            {
+                "phase": visit.phase.value,
+                "entered_at": visit.entered_at.isoformat(),
+                "left_at": visit.left_at.isoformat() if visit.left_at else None,
+                "expired": visit.expired,
+            }
+            for visit in state.history
+        ],
+    }
+
+
+def state_from_dict(data: dict) -> ParticipantState:
+    return ParticipantState(
+        participant_id=data["participant_id"],
+        arm=Arm(data["arm"]),
+        phase=Phase(data["phase"]),
+        entered_at=parse_time(data["entered_at"]),
+        intervention_started_at=parse_time(data.get("intervention_started_at")),
+        history=tuple(
+            PhaseVisit(
+                phase=Phase(visit["phase"]),
+                entered_at=parse_time(visit["entered_at"]),
+                left_at=parse_time(visit.get("left_at")),
+                expired=bool(visit.get("expired", False)),
+            )
+            for visit in data.get("history", [])
+        ),
+    )
+
+
+def parse_time(value: str | None) -> datetime | None:
+    """Read a stored timestamp back, always timezone-aware.
+
+    A naive datetime compared against an aware one raises, and it would do so
+    mid-session on the first participant restored after a restart. Anything
+    stored without an offset is read as UTC, which is what the harness writes.
+    """
+    if not value:
+        return None
+    parsed = datetime.fromisoformat(value)
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
 class PhaseError(RuntimeError):
     """An impossible transition was requested."""

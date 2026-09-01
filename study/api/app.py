@@ -40,9 +40,23 @@ from ..phases import (
     utcnow,
 )
 from ..phases import advance as advance_phase
+from ..persistence import DEFAULT_URL, Repository
 from ..senseei_link import FakeSenseeiLink
 from ..trial_config import load_trial_config
 from .store import TrialStore
+
+
+def _database_url() -> str:
+    """Where participants are stored. ``STUDY_DATABASE_URL`` overrides.
+
+    The default is a local SQLite file, which is right for development and wrong
+    for the lab: on a container filesystem it does not survive a redeploy, which
+    is the failure persistence exists to prevent. Set the variable to a managed
+    PostgreSQL URL before a real sitting.
+    """
+    import os
+
+    return os.environ.get("STUDY_DATABASE_URL") or DEFAULT_URL
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
@@ -64,7 +78,11 @@ INTERVENTION_TEMPLATES = {
 }
 
 
-def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
+def create_app(
+    config=None,
+    store: TrialStore | None = None,
+    database_url: str | None = None,
+) -> FastAPI:
     config = config or load_trial_config()
 
     if store is None:
@@ -77,8 +95,16 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
             # SENSEE-I arms are still runnable, and a proctor needs to be told
             # what is broken rather than met with a stack trace at start-up.
             backend_error = str(exc)
-        store = TrialStore(config, chat_backend=backend)
+
+        store = TrialStore(
+            config,
+            chat_backend=backend,
+            repository=Repository(database_url or _database_url()),
+        )
         store.backend_error = backend_error
+        # Resume whatever was in progress. A restart mid-sitting picks up where
+        # the process died rather than starting the afternoon again.
+        store.reload()
 
     app = FastAPI(title="SENSEE-I trial harness")
     app.state.config = config
@@ -107,6 +133,7 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
         participant.state = advance_phase(participant.state, now, config.timing)
         if participant.state.phase is Phase.INTERVENTION:
             store.begin_intervention(participant, now)
+        store.save(participant)
 
     def _expire_if_due(participant) -> None:
         """End an intervention whose time is up.
@@ -179,6 +206,20 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
         if participant is None:
             raise HTTPException(status_code=404, detail="Unknown participant.")
         participant.incidents.append(f"{utcnow().isoformat(timespec='seconds')} {note}")
+        store.save(participant)
+        return RedirectResponse("/", status_code=303)
+
+    @app.post("/participants/{participant_id}/withdraw")
+    def withdraw(participant_id: str):
+        """Honour a withdrawal (§4.7.1): delete the record, both sides.
+
+        Not reversible, and deliberately so — a withdrawal that left the data
+        recoverable would not be one. The harness's own record goes, the
+        identity with it, and the application is asked to delete the session it
+        holds.
+        """
+        if not store.withdraw(participant_id, link=app.state.link):
+            raise HTTPException(status_code=404, detail="Unknown participant.")
         return RedirectResponse("/", status_code=303)
 
     # --- the participant flow --------------------------------------------
@@ -233,6 +274,7 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
 
         result = score(instrument, answers)
         participant.record(participant.state.phase, result)
+        store.save(participant)
 
         if not result.is_complete:
             return RedirectResponse(f"/p/{code}", status_code=303)
@@ -270,6 +312,7 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
             raise HTTPException(status_code=409, detail="The period is not running.")
         if participant.unguided is not None and message.strip():
             participant.unguided.send(message, utcnow())
+            store.save(participant)
         return RedirectResponse(f"/p/{code}", status_code=303)
 
     @app.post("/p/{code}/reading-event")
@@ -291,6 +334,7 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
             session.came_back(now)
         elif kind == "scroll":
             session.scrolled(max(0.0, min(1.0, depth)), now)
+        store.save(participant)
         return {"ok": True}
 
     return app

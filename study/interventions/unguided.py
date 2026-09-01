@@ -225,6 +225,19 @@ class UnguidedSession:
         """End the session when the intervention period does."""
         self.conversation.close(at)
 
+    def snapshot(self) -> dict:
+        """The transcript. The backend is not stored — it is wiring, not data."""
+        return self.conversation.snapshot()
+
+    @classmethod
+    def restore(cls, data: dict, backend: ChatBackend) -> UnguidedSession:
+        conversation = Conversation.restore(data)
+        session = cls(
+            conversation.participant_id, backend, started_at=conversation.started_at
+        )
+        session.conversation = conversation
+        return session
+
     def telemetry(self) -> UnguidedTelemetry:
         conversation = self.conversation
         return UnguidedTelemetry(

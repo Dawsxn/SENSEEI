@@ -68,6 +68,38 @@ class InstrumentResult:
     def is_complete(self) -> bool:
         return not self.missing
 
+    def snapshot(self) -> dict:
+        """Everything needed to reconstruct this result exactly.
+
+        Distinct from :meth:`as_row`, which flattens for analysis and drops the
+        structure. This one round-trips.
+        """
+        return {
+            "instrument_id": self.instrument_id,
+            "answers": dict(self.answers),
+            "correct": self.correct,
+            "scored": self.scored,
+            "attention_failed": self.attention_failed,
+            "attention_answered": self.attention_answered,
+            "missing": list(self.missing),
+            "sus_score": self.sus_score,
+            "screening": dict(self.screening),
+        }
+
+    @classmethod
+    def restore(cls, data: dict) -> InstrumentResult:
+        return cls(
+            instrument_id=data["instrument_id"],
+            answers=dict(data.get("answers") or {}),
+            correct=int(data.get("correct", 0)),
+            scored=int(data.get("scored", 0)),
+            attention_failed=int(data.get("attention_failed", 0)),
+            attention_answered=int(data.get("attention_answered", 0)),
+            missing=tuple(data.get("missing") or ()),
+            sus_score=data.get("sus_score"),
+            screening=dict(data.get("screening") or {}),
+        )
+
     def as_row(self) -> dict:
         """Flat form, for the export."""
         row = {

@@ -34,6 +34,14 @@ design/**/*.html
 # Terminal session transcripts from scripts/session.py
 scripts/runs/
 
+# Local trial database and generated review documents. Participant data must
+# never reach the repository: study/persistence.py holds real responses, and the
+# identity table holds names.
+*.db
+*.db-journal
+study-trial.db*
+review.html
+
 # OS
 .DS_Store
 Thumbs.db
