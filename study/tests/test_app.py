@@ -265,6 +265,110 @@ def test_the_senseei_arm_gets_no_harness_side_intervention(client):
 # --- withdrawal -----------------------------------------------------------
 
 
+# --- instruments ----------------------------------------------------------
+
+
+def test_an_instrument_renders_its_items(client):
+    _, code = check_in(client)
+    page = client.get(f"/p/{code}").text
+
+    assert "What is your year level?" in page
+    assert 'name="item_year_level"' in page
+
+
+def test_an_instrument_hides_what_only_reviewers_may_see(client):
+    """Correct answers, attention checks and pairings live in the review doc."""
+    _, code = check_in(client)
+    page = client.get(f"/p/{code}").text.lower()
+
+    for word in ("attention check", "correct", "pairs with"):
+        assert word not in page
+
+
+def test_a_complete_submission_advances_the_participant(client):
+    _, code = check_in(client)
+    participant = client.app.state.store.by_code(code)
+
+    client.post(f"/p/{code}/submit", data={
+        "item_year_level": "3",
+        "item_department": "Management and Organization",
+        "item_prior_course": "no",
+    })
+
+    assert participant.state.phase is Phase.PRE_TEST
+
+
+def test_an_incomplete_submission_does_not_advance(client):
+    _, code = check_in(client)
+    participant = client.app.state.store.by_code(code)
+
+    client.post(f"/p/{code}/submit", data={"item_year_level": "3"})
+
+    assert participant.state.phase is Phase.DEMOGRAPHICS
+
+
+def test_an_incomplete_submission_keeps_the_answers_already_given(client):
+    """Losing them to a bounce is the fastest way to get a careless retry."""
+    _, code = check_in(client)
+
+    client.post(f"/p/{code}/submit", data={"item_year_level": "3"})
+    page = client.get(f"/p/{code}").text
+
+    assert 'value="3" checked' in page or 'value="3"\n                   checked' in page
+    assert "answer every question" in page
+
+
+def test_a_submission_is_recorded(client):
+    _, code = check_in(client)
+    participant = client.app.state.store.by_code(code)
+
+    client.post(f"/p/{code}/submit", data={
+        "item_year_level": "3",
+        "item_department": "MOD",
+        "item_prior_course": "yes",
+    })
+
+    result = participant.responses[Phase.DEMOGRAPHICS]
+    assert result.answers["prior_course"] == "yes"
+    assert result.screening == {"prior_course": "yes"}
+
+
+def test_a_placeholder_instrument_can_be_skipped(client):
+    """The pre-test has no content yet; it must not block a rehearsal."""
+    _, code = check_in(client)
+    participant = client.app.state.store.by_code(code)
+    client.post(f"/p/{code}/submit", data={
+        "item_year_level": "3", "item_department": "MOD", "item_prior_course": "no",
+    })
+
+    assert "no content yet" in client.get(f"/p/{code}").text
+    client.post(f"/p/{code}/advance")
+    assert participant.state.phase is Phase.INTERVENTION
+
+
+def test_the_console_warns_that_instruments_are_not_ready(client):
+    assert "Instruments not ready" in client.get("/").text
+
+
+def test_a_failed_attention_check_reaches_the_console(client):
+    """§4.6.3's one categorical exclusion has to be visible to the proctor."""
+    from study.instruments.schema import Instrument, Item, ItemType, Option
+
+    check = Item(
+        id="attn", type=ItemType.MULTIPLE_CHOICE, text="Choose B.",
+        options=(Option("a", "A"), Option("b", "B")), attention_expected="b",
+    )
+    client.app.state.instruments["demographics"] = Instrument(
+        id="demographics", title="About you", phase="demographics", items=(check,)
+    )
+
+    _, code = check_in(client)
+    client.post(f"/p/{code}/submit", data={"item_attn": "a"})
+
+    assert "1/1" not in client.get("/").text  # 0 of 1 passed
+    assert "0/1" in client.get("/").text
+
+
 def test_withdrawal_removes_the_participant_from_both_sides(client):
     participant_id, code = check_in(client)
     store = client.app.state.store

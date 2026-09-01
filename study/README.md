@@ -109,6 +109,46 @@ than an idle participant, and worth fixing while the session is still running.
 It is explicitly *not* a cue to prompt someone to engage more: judging engagement
 mid-run and nudging accordingly would be an unblinded intervention.
 
+## Instruments
+
+The five surveys live as YAML in [`instruments/content/`](instruments/content/)
+and are served by one renderer. Two things follow from content being data:
+
+**The faculty review reads what the tool serves.** §4.6.4 requires the pre-test,
+post-test A, and the SBA case to pass content-validity review by two RVRCOB
+faculty. The review document is *generated* from the same files the participant
+is shown, so the two cannot drift and the review cannot end up certifying a
+document nobody sat:
+
+```bash
+python -m study.instruments.review
+```
+
+It shows reviewers what participants never see — correct answers, attention
+checks, and pre-test pairings — since those are exactly what a content review
+judges. `status: reviewed` in the YAML records sign-off, and a live run is
+refused while any instrument is still a draft.
+
+**The pre-test / post-test pairing is declared.** §4.6.4 calls Part A "directly
+related to the pre-test", and the retention comparison needs to know which item
+answers which. `pairs_with` states it and the loader refuses a pointer that does
+not resolve, so a renamed pre-test item cannot silently orphan its partner.
+
+What ships now: **demographics** and the **SUS** are complete. The **pre-test**,
+**post-test A**, and **SBA** are stubs — they cannot be written until the trial
+reading is chosen, since every item is about the concept it covers. Each stub's
+YAML carries the manuscript's requirements for what belongs in it.
+
+The loader refuses content that would produce quietly meaningless data: an
+attention check whose expected answer is not among its options (every
+participant fails), a scored item whose answer is not among its options (every
+participant is marked wrong), a SUS item with no polarity (the composite inverts
+for half the scale).
+
+The SUS is the one instrument not subject to §4.6.4 review — it is standardised,
+not the researchers' to validate. Its alternating polarity is the instrument:
+straight-lining lands at 50 whichever way you go, and there are tests for that.
+
 ## What is here
 
 | Module | Holds |
@@ -123,6 +163,8 @@ mid-run and nudging accordingly would be an unblinded intervention.
 | `interventions/unguided.py` | The unguided-LLM arm |
 | `interventions/passive.py` | The passive control arm |
 | `interventions/conversation.py` | The chat transcript and what is measured from it |
+| `instruments/` | The five surveys, as YAML plus a renderer and scorer |
+| `instruments/review.py` | Generates the faculty content-validity document |
 
 Changing the trial reading is one line in `trial.yaml`; the text itself goes in
 `content/`. The model is pinned there too, and `assert_model_parity` checks the
@@ -143,9 +185,8 @@ same model either way, so §4.6.2's parity requirement holds. If native multi-tu
 fidelity later matters, a second `ChatBackend` slots in behind the same protocol
 without touching a caller.
 
-Still to come, in order: the instruments (which is also when attention checks
-come into existence), persistence, export and deletion, and the blind grading
-tool.
+Still to come, in order: persistence, export and deletion, and the blind SBA
+grading tool.
 
 ## Seeing it
 

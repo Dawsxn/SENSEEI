@@ -48,8 +48,8 @@ class Participant:
     unguided: UnguidedSession | None = None
     passive: PassiveSession | None = None
 
-    #: Instrument responses, keyed by phase.
-    responses: dict[Phase, dict] = field(default_factory=dict)
+    #: Instrument results, keyed by phase.
+    responses: dict[Phase, object] = field(default_factory=dict)
 
     #: Anything the proctor logged against this participant during the run.
     incidents: list[str] = field(default_factory=list)
@@ -61,6 +61,42 @@ class Participant:
     @property
     def display_name(self) -> str:
         return self.name or self.participant_id
+
+    def record(self, phase: Phase, result) -> None:
+        """Store an instrument result, replacing any earlier attempt at it.
+
+        An incomplete submission is kept rather than discarded, so a participant
+        bounced back by a missed required item sees their answers again instead
+        of retyping them.
+        """
+        self.responses[phase] = result
+
+    def draft_answers(self, phase: Phase) -> dict:
+        result = self.responses.get(phase)
+        return dict(getattr(result, "answers", {}) or {})
+
+    def missing_answers(self, phase: Phase) -> tuple:
+        result = self.responses.get(phase)
+        return tuple(getattr(result, "missing", ()) or ())
+
+    def attention_totals(self) -> tuple[int, int]:
+        """Attention checks failed and answered, across every instrument (§4.6.3)."""
+        failed = sum(
+            getattr(r, "attention_failed", 0) for r in self.responses.values()
+        )
+        answered = sum(
+            getattr(r, "attention_answered", 0) for r in self.responses.values()
+        )
+        return failed, answered
+
+    @property
+    def sus_score(self) -> float | None:
+        """The SUS composite, once answered. SENSEE-I arm only (§4.6.5)."""
+        for result in self.responses.values():
+            value = getattr(result, "sus_score", None)
+            if value is not None:
+                return value
+        return None
 
 
 class TrialStore:

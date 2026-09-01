@@ -1,0 +1,57 @@
+# Demographic survey — Table 4.11, consent and screening phase.
+#
+# §4.6.6 fixes what may be collected here: "year level, college affiliation
+# within RVRCOB, and the familiarity ratings used to confirm that a participant
+# has not previously studied the assigned concept", plus identity so responses
+# can be attributed and consent verified.
+#
+# The familiarity ratings are NOT here. They belong to the pre-test, which is
+# where §4.6.4 puts them, and this file holds only the eligibility attributes.
+#
+# Identity is not asked here either. It is recorded at check-in by the proctor,
+# against the paper consent form, and held apart from the research data (§4.7.4).
+# Asking for a name on this screen would put it in the same record as the
+# responses, which is the one thing pseudonymisation exists to prevent.
+#
+# "No identifying information beyond what serves these purposes will be
+# collected" (§4.6.6). Anything added to this file should be checked against
+# that sentence first.
+
+id: demographics
+title: About you
+phase: demographics
+version: 1
+status: draft
+
+instructions: |
+  A few details before we begin. These are used only to describe the group of
+  participants as a whole.
+
+items:
+  - id: year_level
+    type: multiple_choice
+    text: What is your year level?
+    options:
+      - {id: "1", text: "1st year"}
+      - {id: "2", text: "2nd year"}
+      - {id: "3", text: "3rd year"}
+      - {id: "4", text: "4th year"}
+      - {id: "5", text: "5th year or beyond"}
+
+  - id: department
+    type: short_text
+    text: Which department or programme within RVRCOB are you in?
+    help_text: For example, Management and Organization Department.
+
+  - id: prior_course
+    type: multiple_choice
+    text: >-
+      Have you taken a course that covered the concept in today's reading?
+    help_text: >-
+      You will be told the concept before you start. Answering yes does not mean
+      you cannot take part.
+    options:
+      - {id: "no", text: "No"}
+      - {id: "unsure", text: "I am not sure"}
+      - {id: "yes", text: "Yes"}
+    screening: true

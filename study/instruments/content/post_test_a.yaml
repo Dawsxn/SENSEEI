@@ -1,0 +1,40 @@
+# Post-test Part A — Table 4.11, 10 minutes, all three arms.
+#
+# STUB. Written together with pre_test.yaml, once the trial reading is chosen.
+#
+# §4.6.4: "a multiple-choice questionnaire directly related to the pre-test,
+# designed to measure baseline knowledge retention and factual recall". §4.6.5
+# analyses the scores "to ensure foundational factual recall was achieved across
+# the groups".
+#
+# THE PAIRING IS THE POINT. Each item here answers a pre-test item, and the
+# retention comparison is only possible if that correspondence is recorded rather
+# than inferred from the order items happen to appear in. Put
+# `pairs_with: <pre-test item id>` on every factual item. The loader refuses a
+# pointer that does not resolve, so a renamed pre-test item cannot silently
+# orphan its partner.
+#
+# Give every factual item an `answer` naming the correct option, and embed at
+# least one attention check (§4.6.3).
+#
+# Note what this instrument is NOT. It measures factual recall, which §4.6.1 is
+# explicit is not what the study is about: "standard multiple-choice quizzes
+# measure fact retrieval but not a student's ability to construct and use a
+# concept". Conceptual understanding is measured by the SBA in Part B. Part A
+# exists to show the groups did not differ on the easy thing, so that a
+# difference on the hard thing means something. Keep it at the Remembering tier
+# and let the SBA carry the weight.
+#
+# Reviewed for content validity by two RVRCOB faculty before administration
+# (§4.6.4). Run `python -m study.instruments.review`, then set `status: reviewed`.
+
+id: post_test_a
+title: What you remember
+phase: post_test_a
+version: 1
+status: draft
+
+instructions: |
+  A short set of questions about the reading. Choose the best answer for each.
+
+items: []

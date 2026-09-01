@@ -1,0 +1,56 @@
+# Post-test Part B, the Scenario-Based Assessment — Table 4.11, 20 minutes.
+#
+# STUB. The case cannot be written until the trial reading is chosen.
+#
+# THIS IS THE STUDY'S PRIMARY OUTCOME MEASURE. §4.6.5 analyses these responses
+# by one-way ANOVA to decide which instructional mode produced superior
+# conceptual understanding. Everything else in the trial exists to make this
+# comparison interpretable.
+#
+# §4.6.1 sets what the case has to do. It "presents a novel business case and
+# requires students to apply concepts from the expository text to solve it,
+# targeting the higher-order domains of Applying and Analyzing". Succeeding
+# requires High Road Transfer: the participant must abstract the concept from the
+# reading and map it onto a situation they have not seen. It measures the
+# situation model rather than the textbase — the connected representation, not
+# the literal propositions of the text.
+#
+# Two practical consequences for whoever writes it:
+#
+#   - The case must be NOVEL. If it resembles an example in the reading, a
+#     participant can succeed by recalling rather than transferring, and the
+#     instrument stops measuring what it claims to.
+#   - It must be solvable from the reading alone. Anything requiring outside
+#     business knowledge advantages participants by prior exposure, which the
+#     eligibility screening exists to rule out.
+#
+# The case text goes in `stimulus` and the question in an item of type
+# `long_text`. Both are shown together.
+#
+# NOT SCORED HERE. Responses are graded afterwards by two RVRCOB faculty, blind
+# and independently, on the three-dimension rubric of Table 4.12 — Concept
+# Retrieval, Scenario Application, Analytical Justification — with Cohen's Kappa
+# for inter-rater reliability (§4.6.5). That is the grading tool's job, not a
+# survey scorer's.
+#
+# An attention check does not belong in this instrument. A single written
+# response has no filler to hide one among, and interrupting the study's primary
+# measure to test whether someone is reading would cost more than it catches.
+# The pre-test and post-test A carry the checks.
+#
+# Reviewed for content validity by two RVRCOB faculty before administration
+# (§4.6.4). Run `python -m study.instruments.review`, then set `status: reviewed`.
+
+id: sba
+title: Applying what you read
+phase: sba
+version: 1
+status: draft
+
+instructions: |
+  Read the situation below and write your response. Use the concepts from the
+  reading. There is no single correct answer — explain your reasoning.
+
+stimulus: ""
+
+items: []

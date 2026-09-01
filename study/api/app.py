@@ -30,6 +30,7 @@ from fastapi.templating import Jinja2Templates
 
 from ..arms import Arm
 from ..exclusion import build_engagement_record, median_of, summarise
+from ..instruments import load_all, readiness, score
 from ..interventions.unguided import build_chat_backend
 from ..phases import (
     Phase,
@@ -82,6 +83,7 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
     app = FastAPI(title="SENSEE-I trial harness")
     app.state.config = config
     app.state.store = store
+    app.state.instruments = load_all()
     app.state.link = FakeSenseeiLink(
         base_url=config.senseei_base_url or "https://senseei.example/session"
     )
@@ -145,7 +147,7 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
             store=store,
             counts=store.counts_by_arm(),
             new_participant=store.get(new) if new else None,
-            warnings=_preflight(config, store),
+            warnings=_preflight(config, store, app.state.instruments),
             summary=summarise(records),
             medians={
                 key: median_of(records, key)
@@ -203,7 +205,43 @@ def create_app(config=None, store: TrialStore | None = None) -> FastAPI:
             reading=_reading(config),
             senseei_url=app.state.link.session_url(participant.participant_id),
             store=store,
+            instrument=app.state.instruments.get(phase.value),
+            answers=participant.draft_answers(phase),
+            missing=participant.missing_answers(phase),
         )
+
+    @app.post("/p/{code}/submit")
+    async def submit(request: Request, code: str):
+        """Record an instrument submission and move on.
+
+        A required item left blank re-renders the form rather than advancing.
+        The answers already given are kept and shown back, because losing them
+        to a validation bounce is the fastest way to make someone answer the
+        second time less carefully than the first.
+        """
+        participant = participant_or_404(code)
+        instrument = app.state.instruments.get(participant.state.phase.value)
+        if instrument is None or instrument.is_placeholder:
+            return RedirectResponse(f"/p/{code}", status_code=303)
+
+        form = await request.form()
+        answers = {
+            key[len("item_"):]: str(value)
+            for key, value in form.items()
+            if key.startswith("item_")
+        }
+
+        result = score(instrument, answers)
+        participant.record(participant.state.phase, result)
+
+        if not result.is_complete:
+            return RedirectResponse(f"/p/{code}", status_code=303)
+
+        try:
+            _advance(participant)
+        except PhaseError:
+            pass
+        return RedirectResponse(f"/p/{code}", status_code=303)
 
     @app.post("/p/{code}/advance")
     def participant_advance(code: str):
@@ -275,7 +313,7 @@ def _reading(config) -> dict:
         }
 
 
-def _preflight(config, store) -> list[str]:
+def _preflight(config, store, instruments=None) -> list[str]:
     """What would stop this being real data collection.
 
     Shown on the console rather than only raised at start-up, so a proctor can
@@ -293,6 +331,10 @@ def _preflight(config, store) -> list[str]:
         config.validate()
     except Exception as exc:
         warnings.append(str(exc))
+
+    outstanding = readiness(instruments or {})
+    if outstanding:
+        warnings.append("Instruments not ready: " + "; ".join(outstanding))
     return warnings
 
 

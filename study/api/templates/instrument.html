@@ -1,31 +1,94 @@
 {% extends "base.html" %}
-{% block title %}{{ phase.value.replace('_', ' ')|title }}{% endblock %}
-{% block heading %}{{ phase.value.replace('_', ' ')|title }}{% endblock %}
+{% block title %}{{ instrument.title if instrument else phase.label|title }}{% endblock %}
+{% block heading %}{{ instrument.title if instrument else phase.label|title }}{% endblock %}
 
-{# Placeholder for the instrument phases: demographics, pre-test, post-test A,
-   the SBA, and the SUS.
+{# One renderer for all five instruments. They differ in content, not in shape,
+   and a template per instrument would be five places for the same bug.
 
-   These render from versioned YAML in study/instruments/ once that lands, which
-   is the next step. Keeping them as content rather than templates is what lets
-   the two faculty reviewing them for content validity (§4.6.4) read exactly what
-   the tool will serve, and what makes the pre-test / post-test A item pairing a
-   declared fact rather than something buried in markup. #}
+   Nothing here reveals a correct answer, an attention check, or a pairing. Those
+   are visible only in the review document (study/instruments/review.py), which
+   is where they belong: the reviewers need them, participants must not have
+   them. #}
 
 {% block content %}
-<div class="panel">
-  <div class="notice">
-    This instrument is not built yet. It will render from
-    <code>study/instruments/</code>, pending the content and its faculty
-    content-validity review.
+
+{% if not instrument %}
+  <div class="panel">
+    <div class="notice">
+      No instrument is configured for this phase.
+    </div>
+    <form method="post" action="/p/{{ participant.access_code }}/advance">
+      <button type="submit">Continue</button>
+    </form>
   </div>
-  <h2>{{ phase.value.replace('_', ' ')|title }}</h2>
-  <p class="muted small">
-    Participant {{ participant.participant_id }} &middot;
-    {{ participant.arm.label }}
-  </p>
-  <form method="post" action="/p/{{ participant.access_code }}/advance">
+
+{% elif instrument.is_placeholder %}
+  <div class="panel">
+    <div class="notice">
+      This instrument has no content yet. It is written once the trial reading is
+      chosen &mdash; see <code>study/instruments/content/{{ instrument.id }}.yaml</code>.
+    </div>
+    <form method="post" action="/p/{{ participant.access_code }}/advance">
+      <button type="submit">Skip</button>
+      <span class="small muted">Records nothing.</span>
+    </form>
+  </div>
+
+{% else %}
+  <form method="post" action="/p/{{ participant.access_code }}/submit">
+
+    {% if instrument.instructions.strip() %}
+      <div class="panel">
+        <p style="margin:0;">{{ instrument.instructions.strip() }}</p>
+      </div>
+    {% endif %}
+
+    {% if instrument.stimulus.strip() %}
+      <div class="panel">
+        <div class="scroller reading">{{ instrument.stimulus.strip() }}</div>
+      </div>
+    {% endif %}
+
+    {% if missing %}
+      <div class="notice">
+        Please answer every question before continuing.
+        {{ missing|length }} left.
+      </div>
+    {% endif %}
+
+    {% for item in instrument.items %}
+    <div class="panel" {% if item.id in missing %}style="border-color: var(--warn);"{% endif %}>
+      <p style="font-weight:600; margin-bottom:.3rem;">
+        {{ loop.index }}. {{ item.text }}
+      </p>
+      {% if item.help_text %}
+        <p class="small muted">{{ item.help_text }}</p>
+      {% endif %}
+
+      {% set given = answers.get(item.id, '') %}
+
+      {% if item.type.value in ('likert', 'multiple_choice') %}
+        {% for option in item.options %}
+          <label style="display:block; padding:.22rem 0; cursor:pointer;">
+            <input type="radio" name="item_{{ item.id }}" value="{{ option.id }}"
+                   {% if given == option.id %}checked{% endif %}>
+            {{ option.text }}
+          </label>
+        {% endfor %}
+
+      {% elif item.type.value == 'long_text' %}
+        <textarea name="item_{{ item.id }}" rows="14"
+                  placeholder="Write your response">{{ given }}</textarea>
+
+      {% else %}
+        <input type="text" name="item_{{ item.id }}" value="{{ given }}"
+               autocomplete="off">
+      {% endif %}
+    </div>
+    {% endfor %}
+
     <button type="submit">Continue</button>
-    <span class="small muted">Skips ahead; nothing is recorded.</span>
   </form>
-</div>
+{% endif %}
+
 {% endblock %}

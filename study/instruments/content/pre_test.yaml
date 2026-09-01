@@ -1,0 +1,46 @@
+# Pre-test — Table 4.11, 5 minutes, all three arms.
+#
+# STUB. The content cannot be written until the trial reading is chosen, because
+# every item is about the concept that reading covers. Once it is, this file is
+# where the items go, and `readiness()` stops reporting it.
+#
+# §4.6.4 gives this instrument two jobs in one:
+#
+#   1. Likert familiarity ratings, which "set a statistical baseline of knowledge
+#      equivalence across the three groups" and also carry the eligibility
+#      screening of §4.6.3 — participants "must not have previously studied the
+#      specific business concept covered by the reading". Mark those items
+#      `screening: true`.
+#
+#   2. Basic factual questions, analysed by one-way ANOVA to verify no
+#      significant difference in prior knowledge between arms before the
+#      intervention (§4.6.5). These need an `answer`.
+#
+# EVERY FACTUAL ITEM HERE NEEDS A PARTNER IN post_test_a.yaml. §4.6.4 calls Part
+# A "directly related to the pre-test" and it is what measures retention. Write
+# the pair together, and put `pairs_with: <this item's id>` on the post-test
+# side. The loader checks those pointers resolve.
+#
+# Embed at least one attention check (§4.6.3). Give it `attention_check.expected`
+# naming the option an attentive participant picks. It is not scored as a factual
+# item.
+#
+# §4.6.4 requires this instrument to be reviewed for content validity by two
+# RVRCOB faculty before administration. Generate the review document with:
+#
+#     python -m study.instruments.review
+#
+# then set `status: reviewed` once they have signed off. A live run is refused
+# until then.
+
+id: pre_test
+title: Before you read
+phase: pre_test
+version: 1
+status: draft
+
+instructions: |
+  Answer as best you can. If you do not know something, say so rather than
+  guessing — knowing what is unfamiliar is exactly what this part is for.
+
+items: []

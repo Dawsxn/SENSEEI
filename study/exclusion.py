@@ -157,9 +157,7 @@ def build_engagement_record(participant, now: datetime, link=None) -> Engagement
     else:
         measures = _passive_measures(participant, state, now)
 
-    responses = getattr(participant, "responses", {}) or {}
-    answered = sum(r.get("attention_answered", 0) for r in responses.values())
-    failed = sum(r.get("attention_failed", 0) for r in responses.values())
+    failed, answered = _attention_totals(participant)
 
     return EngagementRecord(
         participant_id=participant.participant_id,
@@ -170,6 +168,26 @@ def build_engagement_record(participant, now: datetime, link=None) -> Engagement
         ran_out_of_time=ran_out_of_time(state),
         incidents=len(getattr(participant, "incidents", []) or []),
         unavailable=getattr(participant, "unavailable", "") or "",
+    )
+
+
+def _attention_totals(participant) -> tuple[int, int]:
+    """Attention checks failed and answered, across all their instruments.
+
+    Reads results by attribute rather than by key so a scored instrument result
+    and a plain dict both work — the tests build the simpler shape, and the
+    running app supplies the real one.
+    """
+    responses = (getattr(participant, "responses", {}) or {}).values()
+
+    def read(result, name: str) -> int:
+        if isinstance(result, dict):
+            return int(result.get(name, 0))
+        return int(getattr(result, name, 0))
+
+    return (
+        sum(read(r, "attention_failed") for r in responses),
+        sum(read(r, "attention_answered") for r in responses),
     )
 
 
