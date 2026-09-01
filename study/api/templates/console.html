@@ -120,14 +120,23 @@
         {{ r.attention_display }}
       </td>
       <td>
-        <form method="post" action="/participants/{{ p.participant_id }}/incident"
-              class="row">
-          <input type="text" name="note" placeholder="log an incident"
-                 style="font-size:.8rem; min-width: 9rem;">
+        <form method="post" action="/participants/{{ p.participant_id }}/incident">
+          <input type="text" name="note" placeholder="log an incident, press enter"
+                 style="font-size:.8rem; min-width: 10rem;">
         </form>
         {% if p.incidents %}
-          <span class="pill">{{ p.incidents|length }}</span>
+          <span class="pill" title="{{ p.incidents|join(' · ') }}">
+            {{ p.incidents|length }} logged
+          </span>
         {% endif %}
+        <form method="post" action="/participants/{{ p.participant_id }}/withdraw"
+              onsubmit="return confirm('Permanently delete {{ p.participant_id }} — their responses, transcript and identity, here and in SENSEE-I. This cannot be undone. Continue?');"
+              style="margin-top:.3rem;">
+          <button class="ghost" type="submit"
+                  style="font-size:.75rem; padding:.2rem .5rem; border-color: var(--warn); color: var(--warn);">
+            Withdraw
+          </button>
+        </form>
       </td>
     </tr>
     {% endfor %}
@@ -172,12 +181,35 @@
   </table>
 
   <p class="small muted" style="margin-top:.9rem;">
+    <strong>Withdraw</strong> honours §4.7.1 and is not reversible: it deletes
+    the participant's responses, transcript and identity here, and asks
+    SENSEE-I to delete their session. Use it when someone asks to withdraw,
+    never to tidy up a row.
+  </p>
+  <p class="small muted" style="margin-top:.9rem;">
     {{ summary.participants }} checked in &middot;
     {{ summary.needing_a_look }} worth a look &middot;
     {{ summary.ran_out_of_time }} ran out of time &middot;
     {{ summary.failed_attention }} failed an attention check
   </p>
   {% endif %}
+</div>
+
+<div class="panel">
+  <h2>After collection</h2>
+  <p class="small muted">
+    Raters grade the SBA at <code>/rate/rater-a</code> and
+    <code>/rate/rater-b</code> &mdash; one response at a time, no arm, no
+    participant identifier, shuffled per rater (§4.6.5).
+  </p>
+  <p class="small muted">
+    <a href="/agreement">Inter-rater reliability &rarr;</a>
+    &nbsp; Cohen's Kappa per dimension, and the disagreements to work through.
+  </p>
+  <p class="small muted">
+    Export with <code>python -m study.export</code>. Add
+    <code>--raters rater-a,rater-b</code> for the blind grading files.
+  </p>
 </div>
 
 <meta http-equiv="refresh" content="15">

@@ -377,3 +377,16 @@ def test_withdrawal_removes_the_participant_from_both_sides(client):
 
     assert store.get(participant_id) is None
     assert store.by_code(code) is None
+
+
+def test_the_console_offers_withdrawal_with_a_confirmation(client):
+    """§4.7.1 is unconditional, and the deletion is not reversible."""
+    participant_id, _ = check_in(client)
+    page = client.get("/").text
+
+    assert f"/participants/{participant_id}/withdraw" in page
+    assert "cannot be undone" in page
+
+
+def test_the_console_links_to_the_grading_summary(client):
+    assert "/agreement" in client.get("/").text

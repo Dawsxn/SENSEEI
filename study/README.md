@@ -1,5 +1,8 @@
 # Human-evaluation harness
 
+**To use it, read [RUNBOOK.md](RUNBOOK.md).** This file explains why it is built
+the way it is; the runbook is what you do.
+
 Everything that surrounds the SENSEE-I application during the three-arm
 randomised controlled trial of §4.6. Participant lifecycle, randomisation, the
 phase engine, the two control-arm tools, the instruments, the exclusion
