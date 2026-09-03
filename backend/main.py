@@ -15,6 +15,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .db import dispose, get_session
+from .routers import sessions
 from .settings import Settings, get_settings
 
 
@@ -29,6 +30,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.include_router(sessions.router)
 
 
 @app.get("/health")
