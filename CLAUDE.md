@@ -45,9 +45,16 @@ third agent.
   component conventions). Open these before writing app code. They record
   decisions that are not derivable from the codebase.
 - `backend/` — the FastAPI app: `settings.py` (environment config), `db.py`
-  (async engine and the per-request session), `main.py` (the app). Imports the
-  agents rather than reimplementing them. Run it with
+  (async engine and the per-request session), `main.py` (the app), and
+  `models/` (the SQLModel schema from `docs/context/data-model.md`, no ORM
+  relationships — under async, lazy loads raise, so queries use explicit joins).
+  Imports the agents rather than reimplementing them. Run it with
   `uvicorn backend.main:app --reload`, after `docker compose up -d --wait`.
+- `migrations/` — Alembic, reading its URL from `backend.settings`. Bring a
+  local database up to date with `alembic upgrade head`. `scripts/seed.py` then
+  fills it with development data (one instructor, two classes, five students,
+  three readings, some with real sessions), sourced from the eval dataset so the
+  app and the eval study the same material.
 - `scripts/session.py` — plays one tutoring session in the terminal, so the
   agents can be exercised without a database, server or UI. `--offline` stubs
   both and costs nothing. The loop rules live there until the Orchestrator is

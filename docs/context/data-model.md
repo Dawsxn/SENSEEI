@@ -116,13 +116,23 @@ can see (§4.3.4).
 | id | |
 | uploaded_by | Instructor |
 | title | |
-| source_file | The original upload, retained |
 | content | Extracted plain text. This is what the agents receive |
 | created_at | |
 
-Both the original file and the extracted text are kept. The agents only ever see
-`content`, but retaining the source means a bad extraction can be re-run later
-without asking the instructor to upload again.
+**Only the extracted text is stored, not the original upload.** The instructor
+reviews and corrects `content` before the reading goes live, which makes it
+human-approved copy rather than a lossy machine guess — so re-running a better
+parser over it later would be pointless, since a person already signed off on
+what it says. Nothing in the app ever reads the original file: the agents, the
+grading and the analytics all work from `content`. Retaining the source and
+reviewing the extraction solve the same problem, and only one is needed.
+
+That makes the review-at-upload step load-bearing rather than a nicety. Extraction
+is lossy, `content` is what every agent grades against, and a mangled extraction
+that no one caught would silently poison every session on that reading. The
+column can be added back later without a table rewrite, but readings uploaded
+before that would have no source to recover — which is exactly why the review
+step has to exist.
 
 ### core_component
 
