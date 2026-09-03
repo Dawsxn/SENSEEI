@@ -69,9 +69,9 @@ for _stream in (sys.stdout, sys.stderr):
     except Exception:
         pass
 
-#: Duplicated from scripts/session.py. Both copies move into the Orchestrator
-#: when it becomes a real module; there is nowhere shared to put it yet.
-ATTEMPT_LIMIT = 3
+#: The attempt limit lives with the loop it governs, in the Orchestrator, so the
+#: seeded sessions cannot disagree with how the live loop behaves.
+from backend.orchestrator import MAX_ATTEMPTS as ATTEMPT_LIMIT  # noqa: E402
 
 RUBRIC_VERSION = "v3"
 

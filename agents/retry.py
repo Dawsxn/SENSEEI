@@ -53,3 +53,30 @@ def complete_with_backoff(provider, system_prompt: str, user_prompt: str,
                 continue
             return None, f"Provider error: {e}"
     return None, "Provider error: rate-limit retries exhausted"
+
+
+def stream_with_backoff(provider, system_prompt: str, user_prompt: str,
+                        max_rate_limit_retries: int = 3):
+    """Stream the provider's reply, waiting out a rate limit before the first chunk.
+
+    A generator that yields text chunks. A 429 almost always surfaces as the
+    stream is established (before any chunk arrives), so this retries the whole
+    stream on that. Once chunks are flowing a mid-stream failure is raised, since
+    partial output has already been sent and cannot be cleanly retried.
+    """
+    for attempt in range(max_rate_limit_retries + 1):
+        started = False
+        try:
+            for chunk in provider.stream(system_prompt, user_prompt):
+                started = True
+                yield chunk
+            return
+        except Exception as e:
+            msg = str(e)
+            if not started and is_rate_limit(msg) and attempt < max_rate_limit_retries:
+                wait = retry_after_seconds(msg)
+                if wait is None:
+                    wait = min(60.0, 5.0 * (2 ** attempt))
+                time.sleep(wait + 1)
+                continue
+            raise

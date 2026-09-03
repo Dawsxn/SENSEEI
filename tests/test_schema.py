@@ -11,15 +11,12 @@ models is a schema nobody deploys.
 
 from __future__ import annotations
 
-import asyncio
 from collections import Counter, defaultdict
-from urllib.parse import urlsplit, urlunsplit
 
 import pytest
 from sqlalchemy import delete, func, select, text
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from backend.models import (
     Assessment,
@@ -38,10 +35,6 @@ from backend.models import (
     Verdict,
     utcnow,
 )
-from backend.settings import get_settings
-
-TEST_DB = "senseei_test"
-
 EXPECTED_TABLES = {
     "app_user",
     "class",
@@ -57,54 +50,10 @@ EXPECTED_TABLES = {
 }
 
 
-def _swap_database(url: str, name: str) -> str:
-    parts = urlsplit(url)
-    return urlunsplit(parts._replace(path=f"/{name}"))
-
-
-async def _create_test_database(admin_url: str) -> None:
-    engine = create_async_engine(admin_url, isolation_level="AUTOCOMMIT")
-    try:
-        async with engine.connect() as conn:
-            exists = await conn.scalar(
-                text("SELECT 1 FROM pg_database WHERE datname = :n"), {"n": TEST_DB}
-            )
-            if not exists:
-                await conn.execute(text(f'CREATE DATABASE "{TEST_DB}"'))
-    finally:
-        await engine.dispose()
-
-
-@pytest.fixture(scope="session")
-def database_url() -> str:
-    """A migrated `senseei_test`, or skip the module.
-
-    Deliberately a sync fixture. Alembic's command API runs its own event loop
-    through migrations/env.py, so keeping this synchronous avoids fighting
-    anyio over fixture scope.
-    """
-    settings = get_settings()
-    admin_url = _swap_database(settings.database_url, "senseei")
-    test_url = _swap_database(settings.database_url, TEST_DB)
-
-    try:
-        asyncio.run(_create_test_database(admin_url))
-    except Exception as e:
-        pytest.skip(f"no database: {type(e).__name__}. Run: docker compose up -d --wait")
-
-    from alembic import command
-    from alembic.config import Config
-
-    cfg = Config("alembic.ini")
-    cfg.set_main_option("sqlalchemy.url", test_url)
-    command.upgrade(cfg, "head")
-    return test_url
-
-
 @pytest.fixture
-async def db(database_url):
+async def db(test_database_url):
     """A clean database per test, and an engine bound to this test's loop."""
-    engine = create_async_engine(database_url)
+    engine = create_async_engine(test_database_url)
     maker = async_sessionmaker(engine, expire_on_commit=False)
     async with maker() as session:
         # Users cascade to everything else, so this empties the schema.

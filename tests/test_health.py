@@ -13,6 +13,10 @@ from httpx import ASGITransport, AsyncClient
 
 from backend.main import app
 
+# These reach the app through the module-global engine in backend/db.py, so each
+# test must dispose it afterwards to avoid inheriting a pool bound to a dead loop.
+pytestmark = pytest.mark.usefixtures("fresh_engine")
+
 
 @pytest.mark.anyio
 async def test_health_responds():

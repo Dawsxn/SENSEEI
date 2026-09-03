@@ -40,8 +40,8 @@ from agents.tutor import FINAL_FAIL, FIRST_ATTEMPT, PASSED, RETRY, TutorAgent  #
 
 AGENTS = Path(agents.__file__).resolve().parent
 
-# Provisional, per docs/context/student-tutoring-loop.md. One place, one edit.
-MAX_ATTEMPTS = 3
+# The attempt limit now lives with the loop it governs, in the Orchestrator.
+from backend.orchestrator import MAX_ATTEMPTS  # noqa: E402
 
 # Static, not written by the Tutor: it is the same sentence every time, and
 # generating it invites the model to soften it or add a hint nobody can use.

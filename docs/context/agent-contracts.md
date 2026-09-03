@@ -13,9 +13,12 @@ Orchestrator drives both and calls no LLM itself.
 | Assessment Agent | Yes | Grading one response against the rubric |
 | Orchestrator | No | Pass/fail, retries, step advancement, session state |
 
-The Orchestrator is fixed-rule code. Any decision that must be deterministic,
-reproducible, or auditable belongs to it and not to a prompt. If a rule starts
-migrating into an agent's instructions, that is a mistake.
+The Orchestrator is fixed-rule code, implemented in `backend/orchestrator.py` as
+a pure state machine: given a step, an attempt number and a verdict, it returns
+what happens next. It calls no LLM and touches no database; the session service
+carries its decisions out. Any decision that must be deterministic, reproducible,
+or auditable belongs to it and not to a prompt. If a rule starts migrating into
+an agent's instructions, that is a mistake.
 
 ## Assessment Agent
 
