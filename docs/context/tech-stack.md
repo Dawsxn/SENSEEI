@@ -36,8 +36,25 @@ Visual tokens, type scale, and component conventions live in
 | Python, FastAPI | From Table 4.6 |
 | PostgreSQL | From Table 4.6 |
 | SQLModel | Models are Pydantic models, so one definition serves both database and API |
+| SQLAlchemy async with asyncpg | Endpoints are `async def` all the way down |
 | Alembic | Migrations |
 | pydantic-settings | Configuration, read from environment variables at startup |
+
+**Async, and the reason is streaming rather than load.** A tutoring turn spends
+about eight seconds waiting: four on the Assessment Agent, four on the Tutor. On
+concurrency alone sync would be fine, since a class is around thirty students and
+FastAPI dispatches `def` handlers to a forty-thread pool. What sync cannot do is
+stream the Tutor's reply as it generates, which is how every chat interface
+behaves and which turns an eight-second blank wait into four seconds and then
+visible progress.
+
+Whether the chat actually streams is still open. Async was chosen so that it can,
+because retrofitting it later would mean changing the engine, the session
+dependency and every handler at once.
+
+One consequence worth knowing: a blocking call inside an `async def` freezes the
+whole process, not one worker. The agents are synchronous, so any call into them
+from a handler goes through `run_in_threadpool`.
 
 SQLModel rather than Prisma: Prisma is a Node and TypeScript ORM, and using it
 from Python means a third-party community client that lags upstream and has had

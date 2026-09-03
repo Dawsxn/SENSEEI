@@ -18,9 +18,26 @@ dependencies = [
 [project.optional-dependencies]
 gemini = ["google-genai>=2.9.0"]
 openai = ["openai>=1.40.0"]
+# The web app. Not needed to run the eval or the session harness.
+backend = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "sqlmodel>=0.0.22",
+  "asyncpg>=0.30",
+  "alembic>=1.14",
+  "pydantic-settings>=2.6",
+]
+dev = [
+  "pytest>=8.3",
+  "anyio>=4.6",
+  "httpx>=0.28",
+]
 
 [tool.setuptools]
-packages = ["agents", "agents.providers"]
+packages = ["agents", "agents.providers", "backend"]
 
 [tool.setuptools.package-data]
 agents = ["prompts/*.md", "rubrics/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
