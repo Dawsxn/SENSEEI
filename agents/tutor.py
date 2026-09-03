@@ -12,7 +12,9 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
-from .retry import complete_with_backoff
+from collections.abc import Iterator
+
+from .retry import complete_with_backoff, stream_with_backoff
 
 # The four situations the Orchestrator can hand over. The agent writes for the
 # one it is given; it never infers which applies.
@@ -151,3 +153,25 @@ class TutorAgent:
         if not result.text:
             result.error = "Tutor returned an empty message"
         return result
+
+    def speak_stream(self, reading, seei_step, situation, core_components=None,
+                     user_response=None, unmet=None, attempts_left=None,
+                     max_rate_limit_retries=3) -> Iterator[str]:
+        """Same as `speak`, but yields the message in pieces as it is generated.
+
+        The caller accumulates the chunks into the full text to store. Token
+        usage, if the provider reports it, is on `provider.last_usage` once the
+        stream is exhausted. A provider failure raises rather than returning a
+        TutorResult, because there is no single value to return from a generator;
+        the caller streaming to a client turns that into an error event.
+        """
+        prompt = self.build_user_prompt(
+            reading, seei_step, situation,
+            core_components=core_components,
+            user_response=user_response,
+            unmet=unmet,
+            attempts_left=attempts_left,
+        )
+        yield from stream_with_backoff(
+            self.provider, self.system_prompt, prompt, max_rate_limit_retries
+        )

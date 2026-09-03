@@ -70,6 +70,42 @@ class GeminiProvider(LLMProvider):
         self.last_finish_reason = self._finish_reason(resp)
         return resp.text or ""
 
+    def stream(self, system_prompt: str, user_prompt: str):
+        """Yield text chunks as Gemini generates them.
+
+        Usage and finish reason arrive on the streamed chunks (the totals land on
+        the last one), so `last_usage` / `last_finish_reason` are updated as the
+        stream runs and hold the final values once it is exhausted.
+        """
+        types = self._types
+        cfg_kwargs = dict(
+            system_instruction=system_prompt,
+            temperature=self.temperature,
+            max_output_tokens=self.max_output_tokens,
+        )
+        if self.json_mode:
+            cfg_kwargs["response_mime_type"] = "application/json"
+        if self.thinking_level:
+            cfg_kwargs["thinking_config"] = types.ThinkingConfig(
+                thinking_level=self.thinking_level
+            )
+        self.last_usage = None
+        self.last_finish_reason = None
+        for chunk in self.client.models.generate_content_stream(
+            model=self.model_name,
+            contents=user_prompt,
+            config=types.GenerateContentConfig(**cfg_kwargs),
+        ):
+            usage = self._usage(chunk)
+            if usage is not None:
+                self.last_usage = usage
+            reason = self._finish_reason(chunk)
+            if reason is not None:
+                self.last_finish_reason = reason
+            text = getattr(chunk, "text", None)
+            if text:
+                yield text
+
     @staticmethod
     def _usage(resp) -> dict | None:
         um = getattr(resp, "usage_metadata", None)
