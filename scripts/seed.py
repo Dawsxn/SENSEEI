@@ -93,6 +93,15 @@ TITLES = {
     "strategic_vision": "Strategic Vision",
 }
 
+#: One-line topic summaries, shown under the title in the reading list. The
+#: instructor writes these on the upload screen once it exists; for now the seed
+#: supplies them, in the same style as the mockup.
+DESCRIPTIONS = {
+    "strategy": "Coordinated actions to outperform rivals",
+    "business_model": "Customer value proposition, profit formula",
+    "strategic_vision": "Direction, market position, future course",
+}
+
 INSTRUCTOR = ("Prof. Reyes", "a.reyes@dlsu.edu.ph")
 
 STUDENTS = [
@@ -162,6 +171,7 @@ def load_readings() -> dict[str, dict]:
         text = (DATA / "readings" / filename).read_text(encoding="utf-8").strip()
         out[slug] = {
             "title": TITLES[slug],
+            "description": DESCRIPTIONS.get(slug),
             "content": text,
             # several components are joined with || in the one CSV field
             "components": [c.strip() for c in comps.split("||") if c.strip()],
@@ -396,6 +406,7 @@ def build_everything() -> list:
             id=reading_id(slug),
             uploaded_by=instructor.id,
             title=data["title"],
+            description=data["description"],
             content=data["content"],
         )
         readings[slug] = reading

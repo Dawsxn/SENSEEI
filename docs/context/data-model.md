@@ -116,6 +116,7 @@ can see (§4.3.4).
 | id | |
 | uploaded_by | Instructor |
 | title | |
+| description | A one-line topic summary, shown under the title in the reading list. Nullable. Set by the instructor on upload; see note below |
 | content | Extracted plain text. This is what the agents receive |
 | created_at | |
 
@@ -133,6 +134,12 @@ that no one caught would silently poison every session on that reading. The
 column can be added back later without a table rewrite, but readings uploaded
 before that would have no source to recover — which is exactly why the review
 step has to exist.
+
+`description` is a short topic summary the reading list shows under the title. It
+is nullable because the upload screen that would set it does not exist yet: until
+then only the seed populates it, and a reading without one simply shows no
+subtitle. The reading-list mockup shows this subtitle; the field is what backs
+it.
 
 ### core_component
 
