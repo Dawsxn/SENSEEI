@@ -7,6 +7,10 @@
 
 import { readSSE } from "./sse";
 import type {
+  ReadingDetail,
+  ReadingListItem,
+} from "../features/readings/types";
+import type {
   SessionState,
   StreamEvent,
   TutorMessageRow,
@@ -76,6 +80,18 @@ export function submitResponse(
   signal?: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
   return streamPost(`/sessions/${sessionId}/responses`, { text }, signal);
+}
+
+export async function getReadings(): Promise<ReadingListItem[]> {
+  const response = await fetch("/readings");
+  if (!response.ok) throw new Error(`readings: ${response.status}`);
+  return response.json();
+}
+
+export async function getReading(readingId: string): Promise<ReadingDetail> {
+  const response = await fetch(`/readings/${readingId}`);
+  if (!response.ok) throw new Error(`reading ${readingId}: ${response.status}`);
+  return response.json();
 }
 
 export async function getSession(sessionId: string): Promise<SessionState> {
