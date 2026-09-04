@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 import agents as agents_pkg
 from agents.assessment import AssessmentAgent
 from agents.providers import get_provider
@@ -43,6 +45,13 @@ def build_agents(settings: Settings) -> Agents:
     prompt rendering read, so it must run before the prompts are rendered and
     before any assessment is parsed.
     """
+    # A real provider reads its API key from os.environ (the key name is a
+    # setting; the key value never sits in a config dict). pydantic-settings
+    # reads .env into the Settings object but not into os.environ, so load it
+    # here too, or a real provider cannot find its key. Does not override a
+    # variable already set by the host, which is how deployments supply it.
+    load_dotenv(AGENTS_DIR.parent / ".env")
+
     load_rubric(AGENTS_DIR / "rubrics" / f"rubric_{settings.rubric_version}.yaml")
     rubric_block = render_rubric()
 
