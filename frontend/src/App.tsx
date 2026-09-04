@@ -1,7 +1,18 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import { ReadingListPage } from "./features/readings/ReadingListPage";
 import { TutoringScreen } from "./features/tutoring/TutoringScreen";
 
-// The tutoring screen is the whole app for now; it carries its own top bar. A
-// router and the other screens (reading list, sign in) arrive in later branches.
+// Two routes: the reading list (the app's home) and the tutoring screen, keyed
+// by the reading the session is on. A router and the other screens (sign in,
+// session review) arrive in later branches.
 export default function App() {
-  return <TutoringScreen />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ReadingListPage />} />
+        <Route path="/tutor/:readingId" element={<TutoringScreen />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
