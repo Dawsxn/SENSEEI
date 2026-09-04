@@ -12,7 +12,6 @@ The stub also proves the streaming path: its prose is streamed through the same
 from __future__ import annotations
 
 import json
-import os
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -129,28 +128,6 @@ def message_text(events) -> str:
 
 # --------------------------------------------------------------------------- #
 # fixtures
-
-
-@pytest.fixture
-def point_app_at_test_db(test_database_url):
-    """Make the app's global engine and settings use the test database.
-
-    The streaming service opens its own session through the module-global engine,
-    so the app has to be pointed at `senseei_test` for the duration of the test,
-    then restored so the health tests still see the dev database.
-    """
-    from backend import db as db_module
-    from backend.settings import get_settings
-
-    original = os.environ.get("DATABASE_URL")
-    os.environ["DATABASE_URL"] = test_database_url
-    get_settings.cache_clear()
-    yield test_database_url
-    if original is None:
-        os.environ.pop("DATABASE_URL", None)
-    else:
-        os.environ["DATABASE_URL"] = original
-    get_settings.cache_clear()
 
 
 @pytest.fixture
