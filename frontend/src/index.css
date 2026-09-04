@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* The SENSEE-I foundations from docs/context/design-system.md, as the CSS
+   variables shadcn/ui reads. The neutrals are shadcn's zinc scale and the
+   primary is green-600, which is what the design system is built on, so these
+   HSL values are the exact hex tokens in that doc expressed as HSL channels. */
+:root {
+  --background: 0 0% 100%; /* #ffffff */
+  --foreground: 240 10% 3.9%; /* #09090b */
+
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+
+  --primary: 142 76% 36%; /* #16a34a */
+  --primary-foreground: 0 0% 100%;
+
+  --muted: 240 4.8% 95.9%; /* #f4f4f5 */
+  --muted-foreground: 240 3.8% 46.1%; /* #71717a */
+
+  --border: 240 5.9% 90%; /* #e4e4e7 */
+  --input: 240 5.9% 90%;
+  --ring: 240 5% 64.9%; /* #a1a1aa, a quiet neutral focus ring */
+
+  /* Soft, non-punitive failure treatment: #fef2f2 / #fecaca / #b91c1c */
+  --fail: 0 86% 97%;
+  --fail-border: 0 96% 89%;
+  --fail-foreground: 0 74% 42%;
+
+  --radius: 8px;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}

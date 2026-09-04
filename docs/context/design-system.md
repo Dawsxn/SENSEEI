@@ -18,7 +18,7 @@ deliberate and it should not be changed without a reason.
 | Muted foreground | `#71717a` | Secondary text, metadata, labels |
 | Placeholder | `#a1a1aa` | Empty input text, the faintest legible tier |
 | Border | `#e4e4e7` | All hairlines, card edges, dividers |
-| Muted surface | `#f4f4f5` | Filled areas: tab strips, student messages, inactive fills |
+| Muted surface | `#f4f4f5` | Filled areas: tab strips, inactive fills |
 | Body text on fills | `#3f3f46` | Text inside muted surfaces |
 | Primary | `#16a34a` | Primary buttons, success states, passed steps |
 | Primary hover | `#15803d` | |
@@ -129,12 +129,53 @@ Drawn from shadcn. Anything not on this list is a new decision, not a default.
 
 ## Patterns
 
-Recorded as each screen settles. Empty until then, on purpose: a pattern written
-before a screen exists is a guess, and a guess in this file has the authority of
-a decision.
+Recorded as each screen settles. A pattern written before a screen exists is a
+guess, and a guess in this file has the authority of a decision, so each entry is
+added only once the screen it comes from is built.
 
-Each entry should say what the pattern is, which screen established it, and what
-it is for.
+### Tutoring chat
+
+Established by the tutoring screen (`feat/chat-ui`), from
+`design/png/04-tutoring-session.png`.
+
+- **Split screen.** Reading on the left, chat on the right, each scrolling on its
+  own. The reading stays visible the whole session.
+- **The reading pane is only the text.** No title (it is in the top bar), and
+  the core components are not pinned beside the chat. They are not hidden,
+  though: the pre-reading screen shows them, and during the session they sit
+  behind a **Components** button in the top bar, the same way the rubric does.
+  Both are reference the student opens on demand rather than material forced into
+  view. They are not an answer key — the core components are drawn from the
+  reading the student is looking at, and the Own Words criterion fails a verbatim
+  copy.
+- **Student messages** are a right-aligned bubble in the success tint `#f0fdf4`
+  with `#3f3f46` text. This is the one place the success green carries a meaning
+  other than success; it reads as "your voice", and the mockup is deliberate
+  about it. The Tutor never sits in a bubble — its prose is the screen's default
+  voice, left-aligned foreground text.
+- **The fallback message** uses the soft failure treatment (`#fef2f2` /
+  `#fecaca` / `#b91c1c`), because it is the one message that marks a step the
+  student did not pass.
+- **Steps are dividers, not tabs.** Each step's exchange sits under a hairline
+  divider labelled with the step name, which turns green with a check once the
+  step passes. Overall progress is a four-segment bar in the top bar: green for
+  passed, foreground for the current step, border-grey for the rest.
+- **A streaming reply** shows a blinking caret at its end until the message
+  completes, so a partial message is never mistaken for a finished one. Its text
+  is revealed at a steady rate rather than in the model's raw chunks, so uneven
+  streaming still reads smoothly.
+- **Waiting for the tutor** always looks the same — a row of pulsing dots —
+  whether it is the opening question or the pause after a submit while grading
+  runs. There is no separate placeholder-text state.
+- **Attempts show as three dots** on the active step's divider, where a passed
+  step shows its check. The filled dot is the attempt now being made, so its
+  position tells the student which of the three tries they are on. Subtle, in the
+  divider rather than a label over the composer.
+- **Responsive.** The two panes sit side by side from `lg` up. Below that a
+  split does not fit, so one pane shows at a time behind a Reading / Chat toggle,
+  defaulting to the chat. On a phone the top bar drops the progress bar and the
+  Rubric label (its icon stays). The compact control sizes are kept; the app is
+  still desk-first, it just no longer breaks on a narrow screen.
 
 ## Related
 

@@ -31,6 +31,7 @@ import argparse
 import asyncio
 import csv
 import sys
+import uuid
 from collections import defaultdict
 from datetime import timedelta
 from pathlib import Path
@@ -74,6 +75,17 @@ for _stream in (sys.stdout, sys.stderr):
 from backend.orchestrator import MAX_ATTEMPTS as ATTEMPT_LIMIT  # noqa: E402
 
 RUBRIC_VERSION = "v3"
+
+#: Readings get deterministic ids, derived from their slug, so the same reading
+#: keeps the same id across reseeds. That gives the frontend a stable id to enter
+#: a session with before a reading-list screen and its API exist. Everything else
+#: (users, sessions, attempts) stays random.
+SEED_NAMESPACE = uuid.uuid5(uuid.NAMESPACE_DNS, "seed.senseei.dlsu")
+
+
+def reading_id(slug: str) -> uuid.UUID:
+    """The stable id for a seeded reading. `strategy` is the frontend's dev entry."""
+    return uuid.uuid5(SEED_NAMESPACE, slug)
 
 TITLES = {
     "strategy": "Strategy",
@@ -381,7 +393,10 @@ def build_everything() -> list:
     readings: dict[str, Reading] = {}
     for slug, data in readings_data.items():
         reading = Reading(
-            uploaded_by=instructor.id, title=data["title"], content=data["content"]
+            id=reading_id(slug),
+            uploaded_by=instructor.id,
+            title=data["title"],
+            content=data["content"],
         )
         readings[slug] = reading
         rows.append(reading)
