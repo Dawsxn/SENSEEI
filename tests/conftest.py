@@ -68,6 +68,29 @@ def anyio_backend():
 
 
 @pytest.fixture
+def point_app_at_test_db(test_database_url):
+    """Make the app's global engine and settings use the test database.
+
+    A service opens its own session through the module-global engine, so the app
+    has to be pointed at `senseei_test` for the duration of the test, then
+    restored so the health tests still see the dev database.
+    """
+    import os
+
+    from backend.settings import get_settings
+
+    original = os.environ.get("DATABASE_URL")
+    os.environ["DATABASE_URL"] = test_database_url
+    get_settings.cache_clear()
+    yield test_database_url
+    if original is None:
+        os.environ.pop("DATABASE_URL", None)
+    else:
+        os.environ["DATABASE_URL"] = original
+    get_settings.cache_clear()
+
+
+@pytest.fixture
 async def fresh_engine():
     """Drop the cached engine after a test that used the module-global one.
 

@@ -27,6 +27,10 @@ class Reading(Entity, SoftDelete, table=True):
         foreign_key="app_user.id", ondelete="CASCADE", index=True
     )
     title: str
+    #: A short one-line topic summary, shown under the title in the reading list.
+    #: Nullable: a reading without one simply shows no subtitle. The instructor
+    #: will set it on the upload screen; until that exists only the seed does.
+    description: str | None = Field(default=None)
     content: str = Field(description="Extracted plain text. This is what the agents see")
     created_at: datetime = Field(default_factory=utcnow, sa_type=TS)
 
