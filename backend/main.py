@@ -15,7 +15,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .db import dispose, get_session
-from .routers import sessions
+from .routers import readings, sessions
 from .settings import Settings, get_settings
 
 
@@ -31,6 +31,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.include_router(readings.router)
 app.include_router(sessions.router)
 
 

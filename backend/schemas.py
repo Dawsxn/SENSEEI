@@ -1,4 +1,4 @@
-"""Request and response shapes for the session API.
+"""Request and response shapes for the reading and session APIs.
 
 Only the non-streaming endpoints use these. The streamed turns emit Server-Sent
 Events whose shapes are documented on the service that produces them, because a
@@ -9,10 +9,32 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
 from .models import SeeiStep, SessionStatus
+
+
+#: The reading list's per-row status, derived from the student's sessions.
+ReadingStatus = Literal["not_started", "complete", "failed"]
+
+
+class ReadingListItem(BaseModel):
+    id: uuid.UUID
+    title: str
+    description: str | None
+    class_name: str
+    status: ReadingStatus
+
+
+class ReadingDetail(BaseModel):
+    id: uuid.UUID
+    title: str
+    description: str | None
+    class_name: str
+    content: str
+    core_components: list[str]
 
 
 class StartSessionIn(BaseModel):
