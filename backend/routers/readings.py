@@ -15,8 +15,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..db import get_session
 from ..deps import get_current_user
 from ..models import User
-from ..schemas import ReadingDetail, ReadingListItem
-from ..services import reading_service
+from ..schemas import ReadingDetail, ReadingListItem, ReadingSessionItem
+from ..services import reading_service, review_service
 
 router = APIRouter(prefix="/readings", tags=["readings"])
 
@@ -42,3 +42,14 @@ async def get_reading(
     if detail is None:
         raise HTTPException(status_code=404, detail="reading not found")
     return ReadingDetail(**detail)
+
+
+@router.get("/{reading_id}/sessions", response_model=list[ReadingSessionItem])
+async def list_reading_sessions(
+    reading_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
+) -> list[ReadingSessionItem]:
+    """The student's past sessions on this reading, newest first."""
+    rows = await review_service.list_sessions_for_reading(db, user.id, reading_id)
+    return [ReadingSessionItem(**row) for row in rows]

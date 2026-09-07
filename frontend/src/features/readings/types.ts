@@ -18,3 +18,14 @@ export interface ReadingDetail {
   content: string;
   core_components: string[];
 }
+
+export type SessionStatus = "in_progress" | "complete" | "fallback";
+
+export interface ReadingSessionItem {
+  id: string;
+  index: number;
+  status: SessionStatus;
+  started_at: string;
+  ended_at: string | null;
+  attempt_count: number;
+}

@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
+import { ReadingDetailDialog } from "./ReadingDetailDialog";
 import type { ReadingListItem, ReadingStatus } from "./types";
 import { useReadings } from "./useReadings";
 
@@ -12,6 +12,7 @@ const ALL = "All classes";
 export function ReadingListPage() {
   const { data, isLoading, isError } = useReadings();
   const [classFilter, setClassFilter] = useState<string>(ALL);
+  const [openReadingId, setOpenReadingId] = useState<string | null>(null);
 
   const classes = useMemo(
     () => Array.from(new Set((data ?? []).map((r) => r.class_name))).sort(),
@@ -57,18 +58,37 @@ export function ReadingListPage() {
                 <span className="w-24" />
               </div>
               {rows.map((r, i) => (
-                <ReadingRow key={r.id} reading={r} first={i === 0} />
+                <ReadingRow
+                  key={r.id}
+                  reading={r}
+                  first={i === 0}
+                  onOpen={() => setOpenReadingId(r.id)}
+                />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      {openReadingId && (
+        <ReadingDetailDialog
+          readingId={openReadingId}
+          onClose={() => setOpenReadingId(null)}
+        />
+      )}
     </div>
   );
 }
 
-function ReadingRow({ reading, first }: { reading: ReadingListItem; first: boolean }) {
-  const navigate = useNavigate();
+function ReadingRow({
+  reading,
+  first,
+  onOpen,
+}: {
+  reading: ReadingListItem;
+  first: boolean;
+  onOpen: () => void;
+}) {
   const started = reading.status !== "not_started";
 
   return (
@@ -94,11 +114,11 @@ function ReadingRow({ reading, first }: { reading: ReadingListItem; first: boole
         </div>
         <div className="sm:w-24 sm:text-right">
           {started ? (
-            <Button variant="secondary" size="sm" disabled title="Review coming soon">
+            <Button variant="secondary" size="sm" onClick={onOpen}>
               Review
             </Button>
           ) : (
-            <Button size="sm" onClick={() => navigate(`/tutor/${reading.id}`)}>
+            <Button size="sm" onClick={onOpen}>
               Start
             </Button>
           )}

@@ -22,8 +22,14 @@ from ..agent_runtime import Agents
 from ..db import get_session
 from ..deps import get_agents_dep, get_current_user
 from ..models import User
-from ..schemas import MessageOut, SessionOut, StartSessionIn, SubmitResponseIn
-from ..services import session_service
+from ..schemas import (
+    MessageOut,
+    SessionOut,
+    SessionTranscript,
+    StartSessionIn,
+    SubmitResponseIn,
+)
+from ..services import review_service, session_service
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
@@ -95,3 +101,20 @@ async def get_transcript(
         )
         for m in messages
     ]
+
+
+@router.get("/{session_id}/transcript", response_model=SessionTranscript)
+async def get_review_transcript(
+    session_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
+) -> SessionTranscript:
+    """A finished session's read-only replay: per-step summary and full timeline.
+
+    Unlike /messages (tutor messages only, for the live screen), this interleaves
+    the student's responses so a review reads back as the session played.
+    """
+    transcript = await review_service.get_transcript(db, user.id, session_id)
+    if transcript is None:
+        raise HTTPException(status_code=404, detail="session not found")
+    return SessionTranscript(**transcript)
