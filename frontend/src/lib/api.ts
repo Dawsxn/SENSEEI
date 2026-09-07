@@ -9,7 +9,9 @@ import { readSSE } from "./sse";
 import type {
   ReadingDetail,
   ReadingListItem,
+  ReadingSessionItem,
 } from "../features/readings/types";
+import type { SessionTranscript } from "../features/review/types";
 import type {
   SessionState,
   StreamEvent,
@@ -91,6 +93,20 @@ export async function getReadings(): Promise<ReadingListItem[]> {
 export async function getReading(readingId: string): Promise<ReadingDetail> {
   const response = await fetch(`/readings/${readingId}`);
   if (!response.ok) throw new Error(`reading ${readingId}: ${response.status}`);
+  return response.json();
+}
+
+export async function getReadingSessions(
+  readingId: string,
+): Promise<ReadingSessionItem[]> {
+  const response = await fetch(`/readings/${readingId}/sessions`);
+  if (!response.ok) throw new Error(`sessions ${readingId}: ${response.status}`);
+  return response.json();
+}
+
+export async function getTranscript(sessionId: string): Promise<SessionTranscript> {
+  const response = await fetch(`/sessions/${sessionId}/transcript`);
+  if (!response.ok) throw new Error(`transcript ${sessionId}: ${response.status}`);
   return response.json();
 }
 
