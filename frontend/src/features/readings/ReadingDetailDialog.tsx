@@ -104,10 +104,7 @@ export function ReadingDetailDialog({
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t px-6 py-4">
-          <span className="text-[13px] text-muted-foreground">
-            Four steps, three attempts each.
-          </span>
+        <div className="flex items-center justify-end border-t px-6 py-4">
           <Button onClick={() => navigate(`/tutor/${readingId}`)}>
             Start a new attempt
           </Button>
