@@ -62,3 +62,42 @@ class MessageOut(BaseModel):
     moves: list[str] | None
     content: str
     created_at: datetime
+
+
+# --- review: past sessions on a reading, and one session's replay -------------
+
+
+class ReadingSessionItem(BaseModel):
+    id: uuid.UUID
+    index: int  # 1-based order taken; the newest is the highest "Attempt N"
+    status: SessionStatus
+    started_at: datetime
+    ended_at: datetime | None
+    attempt_count: int
+
+
+class StepSummary(BaseModel):
+    step: SeeiStep
+    attempts: int
+    passed: bool
+
+
+class TranscriptEntry(BaseModel):
+    role: Literal["tutor", "student", "fallback"]
+    step: SeeiStep
+    content: str
+    attempt_number: int | None
+    at: datetime
+
+
+class SessionTranscript(BaseModel):
+    id: uuid.UUID
+    reading_id: uuid.UUID
+    reading_title: str
+    class_name: str
+    index: int  # which attempt at the reading this session is
+    status: SessionStatus
+    started_at: datetime
+    ended_at: datetime | None
+    steps: list[StepSummary]
+    timeline: list[TranscriptEntry]
