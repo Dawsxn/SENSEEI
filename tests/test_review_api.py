@@ -114,7 +114,11 @@ async def reviewable(point_app_at_test_db):
         first = new_session(me, utcnow() - timedelta(days=2))
         second = new_session(me, utcnow() - timedelta(days=1))
         theirs = new_session(other, utcnow() - timedelta(days=1))
-        s.add_all([first, second, theirs])
+        # an abandoned, still in-progress session: newest, but must not be listed
+        abandoned = new_session(me, utcnow())
+        abandoned.status = SessionStatus.IN_PROGRESS
+        abandoned.ended_at = None
+        s.add_all([first, second, theirs, abandoned])
         await s.flush()
 
         # first session: a single State attempt that passed
@@ -173,7 +177,8 @@ async def test_lists_my_sessions_newest_first(reviewable):
     async with make_client() as client:
         rows = (await client.get(f"/readings/{reviewable['reading']}/sessions")).json()
 
-    # my two sessions only — the other student's is not here
+    # my two finished sessions only — not the other student's, and not my own
+    # abandoned in-progress one (newest, but not a real past attempt)
     assert [r["id"] for r in rows] == [str(reviewable["second"]), str(reviewable["first"])]
     # newest first, but indexed in the order taken
     assert [r["index"] for r in rows] == [2, 1]

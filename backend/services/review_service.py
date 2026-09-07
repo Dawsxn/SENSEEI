@@ -34,11 +34,22 @@ async def list_sessions_for_reading(
     `index` is the 1-based ordinal in the order they were taken, so the newest
     session on a reading tried three times is "Attempt 3". It is the student's
     own data, so ownership is the only scope.
+
+    Only finished sessions are listed. An in-progress session is not resumable
+    and is discarded when the student leaves (the discard flow is not built yet,
+    so abandoned ones linger); listing them would contradict the reading list,
+    which counts a reading with only an abandoned session as "not started".
     """
     sessions = list(
         await db.scalars(
             select(Session)
-            .where(Session.student_id == user_id, Session.reading_id == reading_id)
+            .where(
+                Session.student_id == user_id,
+                Session.reading_id == reading_id,
+                Session.status.in_(
+                    [SessionStatus.COMPLETE.value, SessionStatus.FALLBACK.value]
+                ),
+            )
             .order_by(Session.started_at)
         )
     )
@@ -102,6 +113,9 @@ async def get_transcript(
         .where(
             Session.student_id == user_id,
             Session.reading_id == sess.reading_id,
+            Session.status.in_(
+                [SessionStatus.COMPLETE.value, SessionStatus.FALLBACK.value]
+            ),
             Session.started_at <= sess.started_at,
         )
     )
