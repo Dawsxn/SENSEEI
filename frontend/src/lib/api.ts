@@ -7,6 +7,11 @@
 
 import { readSSE } from "./sse";
 import type {
+  AuthConfig,
+  AuthUser,
+  DevUser,
+} from "../features/auth/types";
+import type {
   ReadingDetail,
   ReadingListItem,
   ReadingSessionItem,
@@ -82,6 +87,39 @@ export function submitResponse(
   signal?: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
   return streamPost(`/sessions/${sessionId}/responses`, { text }, signal);
+}
+
+// --- auth --------------------------------------------------------------------
+
+export async function getMe(): Promise<AuthUser> {
+  const response = await fetch("/auth/me");
+  if (!response.ok) throw new Error(`me: ${response.status}`);
+  return response.json();
+}
+
+export async function getAuthConfig(): Promise<AuthConfig> {
+  const response = await fetch("/auth/config");
+  if (!response.ok) throw new Error(`auth config: ${response.status}`);
+  return response.json();
+}
+
+export async function getDevUsers(): Promise<DevUser[]> {
+  const response = await fetch("/auth/dev/users");
+  if (!response.ok) throw new Error(`dev users: ${response.status}`);
+  return response.json();
+}
+
+export async function devLogin(userId: string): Promise<void> {
+  const response = await fetch("/auth/dev/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: userId }),
+  });
+  if (!response.ok) throw new Error(`dev login: ${response.status}`);
+}
+
+export async function logout(): Promise<void> {
+  await fetch("/auth/logout", { method: "POST" });
 }
 
 export async function getReadings(): Promise<ReadingListItem[]> {
