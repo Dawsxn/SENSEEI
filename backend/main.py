@@ -13,9 +13,10 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.middleware.sessions import SessionMiddleware
 
 from .db import dispose, get_session
-from .routers import readings, sessions
+from .routers import auth, readings, sessions
 from .settings import Settings, get_settings
 
 
@@ -31,6 +32,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Signs the session cookie the auth flow sets. same_site="lax" lets the cookie
+# ride the top-level redirect back from Google; https_only is on outside local.
+_settings = get_settings()
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=_settings.session_secret,
+    same_site="lax",
+    https_only=_settings.environment != "local",
+)
+
+app.include_router(auth.router)
 app.include_router(readings.router)
 app.include_router(sessions.router)
 
