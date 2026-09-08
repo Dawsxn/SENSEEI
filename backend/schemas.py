@@ -13,7 +13,18 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from .models import SeeiStep, SessionStatus
+from .models import Role, SeeiStep, SessionStatus
+
+
+class UserOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    email: str
+    role: Role
+
+
+class DevLoginIn(BaseModel):
+    user_id: uuid.UUID
 
 
 #: The reading list's per-row status, derived from the student's sessions.
