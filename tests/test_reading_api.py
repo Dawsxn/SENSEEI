@@ -29,7 +29,7 @@ from backend.models import (
     utcnow,
 )
 
-pytestmark = pytest.mark.usefixtures("fresh_engine")
+pytestmark = pytest.mark.usefixtures("fresh_engine", "auth_seed_student")
 
 
 def make_client() -> AsyncClient:

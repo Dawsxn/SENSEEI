@@ -23,7 +23,7 @@ from agents.rubric import criteria_for, load_rubric
 from backend.agent_runtime import Agents
 from backend.models import Attempt, CoreComponent, Reading, Role, User
 
-pytestmark = pytest.mark.usefixtures("fresh_engine")
+pytestmark = pytest.mark.usefixtures("fresh_engine", "auth_seed_student")
 
 
 # --------------------------------------------------------------------------- #
