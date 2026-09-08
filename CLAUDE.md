@@ -50,8 +50,9 @@ third agent.
   under async, lazy loads raise, so queries use explicit joins), `orchestrator.py`
   (the fixed-rule loop: pass/fail, retries, step advancement — pure, no LLM and no
   database), `services/` (the imperative shell that carries a decision out, over
-  Server-Sent Events), `routers/` (the HTTP endpoints), and `deps.py` (a stubbed
-  student identity until `feat/auth`, and the agent pair). Imports the agents
+  Server-Sent Events), `routers/` (the HTTP endpoints), `auth.py` (Google OAuth,
+  the DLSU restriction and the instructor allowlist), and `deps.py` (the current
+  user from the session cookie, and the agent pair). Imports the agents
   rather than reimplementing them. Run it with `uvicorn backend.main:app --reload`,
   after `docker compose up -d --wait`.
 - `migrations/` — Alembic, reading its URL from `backend.settings`. Bring a
