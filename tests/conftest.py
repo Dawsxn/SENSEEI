@@ -68,6 +68,36 @@ def anyio_backend():
 
 
 @pytest.fixture
+def auth_seed_student():
+    """Make the API tests act as the seeded student.
+
+    get_current_user now reads a session cookie; these tests predate auth and
+    hit the endpoints directly, so this overrides it with a session-free lookup
+    of the seeded student — the user a signed-in student would resolve to. The
+    auth tests do not use this fixture; they exercise the real dependency.
+    """
+    from sqlalchemy import select
+
+    from backend.db import sessionmaker
+    from backend.deps import get_current_user
+    from backend.main import app
+    from backend.models import Role, User
+
+    async def _current():
+        async with sessionmaker()() as s:
+            user = await s.scalar(select(User).where(User.google_sub == "seed-student-1"))
+            if user is None:
+                user = await s.scalar(
+                    select(User).where(User.role == Role.STUDENT).order_by(User.created_at)
+                )
+        return user
+
+    app.dependency_overrides[get_current_user] = _current
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
+
+
+@pytest.fixture
 def point_app_at_test_db(test_database_url):
     """Make the app's global engine and settings use the test database.
 

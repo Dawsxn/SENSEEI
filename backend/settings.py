@@ -49,6 +49,35 @@ class Settings(BaseSettings):
     # --- app ---------------------------------------------------------------
     environment: str = "local"   # local | development | production
 
+    # --- auth --------------------------------------------------------------
+    # Google OAuth client, from the Google Cloud console. Sign-in is disabled
+    # (real flow) when these are blank, but the dev bypass still works.
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    # Signs the session cookie. Must be a real random value in any deployed
+    # environment; a blank one is only tolerable for the dev bypass locally.
+    session_secret: str = "dev-insecure-change-me"
+    # The public origin the browser uses, for building the OAuth redirect URI.
+    # In dev the browser is on Vite (5173), which proxies /auth to the backend.
+    app_base_url: str = "http://localhost:5173"
+    # Comma-separated emails that sign in as instructors. Everyone else is a
+    # student. The list is the source of truth; the role is written per login.
+    instructor_emails: str = ""
+    # Sign in as a seeded user without Google. Forced off in production.
+    auth_dev_bypass: bool = True
+
+    @property
+    def instructor_allowlist(self) -> set[str]:
+        return {e.strip().lower() for e in self.instructor_emails.split(",") if e.strip()}
+
+    @property
+    def dev_bypass_enabled(self) -> bool:
+        return self.auth_dev_bypass and self.environment != "production"
+
+    @property
+    def oauth_redirect_uri(self) -> str:
+        return f"{self.app_base_url.rstrip('/')}/auth/callback"
+
     def provider_config(self) -> dict:
         """The dict agents.providers.get_provider() expects."""
         return {
