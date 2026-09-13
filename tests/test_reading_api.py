@@ -2,8 +2,12 @@
 
 The scenario is built to exercise the visibility boundary: a student enrolled in
 one class must see the readings assigned to it and, crucially, must not see a
-reading assigned only to a class they are not in. Status derivation and the
-detail 404 are checked on the same fixture.
+reading assigned only to a class they are not in. Status derivation, the detail
+404 and the file endpoint are checked on the same fixture.
+
+Both the visible and the invisible reading carry a stored file, so the file
+endpoint is asked the question that matters: the bytes exist, and the boundary
+alone decides whether this student gets them.
 """
 
 from __future__ import annotations
@@ -21,6 +25,7 @@ from backend.models import (
     Enrolment,
     Reading,
     ReadingAssignment,
+    ReadingFile,
     Session,
     SessionStatus,
     User,
@@ -36,6 +41,12 @@ def make_client() -> AsyncClient:
     from backend.main import app
 
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+
+
+#: Not a real document. The endpoint hands bytes back untouched and never parses
+#: them, so a recognisable header and a distinct body are all a test needs.
+PDF_BYTES = b"%PDF-1.7 strategy fixture"
+OTHER_PDF_BYTES = b"%PDF-1.7 invisible fixture"
 
 
 def _session(student_id, reading_id, status, days_ago):
@@ -92,6 +103,15 @@ async def world(point_app_at_test_db):
         r_other = reading("Strategic Vision", "Direction, market position")        # B only — invisible
         s.add_all([r_done, r_new, r_failed, r_progress, r_other])
         await s.flush()
+
+        # a stored file on one visible reading and on the invisible one; r_new
+        # deliberately has none, which is every reading until uploads exist
+        s.add_all([
+            ReadingFile(reading_id=r_done.id, filename="strategy.pdf",
+                        byte_size=len(PDF_BYTES), data=PDF_BYTES),
+            ReadingFile(reading_id=r_other.id, filename="vision.pdf",
+                        byte_size=len(OTHER_PDF_BYTES), data=OTHER_PDF_BYTES),
+        ])
 
         s.add(CoreComponent(reading_id=r_done.id, text="a coordinated set of actions", position=0))
         s.add_all([
@@ -179,4 +199,43 @@ async def test_detail_of_an_unseen_reading_is_404(world):
 async def test_detail_of_a_missing_reading_is_404(world):
     async with make_client() as client:
         r = await client.get(f"/readings/{uuid.uuid4()}")
+    assert r.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_detail_reports_whether_a_file_is_stored(world):
+    async with make_client() as client:
+        with_file = (await client.get(f"/readings/{world['done']}")).json()
+        without = (await client.get(f"/readings/{world['new']}")).json()
+
+    assert with_file["has_file"] is True
+    # no file is not an error: the reading falls back to its extracted text
+    assert without["has_file"] is False
+
+
+@pytest.mark.anyio
+async def test_file_returns_the_stored_pdf(world):
+    async with make_client() as client:
+        r = await client.get(f"/readings/{world['done']}/file")
+
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "application/pdf"
+    assert "strategy.pdf" in r.headers["content-disposition"]
+    # scoped to one student, so it must never reach a shared cache
+    assert "private" in r.headers["cache-control"]
+    assert r.content == PDF_BYTES
+
+
+@pytest.mark.anyio
+async def test_file_of_an_unseen_reading_is_404(world):
+    """The file exists; the student is not enrolled in the class it belongs to."""
+    async with make_client() as client:
+        r = await client.get(f"/readings/{world['other']}/file")
+    assert r.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_file_of_a_reading_without_one_is_404(world):
+    async with make_client() as client:
+        r = await client.get(f"/readings/{world['new']}/file")
     assert r.status_code == 404
