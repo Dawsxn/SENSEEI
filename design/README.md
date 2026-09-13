@@ -12,6 +12,12 @@ about 2 MB per build, so `.gitignore` keeps `design/**/*.html` out while allowin
 Rebuilding is done by the `/design` skill in Claude Code, which owns the assembly
 step. Ask it to rebuild the canvas from the sources in this directory.
 
+To regenerate a single PNG without building the whole canvas:
+
+```
+python scripts/render_artboard.py design/ReadingStep.dc.html design/png/03c-reading-step.png 1440 900 "state=Reading"
+```
+
 ## The screens
 
 Click any of these to view it. `png/` is regenerated from the sources whenever a
