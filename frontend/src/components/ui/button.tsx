@@ -13,6 +13,11 @@ const buttonVariants = cva(
         primary: "bg-primary text-primary-foreground hover:bg-primary/90",
         secondary: "border bg-background hover:bg-muted",
         ghost: "hover:bg-muted",
+        // Destructive actions use the design system's soft failure treatment,
+        // not a solid red fill: the palette keeps solid colour for primary
+        // actions and success only.
+        danger:
+          "border border-fail-border bg-fail text-fail-foreground hover:bg-fail-border/40",
       },
       size: {
         default: "h-9 px-4",

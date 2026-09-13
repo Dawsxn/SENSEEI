@@ -20,6 +20,7 @@ from ..models import (
     Enrolment,
     Reading,
     ReadingAssignment,
+    ReadingFile,
     Session,
     SessionStatus,
 )
@@ -120,6 +121,11 @@ async def get_reading_detail(
         .where(CoreComponent.reading_id == reading_id)
         .order_by(CoreComponent.position)
     )
+    # Only the id: selecting the row would pull the whole PDF along with it, and
+    # all the caller needs to know is which pane to render.
+    has_file = await db.scalar(
+        select(ReadingFile.id).where(ReadingFile.reading_id == reading_id)
+    )
     return {
         "id": reading.id,
         "title": reading.title,
@@ -127,4 +133,30 @@ async def get_reading_detail(
         "class_name": class_name,
         "content": reading.content,
         "core_components": list(components),
+        "has_file": has_file is not None,
     }
+
+
+async def get_reading_file(
+    db: AsyncSession, user_id: uuid.UUID, reading_id: uuid.UUID
+) -> ReadingFile | None:
+    """The original upload of a reading the student can see.
+
+    Goes through `_visible_readings` like every other read here rather than
+    looking the file up by id directly. This is a new way to pull bytes out of
+    the database, and a second path to them would be a second place for the
+    enrolment boundary to be got wrong.
+
+    Returns None when the reading is invisible, missing, or has no file — the
+    router turns all three into the same 404.
+    """
+    hit = (
+        await db.execute(
+            _visible_readings(user_id)
+            .add_columns(ReadingFile)
+            .join(ReadingFile, ReadingFile.reading_id == Reading.id)
+            .where(Reading.id == reading_id)
+            .limit(1)
+        )
+    ).first()
+    return None if hit is None else hit[2]

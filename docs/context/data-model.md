@@ -58,6 +58,7 @@ erDiagram
     CLASS ||--o{ READING_ASSIGNMENT : "is assigned"
 
     READING ||--o{ CORE_COMPONENT : defines
+    READING ||--|| READING_FILE : "read from"
     READING ||--o{ READING_ASSIGNMENT : "assigned to"
     READING ||--o{ SESSION : "studied in"
 
@@ -120,26 +121,57 @@ can see (§4.3.4).
 | content | Extracted plain text. This is what the agents receive |
 | created_at | |
 
-**Only the extracted text is stored, not the original upload.** The instructor
-reviews and corrects `content` before the reading goes live, which makes it
-human-approved copy rather than a lossy machine guess — so re-running a better
-parser over it later would be pointless, since a person already signed off on
-what it says. Nothing in the app ever reads the original file: the agents, the
-grading and the analytics all work from `content`. Retaining the source and
-reviewing the extraction solve the same problem, and only one is needed.
+**A reading has two faces, and they have different audiences.** `content` is the
+extracted plain text, and it is what both agents grade against. The original
+upload, in `reading_file`, is what the student reads on screen.
 
-That makes the review-at-upload step load-bearing rather than a nicety. Extraction
-is lossy, `content` is what every agent grades against, and a mangled extraction
-that no one caught would silently poison every session on that reading. The
-column can be added back later without a table rewrite, but readings uploaded
-before that would have no source to recover — which is exactly why the review
-step has to exist.
+This reverses an earlier decision to store only the extracted text. That decision
+rested on a premise that no longer holds: that nothing but the agents ever
+consumes a reading. Once the student reads the document itself — with its
+figures, tables and layout intact — the original is no longer a redundant copy of
+`content`, it is a second thing, shown to a second audience.
+
+The two must not drift, and the only thing keeping them together is the review
+step at upload. That was true before and is more true now: extraction is lossy,
+`content` is what every agent grades against, and a mangled extraction nobody
+caught would silently poison every session on that reading. The difference is
+that a student can now *see* what the agent could not, so a figure dropped in
+extraction is no longer invisible — it is a student citing something the
+Assessment Agent was never shown.
+
+**The upload flow closes that gap, and does not exist yet.** The intended shape:
+the instructor uploads a PDF, it is parsed to text, figures are rendered as
+textual descriptions, and the instructor edits the result before the reading goes
+live. Until then, `reading_file` is populated only by the seed, and a reading
+without one falls back to showing `content`.
 
 `description` is a short topic summary the reading list shows under the title. It
 is nullable because the upload screen that would set it does not exist yet: until
 then only the seed populates it, and a reading without one simply shows no
 subtitle. The reading-list mockup shows this subtitle; the field is what backs
 it.
+
+### reading_file
+
+The instructor's original upload. Exactly one per reading, or none.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| reading_id | Unique — one file per reading |
+| filename | |
+| media_type | `application/pdf` |
+| byte_size | |
+| data | The bytes |
+| created_at | |
+
+**A separate table, not a column on `reading`.** The reading list selects whole
+reading rows, so a blob on that model would be pulled across the wire by every
+request that only wanted a title. Nothing but the file endpoint reads this table.
+
+Stored in Postgres rather than object storage: a course's readings are a handful
+of files, one deploy artifact is simpler than two, and the existing backup covers
+them. If readings ever number in the thousands this is the row to move out.
 
 ### core_component
 

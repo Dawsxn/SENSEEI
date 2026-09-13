@@ -5,16 +5,18 @@
     alembic upgrade head
     python scripts/seed.py
 
-One instructor, two classes, five students, and the three expository texts that
-already have core components written for them. Several students have real
+One instructor, two classes, five students, and four expository texts. Several students have real
 sessions behind them, with attempts, assessments and per-criterion judgments, so
 the instructor dashboard has something to return and its queries can be checked
 against numbers a human can count.
 
 Two things here are real rather than invented:
 
-- **The reading texts and their core components** come from the eval dataset, so
-  the app and the eval harness study the same material.
+- **Three of the reading texts and their core components** come from the eval
+  dataset, so the app and the eval harness study the same material. The fourth,
+  the tennis reading, is written for this repository: it is the only one whose
+  figures carry detail the prose does not, which is what makes it a test of
+  grading a student who answers by pointing at one.
 - **The student responses** are rows from that dataset too, each already
   labelled with the verdict it should get and the criteria it was written to
   fail. That is why the seeded pass/fail pattern is coherent rather than
@@ -51,6 +53,7 @@ from backend.models import (
     Enrolment,
     Reading,
     ReadingAssignment,
+    ReadingFile,
     Role,
     Session,
     SessionStatus,
@@ -63,6 +66,11 @@ from backend.settings import get_settings
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "assessment-agent-eval" / "data"
+
+#: The original PDFs of the seeded readings, named by slug. These are the real
+#: documents the extracted text in the eval dataset came from, so what a seeded
+#: student reads on screen is what the agents grade against.
+PDFS = ROOT / "scripts" / "fixtures" / "readings"
 
 for _stream in (sys.stdout, sys.stderr):
     try:
@@ -102,6 +110,27 @@ DESCRIPTIONS = {
     "strategic_vision": "Direction, market position, future course",
 }
 
+#: A fourth reading that is not from the eval dataset, and deliberately so.
+#: Its PDF carries two diagrams whose detail the prose does not repeat, which is
+#: the only way to check what happens when a student answers by pointing at a
+#: figure: the student sees the diagram, the Assessment Agent sees the bracketed
+#: description of it in `content`, and the grade should come out the same.
+#:
+#: Its text and PDF live beside the other fixtures. `content` here is what the
+#: upload flow will one day produce automatically — extracted prose with each
+#: figure written out in words, reviewed by the instructor before going live.
+TENNIS = {
+    "slug": "tennis_recovery",
+    "title": "Recovery to the Bisector",
+    "description": "Where to stand between shots in tennis",
+    "components": [
+        "After hitting, the player recovers to the line that bisects the angle "
+        "of the opponent's possible replies, not to the centre of the court.",
+        "That bisector is drawn from the ball, so the correct recovery point "
+        "moves every time the ball does.",
+    ],
+}
+
 INSTRUCTOR = ("Prof. Reyes", "a.reyes@dlsu.edu.ph")
 
 STUDENTS = [
@@ -112,7 +141,11 @@ STUDENTS = [
     ("Rafael Lim", "rafael_lim@dlsu.edu.ph"),
 ]
 
-CLASSES = [("STSWENG - S11", "S11-4KQ2"), ("STSWENG - S12", "S12-9TXM")]
+#: Two different courses, not two sections of one. A student can be enrolled in
+#: both, which is what gives the reading list's class filter something to filter
+#: — and it cannot happen with two sections of the same course, where enrolment
+#: in one excludes the other.
+CLASSES = [("STSWENG - S11", "S11-4KQ2"), ("STRAMA - K31", "K31-9TXM")]
 
 #: Which steps each seeded session gets, and the verdict of every attempt within
 #: them. Outcomes are spread on purpose: a dashboard where everyone passes on
@@ -130,17 +163,26 @@ PLANS: dict[str, list[list[str]]] = {
     "in_progress": [["PASS"], ["FAIL"]],
 }
 
-#: student index, reading slug, plan, and how many days ago it happened
+#: Student index, reading slug, plan, and how many days ago it happened.
+#:
+#: Every pair here must be one the student can actually see, or the session is
+#: unreachable: the reading list derives its status through the same visibility
+#: query, and the review screen lists sessions per reading the same way.
+#:
+#: The tennis reading has no sessions. Its responses would have to come from the
+#: eval dataset, which does not cover it, and leaving it unattempted is also what
+#: makes it the clean one to test a fresh session against.
 SESSIONS = [
-    (0, "strategy", "clean", 11),
-    (1, "strategy", "one_retry", 10),
+    (0, "business_model", "clean", 11),
+    (1, "business_model", "one_retry", 10),
+    (2, "business_model", "two_retries", 8),
     (2, "strategy", "fallback", 9),
-    (3, "strategy", "two_retries", 8),
-    (1, "business_model", "clean", 6),
-    (2, "business_model", "one_retry", 5),
-    (4, "business_model", "fallback", 4),
-    (0, "strategic_vision", "two_retries", 2),
-    (3, "strategic_vision", "in_progress", 1),
+    (3, "strategy", "clean", 7),
+    (4, "strategy", "one_retry", 6),
+    (3, "strategic_vision", "fallback", 4),
+    (4, "strategic_vision", "two_retries", 3),
+    # a second, abandoned attempt: not resumable, so it must read as not started
+    (0, "business_model", "in_progress", 1),
 ]
 
 MOVES = {
@@ -156,7 +198,12 @@ MOVES = {
 
 
 def load_readings() -> dict[str, dict]:
-    """Reading text from the .txt files, core components from the eval CSV."""
+    """The four readings: text, core components and the original PDF.
+
+    Three come from the eval dataset, keyed by the CSV's reading filename. The
+    tennis reading is appended separately because it has no eval rows — it is a
+    fixture for the figure-reference case, not study material.
+    """
     csv_path = sorted(DATA.glob("example_set_v*.csv"))[-1]
     components: dict[str, str] = {}
     with open(csv_path, encoding="utf-8-sig", newline="") as f:
@@ -169,13 +216,26 @@ def load_readings() -> dict[str, dict]:
         if slug not in TITLES:
             continue  # a reading with no core components is not seeded
         text = (DATA / "readings" / filename).read_text(encoding="utf-8").strip()
+        pdf = PDFS / f"{slug}.pdf"
         out[slug] = {
             "title": TITLES[slug],
             "description": DESCRIPTIONS.get(slug),
             "content": text,
             # several components are joined with || in the one CSV field
             "components": [c.strip() for c in comps.split("||") if c.strip()],
+            # A reading without a PDF is not an error: it falls back to the text
+            # view, which is what every reading does until the upload flow exists.
+            "pdf": pdf.read_bytes() if pdf.exists() else None,
         }
+
+    tennis_pdf = PDFS / f"{TENNIS['slug']}.pdf"
+    out[TENNIS["slug"]] = {
+        "title": TENNIS["title"],
+        "description": TENNIS["description"],
+        "content": (PDFS / f"{TENNIS['slug']}.txt").read_text(encoding="utf-8").strip(),
+        "components": TENNIS["components"],
+        "pdf": tennis_pdf.read_bytes() if tennis_pdf.exists() else None,
+    }
     return out
 
 
@@ -394,7 +454,8 @@ def build_everything() -> list:
     ]
     rows += students
 
-    # first three in S11, last three in S12, so one student sits in both
+    # first three in STSWENG, last three in STRAMA, so the middle student takes
+    # both courses and sees the readings of each
     for student in students[:3]:
         rows.append(Enrolment(student_id=student.id, class_id=classes[0].id))
     for student in students[2:]:
@@ -411,6 +472,15 @@ def build_everything() -> list:
         )
         readings[slug] = reading
         rows.append(reading)
+        if data["pdf"] is not None:
+            rows.append(
+                ReadingFile(
+                    reading_id=reading.id,
+                    filename=f"{slug}.pdf",
+                    byte_size=len(data["pdf"]),
+                    data=data["pdf"],
+                )
+            )
         for position, component in enumerate(data["components"]):
             rows.append(
                 CoreComponent(
@@ -418,11 +488,13 @@ def build_everything() -> list:
                 )
             )
 
-    # strategy to both classes, the other two to one each
+    # Each reading belongs to exactly one class. Assigning one to both would
+    # show it twice to the student enrolled in both, because visibility is
+    # resolved per class: two rows for one reading.
     for class_index, slug in (
-        (0, "strategy"),
-        (1, "strategy"),
         (0, "business_model"),
+        (0, "tennis_recovery"),
+        (1, "strategy"),
         (1, "strategic_vision"),
     ):
         rows.append(
@@ -457,7 +529,7 @@ def build_everything() -> list:
 INSERT_WAVES: tuple[tuple[type, ...], ...] = (
     (User,),
     (Class, Reading),
-    (Enrolment, CoreComponent, ReadingAssignment, Session),
+    (Enrolment, CoreComponent, ReadingAssignment, ReadingFile, Session),
     (Attempt,),
     (Assessment,),
     (CriterionJudgment, TutorMessage),
@@ -504,6 +576,7 @@ async def count_rows(session: AsyncSession) -> list[tuple[str, int]]:
         Reading,
         CoreComponent,
         ReadingAssignment,
+        ReadingFile,
         Session,
         Attempt,
         Assessment,

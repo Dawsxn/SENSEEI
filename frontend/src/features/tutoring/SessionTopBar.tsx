@@ -13,6 +13,7 @@ interface SessionTopBarProps {
   currentStep: SeeiStep | null;
   status: SessionStatus | null;
   phase: Phase;
+  onExit: () => void;
 }
 
 /** The tutoring screen's own top bar: exit, the reading, step progress, rubric.
@@ -26,13 +27,14 @@ export function SessionTopBar({
   currentStep,
   status,
   phase,
+  onExit,
 }: SessionTopBarProps) {
   const currentIndex = currentStep ? STEPS.indexOf(currentStep) : 0;
   const complete = status === "complete" || phase === "terminal";
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b px-2 sm:px-4">
-      <Button variant="ghost" size="icon" aria-label="Leave session">
+      <Button variant="ghost" size="icon" aria-label="Leave session" onClick={onExit}>
         <X className="h-[18px] w-[18px] text-muted-foreground" />
       </Button>
 

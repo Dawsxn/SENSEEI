@@ -1,0 +1,90 @@
+Recovery to the Bisector
+
+Between one shot and the next, a tennis player has to stand somewhere. Where
+that somewhere should be is one of the few questions in the sport with a
+geometric answer, and the answer is not the middle of the court.
+
+After striking the ball, a player recovers: they move back toward a waiting
+position to prepare for the reply. The instinctive choice is the centre mark,
+the small line in the middle of the baseline. It looks fair. It sits the same
+distance from both corners, and a player who has just been pulled wide feels
+the pull of it. But the centre mark is only the correct answer when the ball is
+also in the centre, and most of the time it is not.
+
+The reply the player has to cover is not a single shot but a range of them. The
+opponent, standing where they are, can hit anywhere between two extremes: the
+straightest ball down the line, and the sharpest angle across the court. Those
+two extremes fan out from the ball and enclose every reply that is physically
+available. Coaches call the shape they enclose the reply cone. The player's
+job is not to guess which shot inside the cone is coming; it is to stand where
+no shot in the cone is far away.
+
+That place is the bisector: the line that cuts the reply cone into two equal
+halves. Standing on it does not shorten every run, and it is worth being clear
+about that. It shortens the longest one. Move off the bisector in either
+direction and the reply on the far side moves further away, and it is the
+furthest reply, not the average one, that decides whether a ball is reached at
+all.
+
+[Figure 1. The reply cone and its bisector. A tennis court drawn from above,
+with the player's half at the top and the opponent's half at the bottom. The
+ball sits wide on the left of the opponent's baseline, slightly outside the
+singles sideline. Two dashed lines run forward from the ball: one travels
+straight up the left sideline to the far corner, marking the down-the-line
+reply; the other cuts steeply across to the far side of the court near the
+service line, marking the sharpest cross-court reply. The wedge between the two
+dashed lines is shaded, and labelled "reply cone". A solid line runs from the
+ball through the middle of that wedge, dividing it into two equal angles, and
+meets the player's baseline at a point marked with a filled dot and labelled
+"B, recovery point". The centre mark of the player's baseline is labelled "C"
+and sits about a metre to the left of B. An arrow between C and B is labelled
+"about 1 m".]
+
+Figure 1 shows the consequence that surprises most players. The ball is wide on
+the player's left, and the recovery point sits to the right of the centre mark,
+away from the ball. The instinct is the opposite: to drift back toward the side
+the ball is on, because that is where the last shot was. But the danger is not
+where the ball is. The danger is the open court the opponent can now reach, and
+that court is on the other side.
+
+[Figure 2. Covering from the centre mark against covering from the bisector.
+The same court and the same wide ball. Two balls that have to be covered are
+marked: one deep and down the line near the far left corner, and one short and
+sharp across court by the right service line. Two positions are marked on the
+player's baseline: C at the centre mark and B on the bisector. Four dotted
+lines run from those positions to those two balls, each labelled with its
+length. From C the runs are 4.2 m and 6.9 m. From B they are 5.2 m and 6.3 m.
+The caption reads: moving to B makes the shorter run longer, which is the cost,
+and the longer run shorter, which is the point. The centre mark is equidistant
+from the corners of the court, but not from the shots that are actually
+available.]
+
+The trade in Figure 2 is the whole idea in miniature. A player at the centre
+mark covers one reply beautifully and the other barely at all; a player on the
+bisector covers both adequately. Only one of those survives an opponent who
+aims at the gap. And the word that does the work is available: the centre mark
+is a fact about the court. The bisector is a fact about the situation. A player standing
+at the centre mark is defending a court; a player standing on the bisector is
+defending against an opponent.
+
+Because the bisector is drawn from the ball, it moves whenever the ball moves.
+There is no fixed spot to return to and no habit that survives more than one
+shot. A ball hit to the opponent's left produces one recovery point; the same
+opponent, two steps to their right, produces another. The player who has
+memorised a position will be correct occasionally and by accident. The player
+who reads the ball will be roughly correct every time, which in a rally is
+worth far more.
+
+Where the ball is                Where to recover
+-------------------------------  ------------------------------------------
+Centred on the baseline          The centre mark: the cone is symmetrical
+Wide on the player's left        A step or so right of the centre mark
+Wide on the player's right       A step or so left of the centre mark
+Short and wide                   Further across, and closer in, because a
+                                 short ball opens a sharper angle
+
+This is also why recovery is described as a movement rather than a place.
+Between the moment a player finishes their shot and the moment the opponent
+strikes theirs, the correct standing point is still being determined by a ball
+that is still travelling. Good recovery is not arriving at a spot. It is
+arriving at the spot the ball has just finished defining.

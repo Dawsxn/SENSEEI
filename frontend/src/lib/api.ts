@@ -134,6 +134,15 @@ export async function getReading(readingId: string): Promise<ReadingDetail> {
   return response.json();
 }
 
+/** Where a reading's original PDF is served from.
+ *
+ * A URL rather than a fetch: the viewer and the download link both hand it
+ * straight to the browser, which streams and caches it far better than we would
+ * by pulling the bytes through JavaScript. */
+export function readingFileUrl(readingId: string): string {
+  return `/readings/${readingId}/file`;
+}
+
 export async function getReadingSessions(
   readingId: string,
 ): Promise<ReadingSessionItem[]> {

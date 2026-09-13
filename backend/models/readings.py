@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Index, text
+from sqlalchemy import Index, LargeBinary, text
 from sqlmodel import Field
 
 from .base import TS, Entity, SoftDelete, utcnow
@@ -14,11 +14,14 @@ from .base import TS, Entity, SoftDelete, utcnow
 class Reading(Entity, SoftDelete, table=True):
     """An expository text an instructor uploaded.
 
-    `content` is the whole story. The original upload is deliberately not
-    retained: the instructor reviews and corrects the extracted text before the
-    reading goes live, which makes `content` human-approved rather than a lossy
-    machine guess, and re-running a better parser over approved copy would be
-    pointless. Nothing in the app ever reads the original file.
+    A reading has two faces. `content` is the extracted plain text, and it is
+    what both agents grade against. `ReadingFile` is the instructor's original
+    upload, and it is what the student actually reads on screen.
+
+    Keeping the two faithful to each other is the upload flow's job, not this
+    model's: the instructor reviews and corrects the extraction before the
+    reading goes live, so `content` is human-approved copy rather than a lossy
+    machine guess.
     """
 
     __tablename__ = "reading"
@@ -76,3 +79,28 @@ class ReadingAssignment(Entity, SoftDelete, table=True):
         foreign_key="reading.id", ondelete="CASCADE", index=True
     )
     class_id: uuid.UUID = Field(foreign_key="class.id", ondelete="CASCADE", index=True)
+
+
+class ReadingFile(Entity, table=True):
+    """The instructor's original upload, kept because the student reads it.
+
+    A separate table rather than a column on `reading`, because the reading list
+    loads whole `Reading` rows: a blob on that model would be pulled across the
+    wire by every request that only wanted a title. Nothing but the file
+    endpoint touches this table.
+
+    No soft delete. Like core components, it lives and dies with its reading.
+    """
+
+    __tablename__ = "reading_file"
+
+    #: Unique, not merely indexed: one file per reading is a rule, so it belongs
+    #: in the database rather than in the code that happens to write it.
+    reading_id: uuid.UUID = Field(
+        foreign_key="reading.id", ondelete="CASCADE", unique=True, index=True
+    )
+    filename: str
+    media_type: str = Field(default="application/pdf")
+    byte_size: int
+    data: bytes = Field(sa_type=LargeBinary)
+    created_at: datetime = Field(default_factory=utcnow, sa_type=TS)

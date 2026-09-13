@@ -46,6 +46,9 @@ class ReadingDetail(BaseModel):
     class_name: str
     content: str
     core_components: list[str]
+    #: Whether the original upload is stored and can be fetched from
+    #: `/readings/{id}/file`. False means the reading falls back to `content`.
+    has_file: bool
 
 
 class StartSessionIn(BaseModel):
