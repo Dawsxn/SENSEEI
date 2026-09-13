@@ -105,7 +105,7 @@ export function ReadingDetailDialog({
         </div>
 
         <div className="flex items-center justify-end border-t px-6 py-4">
-          <Button onClick={() => navigate(`/tutor/${readingId}`)}>
+          <Button onClick={() => navigate(`/read/${readingId}`)}>
             Start a new attempt
           </Button>
         </div>
