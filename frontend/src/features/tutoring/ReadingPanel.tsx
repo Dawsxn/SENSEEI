@@ -1,4 +1,8 @@
-/** The reading, shown for the whole session on the left of the split screen.
+/** The reading as extracted text, for readings with no stored PDF.
+ *
+ * Two things reach this: a reading uploaded before the original was retained,
+ * and a PDF the viewer could not display. It is not a lesser view of the
+ * reading — it is the exact text both agents grade against.
  *
  * Just the text. The title is in the top bar, and the core components are
  * deliberately not shown here: they are the instructor's model answer, so

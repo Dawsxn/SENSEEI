@@ -17,6 +17,8 @@ export interface ReadingDetail {
   class_name: string;
   content: string;
   core_components: string[];
+  /** Whether the original upload is stored. False falls back to `content`. */
+  has_file: boolean;
 }
 
 export type SessionStatus = "in_progress" | "complete" | "fallback";
