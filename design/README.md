@@ -23,6 +23,9 @@ design changes, so it always matches.
 | Reading list | [png/02-reading-list.png](png/02-reading-list.png) |
 | Reading detail, full page | [png/03-reading-detail.png](png/03-reading-detail.png) |
 | Reading detail, dialog | [png/03b-reading-detail-dialog.png](png/03b-reading-detail-dialog.png) |
+| Reading step, intro dialog | [png/03c-reading-step-intro.png](png/03c-reading-step-intro.png) |
+| Reading step | [png/03c-reading-step.png](png/03c-reading-step.png) |
+| Reading step, text fallback | [png/03c-reading-step-text.png](png/03c-reading-step-text.png) |
 | Tutoring session | [png/04-tutoring-session.png](png/04-tutoring-session.png) |
 | Tutoring session, PDF reading | [png/04b-tutoring-pdf-reading.png](png/04b-tutoring-pdf-reading.png) |
 | Session review, student | [png/05-session-review.png](png/05-session-review.png) |
@@ -30,8 +33,8 @@ design changes, so it always matches.
 
 Do not open a `.dc.html` in a browser expecting to see the screen. It renders a
 grey skeleton with `{{placeholder}}` text, because repeated rows and every
-colour come from template values the canvas runtime supplies. The PNGs are what
-the screens look like.
+colour come from template values the canvas runtime supplies, and `support.js`
+is not in this repository. The PNGs are what the screens look like.
 
 ## What is here
 
@@ -39,14 +42,20 @@ the screens look like.
 
 Several artboards carry a Scenario or State control above them, which switches
 between cases rather than duplicating the artboard. Artboard 3 and 3b cover four
-history states each; artboard 5 shows a complete session and 5b a failed one.
+history states each; 3c covers its opening dialog, a reading with a stored PDF,
+and one without;
+artboard 5 shows a complete session and 5b a failed one.
 
 ## Decisions these record
 
 - **3b is the chosen direction** for reading detail. 3 is kept for comparison.
-- **4b is a comparison, not a proposal.** It shows what rendering the reading as
-  a PDF would buy and cost. The reasoning against it is in
-  `docs/context/data-model.md`.
+- **4b is shipped, not a comparison.** It was drawn as one, arguing that storing
+  only the extracted text was enough. That argument rested on the agents being
+  the only readers, which stopped being true once the student reads the document
+  itself. `docs/context/data-model.md` records the reversal.
+- **3c is the step the app used to skip.** `student-tutoring-loop.md` has always
+  called for the student to read first and say so explicitly; the earlier
+  mockups folded that into the split screen.
 - **The logo is unresolved.** The mark used across the screens is direction A
   from `design/logo/`, standing in as a placeholder. The wordmark sets SEE-I in
   the accent colour, since the framework name sits inside the product name.
