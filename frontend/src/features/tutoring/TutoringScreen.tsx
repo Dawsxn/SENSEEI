@@ -66,7 +66,7 @@ export function TutoringScreen() {
       {/* Not 50/50: the reading is the narrower column, matching the mockup's
           ~46/54 split. */}
       <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[46fr_54fr]">
-        <div className={cn("h-full min-h-0", pane === "reading" ? "block" : "hidden", "lg:block")}>
+        <div className={cn("h-full min-h-0", pane === "reading" ? "block" : "hidden", "lg:block lg:border-r")}>
           {isLoading && <PaneNotice>Loading reading…</PaneNotice>}
           {isError && <PaneNotice>Couldn't load this reading.</PaneNotice>}
           {reading &&

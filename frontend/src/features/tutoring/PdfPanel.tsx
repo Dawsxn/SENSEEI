@@ -109,7 +109,7 @@ export function PdfPanel({ fileUrl, fallback }: PdfPanelProps) {
 
   if (failed) {
     return (
-      <div className="flex h-full flex-col lg:border-r">
+      <div className="flex h-full flex-col">
         <p className="shrink-0 border-b bg-[#fffbeb] px-4 py-2 text-[13px] text-[#92400e]">
           Couldn&rsquo;t display the PDF. Showing the reading&rsquo;s text instead.
         </p>
@@ -119,7 +119,7 @@ export function PdfPanel({ fileUrl, fallback }: PdfPanelProps) {
   }
 
   return (
-    <div className="flex h-full flex-col lg:border-r">
+    <div className="flex h-full flex-col">
       <Toolbar
         current={current}
         numPages={numPages}
