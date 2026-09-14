@@ -17,6 +17,7 @@ import type {
   ReadingSessionItem,
 } from "../features/readings/types";
 import type { SessionTranscript } from "../features/review/types";
+import type { Rubric } from "../features/tutoring/types";
 import type {
   SessionState,
   StreamEvent,
@@ -141,6 +142,14 @@ export async function getReading(readingId: string): Promise<ReadingDetail> {
  * by pulling the bytes through JavaScript. */
 export function readingFileUrl(readingId: string): string {
   return `/readings/${readingId}/file`;
+}
+
+/** The rubric this deployment grades against. Not session-scoped: the version
+ *  is a setting, not something a request chooses. */
+export async function getRubric(): Promise<Rubric> {
+  const response = await fetch("/rubric");
+  if (!response.ok) throw new Error(`rubric: ${response.status}`);
+  return response.json();
 }
 
 export async function getReadingSessions(
