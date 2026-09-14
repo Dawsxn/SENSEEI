@@ -174,6 +174,31 @@ function TutorText({ message }: { message: ChatMessage }) {
       {message.streaming && (
         <span className="ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] animate-pulse bg-foreground align-middle" />
       )}
+      {!message.streaming && <UnmetCriteria names={message.unmet} />}
+    </div>
+  );
+}
+
+/** The criteria an attempt missed, as tags under the tutor's reply.
+ *
+ * The tutor used to recite these mid-sentence. As of prompt v2 it does not, so
+ * this is where they live: a label the student can scan, rather than words to
+ * find inside a paragraph. What each one asks for is in the Rubric panel.
+ *
+ * Held back until the message has finished streaming, so the outcome does not
+ * appear before the sentence explaining it. */
+function UnmetCriteria({ names }: { names: string[] }) {
+  if (names.length === 0) return null;
+  return (
+    <div className="mt-2.5 flex flex-wrap gap-1.5" aria-label="Criteria not met">
+      {names.map((name) => (
+        <span
+          key={name}
+          className="inline-flex h-[22px] items-center rounded-full border border-fail-border bg-fail px-2.5 text-[12px] font-medium text-fail-foreground"
+        >
+          {name}
+        </span>
+      ))}
     </div>
   );
 }

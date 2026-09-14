@@ -1,8 +1,9 @@
 /** Domain types shared by the API client and the tutoring UI.
  *
  * These mirror what the backend sends. The stream event names and payloads are
- * documented on backend/services/session_service.py; the grade is deliberately
- * not among them — the student hears only the Tutor. */
+ * documented on backend/services/session_service.py. The grade is deliberately
+ * not among them: the student hears only the Tutor. The criterion names are,
+ * because they are user-facing vocabulary the UI shows as its own element. */
 
 export type SeeiStep = "State" | "Elaborate" | "Exemplify" | "Illustrate";
 export type SessionStatus = "in_progress" | "complete" | "fallback";
@@ -52,6 +53,10 @@ export interface MessageStartEvent {
   step: SeeiStep;
   kind: MessageKind;
   moves: string[];
+  /** Criteria this attempt did not meet. Names only: the reasons say where the
+   *  response went wrong, and the student is not told that. Empty unless the
+   *  message is feedback on a failed attempt. */
+  unmet: string[];
 }
 
 export interface DeltaEvent {
@@ -86,3 +91,21 @@ export type StreamEvent =
   | MessageEndEvent
   | StateEvent
   | ErrorEvent;
+
+// --- the rubric, as the student may read it ---------------------------------
+
+export interface RubricCriterion {
+  name: string;
+  /** The rubric's own wording, never a paraphrase. */
+  requirement: string;
+}
+
+export interface RubricStep {
+  step: SeeiStep;
+  criteria: RubricCriterion[];
+}
+
+export interface Rubric {
+  version: string;
+  steps: RubricStep[];
+}
