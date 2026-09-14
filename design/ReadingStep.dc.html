@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: {{primary}}; text-decoration: none; }
+
+    .scroll { overflow-y: scroll; scrollbar-width: thin; scrollbar-color: #d4d4d8 transparent; }
+    .scroll::-webkit-scrollbar { width: 11px; }
+    .scroll::-webkit-scrollbar-track { background: transparent; }
+    .scroll::-webkit-scrollbar-thumb {
+      background: #d4d4d8; border-radius: 999px;
+      border: 3px solid #e9e9ec; background-clip: padding-box;
+    }
+    .pdfbody { font-family: Georgia, 'Times New Roman', serif; font-size: 12.5px; line-height: 1.62; color: #1a1a1a; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <!-- Top bar. A back chevron, not an X: nothing has started yet, so there is
+       nothing to abandon. No progress bar and no Rubric or Components button
+       either, for the same reason. -->
+  <div style="display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 20px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+      <span style="font-size: 13px; color: #71717a;">Readings</span>
+    </div>
+    <div style="width: 1px; height: 16px; background: #e4e4e7;"></div>
+    <span style="font-size: 14px; font-weight: 500; letter-spacing: -0.005em;">{{title}}</span>
+    <span style="font-size: 13px; color: #71717a;">{{section}}</span>
+  </div>
+
+  <sc-if value="{{isPdf}}" hint-placeholder-val="{{true}}">
+    <!-- The same 40px viewer toolbar as the tutoring screen, so the reading
+         looks like one component the student meets twice. -->
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 12px; background: #ffffff; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"></path>
+        </svg>
+        <span style="font-size: 12px; color: #71717a;">1 of 3</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;">
+          <path d="M9 18l6-6-6-6"></path>
+        </svg>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 12px; color: #71717a;">96%</span>
+        <div style="width: 1px; height: 14px; background: #e4e4e7;"></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+        </svg>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- The reading itself, full width. -->
+  <div class="scroll" style="flex-grow: 1; min-height: 0; background: {{canvasBg}};">
+    <div style="display: flex; flex-direction: column; align-items: center; padding: 20px 24px 28px;">
+
+      <sc-if value="{{isPdf}}" hint-placeholder-val="{{true}}">
+        <div style="width: {{pageWidth}}px; box-sizing: border-box; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.14); padding: 52px 76px 40px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 24px;">
+            <span style="font-family: Georgia, serif; font-size: 10px; letter-spacing: 0.08em; color: #8a8a8a;">CHAPTER 3 &nbsp;&middot;&nbsp; COGNITIVE LOAD</span>
+            <span style="font-family: Georgia, serif; font-size: 10px; color: #8a8a8a;">47</span>
+          </div>
+          <p style="font-family: Georgia, serif; font-size: 16px; font-weight: 700; color: #1a1a1a; margin: 0 0 14px;">3.2&nbsp;&nbsp;Cognitive Offloading</p>
+          <div class="pdfbody">
+            <p style="margin: 0 0 10px; text-align: justify;">Cognitive offloading is the act of delegating a mental task to something outside the mind. Writing a phone number on a slip of paper, setting an alarm instead of remembering an appointment, or letting a spreadsheet hold a running total are all instances of the same move: work that could be done internally is handed to an external tool.</p>
+            <p style="margin: 0 0 10px; text-indent: 18px; text-align: justify;">The appeal is obvious. Working memory is narrow and easily disrupted, and offloading frees it for whatever the person considers the real task. A navigator who no longer has to hold a route in mind can attend to traffic instead. In this sense offloading is not a failure of memory but a sensible allocation of a scarce resource.</p>
+            <p style="margin: 0 0 18px; text-indent: 18px; text-align: justify;">The cost appears later, and it is easy to miss. Retrieving information from memory is itself what strengthens the memory, so a mind that never retrieves never consolidates.</p>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <p style="font-family: Georgia, serif; font-size: 11px; font-weight: 700; color: #1a1a1a; margin: 0 0 6px;">Table 3.1&nbsp;&nbsp;Forms of offloading and what they displace</p>
+            <div style="border-top: 1.5px solid #1a1a1a; border-bottom: 1.5px solid #1a1a1a;">
+              <div style="display: grid; grid-template-columns: 1.1fr 1fr 1fr; border-bottom: 0.75px solid #1a1a1a;">
+                <span style="font-family: Georgia, serif; font-size: 11px; font-weight: 700; padding: 5px 6px;">Form</span>
+                <span style="font-family: Georgia, serif; font-size: 11px; font-weight: 700; padding: 5px 6px;">Displaces</span>
+                <span style="font-family: Georgia, serif; font-size: 11px; font-weight: 700; padding: 5px 6px;">Recoverable</span>
+              </div>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+                <div style="display: grid; grid-template-columns: 1.1fr 1fr 1fr;">
+                  <span style="font-family: Georgia, serif; font-size: 11px; padding: 4px 6px; color: #1a1a1a;">{{r.form}}</span>
+                  <span style="font-family: Georgia, serif; font-size: 11px; padding: 4px 6px; color: #1a1a1a;">{{r.displaces}}</span>
+                  <span style="font-family: Georgia, serif; font-size: 11px; padding: 4px 6px; color: #1a1a1a;">{{r.rec}}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div class="pdfbody">
+            <p style="margin: 0 0 10px; text-indent: 18px; text-align: justify;">This is why the same behaviour can be either efficient or corrosive depending on what is being offloaded and why. Delegating a total you will never need again costs nothing. Delegating the reasoning you were meant to do yourself costs the understanding you were meant to build.</p>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Fallback: a reading uploaded before the original was retained, or one
+           whose PDF will not render. Same screen, same button, plain text. -->
+      <sc-if value="{{isText}}" hint-placeholder-val="{{false}}">
+        <div style="width: {{pageWidth}}px; box-sizing: border-box;">
+          <p style="font-size: 15px; line-height: 1.75; color: #3f3f46; margin: 0 0 14px;">Cognitive offloading is the act of delegating a mental task to something outside the mind. Writing a phone number on a slip of paper, setting an alarm instead of remembering an appointment, or letting a spreadsheet hold a running total are all instances of the same move: work that could be done internally is handed to an external tool.</p>
+          <p style="font-size: 15px; line-height: 1.75; color: #3f3f46; margin: 0 0 14px;">The appeal is obvious. Working memory is narrow and easily disrupted, and offloading frees it for whatever the person considers the real task. A navigator who no longer has to hold a route in mind can attend to traffic instead. In this sense offloading is not a failure of memory but a sensible allocation of a scarce resource.</p>
+          <p style="font-size: 15px; line-height: 1.75; color: #3f3f46; margin: 0;">The cost appears later, and it is easy to miss. Retrieving information from memory is itself what strengthens the memory, so a mind that never retrieves never consolidates.</p>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <!-- Pinned, so the student can say they are done without scrolling to the
+       end. The button is never disabled: the system cannot tell reading from
+       scrolling, and gating it would be a checkpoint that proves nothing. -->
+  <div style="display: flex; align-items: center; justify-content: flex-end; height: 64px; padding: 0 24px; border-top: 1px solid #e4e4e7; background: #ffffff; flex-shrink: 0;">
+    <button style="height: 36px; padding: 0 16px; border: none; border-radius: 6px; background: {{primary}}; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;">Done</button>
+  </div>
+
+  <!-- The first thing the student sees. A dialog rather than a banner on the
+       page, so it is read once and dismissed, instead of sitting above the
+       reading competing with it. -->
+  <sc-if value="{{isIntro}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <div style="width: 420px; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); padding: 24px;">
+        <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Before you start</div>
+        <div style="font-size: 14px; line-height: 1.6; color: #71717a;">
+          This session will take you through SEE-I one step at a time. Read the material
+          in its entirety first, as the session will test your conceptual understanding
+          of it. Press Done when you are finished.
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+          <button style="height: 36px; padding: 0 16px; border: none; border-radius: 6px; background: {{primary}}; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;">Start</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"},"variant":{"editor":"enum","options":["PDF","Plain text"],"default":"PDF","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#16a34a';
+    const state = this.props.state ?? 'Intro dialog';
+    const isText = state === 'Reading, no PDF';
+    const isPdf = !isText;
+
+    return {
+      primary,
+      isPdf,
+      isText,
+      isIntro: state === 'Intro dialog',
+      title: 'Cognitive Offloading',
+      section: 'STRAMA K31',
+      // The PDF viewer fits the page to the pane and stops growing at 900px, so
+      // on a full-width screen the page sits at its cap rather than filling 1440.
+      // The text fallback is narrower: prose is capped near 72ch for line length,
+      // and the intro card matches whichever width the reading itself uses.
+      pageWidth: isPdf ? 900 : 680,
+      canvasBg: isPdf ? '#e9e9ec' : '#ffffff',
+      rows: [
+        { form: 'Written note', displaces: 'Recall', rec: 'Yes' },
+        { form: 'Calculator', displaces: 'Computation', rec: 'Partly' },
+        { form: 'Search engine', displaces: 'Retrieval', rec: 'No' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

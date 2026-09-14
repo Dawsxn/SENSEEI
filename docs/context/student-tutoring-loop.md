@@ -37,12 +37,21 @@ There is no time limit on a session in the app.
    most recent session by default, with the option to start a new attempt
    (§4.3.1). Earlier sessions on that reading remain viewable. There is no cap on
    how many times a student may re-attempt a reading.
-4. **Pre-reading screen.** Shows the text's metadata and the core component(s) to
-   be studied.
-5. **Reading.** The full text is shown. The student must explicitly tell the
-   system they have finished. There is no automatic advance.
+4. **Reading detail.** A dialog over the list, showing the reading's class, its
+   core component(s), and any past sessions on it.
+5. **Reading step.** The reading is shown on its own, as the instructor's
+   original PDF where one is stored and as the extracted text otherwise. An
+   opening dialog says what the session will ask for. The student must
+   explicitly tell the system they have finished; there is no automatic advance,
+   and the button is never gated on scroll position, because scrolling is not
+   reading.
 6. **Tutoring.** A split screen appears, reading on one half and chat on the
    other. The SEE-I process begins with State.
+
+**The session is created at the end of step 5, not the start of step 6.** Opening
+a reading and leaving therefore records nothing. This does not make abandoned
+sessions impossible: a student who reaches step 6 and leaves still leaves a row
+behind, which stays in place until the auto-discard flow exists.
 
 The reading stays visible for the whole session. Students are never asked to
 recall the text from memory.
