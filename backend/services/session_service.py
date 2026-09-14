@@ -10,16 +10,20 @@ streaming function opens its own database session and holds it for the whole
 stream, because a request-scoped `Depends` session is closed when the endpoint
 returns its response object — which happens before the streamed body runs.
 
-The student hears only the Tutor. The Assessment Agent's verdict and criterion
-reasons drive the Orchestrator and are persisted for the instructor dashboard,
-but they are never streamed to the student: naming what was missed is the Tutor's
-job, done in its own prose. The stream therefore carries no grade, only the
-Tutor's messages and the session's position in the loop.
+The student hears only the Tutor. The Assessment Agent's verdict and its
+per-criterion reasons drive the Orchestrator and are persisted for the instructor
+dashboard, and neither is ever streamed: the stream carries no grade.
+
+The criterion *names* are the exception, and deliberately so. They are
+user-facing vocabulary — the student is told what a response missed and can look
+up what each criterion asks for — so they travel as data rather than as words
+inside a sentence, which is what lets the UI show them as their own element.
 
 The event types a stream can emit:
 
     session      the created session (start only)
-    message_start  a tutor message begins: its step, kind and moves
+    message_start  a tutor message begins: its step, kind, moves, and the names
+                   of any criteria the attempt missed
     delta        a piece of that message's text
     message_end  the message is complete: its stored id and full content
     state        the session's status, step and attempt progress after the turn
@@ -120,7 +124,18 @@ async def _stream_tutor_message(
     once the message is complete.
     """
     moves = MOVES[situation]
-    yield _sse("message_start", {"step": step.value, "kind": situation, "moves": moves})
+    # The criterion names, and only the names. Their reasons say where the
+    # response went wrong, which the Tutor is forbidden from telling the student;
+    # sending them here would route around that rule rather than honour it.
+    yield _sse(
+        "message_start",
+        {
+            "step": step.value,
+            "kind": situation,
+            "moves": moves,
+            "unmet": [name for name, _reason in (unmet or [])],
+        },
+    )
 
     pieces: list[str] = []
     chunks = agents.tutor.speak_stream(

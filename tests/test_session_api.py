@@ -411,3 +411,36 @@ def seeded_url() -> str:
     from backend.settings import get_settings
 
     return get_settings().database_url
+
+
+@pytest.mark.anyio
+async def test_a_failed_attempt_names_the_criteria_it_missed(seeded):
+    """The names travel as data so the UI can show them as their own element.
+
+    Only the names. Their reasons say where the response went wrong, which the
+    Tutor is forbidden from telling the student, so sending them to the client
+    would route around that rule instead of honouring it.
+    """
+    agents = _stub_agents(StubProvider(pass_on=2), StubProvider(pass_on=2))
+    client = make_client(agents)
+    try:
+        start = await client.post(
+            "/sessions", json={"reading_id": str(seeded["reading_id"])}
+        )
+        events = parse_sse(start.text)
+        opening = next(d for e, d in events if e == "message_start")
+        # nothing was graded yet, so nothing was missed
+        assert opening["unmet"] == []
+
+        session_id = dict(events)["session"]["id"]
+        r = await client.post(
+            f"/sessions/{session_id}/responses", json={"text": "weak answer"}
+        )
+        retry = next(d for e, d in parse_sse(r.text) if e == "message_start")
+
+        assert retry["kind"] == "retry"
+        assert retry["unmet"] == criteria_for("State")[:1]
+        assert "reason" not in json.dumps(retry)
+    finally:
+        from backend.main import app
+        app.dependency_overrides.clear()
