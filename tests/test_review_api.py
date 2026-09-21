@@ -91,7 +91,7 @@ async def reviewable(point_app_at_test_db):
         s.add_all([instructor, me, other])
         await s.flush()
 
-        klass = Class(instructor_id=instructor.id, name="STRAMA K31", join_code="AAA-1")
+        klass = Class(instructor_id=instructor.id, name="STRAMA", section="K31", join_code="AAA-1")
         reading = Reading(uploaded_by=instructor.id, title="Strategy", content="body")
         s.add_all([klass, reading])
         await s.flush()

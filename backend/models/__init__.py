@@ -11,14 +11,14 @@ a trap with no current benefit; queries use explicit joins instead.
 
 from .base import TS, Entity, SoftDelete, utcnow
 from .enums import STEP_ORDER, Role, SeeiStep, SessionStatus, Verdict
-from .people import Class, Enrolment, User
+from .people import Class, Enrolment, User, class_label
 from .readings import CoreComponent, Reading, ReadingAssignment, ReadingFile
 from .sessions import Assessment, Attempt, CriterionJudgment, Session, TutorMessage
 
 __all__ = [
     "TS", "Entity", "SoftDelete", "utcnow",
     "STEP_ORDER", "Role", "SeeiStep", "SessionStatus", "Verdict",
-    "User", "Class", "Enrolment",
+    "User", "Class", "Enrolment", "class_label",
     "Reading", "CoreComponent", "ReadingAssignment", "ReadingFile",
     "Session", "Attempt", "Assessment", "CriterionJudgment", "TutorMessage",
 ]
