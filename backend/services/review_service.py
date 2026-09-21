@@ -26,6 +26,15 @@ from ..models import (
 from .reading_service import _visible_readings
 
 
+async def _can_see(
+    db: AsyncSession, user_id: uuid.UUID, reading_id: uuid.UUID
+) -> bool:
+    hit = await db.execute(
+        _visible_readings(user_id).where(Reading.id == reading_id).limit(1)
+    )
+    return hit.first() is not None
+
+
 async def list_sessions_for_reading(
     db: AsyncSession, user_id: uuid.UUID, reading_id: uuid.UUID
 ) -> list[dict]:
@@ -39,7 +48,14 @@ async def list_sessions_for_reading(
     and is discarded when the student leaves (the discard flow is not built yet,
     so abandoned ones linger); listing them would contradict the reading list,
     which counts a reading with only an abandoned session as "not started".
+
+    Empty when the student can no longer see the reading: removed from the class,
+    or the class deleted. The sessions stay in the database for the study, but
+    the student has lost access to them, as the removal dialog says.
     """
+    if not await _can_see(db, user_id, reading_id):
+        return []
+
     sessions = list(
         await db.scalars(
             select(Session)
@@ -99,14 +115,18 @@ async def get_transcript(
         return None
 
     # Reading title and class for the header, and which attempt this is (its
-    # 1-based order among the student's sessions on this reading).
+    # 1-based order among the student's sessions on this reading). A reading the
+    # student can no longer see means a session they can no longer open, even
+    # by a saved link: removed from the class means removed.
     hit = (
         await db.execute(
             _visible_readings(user_id).where(Reading.id == sess.reading_id).limit(1)
         )
     ).first()
-    reading_title = hit[0].title if hit else ""
-    class_name = hit[1] if hit else ""
+    if hit is None:
+        return None
+    reading_title = hit[0].title
+    class_name = hit[1]
     index = await db.scalar(
         select(func.count())
         .select_from(Session)
