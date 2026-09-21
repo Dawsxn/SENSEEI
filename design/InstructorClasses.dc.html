@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .btn { height: 36px; padding: 0 16px; border-radius: 6px; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-primary { border: none; background: {{primary}}; color: #ffffff; }
+    .btn-secondary { border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+    .mono { font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.04em; }
+    .th { font-size: 12px; font-weight: 500; color: #71717a; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1360px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <!-- Instructor shell. Same bar as the student side, without Join a class. -->
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="21" height="21" viewBox="0 0 100 100" fill="{{primary}}" style="flex-shrink: 0;">
+        <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+        <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+        <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+        <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+      </svg>
+      <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+    </div>
+    <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">PR</div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 0;">
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;">Classes</h1>
+      <sc-if value="{{hasClasses}}" hint-placeholder-val="{{true}}">
+        <button class="btn btn-primary">New class</button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{hasClasses}}" hint-placeholder-val="{{true}}">
+      <div style="border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
+        <div style="display: grid; grid-template-columns: 1fr 120px 160px 110px 110px 24px; gap: 16px; align-items: center; height: 40px; padding: 0 16px; border-bottom: 1px solid #e4e4e7;">
+          <span class="th">Class</span>
+          <span class="th">Section</span>
+          <span class="th">Join code</span>
+          <span class="th">Students</span>
+          <span class="th">Readings</span>
+          <span></span>
+        </div>
+        <sc-for list="{{classes}}" as="c" hint-placeholder-count="2">
+          <div style="display: grid; grid-template-columns: 1fr 120px 160px 110px 110px 24px; gap: 16px; align-items: center; padding: 16px; border-bottom: 1px solid {{c.divider}}; cursor: pointer;">
+            <span style="font-size: 14px; font-weight: 500;">{{c.name}}</span>
+            <span style="font-size: 13px; color: #3f3f46;">{{c.section}}</span>
+            <span class="mono" style="font-size: 13px; color: #3f3f46;">{{c.code}}</span>
+            <span style="font-size: 13px; color: #71717a;">{{c.students}}</span>
+            <span style="font-size: 13px; color: #71717a;">{{c.readings}}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- Nothing yet. The action lives in the empty state, not above it. -->
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+      <div style="border: 1px dashed #e4e4e7; border-radius: 8px; padding: 64px 24px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
+        <span style="font-size: 15px; font-weight: 600;">No classes yet</span>
+        <span style="font-size: 14px; color: #71717a;">Create a class to get a join code for your students.</span>
+        <button class="btn btn-primary" style="margin-top: 12px;">New class</button>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <sc-if value="{{showNew}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <div style="width: 420px; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);">
+        <div style="font-size: 16px; font-weight: 600;">New class</div>
+        <div style="display: grid; grid-template-columns: 1fr 120px; gap: 12px; margin-top: 16px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 500;">Name</label>
+            <div style="margin-top: 6px; height: 36px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 0 12px; display: flex; align-items: center; font-size: 14px;">STRAMA</div>
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 500;">Section</label>
+            <div style="margin-top: 6px; height: 36px; border: 1px solid #a1a1aa; border-radius: 6px; padding: 0 12px; display: flex; align-items: center; font-size: 14px; box-shadow: 0 0 0 3px rgba(161,161,170,0.25);">K32<span style="width: 1px; height: 16px; background: #09090b; margin-left: 1px;"></span></div>
+          </div>
+        </div>
+        <div style="margin-top: 8px; font-size: 12px; color: #71717a;">Students see this as STRAMA K32.</div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <button class="btn btn-secondary" style="height: 32px; padding: 0 12px; font-size: 13px;">Cancel</button>
+          <button class="btn btn-primary" style="height: 32px; padding: 0 12px; font-size: 13px;">Create class</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"},"state":{"editor":"enum","options":["Classes","Empty","New class"],"default":"Classes","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'Classes';
+    const isEmpty = state === 'Empty';
+    const classes = [
+      { name: 'STRAMA', section: 'K31', code: '4KQ2-9TXM', students: '28', readings: '2', divider: '#e4e4e7' },
+      { name: 'STSWENG', section: 'S11', code: '7HWP-3CNE', students: '31', readings: '2', divider: 'transparent' },
+    ];
+    return {
+      primary: this.props.primary ?? '#16a34a',
+      hasClasses: !isEmpty,
+      isEmpty,
+      showNew: state === 'New class',
+      classes,
+    };
+  }
+}
+</script>
+</body>
+</html>

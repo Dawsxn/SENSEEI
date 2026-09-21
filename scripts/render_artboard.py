@@ -64,12 +64,19 @@ def resolve(html: str, vals: dict) -> str:
         expand_for, html, flags=re.S,
     )
 
-    # <sc-if value="{{flag}}">...</sc-if> -- keep the body only when truthy
-    html = re.sub(
-        r'<sc-if value="\{\{(\w+)\}\}"[^>]*>(.*?)</sc-if>',
-        lambda m: m.group(2) if vals.get(m.group(1)) else "",
-        html, flags=re.S,
+    # <sc-if value="{{flag}}">...</sc-if> -- keep the body only when truthy.
+    # Innermost first, repeated until none are left: a single non-greedy pass
+    # would pair an outer opening tag with a nested block's closing tag.
+    innermost = re.compile(
+        r'<sc-if value="\{\{(\w+)\}\}"[^>]*>((?:(?!<sc-if).)*?)</sc-if>', re.S
     )
+    while True:
+        resolved = innermost.sub(
+            lambda m: m.group(2) if vals.get(m.group(1)) else "", html
+        )
+        if resolved == html:
+            break
+        html = resolved
 
     # plain {{value}} substitutions
     html = re.sub(r"\{\{(\w+)\}\}", lambda m: str(vals.get(m.group(1), "")), html)
