@@ -4,13 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useMe } from "../features/auth/useAuth";
+import { JoinClassDialog } from "../features/readings/JoinClassDialog";
 import { logout } from "../lib/api";
 import { Button } from "./ui/button";
 
 /** The app shell's top bar: the wordmark, Join a class, and the account menu.
- *  Join a class is a placeholder until enrolment exists; the account menu shows
- *  the signed-in user and signs them out. */
+ *  Join a class is for students only; instructors make classes rather than join
+ *  them. The account menu shows the signed-in user and signs them out. */
 export function AppTopBar() {
+  const { data: user } = useMe();
+  const [joining, setJoining] = useState(false);
+
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b px-4 sm:px-6">
       {/* SEE-I is set in the accent colour: the framework name sits inside the
@@ -20,11 +24,14 @@ export function AppTopBar() {
       </span>
 
       <div className="flex items-center gap-3">
-        <Button variant="secondary" size="sm">
-          Join a class
-        </Button>
+        {user?.role === "student" && (
+          <Button variant="secondary" size="sm" onClick={() => setJoining(true)}>
+            Join a class
+          </Button>
+        )}
         <AccountMenu />
       </div>
+      {joining && <JoinClassDialog onClose={() => setJoining(false)} />}
     </header>
   );
 }
