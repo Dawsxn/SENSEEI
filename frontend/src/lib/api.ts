@@ -16,6 +16,12 @@ import type {
   ReadingListItem,
   ReadingSessionItem,
 } from "../features/readings/types";
+import type {
+  ClassDetail,
+  ClassFields,
+  ClassListItem,
+  JoinResult,
+} from "../features/classes/types";
 import type { SessionTranscript } from "../features/review/types";
 import type { Rubric } from "../features/tutoring/types";
 import type {
@@ -177,3 +183,40 @@ export async function getMessages(sessionId: string): Promise<TutorMessageRow[]>
   if (!response.ok) throw new Error(`messages ${sessionId}: ${response.status}`);
   return response.json();
 }
+
+// --- classes and enrolment ------------------------------------------------------
+
+/** A failed request that callers need to tell apart by status: a 409 duplicate
+ *  class and a 404 join code each get their own message, not a generic one. */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+async function send<T>(path: string, method: string, body?: unknown): Promise<T> {
+  const response = await fetch(path, {
+    method,
+    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!response.ok) throw new ApiError(response.status, `${method} ${path}: ${response.status}`);
+  return (response.status === 204 ? undefined : await response.json()) as T;
+}
+
+export const getClasses = () => send<ClassListItem[]>("/instructor/classes", "GET");
+export const getClass = (id: string) => send<ClassDetail>(`/instructor/classes/${id}`, "GET");
+export const createClass = (fields: ClassFields) =>
+  send<ClassListItem>("/instructor/classes", "POST", fields);
+export const updateClass = (id: string, fields: ClassFields) =>
+  send<ClassDetail>(`/instructor/classes/${id}`, "PATCH", fields);
+export const deleteClass = (id: string) => send<void>(`/instructor/classes/${id}`, "DELETE");
+export const replaceJoinCode = (id: string) =>
+  send<{ join_code: string }>(`/instructor/classes/${id}/join-code`, "POST");
+export const removeStudent = (classId: string, studentId: string) =>
+  send<void>(`/instructor/classes/${classId}/students/${studentId}`, "DELETE");
+export const joinClass = (joinCode: string) =>
+  send<JoinResult>("/enrolments", "POST", { join_code: joinCode });

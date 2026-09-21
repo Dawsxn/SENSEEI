@@ -4,6 +4,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 // Production is one service, one origin, no CORS (see docs/context/tech-stack.md).
+// That makes page paths and API paths share one namespace: an API prefix listed
+// here must never also be a page route, or a refreshed page gets the API's JSON.
 // In development the frontend runs on Vite's own port, so it proxies API calls to
 // the backend instead, which keeps the same-origin assumption true here too: the
 // browser only ever talks to localhost:5173.
@@ -16,6 +18,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/auth": { target: "http://localhost:8000", changeOrigin: true },
+      "/instructor": { target: "http://localhost:8000", changeOrigin: true },
+      "/enrolments": { target: "http://localhost:8000", changeOrigin: true },
       "/readings": { target: "http://localhost:8000", changeOrigin: true },
       "/rubric": { target: "http://localhost:8000", changeOrigin: true },
       "/sessions": { target: "http://localhost:8000", changeOrigin: true },
