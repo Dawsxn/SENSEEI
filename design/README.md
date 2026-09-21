@@ -27,6 +27,8 @@ design changes, so it always matches.
 | --- | --- |
 | Sign in | [png/01-sign-in.png](png/01-sign-in.png) |
 | Reading list | [png/02-reading-list.png](png/02-reading-list.png) |
+| Join a class | [png/02b-join-class.png](png/02b-join-class.png) |
+| Join a class, wrong code | [png/02b-join-wrong.png](png/02b-join-wrong.png) |
 | Reading detail, full page | [png/03-reading-detail.png](png/03-reading-detail.png) |
 | Reading detail, dialog | [png/03b-reading-detail-dialog.png](png/03b-reading-detail-dialog.png) |
 | Reading step, intro dialog | [png/03c-reading-step-intro.png](png/03c-reading-step-intro.png) |
@@ -39,6 +41,12 @@ design changes, so it always matches.
 | Reference panel, rubric | [png/04d-panel-rubric.png](png/04d-panel-rubric.png) |
 | Session review, student | [png/05-session-review.png](png/05-session-review.png) |
 | Session review, instructor | [png/05b-session-review-instructor.png](png/05b-session-review-instructor.png) |
+| Instructor classes | [png/06-classes.png](png/06-classes.png) |
+| Instructor classes, empty | [png/06-classes-empty.png](png/06-classes-empty.png) |
+| New class | [png/06-new-class.png](png/06-new-class.png) |
+| Class | [png/06b-class.png](png/06b-class.png) |
+| Edit class | [png/06b-class-edit.png](png/06b-class-edit.png) |
+| Delete class | [png/06b-class-delete.png](png/06b-class-delete.png) |
 
 Do not open a `.dc.html` in a browser expecting to see the screen. It renders a
 grey skeleton with `{{placeholder}}` text, because repeated rows and every

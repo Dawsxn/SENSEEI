@@ -85,8 +85,8 @@ async def world(point_app_at_test_db):
         s.add_all([instructor, student])
         await s.flush()
 
-        class_a = Class(instructor_id=instructor.id, name="STRAMA K31", join_code="AAA-1")
-        class_b = Class(instructor_id=instructor.id, name="BUSANA S15", join_code="BBB-1")
+        class_a = Class(instructor_id=instructor.id, name="STRAMA", section="K31", join_code="AAA-1")
+        class_b = Class(instructor_id=instructor.id, name="BUSANA", section="S15", join_code="BBB-1")
         s.add_all([class_a, class_b])
         await s.flush()
 

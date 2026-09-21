@@ -14,7 +14,11 @@ import pytest
 import yaml
 from httpx import ASGITransport, AsyncClient
 
-pytestmark = pytest.mark.usefixtures("fresh_engine", "auth_seed_student")
+# point_app_at_test_db: skip cleanly without a database, like every other API
+# test, and never read the development database through the signed-in stub.
+pytestmark = pytest.mark.usefixtures(
+    "point_app_at_test_db", "fresh_engine", "auth_seed_student"
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 

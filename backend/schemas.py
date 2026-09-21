@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 from .models import Role, SeeiStep, SessionStatus
 
@@ -132,3 +132,67 @@ class SessionTranscript(BaseModel):
     ended_at: datetime | None
     steps: list[StepSummary]
     timeline: list[TranscriptEntry]
+
+
+# --- classes and enrolment ------------------------------------------------------
+
+
+class ClassIn(BaseModel):
+    """What an instructor types to create or edit a class."""
+
+    name: str = Field(min_length=1, max_length=60)
+    section: str = Field(min_length=1, max_length=20)
+
+    @field_validator("name", "section", mode="before")
+    @classmethod
+    def _trim(cls, value: object) -> object:
+        # Whitespace-only must fail the length check, not become a blank class.
+        return value.strip() if isinstance(value, str) else value
+
+
+class ClassListItem(BaseModel):
+    id: uuid.UUID
+    name: str
+    section: str
+    #: How students see the class, `STRAMA K31`.
+    label: str
+    join_code: str
+    student_count: int
+    reading_count: int
+
+
+class ClassStudent(BaseModel):
+    id: uuid.UUID
+    name: str
+    email: str
+    enrolled_at: datetime
+
+
+class ClassReading(BaseModel):
+    id: uuid.UUID
+    title: str
+    description: str | None
+
+
+class ClassDetailOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    section: str
+    label: str
+    join_code: str
+    students: list[ClassStudent]
+    readings: list[ClassReading]
+
+
+class JoinCodeOut(BaseModel):
+    join_code: str
+
+
+class JoinIn(BaseModel):
+    join_code: str = Field(min_length=1, max_length=40)
+
+
+class JoinOut(BaseModel):
+    class_id: uuid.UUID
+    label: str
+    reading_count: int

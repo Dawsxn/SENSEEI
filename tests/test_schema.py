@@ -90,7 +90,7 @@ async def test_soft_delete_frees_the_join_code(db):
     db.add(instructor)
     await db.commit()
 
-    first = Class(instructor_id=instructor.id, name="A", join_code="SAME-1")
+    first = Class(instructor_id=instructor.id, name="A", section="S1", join_code="SAME-1")
     db.add(first)
     await db.commit()
 
@@ -98,7 +98,7 @@ async def test_soft_delete_frees_the_join_code(db):
     db.add(first)
     await db.commit()
 
-    db.add(Class(instructor_id=instructor.id, name="B", join_code="SAME-1"))
+    db.add(Class(instructor_id=instructor.id, name="B", section="S1", join_code="SAME-1"))
     await db.commit()  # must not raise
 
     live = await db.scalar(
@@ -118,10 +118,10 @@ async def test_two_live_classes_cannot_share_a_join_code(db):
     db.add(instructor)
     await db.commit()
 
-    db.add(Class(instructor_id=instructor.id, name="A", join_code="DUP-1"))
+    db.add(Class(instructor_id=instructor.id, name="A", section="S1", join_code="DUP-1"))
     await db.commit()
 
-    db.add(Class(instructor_id=instructor.id, name="B", join_code="DUP-1"))
+    db.add(Class(instructor_id=instructor.id, name="B", section="S1", join_code="DUP-1"))
     with pytest.raises(IntegrityError):
         await db.commit()
     await db.rollback()
@@ -254,7 +254,7 @@ async def _one_session(db):
     db.add_all([instructor, student])
     await db.commit()
 
-    klass = Class(instructor_id=instructor.id, name="C", join_code="TREE-1")
+    klass = Class(instructor_id=instructor.id, name="C", section="S1", join_code="TREE-1")
     reading = Reading(uploaded_by=instructor.id, title="R", content="body")
     db.add_all([klass, reading])
     await db.commit()

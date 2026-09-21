@@ -87,6 +87,30 @@
       "y": 3450,
       "w": 1440,
       "h": 900
+    },
+    {
+      "file": "JoinClass.dc.html",
+      "title": "2b · Join a class (3 states)",
+      "x": 1460,
+      "y": 1060,
+      "w": 1360,
+      "h": 900
+    },
+    {
+      "file": "InstructorClasses.dc.html",
+      "title": "6 · Instructor classes (3 states)",
+      "x": 0,
+      "y": 4500,
+      "w": 1360,
+      "h": 900
+    },
+    {
+      "file": "ClassDetail.dc.html",
+      "title": "6b · Class (6 states)",
+      "x": 1460,
+      "y": 4500,
+      "w": 1360,
+      "h": 900
     }
   ],
   "annotations": [
@@ -131,6 +155,13 @@
       "y": 1970,
       "w": 460,
       "text": "A was chosen. The tutor stops naming the criteria in its sentence as of prompt v2, and the interface labels them instead.\n\nC and D are kept because they are the cheap options: they need nothing from the backend, since the tutor already says the names out loud."
+    },
+    {
+      "id": "instructor-note",
+      "x": 0,
+      "y": 4350,
+      "w": 520,
+      "text": "Instructor flow. Classes are a name and a section, shown to students as one label.\n\nRemoving a student or deleting a class takes access away, not data: the sessions stay for the study."
     }
   ],
   "launch": {

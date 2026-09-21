@@ -8,7 +8,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Index, String, text
+from sqlalchemy import Index, String, func, text
 from sqlmodel import Field
 
 from .base import TS, Entity, SoftDelete, utcnow
@@ -49,7 +49,12 @@ class User(Entity, SoftDelete, table=True):
 
 
 class Class(Entity, SoftDelete, table=True):
-    """A class an instructor owns. Co-teaching is not supported."""
+    """A class an instructor owns. Co-teaching is not supported.
+
+    Name and section are separate fields, `STRAMA` and `K31`, because they are
+    separate facts: one course is taught in several sections. Students see them
+    joined into one label, see `class_label`.
+    """
 
     __tablename__ = "class"
     __table_args__ = (
@@ -59,12 +64,25 @@ class Class(Entity, SoftDelete, table=True):
             unique=True,
             postgresql_where=text("deleted_at IS NULL"),
         ),
+        # One instructor cannot hold the same course and section twice, ignoring
+        # case, so a double-submitted form cannot create a twin.
+        Index(
+            "uq_class_name_section",
+            "instructor_id",
+            text("lower(name)"),
+            text("lower(section)"),
+            unique=True,
+            postgresql_where=text("deleted_at IS NULL"),
+        ),
     )
 
     instructor_id: uuid.UUID = Field(
         foreign_key="app_user.id", ondelete="CASCADE", index=True
     )
+    #: The course, e.g. STRAMA.
     name: str
+    #: The section within the course, e.g. K31.
+    section: str
     join_code: str = Field(description="Generated on creation; students enrol with it")
     created_at: datetime = Field(default_factory=utcnow, sa_type=TS)
 
@@ -88,3 +106,12 @@ class Enrolment(Entity, SoftDelete, table=True):
     )
     class_id: uuid.UUID = Field(foreign_key="class.id", ondelete="CASCADE", index=True)
     enrolled_at: datetime = Field(default_factory=utcnow, sa_type=TS)
+
+
+def class_label():
+    """A class as students see it, `STRAMA K31`: name and section, one space.
+
+    A SQL expression, so every query that shows a class builds the label the same
+    way. An empty section is dropped rather than leaving a trailing space.
+    """
+    return func.concat_ws(" ", Class.name, func.nullif(Class.section, ""))

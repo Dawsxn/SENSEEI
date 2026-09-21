@@ -145,7 +145,7 @@ STUDENTS = [
 #: both, which is what gives the reading list's class filter something to filter
 #: — and it cannot happen with two sections of the same course, where enrolment
 #: in one excludes the other.
-CLASSES = [("STSWENG - S11", "S11-4KQ2"), ("STRAMA - K31", "K31-9TXM")]
+CLASSES = [("STSWENG", "S11", "7HWP-3CNE"), ("STRAMA", "K31", "4KQ2-9TXM")]
 
 #: Which steps each seeded session gets, and the verdict of every attempt within
 #: them. Outcomes are spread on purpose: a dashboard where everyone passes on
@@ -438,8 +438,8 @@ def build_everything() -> list:
     rows.append(instructor)
 
     classes = [
-        Class(instructor_id=instructor.id, name=name, join_code=code)
-        for name, code in CLASSES
+        Class(instructor_id=instructor.id, name=name, section=section, join_code=code)
+        for name, section, code in CLASSES
     ]
     rows += classes
 

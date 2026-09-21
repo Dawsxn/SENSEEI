@@ -1,0 +1,213 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .btn { height: 32px; padding: 0 12px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { border: none; background: {{primary}}; color: #ffffff; }
+    .btn-secondary { border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+    .btn-danger { border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; }
+    .mono { font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.06em; }
+    .card { border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #e4e4e7; }
+    .card-title { font-size: 14px; font-weight: 600; }
+    .muted { font-size: 13px; color: #71717a; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1360px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="21" height="21" viewBox="0 0 100 100" fill="{{primary}}" style="flex-shrink: 0;">
+        <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+        <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+        <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+        <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+      </svg>
+      <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+    </div>
+    <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">PR</div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 18px; min-height: 0;">
+
+    <div style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      <span class="muted">Classes</span>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;">STRAMA K31</h1>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary">Edit</button>
+        <button class="btn btn-secondary">Delete</button>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 20px; align-items: start;">
+
+      <!-- Roster -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Students</span>
+          <span class="muted">{{studentCount}}</span>
+        </div>
+        <sc-if value="{{hasStudents}}" hint-placeholder-val="{{true}}">
+          <sc-for list="{{students}}" as="s" hint-placeholder-count="6">
+            <div style="display: grid; grid-template-columns: 28px 1fr 110px 64px; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid {{s.divider}};">
+              <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">{{s.initials}}</div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+                <span style="font-size: 14px; font-weight: 500;">{{s.name}}</span>
+                <span style="font-size: 12px; color: #71717a;">{{s.email}}</span>
+              </div>
+              <span class="muted">Joined {{s.joined}}</span>
+              <span style="font-size: 13px; color: #71717a; text-align: right; cursor: pointer;">Remove</span>
+            </div>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{noStudents}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 48px 24px; text-align: center; display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 14px; font-weight: 500;">No students yet</span>
+            <span class="muted">Share the join code. Students who use it appear here.</span>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+
+        <!-- Join code -->
+        <div class="card">
+          <div class="card-head"><span class="card-title">Join code</span></div>
+          <div style="padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 14px;">
+            <span class="mono" style="font-size: 28px; font-weight: 500; color: #09090b;">4KQ2-9TXM</span>
+            <span class="muted">Students enter this under Join a class.</span>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Copy
+              </button>
+              <button class="btn btn-secondary">New code</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Readings, read-only until upload exists -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Readings</span>
+            <span class="muted">2</span>
+          </div>
+          <div style="padding: 12px 16px; border-bottom: 1px solid #e4e4e7; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 14px; font-weight: 500;">Strategy</span>
+            <span style="font-size: 12px; color: #71717a;">Coordinated actions to outperform rivals</span>
+          </div>
+          <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 14px; font-weight: 500;">Strategic Vision</span>
+            <span style="font-size: 12px; color: #71717a;">Direction, market position, future course</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmations. One shape, three uses. -->
+  <sc-if value="{{showDialog}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <div style="width: 420px; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);">
+        <div style="font-size: 16px; font-weight: 600;">{{dialogTitle}}</div>
+        <div style="margin-top: 8px; font-size: 14px; line-height: 1.6; color: #71717a;">{{dialogBody}}</div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn {{confirmClass}}">{{confirmLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showEdit}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <div style="width: 420px; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);">
+        <div style="font-size: 16px; font-weight: 600;">Edit class</div>
+        <div style="display: grid; grid-template-columns: 1fr 120px; gap: 12px; margin-top: 16px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 500;">Name</label>
+            <div style="margin-top: 6px; height: 36px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 0 12px; display: flex; align-items: center; font-size: 14px;">STRAMA</div>
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 500;">Section</label>
+            <div style="margin-top: 6px; height: 36px; border: 1px solid #a1a1aa; border-radius: 6px; padding: 0 12px; display: flex; align-items: center; font-size: 14px; box-shadow: 0 0 0 3px rgba(161,161,170,0.25);">K31<span style="width: 1px; height: 16px; background: #09090b; margin-left: 1px;"></span></div>
+          </div>
+        </div>
+        <div style="margin-top: 8px; font-size: 12px; color: #71717a;">Students see this as STRAMA K31.</div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"},"state":{"editor":"enum","options":["Roster","No students","Edit","New code","Remove student","Delete"],"default":"Roster","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'Roster';
+    const noStudents = state === 'No students';
+
+    const people = [
+      ['Mateo Cruz', 'mateo_cruz@dlsu.edu.ph', 'Sep 2'],
+      ['Bea Villanueva', 'bea_villanueva@dlsu.edu.ph', 'Sep 2'],
+      ['Nikko Tan', 'nikko_tan@dlsu.edu.ph', 'Sep 3'],
+      ['Chelsea Ocampo', 'chelsea_ocampo@dlsu.edu.ph', 'Sep 3'],
+      ['Rafael Lim', 'rafael_lim@dlsu.edu.ph', 'Sep 4'],
+      ['Andrea Santos', 'andrea_santos@dlsu.edu.ph', 'Sep 5'],
+    ];
+    const students = people.map(([name, email, joined], i) => ({
+      name, email, joined,
+      initials: name.split(' ').map((w) => w[0]).join(''),
+      divider: i === people.length - 1 ? 'transparent' : '#e4e4e7',
+    }));
+
+    const dialogs = {
+      'New code': {
+        dialogTitle: 'Get a new join code?',
+        dialogBody: 'The current code will stop working. Students already in the class stay in it.',
+        confirmLabel: 'New code', confirmClass: 'btn-primary',
+      },
+      'Remove student': {
+        dialogTitle: 'Remove Mateo Cruz?',
+        dialogBody: 'They will no longer see this class’s readings. Their past sessions are kept.',
+        confirmLabel: 'Remove', confirmClass: 'btn-danger',
+      },
+      'Delete': {
+        dialogTitle: 'Delete STRAMA K31?',
+        dialogBody: 'Students will lose access to its readings. Past sessions are kept.',
+        confirmLabel: 'Delete', confirmClass: 'btn-danger',
+      },
+    };
+    const dialog = dialogs[state];
+
+    return {
+      primary: this.props.primary ?? '#16a34a',
+      hasStudents: !noStudents,
+      noStudents,
+      studentCount: noStudents ? '0' : String(students.length),
+      students,
+      showDialog: !!dialog,
+      showEdit: state === 'Edit',
+      ...(dialog ?? { dialogTitle: '', dialogBody: '', confirmLabel: '', confirmClass: '' }),
+    };
+  }
+}
+</script>
+</body>
+</html>

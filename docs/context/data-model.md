@@ -95,9 +95,27 @@ cannot sign in at all, so enrolment is not the only gate.
 | --- | --- |
 | id | |
 | instructor_id | Exactly one. Co-teaching is not supported |
-| name | |
+| name | The course, e.g. `STRAMA` |
+| section | The section, e.g. `K31`. Unique with name per instructor, ignoring case |
 | join_code | Generated on creation. Students enrol with it (§4.3.4) |
 | created_at | |
+
+**Students see one label, `STRAMA K31`.** Name and section are stored apart
+because one course runs in several sections, but every student-facing screen
+shows them joined, built by `class_label()` so it reads the same everywhere.
+
+**Join codes** are eight characters, `4KQ2-9TXM`, from an alphabet with no
+`0/O` or `1/I`, because they are read aloud in a room. Entry is forgiving about
+case, spaces and the hyphen. An instructor can replace a class's code; the old
+one stops working and nobody is unenrolled. That is also how to keep out a
+student who was removed, since a removed student can otherwise rejoin with the
+code.
+
+**Deleting a class, or removing a student, takes access away, not data.** Both
+are soft deletes. The student can no longer see the class's readings or reach
+their sessions in it, not even through a saved link. The sessions stay in the
+database because they are the study's results, and only the research export
+reads them once the class is gone.
 
 ### enrolment
 

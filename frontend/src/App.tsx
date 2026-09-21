@@ -1,8 +1,10 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { RequireAuth } from "./features/auth/RequireAuth";
+import { HomeRoute, RequireInstructor } from "./features/auth/RoleRoutes";
+import { ClassDetailPage } from "./features/classes/ClassDetailPage";
+import { ClassListPage } from "./features/classes/ClassListPage";
 import { SignInScreen } from "./features/auth/SignInScreen";
-import { ReadingListPage } from "./features/readings/ReadingListPage";
 import { SessionReviewPage } from "./features/review/SessionReviewPage";
 import { ReadingStepScreen } from "./features/tutoring/ReadingStepScreen";
 import { TutoringScreen } from "./features/tutoring/TutoringScreen";
@@ -17,7 +19,7 @@ export default function App() {
           path="/"
           element={
             <RequireAuth>
-              <ReadingListPage />
+              <HomeRoute />
             </RequireAuth>
           }
         />
@@ -36,6 +38,26 @@ export default function App() {
           element={
             <RequireAuth>
               <TutoringScreen />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/classes"
+          element={
+            <RequireAuth>
+              <RequireInstructor>
+                <ClassListPage />
+              </RequireInstructor>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/classes/:classId"
+          element={
+            <RequireAuth>
+              <RequireInstructor>
+                <ClassDetailPage />
+              </RequireInstructor>
             </RequireAuth>
           }
         />

@@ -180,3 +180,20 @@ The manuscript never mentions deployment, so none of this contradicts it.
 - `docs/context/data-model.md`, what PostgreSQL holds
 - `docs/context/agent-contracts.md`, the provider layer and its configuration
 - `docs/context/student-tutoring-loop.md`, the behaviour the frontend implements
+
+## Deploy checklist
+
+Things that only break once deployed, collected as they are found so the deploy
+is a checklist rather than a discovery. Staging comes after the features are
+finished, so each of these will be met at once.
+
+- [ ] **No page route shares a path with an API route.** Pages and the API share
+  one origin, so a page at the same path as an endpoint answers a refresh or a
+  bookmark with JSON. It happened with `/classes`; the instructor API moved to
+  `/instructor/classes`. The FastAPI SPA fallback must only catch paths no
+  router owns.
+- [ ] **The Google OAuth redirect URI** is registered for the deployed origin, not
+  only `localhost:5173`.
+- [ ] **The session cookie** is marked secure over HTTPS.
+- [ ] **The PDF worker** loads from the deployed origin; it is bundled by Vite
+  and served as a separate asset.

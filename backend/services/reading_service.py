@@ -23,6 +23,7 @@ from ..models import (
     ReadingFile,
     Session,
     SessionStatus,
+    class_label,
 )
 
 
@@ -30,7 +31,7 @@ def _visible_readings(user_id: uuid.UUID):
     """A select of (Reading, class name) the student may see. One row per class a
     reading is assigned to that the student is in — usually exactly one."""
     return (
-        select(Reading, Class.name.label("class_name"))
+        select(Reading, class_label().label("class_name"))
         .join(
             ReadingAssignment,
             (ReadingAssignment.reading_id == Reading.id)
