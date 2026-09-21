@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.sessions import SessionMiddleware
 
 from .db import dispose, get_session
-from .routers import auth, readings, rubric, sessions
+from .routers import auth, classes, readings, rubric, sessions
 from .settings import Settings, get_settings
 
 
@@ -43,6 +43,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(classes.router)
 app.include_router(readings.router)
 app.include_router(rubric.router)
 app.include_router(sessions.router)

@@ -2,7 +2,8 @@
 
 `get_current_user` reads the signed session cookie set at sign-in (real Google
 OAuth, or the dev bypass) and loads that user, raising 401 when there is no valid
-session. `get_agents_dep` is a thin wrapper so a test can override the agent pair
+session. `require_instructor` and `require_student` narrow it to one role, with
+403 for the other. `get_agents_dep` is a thin wrapper so a test can override the agent pair
 with controllable stubs through FastAPI's dependency_overrides.
 """
 
@@ -16,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .agent_runtime import Agents, get_agents
 from .db import get_session
-from .models import User
+from .models import Role, User
 
 
 async def get_current_user(
@@ -34,6 +35,22 @@ async def get_current_user(
     if user is None:
         # The session points at a user that no longer exists.
         raise HTTPException(status_code=401, detail="not authenticated")
+    return user
+
+
+async def require_instructor(user: User = Depends(get_current_user)) -> User:
+    """The signed-in user, who must be an instructor. 403 for a student."""
+    # The role comes back from the database as its stored string; Role is a
+    # str-enum, so compare by equality rather than identity.
+    if user.role != Role.INSTRUCTOR:
+        raise HTTPException(status_code=403, detail="instructors only")
+    return user
+
+
+async def require_student(user: User = Depends(get_current_user)) -> User:
+    """The signed-in user, who must be a student. 403 for an instructor."""
+    if user.role != Role.STUDENT:
+        raise HTTPException(status_code=403, detail="students only")
     return user
 
 
