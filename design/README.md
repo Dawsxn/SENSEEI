@@ -34,6 +34,9 @@ design changes, so it always matches.
 | Reading step, text fallback | [png/03c-reading-step-text.png](png/03c-reading-step-text.png) |
 | Tutoring session | [png/04-tutoring-session.png](png/04-tutoring-session.png) |
 | Tutoring session, PDF reading | [png/04b-tutoring-pdf-reading.png](png/04b-tutoring-pdf-reading.png) |
+| Criterion feedback, six approaches | [png/04c-criterion-feedback.png](png/04c-criterion-feedback.png) |
+| Reference panel, components | [png/04d-panel-components.png](png/04d-panel-components.png) |
+| Reference panel, rubric | [png/04d-panel-rubric.png](png/04d-panel-rubric.png) |
 | Session review, student | [png/05-session-review.png](png/05-session-review.png) |
 | Session review, instructor | [png/05b-session-review-instructor.png](png/05b-session-review-instructor.png) |
 
@@ -59,6 +62,13 @@ artboard 5 shows a complete session and 5b a failed one.
   only the extracted text was enough. That argument rested on the agents being
   the only readers, which stopped being true once the student reads the document
   itself. `docs/context/data-model.md` records the reversal.
+- **4c chose A**, tags under the message. The Tutor Agent stops naming the
+  criteria in its prose as of prompt v2, so the interface labels them instead.
+  The other five are kept because the comparison is the argument: C and D cost
+  nothing on the backend, and losing that would make A look free.
+- **4d is where the vocabulary is explained.** Tags carry only names, which is
+  affordable because the rubric panel carries what each one asks for, in the
+  rubric's own words.
 - **3c is the step the app used to skip.** `student-tutoring-loop.md` has always
   called for the student to read first and say so explicitly; the earlier
   mockups folded that into the split screen.

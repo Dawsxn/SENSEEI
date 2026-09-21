@@ -162,22 +162,37 @@ which is version-pinned and authoritative. The table above is orientation only.
 
 ## Feedback style
 
-Feedback on a failed attempt has three parts, in this order:
+Feedback on a failed attempt has three parts. Two the Tutor Agent writes, one
+the interface shows:
 
 1. **A plain-language account of what this response did wrong.** Specific to what
    the student actually wrote, not a restatement of the criterion.
-2. **The names of the failed criteria.**
+2. **The names of the failed criteria**, displayed beside the message rather
+   than spoken inside it.
 3. **A redirect**, restating the task with a corrective nudge that says what kind
    of change is needed, never the content of the answer.
 
 Worked example, a State response that rambled (Table 4.2):
 
-> You have the right idea, but your statement contains unnecessary tangents.
-> Here's what you failed: Brevity, Clarity. Try stating what cognitive offloading
-> is again, this time in a single focused sentence.
+> You have the right idea, but your statement contains unnecessary tangents. Try
+> stating what cognitive offloading is again, this time in a single focused
+> sentence.
+>
+> `Brevity` `Clarity`
 
-Part 1 is "your statement contains unnecessary tangents", part 2 is "Brevity,
-Clarity", part 3 is "in a single focused sentence".
+Part 1 is "your statement contains unnecessary tangents", part 3 is "in a single
+focused sentence", and part 2 is the two tags.
+
+**The names are a UI element, not prose, as of tutor prompt v2.** They travel
+with the message as data, which is what lets them be shown as labels the student
+can scan rather than words to find inside a paragraph. v1 recited them in the
+sentence; sessions pinned to it still replay that way.
+
+What each criterion asks for is not in the message at all. The student opens the
+Rubric panel from the session's top bar, which shows the rubric's own wording for
+the step they are on. The per-criterion *reason* the Assessment Agent gave is
+never shown: it says where the response went wrong, and the Tutor is forbidden
+from pointing at that.
 
 The same shape holds across the other steps. From Elaborate (Table 4.3): "your
 response drifted into giving an example rather than extending the explanation of

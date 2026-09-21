@@ -20,6 +20,7 @@ import { readingFileUrl } from "../../lib/api";
 import { cn } from "../../lib/utils";
 import { ChatPanel } from "./ChatPanel";
 import { LeaveSessionDialog } from "./LeaveSessionDialog";
+import { ComponentsPanel, RubricPanel } from "./ReferencePanel";
 import { ReadingPanel } from "./ReadingPanel";
 import { SessionTopBar } from "./SessionTopBar";
 import { useTutoringSession } from "./useTutoringSession";
@@ -36,6 +37,7 @@ export function TutoringScreen() {
   const { state, submit } = useTutoringSession(readingId ?? "");
   const [pane, setPane] = useState<Pane>("chat");
   const [confirmingExit, setConfirmingExit] = useState(false);
+  const [panel, setPanel] = useState<"components" | "rubric" | null>(null);
   const navigate = useNavigate();
 
   const leave = () => navigate("/");
@@ -46,8 +48,12 @@ export function TutoringScreen() {
   const running = state.phase !== "terminal" && state.phase !== "idle";
   const onExit = () => (running ? setConfirmingExit(true) : leave());
 
+  // The criteria the newest tutor message reported, so the rubric panel can
+  // mark the same ones the chat tagged.
+  const unmet = [...state.messages].reverse().find((m) => m.unmet.length > 0)?.unmet ?? [];
+
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative flex h-full flex-col">
       <SessionTopBar
         readingTitle={reading?.title ?? "…"}
         section={reading?.class_name ?? ""}
@@ -55,7 +61,23 @@ export function TutoringScreen() {
         status={state.status}
         phase={state.phase}
         onExit={onExit}
+        panel={panel}
+        onTogglePanel={(p) => setPanel((open) => (open === p ? null : p))}
       />
+
+      {panel === "components" && (
+        <ComponentsPanel
+          components={reading?.core_components ?? []}
+          onClose={() => setPanel(null)}
+        />
+      )}
+      {panel === "rubric" && (
+        <RubricPanel
+          currentStep={state.currentStep}
+          unmet={unmet}
+          onClose={() => setPanel(null)}
+        />
+      )}
 
       {confirmingExit && (
         <LeaveSessionDialog onConfirm={leave} onCancel={() => setConfirmingExit(false)} />

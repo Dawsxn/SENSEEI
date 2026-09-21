@@ -24,6 +24,9 @@ export interface ChatMessage {
   step?: SeeiStep;
   kind?: MessageKind;
   content: string;
+  /** Criteria this attempt missed, shown beside the message. Empty on anything
+   *  that is not feedback on a failure. */
+  unmet: string[];
   /** True while deltas are still arriving; the caret renders on this one. */
   streaming: boolean;
 }
@@ -106,6 +109,7 @@ export function reduce(state: TutoringState, action: Action): TutoringState {
       return pushMessage({ ...state, phase: "streaming" }, {
         role: "student",
         content: action.text,
+        unmet: [],
         streaming: false,
       });
 
@@ -130,6 +134,7 @@ function applyEvent(state: TutoringState, event: StreamEvent): TutoringState {
         step: event.step,
         kind: event.kind,
         content: "",
+        unmet: event.unmet ?? [],
         streaming: true,
       });
 

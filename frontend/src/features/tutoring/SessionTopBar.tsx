@@ -14,6 +14,10 @@ interface SessionTopBarProps {
   status: SessionStatus | null;
   phase: Phase;
   onExit: () => void;
+  /** Which reference panel is open, if any. The bar owns the buttons, so it
+   *  shows which one is pressed; the screen owns the panels themselves. */
+  panel: "components" | "rubric" | null;
+  onTogglePanel: (panel: "components" | "rubric") => void;
 }
 
 /** The tutoring screen's own top bar: exit, the reading, step progress, rubric.
@@ -28,12 +32,16 @@ export function SessionTopBar({
   status,
   phase,
   onExit,
+  panel,
+  onTogglePanel,
 }: SessionTopBarProps) {
   const currentIndex = currentStep ? STEPS.indexOf(currentStep) : 0;
   const complete = status === "complete" || phase === "terminal";
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b px-2 sm:px-4">
+    // Above the panels' click-away overlay, so switching straight from one
+    // panel to the other is one click rather than two.
+    <header className="relative z-50 flex h-14 shrink-0 items-center gap-3 border-b bg-background px-2 sm:px-4">
       <Button variant="ghost" size="icon" aria-label="Leave session" onClick={onExit}>
         <X className="h-[18px] w-[18px] text-muted-foreground" />
       </Button>
@@ -65,15 +73,29 @@ export function SessionTopBar({
         })}
       </div>
 
-      {/* Reference panels the student can open on demand, like the rubric. Both
-          are visual only for now; their panels land in a later PR. */}
+      {/* What the student can look up mid-answer: the concept's core components,
+          and what each criterion asks for. */}
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        <Button variant="secondary" size="sm" aria-label="View core components">
+        <Button
+          variant="secondary"
+          size="sm"
+          aria-label="View core components"
+          aria-expanded={panel === "components"}
+          className={cn(panel === "components" && "bg-muted")}
+          onClick={() => onTogglePanel("components")}
+        >
           <Component className="h-[15px] w-[15px]" />
           <span className="hidden sm:inline">Components</span>
         </Button>
 
-        <Button variant="secondary" size="sm" aria-label="View rubric">
+        <Button
+          variant="secondary"
+          size="sm"
+          aria-label="View rubric"
+          aria-expanded={panel === "rubric"}
+          className={cn(panel === "rubric" && "bg-muted")}
+          onClick={() => onTogglePanel("rubric")}
+        >
           <BookOpen className="h-[15px] w-[15px]" />
           <span className="hidden sm:inline">Rubric</span>
         </Button>

@@ -15,7 +15,7 @@ describe("the tutoring reducer", () => {
     const state = run([
       { type: "start" },
       ev({ type: "session", id: "s1", reading_id: "r1", reading_title: "Strategy", status: "in_progress", current_step: "State", started_at: "", ended_at: null }),
-      ev({ type: "message_start", step: "State", kind: "first_attempt", moves: ["Prompt"] }),
+      ev({ type: "message_start", step: "State", kind: "first_attempt", moves: ["Prompt"], unmet: [] }),
       ev({ type: "delta", text: "State the " }),
       ev({ type: "delta", text: "concept." }),
       ev({ type: "message_end", id: "m1", content: "State the concept." }),
@@ -34,7 +34,7 @@ describe("the tutoring reducer", () => {
 
   it("builds a tutor message by accumulating deltas, with a caret until it ends", () => {
     const mid = run([
-      ev({ type: "message_start", step: "State", kind: "first_attempt", moves: ["Prompt"] }),
+      ev({ type: "message_start", step: "State", kind: "first_attempt", moves: ["Prompt"], unmet: [] }),
       ev({ type: "delta", text: "Half" }),
     ]);
     expect(mid.messages[0].streaming).toBe(true);
@@ -58,10 +58,10 @@ describe("the tutoring reducer", () => {
   it("on a pass, keeps both the acknowledgement and the next step's prompt", () => {
     const state = run([
       { type: "student", text: "good" },
-      ev({ type: "message_start", step: "State", kind: "passed", moves: ["Acknowledgement", "Transition"] }),
+      ev({ type: "message_start", step: "State", kind: "passed", moves: ["Acknowledgement", "Transition"], unmet: [] }),
       ev({ type: "delta", text: "Well done." }),
       ev({ type: "message_end", id: "m2", content: "Well done." }),
-      ev({ type: "message_start", step: "Elaborate", kind: "first_attempt", moves: ["Prompt"] }),
+      ev({ type: "message_start", step: "Elaborate", kind: "first_attempt", moves: ["Prompt"], unmet: [] }),
       ev({ type: "delta", text: "Now elaborate." }),
       ev({ type: "message_end", id: "m3", content: "Now elaborate." }),
       ev({ type: "state", status: "in_progress", current_step: "Elaborate", terminal: false, attempts_used: 0, attempts_left: 3 }),
@@ -75,7 +75,7 @@ describe("the tutoring reducer", () => {
 
   it("tracks attempts on a retry", () => {
     const state = run([
-      ev({ type: "message_start", step: "State", kind: "retry", moves: [] }),
+      ev({ type: "message_start", step: "State", kind: "retry", moves: [], unmet: ["Brevity", "Clarity"] }),
       ev({ type: "message_end", id: "m", content: "Try again." }),
       ev({ type: "state", status: "in_progress", current_step: "State", terminal: false, attempts_used: 1, attempts_left: 2 }),
     ], { ...initialState, phase: "streaming" });
@@ -86,9 +86,9 @@ describe("the tutoring reducer", () => {
 
   it("ends the session on a terminal state event", () => {
     const state = run([
-      ev({ type: "message_start", step: "State", kind: "final_fail", moves: [] }),
+      ev({ type: "message_start", step: "State", kind: "final_fail", moves: [], unmet: [] }),
       ev({ type: "message_end", id: "m", content: "That wasn't enough." }),
-      ev({ type: "message_start", step: "State", kind: "fallback", moves: ["Fallback"] }),
+      ev({ type: "message_start", step: "State", kind: "fallback", moves: ["Fallback"], unmet: [] }),
       ev({ type: "delta", text: "Your instructor has been notified." }),
       ev({ type: "message_end", id: "f", content: "Your instructor has been notified." }),
       ev({ type: "state", status: "fallback", current_step: "State", terminal: true, attempts_used: 3, attempts_left: 0 }),
@@ -101,7 +101,7 @@ describe("the tutoring reducer", () => {
 
   it("surfaces an error event and stops any half-streamed message", () => {
     const state = run([
-      ev({ type: "message_start", step: "State", kind: "retry", moves: [] }),
+      ev({ type: "message_start", step: "State", kind: "retry", moves: [], unmet: [] }),
       ev({ type: "delta", text: "partial" }),
       ev({ type: "error", detail: "tutor failed: TimeoutError" }),
     ], { ...initialState, phase: "streaming" });
@@ -109,5 +109,23 @@ describe("the tutoring reducer", () => {
     expect(state.phase).toBe("error");
     expect(state.error).toContain("tutor failed");
     expect(state.messages.at(-1)?.streaming).toBe(false);
+  });
+});
+
+describe("the criteria a failed attempt missed", () => {
+  it("land on the message they belong to, and nowhere else", () => {
+    const state = run([
+      { type: "start" },
+      ev({ type: "message_start", step: "State", kind: "first_attempt", moves: ["Prompt"], unmet: [] }),
+      ev({ type: "message_end", id: "m1", content: "State it." }),
+      { type: "student", text: "too vague" },
+      ev({ type: "message_start", step: "State", kind: "retry", moves: [], unmet: ["Brevity", "Clarity"] }),
+      ev({ type: "message_end", id: "m2", content: "Try again." }),
+    ]);
+
+    const [prompt, answer, retry] = state.messages;
+    expect(prompt.unmet).toEqual([]);
+    expect(answer.unmet).toEqual([]);
+    expect(retry.unmet).toEqual(["Brevity", "Clarity"]);
   });
 });

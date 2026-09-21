@@ -1,8 +1,13 @@
 """Offline stub provider for smoke-testing the pipeline + report with no API key.
 
-It does NOT assess anything — it always returns a fixed PASS verdict. Use it only
-to confirm the CSV -> agent -> report wiring works end to end (e.g. in CI or a
-first local run). Real evaluation needs gemini or openai_compat.
+It does NOT assess anything. By default every response passes, which exercises
+the CSV -> agent -> report wiring end to end (e.g. in CI or a first local run).
+Real evaluation needs gemini or openai_compat.
+
+**Making it fail on purpose.** A response containing `FAIL_MARKER` is judged to
+miss the step's first two criteria. Without this the retry, fallback and
+criterion-feedback paths cannot be seen at all without a paid provider, which
+made the whole failure half of the app unreviewable offline.
 """
 
 from __future__ import annotations
@@ -12,6 +17,10 @@ import re
 
 from .base import LLMProvider
 from ..rubric import canonical_step, criteria_for
+
+#: Put this anywhere in a response to make the mock fail it. Upper case and
+#: unnatural on purpose: no real answer contains it by accident.
+FAIL_MARKER = "XFAIL"
 
 
 class MockProvider(LLMProvider):
@@ -40,22 +49,41 @@ class MockProvider(LLMProvider):
         if "# SITUATION" in user_prompt:
             return self._tutor_prose(user_prompt)
 
-        # Emit an all-pass judgment for every criterion of the step named in the
-        # user prompt, so the derive-verdict path is exercised end to end offline.
+        # Emit a judgment for every criterion of the step named in the user
+        # prompt, so the derive-verdict path is exercised end to end offline.
+        # Everything passes unless the response asks to fail.
         m = re.search(r"#\s*CURRENT SEE-I STEP\s*\n\s*(.+)", user_prompt)
         step = canonical_step(m.group(1).strip()) if m else None
+        names = criteria_for(step) if step else []
+
+        response = self._section(user_prompt, "# STUDENT RESPONSE")
+        failing = names[:2] if FAIL_MARKER in response.upper() else []
+
         criteria = {
-            c: {"pass": True, "reason": "[MOCK] always passes"}
-            for c in (criteria_for(step) if step else [])
+            c: {
+                "pass": c not in failing,
+                "reason": (
+                    f"[MOCK] {FAIL_MARKER} was in the response"
+                    if c in failing
+                    else "[MOCK] always passes"
+                ),
+            }
+            for c in names
         }
         return json.dumps(
             {
-                "verdict": "PASS",
-                "fail_criteria": [],
+                "verdict": "FAIL" if failing else "PASS",
+                "fail_criteria": failing,
                 "criteria": criteria,
                 "raw_response": "[MOCK] no real assessment performed",
             }
         )
+
+    @staticmethod
+    def _section(prompt: str, heading: str) -> str:
+        """The text under a `# HEADING`, up to the next heading or the end."""
+        m = re.search(rf"{re.escape(heading)}\s*\n(.*?)(?=\n#\s|\Z)", prompt, re.S)
+        return m.group(1) if m else ""
 
     @staticmethod
     def _tutor_prose(user_prompt: str) -> str:

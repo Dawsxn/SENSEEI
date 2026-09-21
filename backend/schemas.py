@@ -51,6 +51,23 @@ class ReadingDetail(BaseModel):
     has_file: bool
 
 
+class RubricCriterion(BaseModel):
+    name: str
+    #: The pass condition, exactly as written in the rubric YAML. Shown to the
+    #: student, so it must not be reworded anywhere along the way.
+    requirement: str
+
+
+class RubricStep(BaseModel):
+    step: SeeiStep
+    criteria: list[RubricCriterion]
+
+
+class RubricOut(BaseModel):
+    version: str
+    steps: list[RubricStep]
+
+
 class StartSessionIn(BaseModel):
     reading_id: uuid.UUID
 

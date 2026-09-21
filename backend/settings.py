@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     # --- versions pinned per session --------------------------------------
     # Stamped on every session so a prompt or rubric change does not silently
     # alter what an old session meant.
-    tutor_prompt_version: str = "v1"
+    tutor_prompt_version: str = "v2"
     assessment_prompt_version: str = "v3"
     rubric_version: str = "v3"
 
