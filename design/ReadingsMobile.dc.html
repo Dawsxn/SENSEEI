@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .btn { height: 36px; padding: 0 14px; border-radius: 6px; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-primary { border: none; background: {{primary}}; color: #ffffff; }
+    .btn-secondary { border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+    .tab { font-size: 14px; font-weight: 500; color: #71717a; height: 48px; display: flex; align-items: center; border-bottom: 2px solid transparent; box-sizing: border-box; }
+    .tab-on { color: #09090b; border-bottom-color: #09090b; }
+    .seg { flex: 1; height: 30px; border-radius: 4px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; color: #71717a; }
+    .seg-on { background: #ffffff; color: #09090b; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .card { border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid #e4e4e7; }
+    .muted { font-size: 13px; color: #71717a; }
+    .dot { width: 20px; height: 20px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+    .btn-danger { border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; }
+  </style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; background: #ffffff; color: #09090b; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!-- On a phone the tabs drop to their own row under the bar. -->
+  <div style="flex-shrink: 0; border-bottom: 1px solid #e4e4e7;">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="20" height="20" viewBox="0 0 100 100" fill="{{primary}}">
+          <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+          <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+          <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+          <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+        </svg>
+        <span style="font-size: 14px; font-weight: 600;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+      </div>
+      <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">PR</div>
+    </div>
+    <div style="display: flex; gap: 24px; padding: 0 16px;">
+      <span class="tab">Classes</span>
+      <span class="tab tab-on">Readings</span>
+    </div>
+  </div>
+
+  <!-- ───── Readings list: rows stack, class and count go under the title ───── -->
+  <sc-if value="{{onList}}" hint-placeholder-val="{{true}}">
+    <div style="padding: 20px 16px; display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em;">Readings</h1>
+        <button class="btn btn-primary" style="height: 32px; font-size: 13px;">Upload a reading</button>
+      </div>
+      <div class="card">
+        <sc-for list="{{readings}}" as="r" hint-placeholder-count="5">
+          <div style="padding: 12px 14px; border-bottom: 1px solid {{r.divider}}; display: flex; align-items: center; gap: 10px;">
+            <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 14px; font-weight: 500;">{{r.title}}</span>
+              <span style="font-size: 12px; color: #71717a;"><span style="color: {{r.classColor}};">{{r.classes}}</span> · {{r.sessions}} sessions · {{r.added}}</span>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ───── Upload step 2: PDF and text can't sit side by side, so they switch ───── -->
+  <sc-if value="{{onText}}" hint-placeholder-val="{{false}}">
+    <div style="flex-grow: 1; padding: 16px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 0;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 18px; font-weight: 600;">Check the text</span>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <div class="dot" style="background: {{primary}}; color: #fff;">&#10003;</div>
+          <div style="width: 10px; height: 1px; background: #e4e4e7;"></div>
+          <div class="dot" style="background: {{primary}}; color: #fff;">2</div>
+          <div style="width: 10px; height: 1px; background: #e4e4e7;"></div>
+          <div class="dot" style="border: 1px solid #e4e4e7; color: #71717a;">3</div>
+        </div>
+      </div>
+      <span class="muted">The tutor only reads this text. Fix any mistakes.</span>
+      <div style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; background: #f0fdf4; border: 1px solid #bbf7d0;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+        <span style="font-size: 13px; color: #166534;">2 figures described. Check each one.</span>
+      </div>
+      <div style="display: flex; gap: 2px; padding: 3px; background: #f4f4f5; border-radius: 6px;">
+        <span class="seg">PDF</span>
+        <span class="seg seg-on">Text</span>
+      </div>
+      <div style="flex-grow: 1; border: 1px solid #a1a1aa; box-shadow: 0 0 0 3px rgba(161,161,170,0.25); border-radius: 8px; padding: 12px 14px; font-size: 14px; line-height: 1.6; display: flex; flex-direction: column; gap: 10px; overflow: hidden; min-height: 0;">
+        <span>Porter's Five Forces</span>
+        <span>How much profit an industry earns is not an accident. Porter argued that five forces decide how much of the value an industry creates its firms get to keep.</span>
+        <span>[Figure 1: Five boxes, with "Industry rivalry" in the centre and arrows from "New entrants", "Suppliers", "Buyers" and "Substitutes".]</span>
+        <span>Figure 1. The five forces</span>
+        <span>The strongest force sets the ceiling on profits, and it is the one strategy has to answer first.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button class="btn btn-secondary">Back</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ───── Reading page: side cards move above the reading ───── -->
+  <sc-if value="{{onReading}}" hint-placeholder-val="{{false}}">
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+        <span class="muted">Readings</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em;">Porter's Five Forces</h1>
+        <span style="font-size: 14px; color: #71717a;">The five pressures on an industry</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary" style="height: 32px; font-size: 13px;">Edit</button>
+        <button class="btn btn-danger" style="height: 32px; font-size: 13px;">Delete reading</button>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span style="font-size: 14px; font-weight: 600;">Classes</span>
+          <button class="btn btn-secondary" style="height: 28px; font-size: 13px; padding: 0 10px;">Change</button>
+        </div>
+        <div style="padding: 12px 14px; font-size: 14px;">STRAMA K31</div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span style="font-size: 14px; font-weight: 600;">Core components</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <span class="muted">Locked</span>
+          </div>
+        </div>
+        <div style="padding: 10px 14px; border-bottom: 1px solid #e4e4e7; display: flex; gap: 10px;">
+          <span class="muted" style="width: 12px; line-height: 21px;">1</span>
+          <span style="font-size: 14px; line-height: 1.5;">Five forces shape how profitable an industry is.</span>
+        </div>
+        <div style="padding: 10px 14px; display: flex; gap: 10px;">
+          <span class="muted" style="width: 12px; line-height: 21px;">2</span>
+          <span style="font-size: 14px; line-height: 1.5;">The strongest force matters most when setting strategy.</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="padding: 8px 10px; border-bottom: 1px solid #e4e4e7;">
+          <div style="display: flex; gap: 2px; padding: 3px; background: #f4f4f5; border-radius: 6px;">
+            <span class="seg seg-on">PDF</span>
+            <span class="seg">Text</span>
+          </div>
+        </div>
+        <div style="height: 200px; background: #e9e9ec; padding: 12px 12px 0; box-sizing: border-box; overflow: hidden;">
+          <div style="background: #fff; height: 100%; padding: 20px 22px; box-sizing: border-box; box-shadow: 0 1px 3px rgba(0,0,0,0.14);">
+            <p style="font-family: Georgia, serif; font-size: 12px; font-weight: 700; margin: 0 0 8px; color: #1a1a1a;">Porter's Five Forces</p>
+            <p style="font-family: Georgia, serif; font-size: 8.5px; line-height: 1.6; margin: 0; color: #1a1a1a; text-align: justify;">How much profit an industry earns is not an accident. Porter argued that five forces decide how much of the value an industry creates its firms get to keep. Rivalry among existing firms is only one of them.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"},"state":{"editor":"enum","options":["Readings","Text step","Reading"],"default":"Readings","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'Readings';
+    const data = [
+      ["Porter's Five Forces", '', '0', 'Sep 22'],
+      ['Recovery to the Bisector', 'STSWENG S11', '3', 'Sep 12'],
+      ['Strategic Vision', 'STRAMA K31', '9', 'Sep 3'],
+      ['Business Model', 'STSWENG S11', '14', 'Sep 3'],
+      ['Strategy', 'STRAMA K31', '17', 'Sep 3'],
+    ];
+    const readings = data.map(([title, classes, sessions, added], i) => ({
+      title, sessions, added,
+      classes: classes || 'Not assigned',
+      classColor: classes ? '#71717a' : '#a1a1aa',
+      divider: i === data.length - 1 ? 'transparent' : '#e4e4e7',
+    }));
+    return {
+      primary: this.props.primary ?? '#16a34a',
+      onList: state === 'Readings',
+      onText: state === 'Text step',
+      onReading: state === 'Reading',
+      readings,
+    };
+  }
+}
+</script>
+</body>
+</html>
