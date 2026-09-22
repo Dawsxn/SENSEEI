@@ -70,6 +70,35 @@ class GeminiProvider(LLMProvider):
         self.last_finish_reason = self._finish_reason(resp)
         return resp.text or ""
 
+    def complete_with_file(
+        self, system_prompt: str, user_prompt: str, data: bytes, mime_type: str
+    ) -> str:
+        """`complete()` with the document sent inline, ahead of the prompt.
+
+        Inline rather than through the Files API: an upload is at most 20 MB,
+        within the inline limit, and nothing needs to outlive the one call.
+        """
+        types = self._types
+        cfg_kwargs = dict(
+            system_instruction=system_prompt,
+            temperature=self.temperature,
+            max_output_tokens=self.max_output_tokens,
+        )
+        if self.json_mode:
+            cfg_kwargs["response_mime_type"] = "application/json"
+        if self.thinking_level:
+            cfg_kwargs["thinking_config"] = types.ThinkingConfig(
+                thinking_level=self.thinking_level
+            )
+        resp = self.client.models.generate_content(
+            model=self.model_name,
+            contents=[types.Part.from_bytes(data=data, mime_type=mime_type), user_prompt],
+            config=types.GenerateContentConfig(**cfg_kwargs),
+        )
+        self.last_usage = self._usage(resp)
+        self.last_finish_reason = self._finish_reason(resp)
+        return resp.text or ""
+
     def stream(self, system_prompt: str, user_prompt: str):
         """Yield text chunks as Gemini generates them.
 

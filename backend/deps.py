@@ -15,7 +15,9 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .agent_runtime import Agents, get_agents
+from agents.figures import FigureDescriber
+
+from .agent_runtime import Agents, get_agents, get_figure_describer
 from .db import get_session
 from .models import Role, User
 
@@ -57,3 +59,8 @@ async def require_student(user: User = Depends(get_current_user)) -> User:
 def get_agents_dep() -> Agents:
     """The process-wide agent pair. A seam for tests to override."""
     return get_agents()
+
+
+def get_figure_describer_dep() -> FigureDescriber:
+    """The upload's figure describer. A seam for tests, like the agent pair."""
+    return get_figure_describer()

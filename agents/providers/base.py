@@ -41,5 +41,17 @@ class LLMProvider(ABC):
         if text:
             yield text
 
+    def complete_with_file(
+        self, system_prompt: str, user_prompt: str, data: bytes, mime_type: str
+    ) -> str:
+        """Like `complete()`, with a document the model reads alongside the prompt.
+
+        Used once per upload, to describe a reading's figures from the PDF itself.
+        A provider that cannot read files leaves this unimplemented, and the
+        caller treats that the same as any other failure: the instructor is told
+        the figures were not described.
+        """
+        raise NotImplementedError(f"{self.name} cannot read files")
+
     def describe(self) -> str:
         return getattr(self, "model_name", self.name)

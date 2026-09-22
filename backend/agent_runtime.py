@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 
 import agents as agents_pkg
 from agents.assessment import AssessmentAgent
+from agents.figures import FigureDescriber
 from agents.providers import get_provider
 from agents.rubric import load_rubric, render_rubric
 from agents.tutor import TutorAgent
@@ -73,3 +74,15 @@ def build_agents(settings: Settings) -> Agents:
 def get_agents() -> Agents:
     """The process-wide agent pair, built once from the active settings."""
     return build_agents(get_settings())
+
+
+@lru_cache
+def get_figure_describer() -> FigureDescriber:
+    """The upload tool that describes a reading's figures. Not an agent: it runs
+    once per upload and the instructor edits everything it writes. Same provider
+    and model as the agents, so there is one key and one bill."""
+    settings = get_settings()
+    load_dotenv(AGENTS_DIR.parent / ".env")
+    prompt = _prompt(f"figure_prompt_{settings.figure_prompt_version}.md")
+    provider = get_provider({**settings.provider_config(), "json_mode": True})
+    return FigureDescriber(provider, prompt)

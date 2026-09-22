@@ -85,7 +85,16 @@ async def _statuses(
 
 async def list_readings(db: AsyncSession, user_id: uuid.UUID) -> list[dict]:
     """Every reading the student can see, with its class and status."""
-    rows = (await db.execute(_visible_readings(user_id).order_by(Reading.created_at))).all()
+    rows = (
+        await db.execute(
+            _visible_readings(user_id).order_by(Reading.created_at, class_label())
+        )
+    ).all()
+    # One row per reading. A reading assigned to two classes the student is in
+    # comes back once per class; it is one reading, so it is listed once, under
+    # the first class by name.
+    seen: set[uuid.UUID] = set()
+    rows = [row for row in rows if not (row[0].id in seen or seen.add(row[0].id))]
     statuses = await _statuses(db, user_id, [r.id for r, _ in rows])
     return [
         {

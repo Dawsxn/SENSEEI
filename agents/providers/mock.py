@@ -93,6 +93,39 @@ class MockProvider(LLMProvider):
         situation = s.group(1).strip() if s else ""
         return f"[MOCK tutor] {step}. {situation[:80]}"
 
+    def complete_with_file(
+        self, system_prompt: str, user_prompt: str, data: bytes, mime_type: str
+    ) -> str:
+        """Pretend to describe a document's figures, without looking at it.
+
+        It cannot see the document, so it reads the captions out of the
+        extracted text the prompt carries: every line that starts "Figure 2" or
+        "Table 6.1" gets a placeholder description. That is enough to exercise
+        placing descriptions in the text, offline and for free.
+        """
+        self.last_usage = {
+            "input_tokens": 2500, "output_tokens": 150,
+            "thinking_tokens": 0, "total_tokens": 2650,
+        }
+        self.last_finish_reason = "STOP"
+        text = self._section(user_prompt, "# EXTRACTED TEXT")
+        figures, seen = [], set()
+        for m in re.finditer(
+            r"^((?:Figure|Fig\.|Table)\s+\d+(?:\.\d+)*).*$", text, re.M
+        ):
+            # The first line naming a figure is its caption; later ones are
+            # prose that mentions it ("Figure 6.4 shows...").
+            if m.group(1) in seen:
+                continue
+            seen.add(m.group(1))
+            figures.append({
+                "page": None,
+                "label": m.group(1),
+                "caption": m.group(0).strip(),
+                "description": f"[MOCK] A description of {m.group(1)} would appear here.",
+            })
+        return json.dumps({"figures": figures})
+
     def stream(self, system_prompt: str, user_prompt: str):
         """Yield the mock answer in word-sized pieces, so streaming is exercised.
 
