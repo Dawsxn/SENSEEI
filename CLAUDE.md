@@ -17,8 +17,10 @@ Four layers, frontend to back:
   Assessment Agent
 - **External** — PostgreSQL, and an LLM provider (not yet chosen)
 
-Only the two agents call an LLM. The Orchestrator is fixed-rule code, not a
-third agent.
+Only the two agents call an LLM while a student is being tutored. The
+Orchestrator is fixed-rule code, not a third agent. One upload tool also calls
+the LLM, once per reading, to describe its figures; it is not an agent (see
+`docs/context/agent-contracts.md`).
 
 ## Conventions — always apply
 
@@ -28,7 +30,8 @@ third agent.
 ## Reference — open when relevant
 
 - `agents/` — the shared agent package: both agents (`assessment.py` grades a
-  response, `tutor.py` writes what the student reads), the rubric loader
+  response, `tutor.py` writes what the student reads), the upload tool that
+  describes a reading's figures (`figures.py`), the rubric loader
   (`rubric.py`), shared provider backoff (`retry.py`), the swappable LLM
   `providers/`, and the versioned `prompts/` and `rubrics/`. Installed via the root `pyproject.toml`
   (`pip install -e ".[gemini]"`), so the eval harness and the future FastAPI
