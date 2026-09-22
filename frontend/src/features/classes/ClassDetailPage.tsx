@@ -2,7 +2,8 @@
  *
  * The roster takes the main column because it is what changes. The join code is
  * large and monospaced because it is read aloud in a room and copied off a
- * projector. The readings are read-only here; assigning them comes with upload.
+ * projector. The readings are read-only here; which classes a reading goes to is
+ * changed on the reading's own page.
  *
  * Removing a student and deleting the class both take access away rather than
  * data: the sessions stay in the database for the study, but neither the student
@@ -104,7 +105,7 @@ export function ClassDetailPage() {
                   <Button variant="secondary" size="sm" onClick={() => setDialog({ kind: "edit" })}>
                     Edit
                   </Button>
-                  <Button variant="secondary" size="sm" onClick={() => setDialog({ kind: "delete" })}>
+                  <Button variant="danger" size="sm" onClick={() => setDialog({ kind: "delete" })}>
                     Delete
                   </Button>
                 </div>
