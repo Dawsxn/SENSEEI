@@ -343,6 +343,21 @@ Each maps onto the schema:
 
 If a schema change makes any of these three awkward, the schema is wrong.
 
+**Which sessions they count**, as built in `backend/services/analytics_service.py`:
+those by a student enrolled in the class, on a reading assigned to the class,
+that finished. In-progress sessions are excluded, since an abandoned one would
+sit in the numbers forever. A student enrolled in two classes that both use a
+reading has their session counted in both, which is right: each class's numbers
+describe that class.
+
+A step nobody has reached is absent rather than reported as zero. No data and a
+pass rate of zero are different things, and only one of them is bad news.
+
+**The roster** beside those statistics is a fourth query, per reading: each
+student's latest finished session on it, how many steps they passed, and whether
+it ended in fallback. The statistics count every finished session; only the
+roster picks one, because it is the one an instructor would act on.
+
 ## Retention and privacy
 
 Two separate regimes. Do not conflate them.

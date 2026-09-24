@@ -16,7 +16,7 @@ and is recorded here because it is not derivable from the repo yet.
 | shadcn/ui | Components are copied into the repo rather than imported, so they are ours to edit |
 | Geist | Typeface, via Google Fonts. Not Inter |
 | TanStack Query | Server state. The tutoring loop is request-response, which is what it is for |
-| Recharts | Instructor dashboard charts. shadcn's chart components wrap it |
+| Recharts | Available for instructor dashboard charts, unused so far: the three statistics are a bar, a ranked list and four numbers, which are plain CSS |
 
 **No client state library.** React state plus TanStack Query's cache covers what
 this app does. Add one only when something concrete forces it.
