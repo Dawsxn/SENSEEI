@@ -67,6 +67,13 @@ design changes, so it always matches.
 | Readings, phone | [png/07d-mobile-readings.png](png/07d-mobile-readings.png) |
 | Upload text step, phone | [png/07d-mobile-upload-text.png](png/07d-mobile-upload-text.png) |
 | Reading, instructor, phone | [png/07d-mobile-reading.png](png/07d-mobile-reading.png) |
+| Class, with statistics | [png/08-class-stats.png](png/08-class-stats.png) |
+| Class, no sessions yet | [png/08-class-no-sessions.png](png/08-class-no-sessions.png) |
+| Reading in a class | [png/08b-class-reading.png](png/08b-class-reading.png) |
+| Reading in a class, no sessions | [png/08b-class-reading-no-sessions.png](png/08b-class-reading-no-sessions.png) |
+| Reading in a class, no students | [png/08b-class-reading-no-students.png](png/08b-class-reading-no-students.png) |
+| Class, phone | [png/08c-mobile-class.png](png/08c-mobile-class.png) |
+| Reading in a class, phone | [png/08c-mobile-class-reading.png](png/08c-mobile-class-reading.png) |
 
 Do not open a `.dc.html` in a browser expecting to see the screen. It renders a
 grey skeleton with `{{placeholder}}` text, because repeated rows and every
