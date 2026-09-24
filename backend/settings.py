@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     tutor_prompt_version: str = "v2"
     assessment_prompt_version: str = "v3"
     rubric_version: str = "v3"
+    #: Describes a reading's figures at upload. Not pinned per session: what it
+    #: writes is reviewed and saved as the reading's text, which is what counts.
+    figure_prompt_version: str = "v1"
 
     # --- app ---------------------------------------------------------------
     environment: str = "local"   # local | development | production

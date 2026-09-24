@@ -31,8 +31,8 @@ class Reading(Entity, SoftDelete, table=True):
     )
     title: str
     #: A short one-line topic summary, shown under the title in the reading list.
-    #: Nullable: a reading without one simply shows no subtitle. The instructor
-    #: will set it on the upload screen; until that exists only the seed does.
+    #: Nullable: it is optional on the upload screen, and a reading without one
+    #: simply shows no subtitle.
     description: str | None = Field(default=None)
     content: str = Field(description="Extracted plain text. This is what the agents see")
     created_at: datetime = Field(default_factory=utcnow, sa_type=TS)

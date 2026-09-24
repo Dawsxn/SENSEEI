@@ -22,6 +22,12 @@ import type {
   ClassListItem,
   JoinResult,
 } from "../features/classes/types";
+import type {
+  ExtractResult,
+  LibraryItem,
+  LibraryReading,
+  NewReading,
+} from "../features/library/types";
 import type { SessionTranscript } from "../features/review/types";
 import type { Rubric } from "../features/tutoring/types";
 import type {
@@ -192,6 +198,8 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    /** The backend's `detail` when it is a code worth branching on. */
+    readonly detail: string = "",
   ) {
     super(message);
   }
@@ -203,7 +211,28 @@ async function send<T>(path: string, method: string, body?: unknown): Promise<T>
     headers: body === undefined ? undefined : { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  if (!response.ok) throw new ApiError(response.status, `${method} ${path}: ${response.status}`);
+  return settle<T>(response, `${method} ${path}`);
+}
+
+/** A multipart POST, for uploads. The browser sets the boundary header itself. */
+async function sendForm<T>(path: string, form: FormData): Promise<T> {
+  const response = await fetch(path, { method: "POST", body: form });
+  return settle<T>(response, `POST ${path}`);
+}
+
+/** The body of a successful response, or an ApiError carrying the status and
+ *  the backend's `detail`, which for uploads is a code like `no_text`. */
+async function settle<T>(response: Response, what: string): Promise<T> {
+  if (!response.ok) {
+    let detail = "";
+    try {
+      const body = await response.json();
+      if (typeof body?.detail === "string") detail = body.detail;
+    } catch {
+      // not JSON; the status is enough
+    }
+    throw new ApiError(response.status, `${what}: ${response.status}`, detail);
+  }
   return (response.status === 204 ? undefined : await response.json()) as T;
 }
 
@@ -220,3 +249,37 @@ export const removeStudent = (classId: string, studentId: string) =>
   send<void>(`/instructor/classes/${classId}/students/${studentId}`, "DELETE");
 export const joinClass = (joinCode: string) =>
   send<JoinResult>("/enrolments", "POST", { join_code: joinCode });
+
+// --- an instructor's readings -------------------------------------------------
+
+export const getLibrary = () => send<LibraryItem[]>("/instructor/readings", "GET");
+export const getLibraryReading = (id: string) =>
+  send<LibraryReading>(`/instructor/readings/${id}`, "GET");
+export const libraryFileUrl = (id: string) => `/instructor/readings/${id}/file`;
+
+/** The PDF as text, with its figures described. Saves nothing. */
+export function extractReading(file: File): Promise<ExtractResult> {
+  const form = new FormData();
+  form.append("file", file);
+  return sendForm<ExtractResult>("/instructor/readings/extract", form);
+}
+
+export function createReading(reading: NewReading): Promise<{ id: string }> {
+  const form = new FormData();
+  form.append("file", reading.file);
+  form.append("title", reading.title);
+  if (reading.description) form.append("description", reading.description);
+  form.append("content", reading.content);
+  reading.coreComponents.forEach((c) => form.append("core_components", c));
+  reading.classIds.forEach((id) => form.append("class_ids", id));
+  return sendForm<{ id: string }>("/instructor/readings", form);
+}
+
+export const updateLibraryReading = (
+  id: string,
+  fields: { title: string; description: string | null },
+) => send<LibraryReading>(`/instructor/readings/${id}`, "PATCH", fields);
+export const setReadingClasses = (id: string, classIds: string[]) =>
+  send<LibraryReading>(`/instructor/readings/${id}/classes`, "PUT", { class_ids: classIds });
+export const deleteLibraryReading = (id: string) =>
+  send<void>(`/instructor/readings/${id}`, "DELETE");

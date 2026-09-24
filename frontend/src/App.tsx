@@ -1,75 +1,43 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import type { ReactNode } from "react";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import { RequireAuth } from "./features/auth/RequireAuth";
 import { HomeRoute, RequireInstructor } from "./features/auth/RoleRoutes";
 import { ClassDetailPage } from "./features/classes/ClassDetailPage";
 import { ClassListPage } from "./features/classes/ClassListPage";
 import { SignInScreen } from "./features/auth/SignInScreen";
+import { LibraryListPage } from "./features/library/LibraryListPage";
+import { LibraryReadingPage } from "./features/library/LibraryReadingPage";
+import { UploadReadingPage } from "./features/library/UploadReadingPage";
 import { SessionReviewPage } from "./features/review/SessionReviewPage";
 import { ReadingStepScreen } from "./features/tutoring/ReadingStepScreen";
 import { TutoringScreen } from "./features/tutoring/TutoringScreen";
 
-// The sign-in screen is open; every other route requires a session.
+const signedIn = (page: ReactNode) => <RequireAuth>{page}</RequireAuth>;
+const instructor = (page: ReactNode) => signedIn(<RequireInstructor>{page}</RequireInstructor>);
+
+// A data router rather than <BrowserRouter>, because only a data router can hold
+// a navigation back: the upload page asks before discarding unsaved work.
+//
+// The instructor's reading pages live at /library, not /readings, which is the
+// students' API. Pages and API share one origin, so a page path that is also an
+// API path answers a refresh with JSON (docs/context/tech-stack.md).
+const router = createBrowserRouter([
+  // The sign-in screen is open; every other route requires a session.
+  { path: "/login", element: <SignInScreen /> },
+  { path: "/", element: signedIn(<HomeRoute />) },
+  // The reading step comes before the session and creates nothing; the session
+  // row is written when /tutor is reached.
+  { path: "/read/:readingId", element: signedIn(<ReadingStepScreen />) },
+  { path: "/tutor/:readingId", element: signedIn(<TutoringScreen />) },
+  { path: "/review/:sessionId", element: signedIn(<SessionReviewPage />) },
+  { path: "/classes", element: instructor(<ClassListPage />) },
+  { path: "/classes/:classId", element: instructor(<ClassDetailPage />) },
+  { path: "/library", element: instructor(<LibraryListPage />) },
+  { path: "/library/new", element: instructor(<UploadReadingPage />) },
+  { path: "/library/:readingId", element: instructor(<LibraryReadingPage />) },
+]);
+
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<SignInScreen />} />
-        <Route
-          path="/"
-          element={
-            <RequireAuth>
-              <HomeRoute />
-            </RequireAuth>
-          }
-        />
-        {/* The reading step comes before the session and creates nothing; the
-            session row is written when /tutor is reached. */}
-        <Route
-          path="/read/:readingId"
-          element={
-            <RequireAuth>
-              <ReadingStepScreen />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/tutor/:readingId"
-          element={
-            <RequireAuth>
-              <TutoringScreen />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/classes"
-          element={
-            <RequireAuth>
-              <RequireInstructor>
-                <ClassListPage />
-              </RequireInstructor>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/classes/:classId"
-          element={
-            <RequireAuth>
-              <RequireInstructor>
-                <ClassDetailPage />
-              </RequireInstructor>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/review/:sessionId"
-          element={
-            <RequireAuth>
-              <SessionReviewPage />
-            </RequireAuth>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }

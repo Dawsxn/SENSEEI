@@ -157,17 +157,16 @@ that a student can now *see* what the agent could not, so a figure dropped in
 extraction is no longer invisible — it is a student citing something the
 Assessment Agent was never shown.
 
-**The upload flow closes that gap, and does not exist yet.** The intended shape:
-the instructor uploads a PDF, it is parsed to text, figures are rendered as
-textual descriptions, and the instructor edits the result before the reading goes
-live. Until then, `reading_file` is populated only by the seed, and a reading
-without one falls back to showing `content`.
+**The upload flow closes that gap.** The instructor uploads a PDF, it is parsed
+to text, each figure is described in words by the figure describer
+(`docs/context/agent-contracts.md`), and the instructor edits the result beside
+the PDF before the reading is saved. Nothing is stored until the final save, so
+an upload abandoned midway leaves no rows behind. A reading without a stored
+file, which only the seed can produce, falls back to showing `content`.
 
-`description` is a short topic summary the reading list shows under the title. It
-is nullable because the upload screen that would set it does not exist yet: until
-then only the seed populates it, and a reading without one simply shows no
-subtitle. The reading-list mockup shows this subtitle; the field is what backs
-it.
+`description` is a short topic summary the reading list shows under the title.
+It is optional on the upload screen, so it is nullable, and a reading without one
+simply shows no subtitle.
 
 ### reading_file
 
@@ -205,7 +204,9 @@ One or more per reading. The essential defining parts of the concept.
 **Immutable after upload.** An instructor may not change a reading's core
 components once uploaded, because doing so would invalidate the results and
 statistics of prior sessions on that reading (§4.3.4). Enforce this in code, not
-by convention.
+by convention. The same holds for `reading.content`, for the same reason. The API
+has no way to change either: after saving, only a reading's title, description
+and classes can be edited.
 
 ### reading_assignment
 
@@ -218,7 +219,9 @@ Which classes a reading is assigned to.
 
 **Mutable**, unlike core components. Assignment only affects who can see a
 reading, not its content, so instructors can change it freely after upload
-(§4.3.4).
+(§4.3.4). A reading may have no classes at all: it is saved, and no student sees
+it until one is assigned. A reading assigned to two classes a student is in is
+listed to that student once.
 
 ### session
 
@@ -408,14 +411,13 @@ compared.
 
 | # | Question | Blocks |
 | --- | --- | --- |
-| 1 | Which upload formats are supported beyond PDF? Recommendation below | Upload flow, reading table |
+| 1 | Which upload formats are supported beyond PDF? PDF only for now | Upload flow |
 
-**On question 1.** PDF plus a paste-as-text option covers nearly everything at
-low cost, and DOCX can follow if instructors ask. Whatever the format, recommend
-showing the instructor the extracted text before the reading goes live, with the
-option to correct it. Extraction is lossy, that text is what every agent grades
-against, and a mangled extraction would silently poison every session on that
-reading.
+**On question 1.** Upload is PDF only, up to 20 MB. Paste-as-text and DOCX can
+follow if instructors ask. Whatever the format, the instructor sees the extracted
+text before the reading is saved and can correct it, because extraction is lossy,
+that text is what every agent grades against, and a mangled extraction would
+silently poison every session on that reading.
 
 ## Related
 

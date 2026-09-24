@@ -190,8 +190,9 @@ finished, so each of these will be met at once.
 - [ ] **No page route shares a path with an API route.** Pages and the API share
   one origin, so a page at the same path as an endpoint answers a refresh or a
   bookmark with JSON. It happened with `/classes`; the instructor API moved to
-  `/instructor/classes`. The FastAPI SPA fallback must only catch paths no
-  router owns.
+  `/instructor/classes`. The instructor's reading pages are at `/library` for
+  the same reason, since `/readings` is the students' API. The FastAPI SPA
+  fallback must only catch paths no router owns.
 - [ ] **The Google OAuth redirect URI** is registered for the deployed origin, not
   only `localhost:5173`.
 - [ ] **The session cookie** is marked secure over HTTPS.

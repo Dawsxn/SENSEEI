@@ -5,6 +5,9 @@ What each agent receives, what it returns, and who calls it.
 Two agents call an LLM: the Tutor Agent and the Assessment Agent. The
 Orchestrator drives both and calls no LLM itself.
 
+One more thing calls the LLM, and it is not an agent: the figure describer, used
+once when an instructor uploads a reading. See [Figure describer](#figure-describer).
+
 ## Division of labour
 
 | Component | Calls an LLM | Owns |
@@ -12,6 +15,7 @@ Orchestrator drives both and calls no LLM itself.
 | Tutor Agent | Yes | Everything the student reads |
 | Assessment Agent | Yes | Grading one response against the rubric |
 | Orchestrator | No | Pass/fail, retries, step advancement, session state |
+| Figure describer | Yes, once per upload | A first draft of each figure's description |
 
 The Orchestrator is fixed-rule code, implemented in `backend/orchestrator.py` as
 a pure state machine: given a step, an attempt number and a verdict, it returns
@@ -19,6 +23,37 @@ what happens next. It calls no LLM and touches no database; the session service
 carries its decisions out. Any decision that must be deterministic, reproducible,
 or auditable belongs to it and not to a prompt. If a rule starts migrating into
 an agent's instructions, that is a mistake.
+
+## Figure describer
+
+`agents/figures.py`, called by the upload flow (`backend/services/library_service.py`).
+It reads the uploaded PDF, figures included, alongside the text already extracted
+from it, and returns a description of each figure with its label, the first line
+of its caption, and its page. The upload places each description in the text just
+before its caption, as `[Figure 6.4: ...]`.
+
+**Why it is not an agent.** It runs once per reading, not per student. It never
+writes anything a student reads directly. And every word it produces is shown to
+the instructor, who corrects it before the reading is saved; what gets saved is
+the instructor's text, not the model's. The agents' outputs are graded or read
+live; this one is proofread.
+
+**Why it exists.** The tutor grades against the reading's text, but the student
+reads the PDF. A figure nobody described is something a student can cite that
+the Assessment Agent has never seen.
+
+**Provider.** The same provider, model and key as the agents, through
+`complete_with_file()` on the provider interface. The mock provider has no eyes:
+it finds caption lines in the extracted text and returns a placeholder for each,
+which is enough to exercise placement offline.
+
+**Failure.** Never fails the upload. If the call errors or returns something
+unparseable, the text comes back without descriptions and the instructor is told
+to write any that are needed.
+
+**Prompt.** `agents/prompts/figure_prompt_v1.md`, chosen by the
+`figure_prompt_version` setting. Not pinned per session, since what it writes is
+reviewed and saved as the reading's text, and the text is what sessions use.
 
 ## Assessment Agent
 

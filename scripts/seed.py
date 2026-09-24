@@ -102,8 +102,8 @@ TITLES = {
 }
 
 #: One-line topic summaries, shown under the title in the reading list. The
-#: instructor writes these on the upload screen once it exists; for now the seed
-#: supplies them, in the same style as the mockup.
+#: instructor writes these on the upload screen; the seed supplies its own, in
+#: the same style.
 DESCRIPTIONS = {
     "strategy": "Coordinated actions to outperform rivals",
     "business_model": "Customer value proposition, profit formula",
@@ -117,8 +117,8 @@ DESCRIPTIONS = {
 #: description of it in `content`, and the grade should come out the same.
 #:
 #: Its text and PDF live beside the other fixtures. `content` here is what the
-#: upload flow will one day produce automatically — extracted prose with each
-#: figure written out in words, reviewed by the instructor before going live.
+#: upload flow produces — extracted prose with each figure written out in
+#: words, reviewed by the instructor before going live.
 TENNIS = {
     "slug": "tennis_recovery",
     "title": "Recovery to the Bisector",
@@ -224,7 +224,7 @@ def load_readings() -> dict[str, dict]:
             # several components are joined with || in the one CSV field
             "components": [c.strip() for c in comps.split("||") if c.strip()],
             # A reading without a PDF is not an error: it falls back to the text
-            # view, which is what every reading does until the upload flow exists.
+            # view. Only the seed can make one; an upload always stores its PDF.
             "pdf": pdf.read_bytes() if pdf.exists() else None,
         }
 

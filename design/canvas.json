@@ -111,6 +111,38 @@
       "y": 4500,
       "w": 1360,
       "h": 900
+    },
+    {
+      "file": "InstructorReadings.dc.html",
+      "title": "7 · Instructor readings (2 states)",
+      "x": 2920,
+      "y": 4500,
+      "w": 1360,
+      "h": 900
+    },
+    {
+      "file": "UploadReading.dc.html",
+      "title": "7b · Upload a reading (11 states)",
+      "x": 4380,
+      "y": 4500,
+      "w": 1360,
+      "h": 900
+    },
+    {
+      "file": "InstructorReading.dc.html",
+      "title": "7c · Reading, instructor (6 states)",
+      "x": 5840,
+      "y": 4500,
+      "w": 1360,
+      "h": 900
+    },
+    {
+      "file": "ReadingsMobile.dc.html",
+      "title": "7d · Readings at phone width (3 states)",
+      "x": 7300,
+      "y": 4500,
+      "w": 390,
+      "h": 844
     }
   ],
   "annotations": [
@@ -162,6 +194,13 @@
       "y": 4350,
       "w": 520,
       "text": "Instructor flow. Classes are a name and a section, shown to students as one label.\n\nRemoving a student or deleting a class takes access away, not data: the sessions stay for the study."
+    },
+    {
+      "id": "upload-note",
+      "x": 4380,
+      "y": 4350,
+      "w": 520,
+      "text": "Nothing is saved until Save reading, so leaving midway leaves nothing behind.\n\nFigure descriptions come from a vision model and are marked in the text so the instructor checks each one. Text and core components lock on save; title, description and classes stay editable."
     }
   ],
   "launch": {

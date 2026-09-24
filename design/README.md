@@ -47,6 +47,26 @@ design changes, so it always matches.
 | Class | [png/06b-class.png](png/06b-class.png) |
 | Edit class | [png/06b-class-edit.png](png/06b-class-edit.png) |
 | Delete class | [png/06b-class-delete.png](png/06b-class-delete.png) |
+| Instructor readings | [png/07-readings.png](png/07-readings.png) |
+| Instructor readings, empty | [png/07-readings-empty.png](png/07-readings-empty.png) |
+| Upload, choose a PDF | [png/07b-upload-pdf-empty.png](png/07b-upload-pdf-empty.png) |
+| Upload, PDF chosen | [png/07b-upload-pdf.png](png/07b-upload-pdf.png) |
+| Upload, no text found | [png/07b-upload-no-text.png](png/07b-upload-no-text.png) |
+| Upload, reading the PDF | [png/07b-upload-loading.png](png/07b-upload-loading.png) |
+| Upload, check the text | [png/07b-upload-text.png](png/07b-upload-text.png) |
+| Upload, figures not described | [png/07b-upload-figures-failed.png](png/07b-upload-figures-failed.png) |
+| Upload, details | [png/07b-upload-details.png](png/07b-upload-details.png) |
+| Upload, no classes ticked | [png/07b-upload-no-classes.png](png/07b-upload-no-classes.png) |
+| Upload, leave | [png/07b-upload-leave.png](png/07b-upload-leave.png) |
+| Reading, instructor | [png/07c-reading.png](png/07c-reading.png) |
+| Reading, instructor, text | [png/07c-reading-text.png](png/07c-reading-text.png) |
+| Edit reading | [png/07c-reading-edit.png](png/07c-reading-edit.png) |
+| Reading classes | [png/07c-reading-classes.png](png/07c-reading-classes.png) |
+| Reading classes, none ticked | [png/07c-reading-no-classes.png](png/07c-reading-no-classes.png) |
+| Delete reading | [png/07c-reading-delete.png](png/07c-reading-delete.png) |
+| Readings, phone | [png/07d-mobile-readings.png](png/07d-mobile-readings.png) |
+| Upload text step, phone | [png/07d-mobile-upload-text.png](png/07d-mobile-upload-text.png) |
+| Reading, instructor, phone | [png/07d-mobile-reading.png](png/07d-mobile-reading.png) |
 
 Do not open a `.dc.html` in a browser expecting to see the screen. It renders a
 grey skeleton with `{{placeholder}}` text, because repeated rows and every

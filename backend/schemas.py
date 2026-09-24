@@ -196,3 +196,68 @@ class JoinOut(BaseModel):
     class_id: uuid.UUID
     label: str
     reading_count: int
+
+
+# --- an instructor's readings ---------------------------------------------------
+
+
+class ClassRef(BaseModel):
+    id: uuid.UUID
+    label: str
+
+
+class LibraryItem(BaseModel):
+    id: uuid.UUID
+    title: str
+    description: str | None
+    #: Labels of the live classes it is assigned to. Empty means no student sees it.
+    classes: list[str]
+    #: Finished sessions (complete or fallback) by any student.
+    session_count: int
+    created_at: datetime
+
+
+class LibraryReading(BaseModel):
+    id: uuid.UUID
+    title: str
+    description: str | None
+    content: str
+    core_components: list[str]
+    classes: list[ClassRef]
+    has_file: bool
+    created_at: datetime
+
+
+class ExtractOut(BaseModel):
+    """The PDF as text, for the instructor to check. Nothing has been saved."""
+
+    text: str
+    figures_described: int
+    #: True when the figures could not be described, so the instructor knows to
+    #: write any descriptions themselves.
+    figures_failed: bool
+
+
+class ReadingCreatedOut(BaseModel):
+    id: uuid.UUID
+
+
+class ReadingEditIn(BaseModel):
+    """What stays editable after saving: how the reading is labelled."""
+
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=200)
+
+    @field_validator("title", "description", mode="before")
+    @classmethod
+    def _trim(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator("description")
+    @classmethod
+    def _blank_is_none(cls, value: str | None) -> str | None:
+        return value or None
+
+
+class ReadingClassesIn(BaseModel):
+    class_ids: list[uuid.UUID]

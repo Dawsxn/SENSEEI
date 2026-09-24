@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .btn { height: 32px; padding: 0 12px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { border: none; background: {{primary}}; color: #ffffff; }
+    .btn-secondary { border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+    .btn-danger { border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; }
+    .tab { font-size: 14px; font-weight: 500; color: #71717a; height: 56px; display: flex; align-items: center; border-bottom: 2px solid transparent; box-sizing: border-box; }
+    .tab-on { color: #09090b; border-bottom-color: #09090b; }
+    .seg { height: 28px; padding: 0 12px; border-radius: 4px; font-size: 13px; font-weight: 500; display: flex; align-items: center; color: #71717a; }
+    .seg-on { background: #ffffff; color: #09090b; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .card { border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #e4e4e7; }
+    .card-title { font-size: 14px; font-weight: 600; }
+    .muted { font-size: 13px; color: #71717a; }
+    .label { display: block; font-size: 13px; font-weight: 500; }
+    .input { margin-top: 6px; height: 36px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 0 12px; display: flex; align-items: center; font-size: 14px; box-sizing: border-box; }
+    .input-focus { border-color: #a1a1aa; box-shadow: 0 0 0 3px rgba(161,161,170,0.25); }
+    .caret { width: 1px; height: 16px; background: #09090b; margin-left: 1px; }
+    .pdfbody { font-family: Georgia, 'Times New Roman', serif; font-size: 10.5px; line-height: 1.6; color: #1a1a1a; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1360px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 32px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="21" height="21" viewBox="0 0 100 100" fill="{{primary}}" style="flex-shrink: 0;">
+          <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+          <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+          <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+          <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+        </svg>
+        <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+      </div>
+      <div style="display: flex; gap: 24px;">
+        <span class="tab">Classes</span>
+        <span class="tab tab-on">Readings</span>
+      </div>
+    </div>
+    <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">PR</div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 18px; min-height: 0;">
+
+    <div style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      <span class="muted">Readings</span>
+    </div>
+
+    <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;">Porter's Five Forces</h1>
+        <span style="font-size: 14px; color: #71717a;">The five pressures on an industry</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary">Edit</button>
+        <button class="btn btn-danger">Delete reading</button>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; display: grid; grid-template-columns: 1fr 380px; gap: 20px; min-height: 0;">
+
+      <!-- The reading, both faces -->
+      <div class="card" style="display: flex; flex-direction: column; min-height: 0;">
+        <div style="padding: 8px 12px; border-bottom: 1px solid #e4e4e7;">
+          <div style="display: inline-flex; gap: 2px; padding: 3px; background: #f4f4f5; border-radius: 6px;">
+            <span class="seg {{pdfSeg}}">PDF</span>
+            <span class="seg {{textSeg}}">Text</span>
+          </div>
+        </div>
+
+        <sc-if value="{{showPdf}}" hint-placeholder-val="{{true}}">
+          <div style="flex-grow: 1; background: #e9e9ec; overflow: hidden; display: flex; justify-content: center; padding: 18px;">
+            <div style="width: 560px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.14); padding: 40px 48px; box-sizing: border-box; align-self: flex-start;">
+              <p style="font-family: Georgia, serif; font-size: 15px; font-weight: 700; margin: 0 0 12px; color: #1a1a1a;">Porter's Five Forces</p>
+              <div class="pdfbody">
+                <p style="margin: 0 0 10px; text-align: justify;">How much profit an industry earns is not an accident. Porter argued that five forces decide how much of the value an industry creates its firms get to keep. Rivalry among existing firms is only one of them.</p>
+              </div>
+              <svg width="100%" viewBox="0 0 320 200" style="display: block; margin: 8px 0 4px;">
+                <g font-family="Georgia, serif" font-size="9" fill="#1a1a1a" text-anchor="middle">
+                  <rect x="110" y="80" width="100" height="40" fill="#f4f4f5" stroke="#1a1a1a" stroke-width="0.8"></rect>
+                  <text x="160" y="104">Industry rivalry</text>
+                  <rect x="120" y="8" width="80" height="30" fill="#fff" stroke="#1a1a1a" stroke-width="0.8"></rect>
+                  <text x="160" y="27">New entrants</text>
+                  <rect x="120" y="162" width="80" height="30" fill="#fff" stroke="#1a1a1a" stroke-width="0.8"></rect>
+                  <text x="160" y="181">Substitutes</text>
+                  <rect x="4" y="85" width="80" height="30" fill="#fff" stroke="#1a1a1a" stroke-width="0.8"></rect>
+                  <text x="44" y="104">Suppliers</text>
+                  <rect x="236" y="85" width="80" height="30" fill="#fff" stroke="#1a1a1a" stroke-width="0.8"></rect>
+                  <text x="276" y="104">Buyers</text>
+                </g>
+                <g stroke="#1a1a1a" stroke-width="0.8" fill="none">
+                  <path d="M160 38 V78"></path><path d="M156 73 L160 79 L164 73"></path>
+                  <path d="M160 162 V122"></path><path d="M156 127 L160 121 L164 127"></path>
+                  <path d="M84 100 H108"></path><path d="M103 96 L109 100 L103 104"></path>
+                  <path d="M236 100 H212"></path><path d="M217 96 L211 100 L217 104"></path>
+                </g>
+              </svg>
+              <p style="font-family: Georgia, serif; font-size: 9px; color: #52525b; text-align: center; margin: 0 0 14px;">Figure 1. The five forces</p>
+              <div class="pdfbody">
+                <p style="margin: 0; text-indent: 16px; text-align: justify;">The strongest force sets the ceiling on profits, and it is the one strategy has to answer first. In airlines, powerful buyers and fierce rivalry keep margins thin even when demand is high.</p>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- Read-only: the text is locked once saved -->
+        <sc-if value="{{showText}}" hint-placeholder-val="{{false}}">
+          <div style="flex-grow: 1; padding: 18px 22px; font-size: 14px; line-height: 1.65; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+            <span>Porter's Five Forces</span>
+            <span>How much profit an industry earns is not an accident. Porter argued that five forces decide how much of the value an industry creates its firms get to keep. Rivalry among existing firms is only one of them.</span>
+            <span>[Figure 1: Five boxes, with "Industry rivalry" in the centre and arrows from "New entrants", "Suppliers", "Buyers" and "Substitutes".]</span>
+            <span>Figure 1. The five forces</span>
+            <span>The strongest force sets the ceiling on profits, and it is the one strategy has to answer first. In airlines, powerful buyers and fierce rivalry keep margins thin even when demand is high.</span>
+            <span>[Figure 2: A table rating each force in airlines. Rivalry, buyer power and supplier power are high. New entrants and substitutes are medium.]</span>
+            <span>Figure 2. The forces in airlines</span>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Classes</span>
+            <button class="btn btn-secondary">Change</button>
+          </div>
+          <div style="padding: 14px 16px;">
+            <span style="font-size: 14px; color: {{classColor}};">{{classText}}</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Core components</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+              <span class="muted">Locked</span>
+            </div>
+          </div>
+          <div style="padding: 12px 16px; border-bottom: 1px solid #e4e4e7; display: flex; gap: 10px;">
+            <span class="muted" style="width: 12px; line-height: 21px;">1</span>
+            <span style="font-size: 14px; line-height: 1.5;">Five forces shape how profitable an industry is.</span>
+          </div>
+          <div style="padding: 12px 16px; display: flex; gap: 10px;">
+            <span class="muted" style="width: 12px; line-height: 21px;">2</span>
+            <span style="font-size: 14px; line-height: 1.5;">The strongest force matters most when setting strategy.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{showEdit}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <div style="width: 440px; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);">
+        <div style="font-size: 16px; font-weight: 600;">Edit reading</div>
+        <div style="margin-top: 16px;">
+          <label class="label">Title</label>
+          <div class="input">Porter's Five Forces</div>
+        </div>
+        <div style="margin-top: 14px;">
+          <label class="label">Description (optional)</label>
+          <div class="input input-focus">The five pressures on an industry<span class="caret"></span></div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showClasses}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <div style="width: 420px; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);">
+        <div style="font-size: 16px; font-weight: 600;">Classes</div>
+        <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 10px;">
+          <sc-for list="{{classes}}" as="k" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 16px; height: 16px; border-radius: 4px; border: 1px solid {{k.box}}; background: {{k.fill}}; display: flex; align-items: center; justify-content: center;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="display: {{k.tick}};"><path d="M20 6L9 17l-5-5"></path></svg>
+              </div>
+              <span style="font-size: 14px;">{{k.label}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{noneTicked}}" hint-placeholder-val="{{false}}">
+          <div class="muted" style="margin-top: 12px;">Students won't see this until you assign a class.</div>
+        </sc-if>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showDelete}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <div style="width: 420px; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);">
+        <div style="font-size: 16px; font-weight: 600;">Delete Porter's Five Forces?</div>
+        <div style="margin-top: 8px; font-size: 14px; line-height: 1.6; color: #71717a;">Students will lose access to it and their sessions on it.</div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"},"state":{"editor":"enum","options":["PDF","Text","Edit","Classes","No classes","Delete"],"default":"PDF","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'PDF';
+    const primary = this.props.primary ?? '#16a34a';
+    const showText = state === 'Text';
+    const noneTicked = state === 'No classes';
+    const classes = [['STRAMA K31', !noneTicked], ['STSWENG S11', false]].map(([label, on]) => ({
+      label,
+      box: on ? primary : '#d4d4d8',
+      fill: on ? primary : '#ffffff',
+      tick: on ? 'block' : 'none',
+    }));
+    return {
+      primary,
+      showPdf: !showText,
+      showText,
+      pdfSeg: showText ? '' : 'seg-on',
+      textSeg: showText ? 'seg-on' : '',
+      classText: 'STRAMA K31',
+      classColor: '#09090b',
+      showEdit: state === 'Edit',
+      showClasses: state === 'Classes' || noneTicked,
+      noneTicked,
+      classes,
+      showDelete: state === 'Delete',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .btn { height: 36px; padding: 0 16px; border-radius: 6px; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-primary { border: none; background: {{primary}}; color: #ffffff; }
+    .th { font-size: 12px; font-weight: 500; color: #71717a; }
+    .tab { font-size: 14px; font-weight: 500; color: #71717a; height: 56px; display: flex; align-items: center; border-bottom: 2px solid transparent; box-sizing: border-box; }
+    .tab-on { color: #09090b; border-bottom-color: #09090b; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1360px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <!-- Instructor shell, now with the two sections as tabs. -->
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 32px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="21" height="21" viewBox="0 0 100 100" fill="{{primary}}" style="flex-shrink: 0;">
+          <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+          <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+          <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+          <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+        </svg>
+        <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+      </div>
+      <div style="display: flex; gap: 24px;">
+        <span class="tab">Classes</span>
+        <span class="tab tab-on">Readings</span>
+      </div>
+    </div>
+    <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">PR</div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 0;">
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;">Readings</h1>
+      <sc-if value="{{hasReadings}}" hint-placeholder-val="{{true}}">
+        <button class="btn btn-primary">Upload a reading</button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{hasReadings}}" hint-placeholder-val="{{true}}">
+      <div style="border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
+        <div style="display: grid; grid-template-columns: 1fr 200px 100px 100px 24px; gap: 16px; align-items: center; height: 40px; padding: 0 16px; border-bottom: 1px solid #e4e4e7;">
+          <span class="th">Title</span>
+          <span class="th">Classes</span>
+          <span class="th">Sessions</span>
+          <span class="th">Added</span>
+          <span></span>
+        </div>
+        <sc-for list="{{readings}}" as="r" hint-placeholder-count="5">
+          <div style="display: grid; grid-template-columns: 1fr 200px 100px 100px 24px; gap: 16px; align-items: center; padding: 14px 16px; border-bottom: 1px solid {{r.divider}}; cursor: pointer;">
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+              <span style="font-size: 14px; font-weight: 500;">{{r.title}}</span>
+              <span style="font-size: 12px; color: #71717a;">{{r.description}}</span>
+            </div>
+            <span style="font-size: 13px; color: {{r.classColor}};">{{r.classes}}</span>
+            <span style="font-size: 13px; color: #71717a;">{{r.sessions}}</span>
+            <span style="font-size: 13px; color: #71717a;">{{r.added}}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+      <div style="border: 1px dashed #e4e4e7; border-radius: 8px; padding: 64px 24px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
+        <span style="font-size: 15px; font-weight: 600;">No readings yet</span>
+        <button class="btn btn-primary" style="margin-top: 12px;">Upload a reading</button>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"},"state":{"editor":"enum","options":["Readings","Empty"],"default":"Readings","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'Readings';
+    const isEmpty = state === 'Empty';
+    const data = [
+      ["Porter's Five Forces", 'The five pressures on an industry', '', '0', 'Sep 22'],
+      ['Recovery to the Bisector', 'Where to stand between shots in tennis', 'STSWENG S11', '3', 'Sep 12'],
+      ['Strategic Vision', 'Direction, market position, future course', 'STRAMA K31', '9', 'Sep 3'],
+      ['Business Model', 'Customer value proposition, profit formula', 'STSWENG S11', '14', 'Sep 3'],
+      ['Strategy', 'Coordinated actions to outperform rivals', 'STRAMA K31', '17', 'Sep 3'],
+    ];
+    const readings = data.map(([title, description, classes, sessions, added], i) => ({
+      title, description, sessions, added,
+      classes: classes || 'Not assigned',
+      classColor: classes ? '#3f3f46' : '#a1a1aa',
+      divider: i === data.length - 1 ? 'transparent' : '#e4e4e7',
+    }));
+    return {
+      primary: this.props.primary ?? '#16a34a',
+      hasReadings: !isEmpty,
+      isEmpty,
+      readings,
+    };
+  }
+}
+</script>
+</body>
+</html>
