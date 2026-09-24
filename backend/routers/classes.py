@@ -21,14 +21,17 @@ from ..db import get_session
 from ..deps import require_instructor, require_student
 from ..models import User
 from ..schemas import (
+    ClassDashboardOut,
     ClassDetailOut,
     ClassIn,
     ClassListItem,
+    ClassReadingOut,
     JoinCodeOut,
     JoinIn,
     JoinOut,
 )
-from ..services import class_service
+from ..services import analytics_service, class_service
+from ..services.analytics_service import ReadingNotInClass
 from ..services.class_service import (
     ClassNotFound,
     DuplicateClass,
@@ -109,6 +112,42 @@ async def delete_class(
     except ClassNotFound:
         raise NOT_FOUND
     return Response(status_code=204)
+
+
+@router.get("/instructor/classes/{class_id}/statistics", response_model=ClassDashboardOut)
+async def class_statistics(
+    class_id: uuid.UUID,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> ClassDashboardOut:
+    """The class's three statistics, and its readings with a session count each."""
+    try:
+        row = await analytics_service.class_dashboard(db, user.id, class_id)
+    except ClassNotFound:
+        raise NOT_FOUND
+    return ClassDashboardOut(**row)
+
+
+@router.get(
+    "/instructor/classes/{class_id}/readings/{reading_id}",
+    response_model=ClassReadingOut,
+)
+async def reading_in_class(
+    class_id: uuid.UUID,
+    reading_id: uuid.UUID,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> ClassReadingOut:
+    """One reading inside one class: its statistics, and how far each student got.
+
+    A reading that exists but is not assigned to this class is a 404, like one
+    that does not exist: this page is about a reading *in* a class.
+    """
+    try:
+        row = await analytics_service.reading_in_class(db, user.id, class_id, reading_id)
+    except (ClassNotFound, ReadingNotInClass):
+        raise HTTPException(status_code=404, detail="reading not found in this class")
+    return ClassReadingOut(**row)
 
 
 @router.post("/instructor/classes/{class_id}/join-code", response_model=JoinCodeOut)

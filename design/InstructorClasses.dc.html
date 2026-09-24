@@ -11,6 +11,7 @@
   <style>
     body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
     .btn { height: 36px; padding: 0 16px; border-radius: 6px; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-accent { border: 1px solid #bbf7d0; background: #f0fdf4; color: #15803d; }
     .btn-primary { border: none; background: {{primary}}; color: #ffffff; }
     .btn-secondary { border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
     .mono { font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.04em; }
@@ -38,7 +39,7 @@
     <div style="display: flex; align-items: center; justify-content: space-between;">
       <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;">Classes</h1>
       <sc-if value="{{hasClasses}}" hint-placeholder-val="{{true}}">
-        <button class="btn btn-primary">New class</button>
+        <button class="btn btn-accent" title="New class" style="display: inline-flex; align-items: center; justify-content: center; padding: 0; width: 36px; height: 36px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
       </sc-if>
     </div>
 
@@ -70,7 +71,7 @@
       <div style="border: 1px dashed #e4e4e7; border-radius: 8px; padding: 64px 24px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
         <span style="font-size: 15px; font-weight: 600;">No classes yet</span>
         <span style="font-size: 14px; color: #71717a;">Create a class to get a join code for your students.</span>
-        <button class="btn btn-primary" style="margin-top: 12px;">New class</button>
+        <button class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>New class</button>
       </div>
     </sc-if>
 

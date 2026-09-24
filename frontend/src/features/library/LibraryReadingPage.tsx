@@ -11,12 +11,13 @@
  */
 
 import { Suspense, lazy, useState } from "react";
-import { ChevronLeft, Lock } from "lucide-react";
+import { ChevronLeft, Lock, Pencil, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
 import {
   deleteLibraryReading,
@@ -105,12 +106,26 @@ export function LibraryReadingPage() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="secondary" size="sm" onClick={() => setDialog("edit")}>
-                    Edit
-                  </Button>
-                  <Button variant="danger" size="sm" onClick={() => setDialog("delete")}>
-                    Delete reading
-                  </Button>
+                  <Tooltip text="Edit reading">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      aria-label="Edit reading"
+                      onClick={() => setDialog("edit")}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip text="Delete reading" align="left">
+                    <Button
+                      variant="danger"
+                      size="icon"
+                      aria-label="Delete reading"
+                      onClick={() => setDialog("delete")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </Tooltip>
                 </div>
               </div>
 

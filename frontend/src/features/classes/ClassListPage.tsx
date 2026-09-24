@@ -5,11 +5,12 @@
  */
 
 import { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
+import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
 import { createClass } from "../../lib/api";
 import { ClassFormDialog } from "./ClassFormDialog";
@@ -38,7 +39,15 @@ export function ClassListPage() {
         <div className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8">
           <div className="mb-5 flex items-center justify-between">
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Classes</h1>
-            {classes.length > 0 && <Button onClick={() => setCreating(true)}>New class</Button>}
+            {/* An icon alone: the heading beside it already says what is being
+                made, and the tooltip names it for anyone unsure. */}
+            {classes.length > 0 && (
+              <Tooltip text="New class" align="left">
+                <Button variant="accent" size="icon" aria-label="New class" onClick={() => setCreating(true)}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+            )}
           </div>
 
           {isLoading && <Notice>Loading classes…</Notice>}
@@ -51,6 +60,7 @@ export function ClassListPage() {
                 Create a class to get a join code for your students.
               </span>
               <Button className="mt-3" onClick={() => setCreating(true)}>
+                <Plus className="h-4 w-4" />
                 New class
               </Button>
             </div>
