@@ -1,8 +1,12 @@
 """Read-only views of finished (or abandoned) sessions.
 
-Two reads behind the reading detail dialog and the session review screen. Both
-are scoped to the signed-in student by ownership: a student can list and replay
-only their own sessions.
+The reads behind the reading detail dialog and the session review screen.
+
+Two people may open a transcript, by two different rules. A student may open
+their own, and only while they can still see the reading. An instructor may open
+one of their students': the reading must be assigned to a class they own, and the
+student must be enrolled in it. Neither rule lets anyone else in, and a session
+that fails both is reported as missing.
 """
 
 from __future__ import annotations
@@ -16,12 +20,18 @@ from ..models import (
     STEP_ORDER,
     Assessment,
     Attempt,
+    Class,
+    Enrolment,
     Reading,
+    ReadingAssignment,
+    Role,
     SeeiStep,
     Session,
     SessionStatus,
     TutorMessage,
+    User,
     Verdict,
+    class_label,
 )
 from .reading_service import _visible_readings
 
@@ -97,41 +107,80 @@ async def list_sessions_for_reading(
     return out
 
 
+async def _instructor_header(
+    db: AsyncSession, instructor_id: uuid.UUID, sess: Session
+) -> tuple[str, str] | None:
+    """The reading's title and class label, if this instructor may see the
+    session: their class, holding both the reading and the student."""
+    hit = (
+        await db.execute(
+            select(Reading.title, class_label())
+            .join(
+                ReadingAssignment,
+                (ReadingAssignment.reading_id == Reading.id)
+                & (ReadingAssignment.deleted_at.is_(None)),
+            )
+            .join(
+                Class,
+                (Class.id == ReadingAssignment.class_id)
+                & (Class.instructor_id == instructor_id)
+                & (Class.deleted_at.is_(None)),
+            )
+            .join(
+                Enrolment,
+                (Enrolment.class_id == Class.id)
+                & (Enrolment.student_id == sess.student_id)
+                & (Enrolment.deleted_at.is_(None)),
+            )
+            .where(Reading.id == sess.reading_id, Reading.deleted_at.is_(None))
+            .limit(1)
+        )
+    ).first()
+    return None if hit is None else (hit[0], hit[1])
+
+
 async def get_transcript(
-    db: AsyncSession, user_id: uuid.UUID, session_id: uuid.UUID
+    db: AsyncSession, viewer: User, session_id: uuid.UUID
 ) -> dict | None:
     """One session's read-only replay: a per-step summary and the full timeline.
 
     The timeline interleaves the Tutor's messages with the student's responses,
     in the order they happened, so the review reads back exactly as the session
-    played. Returns None if the session is missing or not the student's.
+    played. Returns None if the session is missing or the viewer may not see it.
     """
-    sess = await db.scalar(
-        select(Session).where(
-            Session.id == session_id, Session.student_id == user_id
-        )
-    )
+    sess = await db.scalar(select(Session).where(Session.id == session_id))
     if sess is None:
         return None
 
-    # Reading title and class for the header, and which attempt this is (its
-    # 1-based order among the student's sessions on this reading). A reading the
-    # student can no longer see means a session they can no longer open, even
-    # by a saved link: removed from the class means removed.
-    hit = (
-        await db.execute(
-            _visible_readings(user_id).where(Reading.id == sess.reading_id).limit(1)
-        )
-    ).first()
-    if hit is None:
-        return None
-    reading_title = hit[0].title
-    class_name = hit[1]
+    instructor = viewer.role == Role.INSTRUCTOR
+    if instructor:
+        header = await _instructor_header(db, viewer.id, sess)
+        if header is None:
+            return None
+        reading_title, class_name = header
+    else:
+        if sess.student_id != viewer.id:
+            return None
+        # A reading the student can no longer see means a session they can no
+        # longer open, even by a saved link: removed from the class means removed.
+        hit = (
+            await db.execute(
+                _visible_readings(viewer.id)
+                .where(Reading.id == sess.reading_id)
+                .limit(1)
+            )
+        ).first()
+        if hit is None:
+            return None
+        reading_title, class_name = hit[0].title, hit[1]
+
+    # Which attempt this is: its 1-based order among that student's sessions on
+    # this reading.
     index = await db.scalar(
         select(func.count())
         .select_from(Session)
         .where(
-            Session.student_id == user_id,
+            Session.student_id == sess.student_id,
             Session.reading_id == sess.reading_id,
             Session.status.in_(
                 [SessionStatus.COMPLETE.value, SessionStatus.FALLBACK.value]
@@ -139,6 +188,7 @@ async def get_transcript(
             Session.started_at <= sess.started_at,
         )
     )
+    student_name = await db.scalar(select(User.name).where(User.id == sess.student_id))
 
     attempts = (
         await db.execute(
@@ -198,6 +248,7 @@ async def get_transcript(
         "reading_id": sess.reading_id,
         "reading_title": reading_title,
         "class_name": class_name,
+        "student_name": student_name,
         "index": index or 1,
         "status": SessionStatus(sess.status).value,
         "started_at": sess.started_at,

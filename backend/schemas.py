@@ -126,6 +126,8 @@ class SessionTranscript(BaseModel):
     reading_id: uuid.UUID
     reading_title: str
     class_name: str
+    #: Whose session it is. The student knows; the instructor reading it needs telling.
+    student_name: str
     index: int  # which attempt at the reading this session is
     status: SessionStatus
     started_at: datetime
@@ -261,3 +263,73 @@ class ReadingEditIn(BaseModel):
 
 class ReadingClassesIn(BaseModel):
     class_ids: list[uuid.UUID]
+
+
+# --- the class dashboard --------------------------------------------------------
+
+
+class StepPassRate(BaseModel):
+    step: SeeiStep
+    passed: int
+    total: int
+    percent: int
+
+
+class FailedCriterion(BaseModel):
+    criterion: str
+    failures: int
+
+
+class StepAttempts(BaseModel):
+    step: SeeiStep
+    average: float
+
+
+class Statistics(BaseModel):
+    """The three statistics, over a class or over one reading in it."""
+
+    #: Finished sessions the numbers cover. Zero means the page shows no statistics.
+    session_count: int
+    pass_rates: list[StepPassRate]
+    failed_criteria: list[FailedCriterion]
+    average_attempts: list[StepAttempts]
+
+
+class ClassReadingItem(BaseModel):
+    id: uuid.UUID
+    title: str
+    description: str | None
+    session_count: int
+
+
+class ClassDashboardOut(BaseModel):
+    statistics: Statistics
+    readings: list[ClassReadingItem]
+
+
+#: Where a student got to on one reading: never started, finished, or ran out of
+#: attempts and was handed to their instructor.
+ReadingProgress = Literal["not_started", "completed", "stopped_early"]
+
+
+class RosterStudent(BaseModel):
+    id: uuid.UUID
+    name: str
+    email: str
+    status: ReadingProgress
+    steps_passed: int
+    #: The step they ran out of attempts on, when they stopped early.
+    stopped_on: SeeiStep | None
+    #: Their latest finished session, which the row opens. None if not started.
+    session_id: uuid.UUID | None
+    last_session_at: datetime | None
+
+
+class ClassReadingOut(BaseModel):
+    id: uuid.UUID
+    title: str
+    description: str | None
+    class_id: uuid.UUID
+    class_label: str
+    statistics: Statistics
+    students: list[RosterStudent]

@@ -113,8 +113,12 @@ async def get_review_transcript(
 
     Unlike /messages (tutor messages only, for the live screen), this interleaves
     the student's responses so a review reads back as the session played.
+
+    Open to the student whose session it is, and to the instructor whose class
+    holds both the reading and the student. Anyone else gets the same 404 as for
+    a session that does not exist.
     """
-    transcript = await review_service.get_transcript(db, user.id, session_id)
+    transcript = await review_service.get_transcript(db, user, session_id)
     if transcript is None:
         raise HTTPException(status_code=404, detail="session not found")
     return SessionTranscript(**transcript)
