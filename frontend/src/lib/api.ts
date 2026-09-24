@@ -17,9 +17,11 @@ import type {
   ReadingSessionItem,
 } from "../features/readings/types";
 import type {
+  ClassDashboard,
   ClassDetail,
   ClassFields,
   ClassListItem,
+  ClassReadingDetail,
   JoinResult,
 } from "../features/classes/types";
 import type {
@@ -247,6 +249,10 @@ export const replaceJoinCode = (id: string) =>
   send<{ join_code: string }>(`/instructor/classes/${id}/join-code`, "POST");
 export const removeStudent = (classId: string, studentId: string) =>
   send<void>(`/instructor/classes/${classId}/students/${studentId}`, "DELETE");
+export const getClassStatistics = (classId: string) =>
+  send<ClassDashboard>(`/instructor/classes/${classId}/statistics`, "GET");
+export const getClassReading = (classId: string, readingId: string) =>
+  send<ClassReadingDetail>(`/instructor/classes/${classId}/readings/${readingId}`, "GET");
 export const joinClass = (joinCode: string) =>
   send<JoinResult>("/enrolments", "POST", { join_code: joinCode });
 

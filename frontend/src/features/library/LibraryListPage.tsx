@@ -3,12 +3,17 @@
  * As on the classes page, with nothing yet the upload button lives in the empty
  * state. A reading assigned to no class is shown greyed as Not assigned, since
  * that is a reading no student can see.
+ *
+ * The button above the list is an icon alone, since the heading beside it says
+ * what it makes. The one in the empty state keeps its words: there, the button
+ * is the instruction.
  */
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
+import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
 import { formatShortDate } from "../../lib/format";
 import { useLibrary } from "./useLibrary";
@@ -26,7 +31,13 @@ export function LibraryListPage() {
         <div className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8">
           <div className="mb-5 flex items-center justify-between gap-3">
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Readings</h1>
-            {readings.length > 0 && <Button onClick={upload}>Upload a reading</Button>}
+            {readings.length > 0 && (
+              <Tooltip text="Upload a reading" align="left">
+                <Button variant="accent" size="icon" aria-label="Upload a reading" onClick={upload}>
+                  <Upload className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+            )}
           </div>
 
           {isLoading && <Notice>Loading readings…</Notice>}
@@ -36,6 +47,7 @@ export function LibraryListPage() {
             <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-16 text-center">
               <span className="text-[15px] font-semibold">No readings yet</span>
               <Button className="mt-3" onClick={upload}>
+                <Upload className="h-4 w-4" />
                 Upload a reading
               </Button>
             </div>

@@ -35,15 +35,16 @@ api.getMe.mockResolvedValue({ id: "p", name: "Prof", email: "p@dlsu.edu.ph", rol
 URL.createObjectURL = vi.fn(() => "blob:pdf");
 URL.revokeObjectURL = vi.fn();
 
-function renderUpload() {
+function renderUpload(entry = "/library/new") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const router = createMemoryRouter(
     [
       { path: "/library/new", element: <UploadReadingPage /> },
       { path: "/library", element: <p>Readings list</p> },
       { path: "/library/:id", element: <p>Saved reading</p> },
+      { path: "/classes/:classId", element: <p>Class page</p> },
     ],
-    { initialEntries: ["/library/new"] },
+    { initialEntries: [entry] },
   );
   render(
     <QueryClientProvider client={client}>
@@ -156,6 +157,22 @@ describe("uploading a reading", () => {
     await userEvent.click(screen.getByRole("button", { name: "Readings" }));
     await userEvent.click(screen.getByRole("button", { name: "Leave" }));
     expect(await screen.findByText("Readings list")).toBeInTheDocument();
+  });
+
+  it("starts from a class with that class ticked, and goes back to it", async () => {
+    api.extractReading.mockResolvedValue({ text: "Text.", figures_described: 0, figures_failed: false });
+    renderUpload("/library/new?class=k31");
+
+    // Back before anything is chosen: straight to the class, no dialog.
+    expect(await screen.findByRole("button", { name: /STRAMA K31/ })).toBeInTheDocument();
+
+    await userEvent.upload(screen.getByLabelText("PDF file"), pdf());
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await screen.findByLabelText("Reading text");
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(await screen.findByLabelText("STRAMA K31")).toBeChecked();
+    expect(screen.queryByText(/Students won.t see this/)).not.toBeInTheDocument();
   });
 
   it("leaves without asking when nothing has been chosen", async () => {

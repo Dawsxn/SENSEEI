@@ -22,6 +22,8 @@ export interface SessionTranscript {
   reading_id: string;
   reading_title: string;
   class_name: string;
+  /** Whose session it is. Shown when an instructor is reading it. */
+  student_name: string;
   index: number;
   status: SessionStatus;
   started_at: string;

@@ -10,17 +10,23 @@
  * file itself changes, so corrections are never thrown away by a Back.
  *
  * Leaving midway asks first, since the work so far lives only in this page.
+ *
+ * Started from a class (`?class=`), it arrives with that class already ticked
+ * and goes back there rather than to the readings list. Ticked, not locked: an
+ * instructor teaching two sections of the same course wants both, and one who
+ * started from the wrong class should not have to begin again.
  */
 
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronLeft, Info, Lock, Plus, Upload } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useBlocker, useNavigate } from "react-router-dom";
+import { useBlocker, useNavigate, useSearchParams } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Button } from "../../components/ui/button";
 import { ApiError, createReading, extractReading } from "../../lib/api";
+import { useClasses } from "../classes/useClasses";
 import { ClassPicker } from "./ClassPicker";
 import type { ExtractResult } from "./types";
 
@@ -65,6 +71,15 @@ function uploadError(err: unknown): string {
 export function UploadReadingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [params] = useSearchParams();
+  const fromClass = params.get("class");
+  const { data: classes } = useClasses();
+  const origin = fromClass
+    ? {
+        path: `/classes/${fromClass}`,
+        label: classes?.find((c) => c.id === fromClass)?.label ?? "Class",
+      }
+    : { path: "/library", label: "Readings" };
 
   const [step, setStep] = useState<Step>("pdf");
   const [file, setFile] = useState<File | null>(null);
@@ -77,7 +92,7 @@ export function UploadReadingPage() {
   const [extracted, setExtracted] = useState<ExtractResult | null>(null);
   const [text, setText] = useState("");
   const [components, setComponents] = useState<string[]>([""]);
-  const [classIds, setClassIds] = useState<string[]>([]);
+  const [classIds, setClassIds] = useState<string[]>(fromClass ? [fromClass] : []);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -160,11 +175,11 @@ export function UploadReadingPage() {
       <main className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-[1360px] flex-col px-4 py-5 sm:px-6 sm:py-6">
           <button
-            onClick={() => navigate("/library")}
+            onClick={() => navigate(origin.path)}
             className="mb-4 flex w-fit items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Readings
+            {origin.label}
           </button>
 
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
