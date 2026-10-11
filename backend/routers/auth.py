@@ -1,8 +1,18 @@
-"""Authentication: Google OAuth, the session, and a dev bypass.
+"""Authentication: Google OAuth, the session, and acting as a seeded user.
 
 The real flow is backend-driven Authorization Code: /login sends the browser to
-Google, /callback verifies the result and sets a signed session cookie. The dev
-bypass signs in as a seeded user without Google, and is refused in production.
+Google, /callback verifies the result and sets a signed session cookie.
+
+Acting as a seeded user, without Google, is allowed in two cases and refused in
+production in both:
+
+- **The dev bypass**, an open picker on the sign-in screen. For local work only:
+  on a public URL it would let anyone in as anyone.
+- **QA switching**, for a deployed development environment. Someone whose email
+  is in `QA_EMAILS` signs in with Google as themselves, and may then switch to
+  any seeded user from the account menu. The session remembers who they really
+  are, so they can keep switching; logging out forgets it. Anyone else still has
+  to get past Google, and gets no switch.
 """
 
 from __future__ import annotations
@@ -56,6 +66,8 @@ async def callback(request: Request, db: AsyncSession = Depends(get_session)):
         db, sub=info["sub"], email=email, name=info.get("name", "")
     )
     request.session["user_id"] = str(user.id)
+    if email.strip().lower() in settings.qa_allowlist:
+        request.session["qa_email"] = email.strip().lower()
     return RedirectResponse(f"{home}/")
 
 
@@ -66,8 +78,14 @@ async def logout(request: Request) -> dict:
 
 
 @router.get("/me", response_model=UserOut)
-async def me(user: User = Depends(get_current_user)) -> UserOut:
-    return UserOut(id=user.id, name=user.name, email=user.email, role=user.role)
+async def me(request: Request, user: User = Depends(get_current_user)) -> UserOut:
+    return UserOut(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        role=user.role,
+        can_switch=may_act_as(request),
+    )
 
 
 @router.get("/config")
@@ -81,18 +99,31 @@ async def config() -> dict:
 
 
 # --------------------------------------------------------------------------- #
-# dev bypass — refused in production
+# acting as a seeded user — refused in production
 
 
-def _require_bypass() -> None:
-    if not get_settings().dev_bypass_enabled:
+def may_act_as(request: Request) -> bool:
+    """The dev bypass, or a QA tester who signed in with Google as themselves.
+
+    The tester list is re-read on every request, so taking someone off it ends
+    their switching at once rather than when their cookie expires.
+    """
+    settings = get_settings()
+    if settings.dev_bypass_enabled:
+        return True
+    return request.session.get("qa_email") in settings.qa_allowlist
+
+
+def _require_act_as(request: Request) -> None:
+    # 404 rather than 403: in production these routes should not seem to exist.
+    if not may_act_as(request):
         raise HTTPException(status_code=404, detail="not found")
 
 
 @router.get("/dev/users")
-async def dev_users(db: AsyncSession = Depends(get_session)) -> list[dict]:
-    """The seeded users to act as, for the dev sign-in screen."""
-    _require_bypass()
+async def dev_users(request: Request, db: AsyncSession = Depends(get_session)) -> list[dict]:
+    """The users to act as: the dev sign-in screen's list, and the switch menu's."""
+    _require_act_as(request)
     users = await db.scalars(select(User).order_by(User.role, User.name))
     return [
         {"id": str(u.id), "name": u.name, "email": u.email, "role": Role(u.role).value}
@@ -104,8 +135,9 @@ async def dev_users(db: AsyncSession = Depends(get_session)) -> list[dict]:
 async def dev_login(
     body: DevLoginIn, request: Request, db: AsyncSession = Depends(get_session)
 ) -> dict:
-    """Sign in as a seeded user without Google."""
-    _require_bypass()
+    """Act as a seeded user without Google. A QA tester keeps their `qa_email`,
+    so they can switch again."""
+    _require_act_as(request)
     user = await auth_service.get_by_id(db, body.user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="user not found")

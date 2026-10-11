@@ -5,6 +5,8 @@ export interface AuthUser {
   name: string;
   email: string;
   role: Role;
+  /** Whether the account menu offers Switch user. QA only, never production. */
+  can_switch?: boolean;
 }
 
 export interface AuthConfig {

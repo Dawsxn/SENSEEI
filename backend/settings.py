@@ -10,8 +10,13 @@ eval runs and would tie the two together.
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+#: The repository root, so paths below do not depend on the working directory.
+ROOT = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
@@ -27,6 +32,22 @@ class Settings(BaseSettings):
     # waiting on the database does not hold a worker.
     database_url: str = "postgresql+asyncpg://senseei:senseei@localhost:5432/senseei"
     db_echo: bool = False        # log every statement; noisy, useful when stuck
+
+    @field_validator("database_url")
+    @classmethod
+    def _asyncpg(cls, url: str) -> str:
+        """Accept the URL the way a host hands it out.
+
+        Render and most managed Postgres give `postgres://` or `postgresql://`,
+        which SQLAlchemy reads as the synchronous psycopg driver. The app is
+        async throughout, so the driver is named here rather than making whoever
+        deploys remember to edit the URL. asyncpg also spells the TLS option
+        `ssl`, not libpq's `sslmode`.
+        """
+        for prefix in ("postgres://", "postgresql://"):
+            if url.startswith(prefix):
+                url = "postgresql+asyncpg://" + url[len(prefix):]
+        return url.replace("sslmode=", "ssl=")
 
     # --- LLM provider -----------------------------------------------------
     # Defaults to the offline stub. Every environment except production runs
@@ -68,6 +89,15 @@ class Settings(BaseSettings):
     instructor_emails: str = ""
     # Sign in as a seeded user without Google. Forced off in production.
     auth_dev_bypass: bool = True
+    # Comma-separated emails that may switch to any seeded user after signing in
+    # with Google, for QA on a deployed development environment where the open
+    # sign-in picker would let anyone in. Ignored in production.
+    qa_emails: str = ""
+
+    # --- the built frontend -------------------------------------------------
+    # Served by FastAPI when it exists, so a deploy is one service on one origin.
+    # Absent in local development, where Vite serves the frontend instead.
+    frontend_dist: Path = ROOT / "frontend" / "dist"
 
     @property
     def instructor_allowlist(self) -> set[str]:
@@ -76,6 +106,12 @@ class Settings(BaseSettings):
     @property
     def dev_bypass_enabled(self) -> bool:
         return self.auth_dev_bypass and self.environment != "production"
+
+    @property
+    def qa_allowlist(self) -> set[str]:
+        if self.environment == "production":
+            return set()
+        return {e.strip().lower() for e in self.qa_emails.split(",") if e.strip()}
 
     @property
     def oauth_redirect_uri(self) -> str:

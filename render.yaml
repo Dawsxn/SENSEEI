@@ -1,0 +1,58 @@
+# Render Blueprint: the development environment, deployed from `develop`.
+#
+# In the Render dashboard: New > Blueprint, pick this repository, and Render
+# creates the database and the web service below. It then asks for every value
+# marked `sync: false`; those are secrets and never live in this file.
+#
+# Production is not here yet. It gets its own database, its own Google client
+# and its own secrets, and a paid instance that does not sleep
+# (docs/context/tech-stack.md, "Environments").
+
+databases:
+  - name: senseei-dev-db
+    databaseName: senseei
+    plan: free
+    region: singapore
+
+services:
+  - type: web
+    name: senseei-dev
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: develop
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: senseei-dev-db
+          property: connectionString
+      - key: ENVIRONMENT
+        value: development
+      # The free stub, so a development environment left running costs nothing.
+      # Switch to gemini on purpose, to test the agents themselves.
+      - key: LLM_PROVIDER
+        value: mock
+      # The open sign-in picker stays off on a public URL. QA testers switch
+      # user after signing in with Google instead (QA_EMAILS below).
+      - key: AUTH_DEV_BYPASS
+        value: "false"
+      # Fill a fresh database with the development seed; does nothing after.
+      - key: SEED_IF_EMPTY
+        value: "true"
+      - key: SESSION_SECRET
+        generateValue: true
+      # Secrets and per-environment values, entered in the dashboard.
+      - key: APP_BASE_URL          # https://senseei-dev.onrender.com, or whatever Render assigns
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: QA_EMAILS             # your DLSU email: lets you switch to any seeded user
+        sync: false
+      - key: INSTRUCTOR_EMAILS     # who signs in as an instructor through Google
+        sync: false
+      - key: GEMINI_API_KEY        # only read when LLM_PROVIDER is gemini
+        sync: false

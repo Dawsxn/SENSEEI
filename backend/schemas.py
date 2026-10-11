@@ -21,6 +21,8 @@ class UserOut(BaseModel):
     name: str
     email: str
     role: Role
+    #: Whether the account menu offers Switch user: the dev bypass, or a QA tester.
+    can_switch: bool = False
 
 
 class DevLoginIn(BaseModel):

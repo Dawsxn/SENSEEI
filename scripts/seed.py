@@ -598,6 +598,12 @@ async def main() -> None:
         action="store_true",
         help="allow running against a non-local environment",
     )
+    ap.add_argument(
+        "--if-empty",
+        action="store_true",
+        help="seed only if there are no users yet, and otherwise do nothing; "
+        "what a deploy runs on every start",
+    )
     args = ap.parse_args()
 
     settings = get_settings()
@@ -611,6 +617,10 @@ async def main() -> None:
 
     async with sessionmaker()() as session:
         existing = await session.scalar(select(func.count()).select_from(User))
+        if existing and args.if_empty:
+            print(f"{existing} users already exist; not seeding.")
+            await dispose()
+            return
         if existing and not args.reset:
             raise SystemExit(
                 f"{existing} users already exist. Re-run with --reset to replace them."
