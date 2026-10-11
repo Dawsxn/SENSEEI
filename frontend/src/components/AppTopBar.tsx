@@ -1,8 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Users } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
+import { SwitchUserDialog } from "../features/auth/SwitchUserDialog";
 import { useMe } from "../features/auth/useAuth";
 import { JoinClassDialog } from "../features/readings/JoinClassDialog";
 import { logout } from "../lib/api";
@@ -69,6 +70,7 @@ function AccountMenu() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [switching, setSwitching] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -104,6 +106,19 @@ function AccountMenu() {
               </div>
             </div>
           )}
+          {/* QA only: the server decides who may switch. */}
+          {user?.can_switch && (
+            <button
+              onClick={() => {
+                setOpen(false);
+                setSwitching(true);
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[14px] hover:bg-muted"
+            >
+              <Users className="h-4 w-4 text-muted-foreground" />
+              Switch user
+            </button>
+          )}
           <button
             onClick={signOut}
             className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[14px] hover:bg-muted"
@@ -113,6 +128,7 @@ function AccountMenu() {
           </button>
         </div>
       )}
+      {switching && <SwitchUserDialog onClose={() => setSwitching(false)} />}
     </div>
   );
 }
