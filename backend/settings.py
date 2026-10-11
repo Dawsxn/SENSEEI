@@ -54,6 +54,17 @@ class Settings(BaseSettings):
     # this way, per docs/context/tech-stack.md, so nothing costs money by
     # accident.
     llm_provider: str = "mock"           # mock | gemini | openai_compat
+
+    @field_validator("llm_provider")
+    @classmethod
+    def _blank_is_mock(cls, value: str) -> str:
+        """An empty setting means the free stub, never a paid provider.
+
+        A host's dashboard leaves a variable it was told about but not given as
+        an empty string, which would otherwise reach the provider factory and be
+        read as its own default, Gemini, and then fail for want of a key.
+        """
+        return value.strip().lower() or "mock"
     llm_model: str = "gemini-3.1-pro-preview"
     llm_api_key_env: str = "GEMINI_API_KEY"
     llm_temperature: float = 0.0
