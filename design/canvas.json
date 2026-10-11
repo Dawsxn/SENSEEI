@@ -143,6 +143,30 @@
       "y": 4500,
       "w": 390,
       "h": 844
+    },
+    {
+      "file": "ClassStats.dc.html",
+      "title": "8 · Class, with statistics (2 states)",
+      "x": 0,
+      "y": 5560,
+      "w": 1360,
+      "h": 1000
+    },
+    {
+      "file": "ClassReading.dc.html",
+      "title": "8b · Reading in a class (3 states)",
+      "x": 1460,
+      "y": 5560,
+      "w": 1360,
+      "h": 1000
+    },
+    {
+      "file": "ClassDashboardMobile.dc.html",
+      "title": "8c · Dashboard at phone width (2 states)",
+      "x": 2920,
+      "y": 5560,
+      "w": 390,
+      "h": 844
     }
   ],
   "annotations": [
@@ -201,6 +225,13 @@
       "y": 4350,
       "w": 520,
       "text": "Nothing is saved until Save reading, so leaving midway leaves nothing behind.\n\nFigure descriptions come from a vision model and are marked in the text so the instructor checks each one. Text and core components lock on save; title, description and classes stay editable."
+    },
+    {
+      "id": "dashboard-note",
+      "x": 0,
+      "y": 5410,
+      "w": 520,
+      "text": "Classes → a class → a reading in that class → a student.\n\nStatistics are per class and per reading, never per reading alone: a reading's numbers only mean something inside the class that read it.\n\nThe flag is the fallback's other half. A session that ran out of attempts is the one an instructor has to act on."
     }
   ],
   "launch": {

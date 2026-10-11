@@ -28,6 +28,12 @@
   --fail-border: 0 96% 89%;
   --fail-foreground: 0 74% 42%;
 
+  /* Its counterpart in the accent colour: #f0fdf4 / #bbf7d0 / #15803d. For a
+     quiet green control that sits beside a soft-red one without shouting. */
+  --accent-soft: 138 76% 97%;
+  --accent-soft-border: 141 79% 85%;
+  --accent-soft-foreground: 142 72% 29%;
+
   --radius: 8px;
 }
 

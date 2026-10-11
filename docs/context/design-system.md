@@ -29,6 +29,12 @@ punitive on a screen where a student has just been told they fell short.
 
 Success badges mirror it: `#f0fdf4`, `#bbf7d0`, `#15803d`.
 
+Those same three are also a **button** treatment, the accent's version of the
+soft-red one. An icon button that creates something (new class, upload a
+reading) uses it, so it sits beside the pencil and the bin as one set of quiet
+controls rather than a solid green block among outlines. Solid green stays for
+the button that finishes a form: Create class, Save reading, Next.
+
 Everything structural is neutral. Green appears only on primary actions and
 success, which is what keeps the interface quiet.
 

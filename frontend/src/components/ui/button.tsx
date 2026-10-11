@@ -18,6 +18,10 @@ const buttonVariants = cva(
         // actions and success only.
         danger:
           "border border-fail-border bg-fail text-fail-foreground hover:bg-fail-border/40",
+        // The accent's version of `danger`: a tinted control rather than a solid
+        // one, for an icon button that sits beside the soft-red pair.
+        accent:
+          "border border-accent-soft-border bg-accent-soft text-accent-soft-foreground hover:bg-accent-soft-border/50",
       },
       size: {
         default: "h-9 px-4",

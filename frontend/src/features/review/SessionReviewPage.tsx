@@ -5,6 +5,7 @@ import { SessionStatusBadge } from "../../components/SessionStatusBadge";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 import { formatDate, formatDuration } from "../../lib/format";
+import { useMe } from "../auth/useAuth";
 import { useReadingSessions } from "../readings/useReadings";
 import type { SeeiStep } from "../tutoring/types";
 import type { SessionTranscript, TranscriptEntry } from "./types";
@@ -14,19 +15,34 @@ export function SessionReviewPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { data: t, isLoading, isError } = useTranscript(sessionId);
-  const { data: sessions } = useReadingSessions(t?.reading_id);
+  const { data: user } = useMe();
+  // An instructor reads someone else's session: their own attempts and the
+  // button to start another are not theirs to have, and the endpoint that
+  // lists a student's attempts is the student's own.
+  const instructor = user?.role === "instructor";
+  const { data: sessions } = useReadingSessions(instructor ? undefined : t?.reading_id);
 
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-14 shrink-0 items-center justify-between border-b px-4 sm:px-6">
-        <Link
-          to="/"
-          className="flex items-center gap-1 text-[14px] text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Readings
-        </Link>
-        {t && (
+        {instructor ? (
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1 text-[14px] text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Class roster
+          </button>
+        ) : (
+          <Link
+            to="/"
+            className="flex items-center gap-1 text-[14px] text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Readings
+          </Link>
+        )}
+        {t && !instructor && (
           <Button size="sm" onClick={() => navigate(`/tutor/${t.reading_id}`)}>
             Start a new attempt
           </Button>
@@ -40,13 +56,25 @@ export function SessionReviewPage() {
           {t && (
             <>
               <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                {/* The instructor came here from a roster, so the student is
+                    what they are looking for; the reading is the context. */}
                 <div>
                   <div className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
                     {t.class_name}
+                    {instructor && (
+                      // The class is an abbreviation and reads well in capitals;
+                      // a reading's title does not.
+                      <span className="normal-case"> · {t.reading_title}</span>
+                    )}
                   </div>
                   <h1 className="text-[24px] font-semibold tracking-[-0.02em]">
-                    {t.reading_title}
+                    {instructor ? t.student_name : t.reading_title}
                   </h1>
+                  {instructor && (
+                    <div className="mt-0.5 text-[13px] text-muted-foreground">
+                      Attempt {t.index}
+                    </div>
+                  )}
                 </div>
                 {sessions && sessions.length > 1 && (
                   <select

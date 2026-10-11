@@ -4,6 +4,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { RequireAuth } from "./features/auth/RequireAuth";
 import { HomeRoute, RequireInstructor } from "./features/auth/RoleRoutes";
 import { ClassDetailPage } from "./features/classes/ClassDetailPage";
+import { ClassReadingPage } from "./features/classes/ClassReadingPage";
 import { ClassListPage } from "./features/classes/ClassListPage";
 import { SignInScreen } from "./features/auth/SignInScreen";
 import { LibraryListPage } from "./features/library/LibraryListPage";
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
   { path: "/review/:sessionId", element: signedIn(<SessionReviewPage />) },
   { path: "/classes", element: instructor(<ClassListPage />) },
   { path: "/classes/:classId", element: instructor(<ClassDetailPage />) },
+  {
+    path: "/classes/:classId/readings/:readingId",
+    element: instructor(<ClassReadingPage />),
+  },
   { path: "/library", element: instructor(<LibraryListPage />) },
   { path: "/library/new", element: instructor(<UploadReadingPage />) },
   { path: "/library/:readingId", element: instructor(<LibraryReadingPage />) },

@@ -32,6 +32,12 @@ export default {
           border: "hsl(var(--fail-border))",
           foreground: "hsl(var(--fail-foreground))",
         },
+        // The same treatment in the accent colour, for quiet green controls.
+        "accent-soft": {
+          DEFAULT: "hsl(var(--accent-soft))",
+          border: "hsl(var(--accent-soft-border))",
+          foreground: "hsl(var(--accent-soft-foreground))",
+        },
       },
       borderRadius: {
         lg: "8px", // card radius

@@ -12,18 +12,20 @@
  */
 
 import { useState } from "react";
-import { ChevronLeft, Copy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Pencil, Trash2, Upload } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { InfoTip, Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
 import { formatShortDate } from "../../lib/format";
 import { deleteClass, removeStudent, replaceJoinCode, updateClass } from "../../lib/api";
 import { ClassFormDialog } from "./ClassFormDialog";
+import { StatisticsSection } from "./StatisticsSection";
 import type { ClassFields, ClassStudent } from "./types";
-import { useClass } from "./useClasses";
+import { useClass, useClassStatistics } from "./useClasses";
 
 type Dialog =
   | { kind: "edit" }
@@ -35,6 +37,7 @@ type Dialog =
 export function ClassDetailPage() {
   const { classId } = useParams<{ classId: string }>();
   const { data: klass, isLoading, isError } = useClass(classId);
+  const { data: dashboard } = useClassStatistics(classId);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
@@ -101,20 +104,45 @@ export function ClassDetailPage() {
             <>
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <h1 className="text-[24px] font-semibold tracking-[-0.02em]">{klass.label}</h1>
+                {/* Icons only: a pencil and a bin need no caption, and the
+                    class's own name is right beside them. */}
                 <div className="flex gap-2">
-                  <Button variant="secondary" size="sm" onClick={() => setDialog({ kind: "edit" })}>
-                    Edit
-                  </Button>
-                  <Button variant="danger" size="sm" onClick={() => setDialog({ kind: "delete" })}>
-                    Delete
-                  </Button>
+                  <Tooltip text="Edit class">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      aria-label="Edit class"
+                      onClick={() => setDialog({ kind: "edit" })}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip text="Delete class" align="left">
+                    <Button
+                      variant="danger"
+                      size="icon"
+                      aria-label="Delete class"
+                      onClick={() => setDialog({ kind: "delete" })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </Tooltip>
                 </div>
               </div>
+
+              {dashboard && (
+                <div className="mb-5">
+                  <StatisticsSection
+                    statistics={dashboard.statistics}
+                    scope="Across all readings in this class."
+                  />
+                </div>
+              )}
 
               <div className="grid items-start gap-5 lg:grid-cols-[1fr_380px]">
                 {/* On narrow screens the join code comes first: it is what an
                     instructor opens this page for on a phone in front of a class. */}
-                <section className="order-2 overflow-hidden rounded-lg border lg:order-1">
+                <section className="order-2 rounded-lg border lg:order-1">
                   <CardHead title="Students" count={klass.students.length} />
                   {klass.students.length === 0 ? (
                     <div className="flex flex-col gap-1.5 px-6 py-12 text-center">
@@ -139,26 +167,31 @@ export function ClassDetailPage() {
                         <span className="hidden whitespace-nowrap text-[13px] text-muted-foreground sm:block">
                           Joined {formatShortDate(s.enrolled_at)}
                         </span>
-                        <button
-                          onClick={() => setDialog({ kind: "remove", student: s })}
-                          className="text-[13px] text-muted-foreground hover:text-foreground"
-                        >
-                          Remove
-                        </button>
+                        {/* A bin, like the one on the class itself. The
+                            student's name is beside it, so it needs no caption. */}
+                        <Tooltip text={`Remove ${s.name}`} align="left">
+                          <button
+                            aria-label={`Remove ${s.name}`}
+                            onClick={() => setDialog({ kind: "remove", student: s })}
+                            className="flex h-7 w-7 items-center justify-center rounded-md text-fail-foreground hover:bg-fail focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </Tooltip>
                       </div>
                     ))
                   )}
                 </section>
 
                 <div className="order-1 flex flex-col gap-5 lg:order-2">
-                  <section className="overflow-hidden rounded-lg border">
-                    <CardHead title="Join code" />
+                  <section className="rounded-lg border">
+                    <CardHead
+                      title="Join code"
+                      tip="The code students use to join this class."
+                    />
                     <div className="flex flex-col gap-3.5 px-4 pb-4 pt-[18px]">
                       <span className="font-mono text-[28px] font-medium tracking-[0.06em]">
                         {klass.join_code}
-                      </span>
-                      <span className="text-[13px] text-muted-foreground">
-                        Students enter this under Join a class.
                       </span>
                       <div className="flex gap-2">
                         <Button variant="secondary" size="sm" onClick={() => copy(klass.join_code)}>
@@ -172,19 +205,57 @@ export function ClassDetailPage() {
                     </div>
                   </section>
 
-                  <section className="overflow-hidden rounded-lg border">
-                    <CardHead title="Readings" count={klass.readings.length} />
+                  {/* Each reading leads to how that reading went in this class. */}
+                  <section className="rounded-lg border">
+                    <div className="flex items-center justify-between border-b px-4 py-2.5">
+                      <span className="flex items-center gap-2 text-[14px] font-semibold">
+                        Readings
+                        <span className="text-[13px] font-normal text-muted-foreground">
+                          {klass.readings.length}
+                        </span>
+                      </span>
+                      {/* Uploading from here starts the usual flow with this
+                          class already ticked. */}
+                      <Tooltip text="Upload a reading" align="left">
+                        <Button
+                          variant="accent"
+                          size="icon"
+                          aria-label="Upload a reading"
+                          className="h-8 w-8"
+                          onClick={() => navigate(`/library/new?class=${classId}`)}
+                        >
+                          <Upload className="h-3.5 w-3.5" />
+                        </Button>
+                      </Tooltip>
+                    </div>
                     {klass.readings.length === 0 ? (
-                      <p className="px-4 py-5 text-[13px] text-muted-foreground">No readings yet.</p>
+                      <p className="px-4 py-5 text-[13px] text-muted-foreground">
+                        No readings yet.
+                      </p>
                     ) : (
-                      klass.readings.map((r) => (
-                        <div key={r.id} className="flex flex-col gap-0.5 border-b px-4 py-3 last:border-b-0">
-                          <span className="text-[14px] font-medium">{r.title}</span>
-                          {r.description && (
-                            <span className="text-[12px] text-muted-foreground">{r.description}</span>
-                          )}
-                        </div>
-                      ))
+                      klass.readings.map((r) => {
+                        const sessions = dashboard?.readings.find((d) => d.id === r.id)
+                          ?.session_count;
+                        return (
+                          <button
+                            key={r.id}
+                            onClick={() => navigate(`/classes/${classId}/readings/${r.id}`)}
+                            className="grid w-full grid-cols-[1fr_24px] items-center gap-3 border-b px-4 py-3 text-left last:rounded-b-lg last:border-b-0 hover:bg-muted/40"
+                          >
+                            <span className="min-w-0">
+                              <span className="block truncate text-[14px] font-medium">
+                                {r.title}
+                              </span>
+                              <span className="block text-[12px] text-muted-foreground">
+                                {sessions === undefined
+                                  ? r.description
+                                  : `${sessions} ${sessions === 1 ? "session" : "sessions"}`}
+                              </span>
+                            </span>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/70" />
+                          </button>
+                        );
+                      })
                     )}
                   </section>
                 </div>
@@ -241,10 +312,21 @@ export function ClassDetailPage() {
   );
 }
 
-function CardHead({ title, count }: { title: string; count?: number }) {
+function CardHead({
+  title,
+  count,
+  tip,
+}: {
+  title: string;
+  count?: number;
+  tip?: string;
+}) {
   return (
     <div className="flex items-center justify-between border-b px-4 py-3.5">
-      <span className="text-[14px] font-semibold">{title}</span>
+      <span className="flex items-center gap-1.5 text-[14px] font-semibold">
+        {title}
+        {tip && <InfoTip text={tip} />}
+      </span>
       {count !== undefined && <span className="text-[13px] text-muted-foreground">{count}</span>}
     </div>
   );
