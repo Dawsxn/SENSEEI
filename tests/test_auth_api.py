@@ -155,3 +155,74 @@ async def test_instructor_allowlist_sets_the_role(users, monkeypatch):
         assert plain.role == Role.STUDENT
     finally:
         get_settings.cache_clear()
+
+
+# --------------------------------------------------------------------------- #
+# QA switching: the deployed development environment, with the open picker off
+
+
+async def _google_sign_in(client, monkeypatch, email: str):
+    """Sign in through the callback with a faked Google answer."""
+    from backend import auth as auth_module
+
+    async def fake_token(request):
+        return {"userinfo": {"sub": f"sub-{email}", "email": email, "email_verified": True, "name": "QA"}}
+
+    monkeypatch.setattr(auth_module.google_oauth().google, "authorize_access_token", fake_token)
+    r = await client.get("/auth/callback")
+    assert r.status_code in (302, 307)
+
+
+@pytest.fixture
+def deployed_dev(monkeypatch):
+    """The deployed development environment: picker off, one QA tester."""
+    from backend.settings import get_settings
+
+    monkeypatch.setenv("AUTH_DEV_BYPASS", "false")
+    monkeypatch.setenv("QA_EMAILS", "tester@dlsu.edu.ph")
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
+@pytest.mark.anyio
+async def test_a_qa_tester_can_switch_to_a_seeded_user_and_back(users, deployed_dev, monkeypatch):
+    async with make_client() as client:
+        await _google_sign_in(client, monkeypatch, "tester@dlsu.edu.ph")
+        assert (await client.get("/auth/me")).json()["can_switch"] is True
+
+        assert (await client.get("/auth/dev/users")).status_code == 200
+        r = await client.post("/auth/dev/login", json={"user_id": str(users["instructor"])})
+        assert r.status_code == 200
+        me = (await client.get("/auth/me")).json()
+        assert me["email"] == "prof@dlsu.edu.ph"
+        # still the tester underneath, so they can switch again
+        assert me["can_switch"] is True
+        r = await client.post("/auth/dev/login", json={"user_id": str(users["student"])})
+        assert (await client.get("/auth/me")).json()["email"] == "stu@dlsu.edu.ph"
+
+
+@pytest.mark.anyio
+async def test_anyone_else_who_signs_in_cannot_switch(users, deployed_dev, monkeypatch):
+    async with make_client() as client:
+        await _google_sign_in(client, monkeypatch, "stranger@dlsu.edu.ph")
+        assert (await client.get("/auth/me")).json()["can_switch"] is False
+        assert (await client.get("/auth/dev/users")).status_code == 404
+        r = await client.post("/auth/dev/login", json={"user_id": str(users["instructor"])})
+        assert r.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_with_the_picker_off_nobody_signed_out_can_act_as_anyone(users, deployed_dev):
+    async with make_client() as client:
+        assert (await client.get("/auth/dev/users")).status_code == 404
+        r = await client.post("/auth/dev/login", json={"user_id": str(users["instructor"])})
+        assert r.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_signing_out_ends_the_testers_switching(users, deployed_dev, monkeypatch):
+    async with make_client() as client:
+        await _google_sign_in(client, monkeypatch, "tester@dlsu.edu.ph")
+        await client.post("/auth/logout")
+        assert (await client.get("/auth/dev/users")).status_code == 404

@@ -1,9 +1,11 @@
-"""The FastAPI application.
-
-Nothing here but the app, its lifespan and a health check. Routes arrive with
-the schema and the session API.
+"""The FastAPI application: the API routers, a health check, and, once built,
+the frontend.
 
     uvicorn backend.main:app --reload
+
+Locally the frontend runs on Vite and `frontend/dist` does not exist, so only the
+API is served. Deployed, the image builds `dist` and this serves it too: one
+service on one origin (see backend/frontend.py).
 """
 
 from __future__ import annotations
@@ -16,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.sessions import SessionMiddleware
 
 from .db import dispose, get_session
+from .frontend import mount_frontend
 from .routers import auth, classes, library, readings, rubric, sessions
 from .settings import Settings, get_settings
 
@@ -72,3 +75,8 @@ async def health(
         "database": database,
         "llm_provider": settings.llm_provider,
     }
+
+
+# Last, after every API route: the frontend's catch-all would shadow anything
+# registered after it.
+mount_frontend(app, _settings.frontend_dist)
