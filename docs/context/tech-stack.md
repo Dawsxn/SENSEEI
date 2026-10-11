@@ -103,7 +103,7 @@ can be run locally.
 | Where | `localhost:5173` | `senseei-dev.<host>` | `senseei.<host>` |
 | Database | Docker Postgres, one per developer | `senseei-dev` | `senseei-prod` |
 | Data | Seeded synthetic | Seeded synthetic, reset freely | Real |
-| LLM provider | `mock` by default | `mock` | Real provider |
+| LLM provider | `mock` by default | Real provider while QA-ing the agents, set in the dashboard | Real provider |
 | Deploys | Never | On merge to `develop` | On merge to `main` |
 | Migrations | Run by hand | On deploy | On deploy |
 | Instance tier | n/a | Free, sleeping is fine | Paid, must not sleep |
@@ -118,10 +118,18 @@ seed it. Production holds student session transcripts.
 **Three sets of secrets, no overlap.** Database URL, Google client ID and secret,
 LLM API key. A leaked development key must not open production.
 
-**Use the `mock` provider everywhere except production.** Every environment that
-runs the tutoring loop against a real model costs tokens, and a development
-environment left running is a bill for nothing. Switch to the real provider
-deliberately, when testing agent behaviour specifically.
+**Use the `mock` provider by default, and the real one on purpose.** Every
+environment that runs the tutoring loop against a real model costs tokens, and an
+environment left running is a bill for nothing. Locally the default is `mock`.
+Development runs the real provider while the agents are what is being QA-ed,
+which is most of the time it is used; switch it to `mock` in the Render dashboard
+to stop spending. `render.yaml` leaves `LLM_PROVIDER` to the dashboard for that
+reason: a value written in the file would be restored whenever the file changes,
+quietly undoing a switch made mid-QA.
+
+Development spends only what a QA tester spends. A stranger who signs in with a
+DLSU account is a student in no class, with no readings and so no session to
+start, and uploading needs an instructor.
 
 **Development can sleep, production cannot.** A cold start in development costs
 fifteen seconds of your own time. A cold start in production happens partway
@@ -198,8 +206,9 @@ switch it to the async driver.
    `render.yaml` and creates `senseei-dev-db` and `senseei-dev`.
 2. It asks for the values marked `sync: false`. `APP_BASE_URL` is the service's
    address, `https://senseei-dev.onrender.com` or whatever Render assigns.
-   `QA_EMAILS` is your own DLSU email. The rest are the development Google client
-   and, only if testing the agents, a Gemini key.
+   `QA_EMAILS` is your own DLSU email. `LLM_PROVIDER` is `gemini` to QA the
+   agents, with `GEMINI_API_KEY` set, or `mock` to spend nothing. The rest are
+   the development Google client.
 3. In Google Cloud, add `<APP_BASE_URL>/auth/callback` as an authorized redirect
    URI, and while the consent screen is in Testing, add each tester's email as a
    test user.

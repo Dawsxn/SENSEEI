@@ -109,3 +109,9 @@ def test_qa_switching_does_not_exist_in_production():
         "me@dlsu.edu.ph"
     }
     assert Settings(qa_emails="me@dlsu.edu.ph", environment="production").qa_allowlist == set()
+
+
+@pytest.mark.parametrize("given, expected", [("", "mock"), ("  ", "mock"), ("Gemini", "gemini")])
+def test_an_empty_provider_setting_means_the_free_mock(given, expected):
+    # A dashboard leaves an unset variable empty, and empty must not cost money.
+    assert Settings(llm_provider=given).llm_provider == expected
