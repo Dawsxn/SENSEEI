@@ -154,20 +154,66 @@ Alembic refuses to run until they are reconciled. Say when you are adding one.
 
 ## Deployment
 
-Render or Railway for the FastAPI service plus managed PostgreSQL, in a Singapore
-region for latency from Manila. Decide between the two when it comes time.
+**Render**, for the FastAPI service plus managed PostgreSQL, in its Singapore
+region for latency from Manila. Chosen over Railway for a free web tier that suits
+a development environment, and for Blueprints: `render.yaml` describes the service
+and its database together, so setting the environment up is choosing the
+repository rather than configuring each piece by hand.
 
 **Serve the built SPA as static files from FastAPI** rather than deploying it
 separately:
 
 ```
-npm run build      ->  dist/
-FastAPI  /api/*    ->  the API
-         /*        ->  dist/, falling back to index.html
+npm run build      ->  frontend/dist/
+FastAPI  API routes   ->  the API
+         everything else  ->  dist/, falling back to index.html
 ```
 
 One service, one deploy, one origin, no CORS. The cost is that a frontend-only
 change redeploys everything, which does not matter at this size.
+
+### How it is built
+
+| File | What it does |
+| --- | --- |
+| `Dockerfile` | Builds the frontend in a Node stage, then installs the app on Python and copies `dist` across. One image |
+| `render.yaml` | The development environment: the web service (Docker, free, deploys on every merge to `develop`) and its database |
+| `scripts/start.py` | The container's command: migrate, seed if the database is empty, then run uvicorn |
+| `backend/frontend.py` | Serves `dist`, with every non-API path falling back to `index.html` |
+
+Migrations run on every start rather than in a pre-deploy step, because the free
+tier has no such step. A migration that fails stops the start, so a broken
+migration never serves traffic.
+
+The seed runs only when `SEED_IF_EMPTY` is `true` and the database has no users,
+which on development means its first start and nothing after. Production never
+sets it.
+
+`DATABASE_URL` is taken as the host gives it (`postgres://...`); the settings
+switch it to the async driver.
+
+### Setting up the development environment
+
+1. In Render: **New > Blueprint**, pick this repository. Render reads
+   `render.yaml` and creates `senseei-dev-db` and `senseei-dev`.
+2. It asks for the values marked `sync: false`. `APP_BASE_URL` is the service's
+   address, `https://senseei-dev.onrender.com` or whatever Render assigns.
+   `QA_EMAILS` is your own DLSU email. The rest are the development Google client
+   and, only if testing the agents, a Gemini key.
+3. In Google Cloud, add `<APP_BASE_URL>/auth/callback` as an authorized redirect
+   URI, and while the consent screen is in Testing, add each tester's email as a
+   test user.
+4. The first deploy builds, migrates an empty database and seeds it. After that,
+   every merge to `develop` deploys again.
+
+### QA on the development environment
+
+The sign-in screen's open picker (`AUTH_DEV_BYPASS`) is off there, since on a
+public URL it would let anyone in as anyone. Instead, an email in `QA_EMAILS`
+signs in with Google as itself and gets **Switch user** in the account menu,
+which acts as any seeded person: the instructor, or any of the students with
+their sessions. Anyone else who finds the URL has to get past Google, and gets no
+switch. Production ignores `QA_EMAILS` entirely.
 
 Register a Google OAuth redirect URI for each environment, including
 `http://localhost:5173`, or sign-in will not work outside production.
@@ -187,14 +233,21 @@ Things that only break once deployed, collected as they are found so the deploy
 is a checklist rather than a discovery. Staging comes after the features are
 finished, so each of these will be met at once.
 
-- [ ] **No page route shares a path with an API route.** Pages and the API share
+- [x] **No page route shares a path with an API route.** Pages and the API share
   one origin, so a page at the same path as an endpoint answers a refresh or a
   bookmark with JSON. It happened with `/classes`; the instructor API moved to
   `/instructor/classes`. The instructor's reading pages are at `/library` for
-  the same reason, since `/readings` is the students' API. The FastAPI SPA
-  fallback must only catch paths no router owns.
+  the same reason, since `/readings` is the students' API. The fallback in
+  `backend/frontend.py` refuses any path under an API prefix, so a mistyped API
+  call is a JSON 404 rather than a page of HTML.
 - [ ] **The Google OAuth redirect URI** is registered for the deployed origin, not
   only `localhost:5173`.
-- [ ] **The session cookie** is marked secure over HTTPS.
-- [ ] **The PDF worker** loads from the deployed origin; it is bundled by Vite
-  and served as a separate asset.
+- [x] **The session cookie** is marked secure over HTTPS. It is, outside
+  `local`; uvicorn trusts the host's forwarded headers so the app knows the
+  request arrived over HTTPS.
+- [x] **The PDF worker** loads from the deployed origin. It is a `.mjs` file,
+  which Python does not always know is JavaScript; served as anything else the
+  browser refuses to start it, so `backend/frontend.py` registers the type.
+- [x] **Every dependency is declared.** The first container build failed on
+  `greenlet`, which async SQLAlchemy needs and Windows had installed by chance.
+  Build the image before deploying a dependency change: `docker build -t senseei .`

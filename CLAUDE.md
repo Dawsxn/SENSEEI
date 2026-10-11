@@ -68,6 +68,10 @@ the LLM, once per reading, to describe its figures; it is not an agent (see
   both and costs nothing. It has its own inline copy of the loop for the terminal;
   the backend's authoritative loop is `backend/orchestrator.py`, and both now
   share the attempt limit from there.
+- `Dockerfile`, `render.yaml`, `scripts/start.py` — the deploy: one image
+  serving the API and the built frontend, the Render development environment,
+  and the start command that migrates and seeds. See "Deployment" in
+  `docs/context/tech-stack.md`.
 - `docs/thesis/` — thesis artifacts: diagrams and presentation decks. Not code.
 
 ## Skills
