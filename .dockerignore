@@ -1,0 +1,19 @@
+# Keep secrets and bulk out of the build context. The image copies only what it
+# names, but everything not ignored here is still uploaded to the builder.
+
+.env
+.env.*
+.git
+**/__pycache__
+**/*.egg-info
+**/node_modules
+frontend/dist
+tests
+docs
+design
+scripts/runs
+assessment-agent-eval/runs
+assessment-agent-eval/reports
+assessment-agent-eval/results_log.csv
+.claude
+.pytest_cache
