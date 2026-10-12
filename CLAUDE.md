@@ -44,8 +44,10 @@ the LLM, once per reading, to describe its figures; it is not an agent (see
   `student-tutoring-loop.md` (session state machine, dialogue moves, fallback),
   `agent-contracts.md` (what each agent receives and returns),
   `data-model.md` (entities, relationships, retention), `tech-stack.md`
-  (libraries, auth, deployment), and `design-system.md` (tokens, type scale,
-  component conventions). Open these before writing app code. They record
+  (libraries, auth, deployment), `design-system.md` (tokens, type scale,
+  component conventions), and `trial.md` (how the app supports the human
+  evaluation: the trial instance, `TRIAL_MODE`, participant IDs, what is recorded,
+  and the order of work). Open these before writing app code. They record
   decisions that are not derivable from the codebase.
 - `backend/` — the FastAPI app: `settings.py` (environment config), `db.py`
   (async engine and the per-request session), `main.py` (the app), `models/`

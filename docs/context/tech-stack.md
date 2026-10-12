@@ -145,6 +145,14 @@ on every preview unless each URL were registered by hand.
 when there is a release worth rehearsing somewhere that is not the environment
 people are using.
 
+### The trial instance
+
+The human evaluation runs on an instance of its own, separate from both of the
+above: the same code with `TRIAL_MODE` on, deployed once from a fixed release and
+then frozen, with a database that holds only study participants and is deleted
+two years after the defense. It is not a staging tier; it is where the study
+happens. `docs/context/trial.md` has the whole of it.
+
 ### Seeding
 
 A student sees nothing until an instructor has created a class and uploaded a

@@ -393,6 +393,15 @@ last year's both depend on that.
 The study rules above apply to the subset of users who consented to participate,
 not to the app's users at large.
 
+**Superseded for the trial.** What follows assumed participants would be ordinary
+users of this instance, with a participant identifier added to their account. The
+trial now runs on its own instance (`docs/context/trial.md`), where a participant
+signs in with their participant ID alone and the app never holds their name or
+email. Every record there is keyed to the ID from the start, so no substitution is
+needed at export, and deleting the study's data is deleting that instance's
+database. The `participant_identifier` column below is left in place until the
+trial's schema is built, which will decide whether it survives.
+
 That subset has to be identifiable, otherwise the study deletion in point 3
 cannot be carried out without destroying app data belonging to everyone else.
 The `participant_identifier` field on `user` does this job: null for an ordinary
