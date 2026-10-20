@@ -23,6 +23,7 @@ export default defineConfig({
       "/readings": { target: "http://localhost:8000", changeOrigin: true },
       "/rubric": { target: "http://localhost:8000", changeOrigin: true },
       "/sessions": { target: "http://localhost:8000", changeOrigin: true },
+      "/trial": { target: "http://localhost:8000", changeOrigin: true },
       "/health": { target: "http://localhost:8000", changeOrigin: true },
     },
   },

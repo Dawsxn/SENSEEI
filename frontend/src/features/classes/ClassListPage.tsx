@@ -13,8 +13,9 @@ import { AppTopBar } from "../../components/AppTopBar";
 import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
 import { createClass } from "../../lib/api";
+import { useTrialMode } from "../auth/useAuth";
 import { ClassFormDialog } from "./ClassFormDialog";
-import type { ClassFields } from "./types";
+import { MODE_LABEL, type ClassFields } from "./types";
 import { useClasses } from "./useClasses";
 
 export function ClassListPage() {
@@ -22,6 +23,9 @@ export function ClassListPage() {
   const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  // On the trial instance a class is a group: its mode matters, and its join
+  // code does not, since participants sign in with an ID.
+  const trial = useTrialMode();
 
   async function create(fields: ClassFields) {
     const created = await createClass(fields);
@@ -72,8 +76,8 @@ export function ClassListPage() {
               <div className="hidden h-10 grid-cols-[1fr_120px_160px_100px_100px_24px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
                 <span>Class</span>
                 <span>Section</span>
-                <span>Join code</span>
-                <span>Students</span>
+                <span>{trial ? "Mode" : "Join code"}</span>
+                <span>{trial ? "Participants" : "Students"}</span>
                 <span>Readings</span>
                 <span />
               </div>
@@ -87,13 +91,21 @@ export function ClassListPage() {
                     <span className="block text-[14px] font-medium">{c.name}</span>
                     {/* On narrow screens the columns collapse into this line. */}
                     <span className="mt-0.5 block text-[13px] text-muted-foreground sm:hidden">
-                      {c.section} · {c.student_count} students · {c.join_code}
+                      {trial
+                        ? `${c.section} · ${MODE_LABEL[c.mode]} · ${c.student_count} participants`
+                        : `${c.section} · ${c.student_count} students · ${c.join_code}`}
                     </span>
                   </span>
                   <span className="hidden text-[13px] text-[#3f3f46] sm:block">{c.section}</span>
-                  <span className="hidden font-mono text-[13px] tracking-wider text-[#3f3f46] sm:block">
-                    {c.join_code}
-                  </span>
+                  {trial ? (
+                    <span className="hidden text-[13px] text-[#3f3f46] sm:block">
+                      {MODE_LABEL[c.mode]}
+                    </span>
+                  ) : (
+                    <span className="hidden font-mono text-[13px] tracking-wider text-[#3f3f46] sm:block">
+                      {c.join_code}
+                    </span>
+                  )}
                   <span className="hidden text-[13px] text-muted-foreground sm:block">
                     {c.student_count}
                   </span>

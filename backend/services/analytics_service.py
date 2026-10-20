@@ -23,6 +23,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import (
+    FINISHED_STATUSES,
     STEP_ORDER,
     Assessment,
     Attempt,
@@ -43,7 +44,7 @@ from .class_service import ClassNotFound, _owned
 #: short enough to read at a glance.
 TOP_CRITERIA = 5
 
-FINISHED = [SessionStatus.COMPLETE.value, SessionStatus.FALLBACK.value]
+FINISHED = FINISHED_STATUSES
 
 
 class ReadingNotInClass(Exception):
@@ -256,7 +257,10 @@ async def roster(
     out = []
     for student in students:
         sess = sessions.get(student.id)
-        stopped = sess is not None and SessionStatus(sess.status) is SessionStatus.FALLBACK
+        ended = SessionStatus(sess.status) if sess is not None else None
+        # Out of attempts, or (trial mode) out of time: either way they stopped
+        # short of Illustrate, on a step that matters to whoever reads this.
+        stopped = ended in (SessionStatus.FALLBACK, SessionStatus.TIMED_OUT)
         out.append(
             {
                 "id": student.id,
@@ -265,12 +269,13 @@ async def roster(
                 "session_id": sess.id if sess else None,
                 "status": (
                     "not_started" if sess is None
-                    else "stopped_early" if stopped
+                    else "stopped_early" if ended is SessionStatus.FALLBACK
+                    else "timed_out" if ended is SessionStatus.TIMED_OUT
                     else "completed"
                 ),
                 "steps_passed": passed_steps.get(sess.id, 0) if sess else 0,
-                # The step they ran out of attempts on, which is where the
-                # instructor's attention belongs.
+                # The step they stopped on, which is where the instructor's
+                # attention belongs.
                 "stopped_on": SeeiStep(sess.current_step).value if stopped else None,
                 "last_session_at": (sess.ended_at or sess.started_at) if sess else None,
             }

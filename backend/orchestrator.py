@@ -106,3 +106,7 @@ FALLBACK_MESSAGE = (
     "You have used all your attempts for this step. Your instructor has been "
     "notified and can go through it with you."
 )
+
+#: The same, for a trial participant. There is no instructor to be notified: the
+#: research team runs the trial, and the session simply ends.
+TRIAL_FALLBACK_MESSAGE = "You have used all your attempts for this step."

@@ -13,7 +13,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-from .models import Role, SeeiStep, SessionStatus
+from .models import ClassMode, Role, SeeiStep, SessionStatus
 
 
 class UserOut(BaseModel):
@@ -23,6 +23,8 @@ class UserOut(BaseModel):
     role: Role
     #: Whether the account menu offers Switch user: the dev bypass, or a QA tester.
     can_switch: bool = False
+    #: Trial mode: a participant signed in by ID, whose screens are the trial's.
+    participant: bool = False
 
 
 class DevLoginIn(BaseModel):
@@ -146,6 +148,8 @@ class ClassIn(BaseModel):
 
     name: str = Field(min_length=1, max_length=60)
     section: str = Field(min_length=1, max_length=20)
+    #: Anything but SEE-I is refused outside trial mode.
+    mode: ClassMode = ClassMode.SEEI
 
     @field_validator("name", "section", mode="before")
     @classmethod
@@ -161,6 +165,7 @@ class ClassListItem(BaseModel):
     #: How students see the class, `STRAMA K31`.
     label: str
     join_code: str
+    mode: ClassMode
     student_count: int
     reading_count: int
 
@@ -170,6 +175,10 @@ class ClassStudent(BaseModel):
     name: str
     email: str
     enrolled_at: datetime
+    #: Trial mode: the participant ID this student is, and when it first signed
+    #: in. None for an ordinary student.
+    participant_code: str | None = None
+    signed_in_at: datetime | None = None
 
 
 class ClassReading(BaseModel):
@@ -184,6 +193,9 @@ class ClassDetailOut(BaseModel):
     section: str
     label: str
     join_code: str
+    mode: ClassMode
+    #: Whether the mode can still change: not once a participant has signed in.
+    mode_locked: bool = False
     students: list[ClassStudent]
     readings: list[ClassReading]
 
@@ -311,7 +323,7 @@ class ClassDashboardOut(BaseModel):
 
 #: Where a student got to on one reading: never started, finished, or ran out of
 #: attempts and was handed to their instructor.
-ReadingProgress = Literal["not_started", "completed", "stopped_early"]
+ReadingProgress = Literal["not_started", "completed", "stopped_early", "timed_out"]
 
 
 class RosterStudent(BaseModel):
@@ -320,7 +332,7 @@ class RosterStudent(BaseModel):
     email: str
     status: ReadingProgress
     steps_passed: int
-    #: The step they ran out of attempts on, when they stopped early.
+    #: The step they stopped on, when they ran out of attempts or of time.
     stopped_on: SeeiStep | None
     #: Their latest finished session, which the row opens. None if not started.
     session_id: uuid.UUID | None
@@ -335,3 +347,75 @@ class ClassReadingOut(BaseModel):
     class_label: str
     statistics: Statistics
     students: list[RosterStudent]
+
+
+# --- the trial ---------------------------------------------------------------
+
+
+class ParticipantSignInIn(BaseModel):
+    code: str = Field(min_length=1, max_length=40)
+
+
+class TrialSessionRef(BaseModel):
+    id: uuid.UUID
+    status: SessionStatus
+
+
+class TrialStatusOut(BaseModel):
+    """Where a participant is. The countdown is drawn from `seconds_left`."""
+
+    code: str
+    mode: ClassMode
+    #: Their class's reading. None until one is assigned.
+    reading_id: uuid.UUID | None
+    minutes: int
+    #: None until the reading first opens and the clock starts.
+    seconds_left: int | None
+    time_up: bool
+    session: TrialSessionRef | None
+
+
+class BatchClassCount(BaseModel):
+    class_id: uuid.UUID
+    count: int = Field(ge=0, le=300)
+
+
+class BatchIn(BaseModel):
+    name: str = Field(min_length=1, max_length=60)
+    classes: list[BatchClassCount] = Field(min_length=1)
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def _trim(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
+
+
+class BatchListItem(BaseModel):
+    id: uuid.UUID
+    name: str
+    created_at: datetime
+    closed_at: datetime | None
+    id_count: int
+    #: IDs that have signed in at least once.
+    used_count: int
+
+
+ParticipantStatus = Literal["not_used", "signed_in", "finished", "voided"]
+
+
+class BatchParticipant(BaseModel):
+    id: uuid.UUID
+    code: str
+    class_id: uuid.UUID
+    class_label: str
+    mode: ClassMode
+    status: ParticipantStatus
+
+
+class BatchOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    created_at: datetime
+    closed_at: datetime | None
+    #: In the order the slips print: shuffled, so the classes are mixed.
+    participants: list[BatchParticipant]

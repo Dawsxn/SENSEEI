@@ -9,6 +9,10 @@
  * data: the sessions stay in the database for the study, but neither the student
  * nor this page can reach them afterwards, and the dialogs say only what the
  * person clicking will notice.
+ *
+ * On the trial instance a class is one of the study's groups. Its students are
+ * participant IDs with no name or email, it has no join code worth showing, and
+ * IDs are voided from their batch rather than removed here.
  */
 
 import { useState } from "react";
@@ -22,9 +26,10 @@ import { InfoTip, Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
 import { formatShortDate } from "../../lib/format";
 import { deleteClass, removeStudent, replaceJoinCode, updateClass } from "../../lib/api";
+import { useTrialMode } from "../auth/useAuth";
 import { ClassFormDialog } from "./ClassFormDialog";
 import { StatisticsSection } from "./StatisticsSection";
-import type { ClassFields, ClassStudent } from "./types";
+import { MODE_LABEL, type ClassFields, type ClassStudent } from "./types";
 import { useClass, useClassStatistics } from "./useClasses";
 
 type Dialog =
@@ -42,6 +47,7 @@ export function ClassDetailPage() {
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const trial = useTrialMode();
 
   const refresh = () =>
     Promise.all([
@@ -103,7 +109,12 @@ export function ClassDetailPage() {
           {klass && (
             <>
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-[24px] font-semibold tracking-[-0.02em]">{klass.label}</h1>
+                <div className="flex min-w-0 items-baseline gap-3">
+                  <h1 className="text-[24px] font-semibold tracking-[-0.02em]">{klass.label}</h1>
+                  {trial && (
+                    <span className="text-[14px] text-muted-foreground">{MODE_LABEL[klass.mode]}</span>
+                  )}
+                </div>
                 {/* Icons only: a pencil and a bin need no caption, and the
                     class's own name is right beside them. */}
                 <div className="flex gap-2">
@@ -143,8 +154,40 @@ export function ClassDetailPage() {
                 {/* On narrow screens the join code comes first: it is what an
                     instructor opens this page for on a phone in front of a class. */}
                 <section className="order-2 rounded-lg border lg:order-1">
-                  <CardHead title="Students" count={klass.students.length} />
-                  {klass.students.length === 0 ? (
+                  <CardHead
+                    title={trial ? "Participants" : "Students"}
+                    count={klass.students.length}
+                  />
+                  {trial ? (
+                    klass.students.length === 0 ? (
+                      <div className="flex flex-col gap-1.5 px-6 py-12 text-center">
+                        <span className="text-[14px] font-medium">No participants yet</span>
+                        <span className="text-[13px] text-muted-foreground">
+                          Participants appear here once you make a batch.
+                        </span>
+                      </div>
+                    ) : (
+                      klass.students.map((s) => (
+                        <div
+                          key={s.id}
+                          className="grid grid-cols-[1fr_auto] items-center gap-3 border-b px-4 py-3 last:border-b-0"
+                        >
+                          <span className="truncate font-mono text-[13px] tracking-wider">
+                            {s.participant_code ?? s.name}
+                          </span>
+                          <span
+                            className={`whitespace-nowrap text-[13px] ${
+                              s.signed_in_at ? "text-muted-foreground" : "text-muted-foreground/70"
+                            }`}
+                          >
+                            {s.signed_in_at
+                              ? `Signed in ${formatShortDate(s.signed_in_at)}`
+                              : "Not signed in"}
+                          </span>
+                        </div>
+                      ))
+                    )
+                  ) : klass.students.length === 0 ? (
                     <div className="flex flex-col gap-1.5 px-6 py-12 text-center">
                       <span className="text-[14px] font-medium">No students yet</span>
                       <span className="text-[13px] text-muted-foreground">
@@ -184,6 +227,7 @@ export function ClassDetailPage() {
                 </section>
 
                 <div className="order-1 flex flex-col gap-5 lg:order-2">
+                  {!trial && (
                   <section className="rounded-lg border">
                     <CardHead
                       title="Join code"
@@ -204,6 +248,7 @@ export function ClassDetailPage() {
                       </div>
                     </div>
                   </section>
+                  )}
 
                   {/* Each reading leads to how that reading went in this class. */}
                   <section className="rounded-lg border">
@@ -268,7 +313,8 @@ export function ClassDetailPage() {
       {klass && dialog?.kind === "edit" && (
         <ClassFormDialog
           mode="edit"
-          initial={{ name: klass.name, section: klass.section }}
+          initial={{ name: klass.name, section: klass.section, mode: klass.mode }}
+          modeLocked={klass.mode_locked}
           onSubmit={edit}
           onCancel={close}
         />

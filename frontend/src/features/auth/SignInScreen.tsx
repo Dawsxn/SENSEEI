@@ -3,12 +3,43 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Button } from "../../components/ui/button";
 import { devLogin, getDevUsers } from "../../lib/api";
+import { ParticipantSignIn } from "../trial/ParticipantSignIn";
 import { useAuthConfig } from "./useAuth";
 
 export function SignInScreen() {
   const [params] = useSearchParams();
   const { data: config } = useAuthConfig();
   const error = params.get("error");
+
+  // The trial instance: participants sign in with their ID, and Google is the
+  // research team's way in, kept to a link under the card.
+  if (config?.trial_mode) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center px-4">
+        <div className="mb-6 text-[22px] font-semibold tracking-[-0.01em]">
+          SEN<span className="text-primary">SEE-I</span>
+        </div>
+        <div className="w-full max-w-[380px] rounded-lg border p-6 shadow-raised">
+          <ParticipantSignIn
+            notice={
+              error === "not_team"
+                ? "That account isn't on the research team."
+                : error === "oauth"
+                  ? "Sign-in didn't complete. Please try again."
+                  : undefined
+            }
+          />
+          {config.dev_bypass && <DevBypass />}
+        </div>
+        <p className="mt-4 text-[13px] text-muted-foreground">
+          Research team?{" "}
+          <a href="/auth/login" className="text-primary hover:underline">
+            Sign in with Google
+          </a>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col items-center justify-center px-4">

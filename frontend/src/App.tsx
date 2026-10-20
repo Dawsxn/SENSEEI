@@ -13,6 +13,8 @@ import { UploadReadingPage } from "./features/library/UploadReadingPage";
 import { SessionReviewPage } from "./features/review/SessionReviewPage";
 import { ReadingStepScreen } from "./features/tutoring/ReadingStepScreen";
 import { TutoringScreen } from "./features/tutoring/TutoringScreen";
+import { BatchPage } from "./features/trial/BatchPage";
+import { ParticipantsPage } from "./features/trial/ParticipantsPage";
 
 const signedIn = (page: ReactNode) => <RequireAuth>{page}</RequireAuth>;
 const instructor = (page: ReactNode) => signedIn(<RequireInstructor>{page}</RequireInstructor>);
@@ -41,6 +43,9 @@ const router = createBrowserRouter([
   { path: "/library", element: instructor(<LibraryListPage />) },
   { path: "/library/new", element: instructor(<UploadReadingPage />) },
   { path: "/library/:readingId", element: instructor(<LibraryReadingPage />) },
+  // Trial mode only; the API under them answers 404 anywhere else.
+  { path: "/participants", element: instructor(<ParticipantsPage />) },
+  { path: "/participants/:batchId", element: instructor(<BatchPage />) },
 ]);
 
 export default function App() {

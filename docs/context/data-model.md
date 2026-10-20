@@ -67,7 +67,13 @@ erDiagram
 
     ATTEMPT ||--|| ASSESSMENT : graded_by
     ASSESSMENT ||--o{ CRITERION_JUDGMENT : breaks_down
+
+    PARTICIPANT_BATCH ||--o{ PARTICIPANT : holds
+    PARTICIPANT ||--|| USER : "signs in as"
+    CLASS ||--o{ PARTICIPANT : "is the group of"
 ```
+
+The two `PARTICIPANT` tables exist only for the trial (`docs/context/trial.md`).
 
 ## Entities
 
@@ -83,7 +89,7 @@ both.
 | name | |
 | email | |
 | google_sub | Google account subject, the stable identifier from sign-in |
-| participant_identifier | Null for ordinary users. Set for consented study participants, see [Pseudonymisation](#pseudonymisation) |
+| participant_identifier | Null for ordinary users. On the trial instance, the participant's ID, see [participant](#participant) |
 | created_at | |
 
 Sign-in is Google OAuth, restricted to DLSU addresses. A non-DLSU Google account
@@ -98,6 +104,7 @@ cannot sign in at all, so enrolment is not the only gate.
 | name | The course, e.g. `STRAMA` |
 | section | The section, e.g. `K31`. Unique with name per instructor, ignoring case |
 | join_code | Generated on creation. Students enrol with it (§4.3.4) |
+| mode | `seei`, `chatbot` or `reading_only`. Always `seei` outside trial mode |
 | created_at | |
 
 **Students see one label, `STRAMA K31`.** Name and section are stored apart
@@ -127,6 +134,38 @@ can see (§4.3.4).
 | student_id | |
 | class_id | |
 | enrolled_at | |
+
+### participant_batch
+
+Trial mode only. The participant IDs made together for one sitting.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| instructor_id | The research team member who made it |
+| name | e.g. `Sitting 1` |
+| created_at | |
+| closed_at | Set when the sitting ends. Its IDs stop signing in |
+
+### participant
+
+Trial mode only. One participant ID, and the student it signs in as.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| batch_id | |
+| user_id | A student made for this ID: name is the ID, email is empty |
+| class_id | Their group. They are enrolled in it like any student |
+| code | `P-7K3Q-9TXM`, the join code alphabet. Unique |
+| position | The shuffled order the IDs were drawn in, which the slips print in |
+| signed_in_at | First sign-in |
+| clock_started_at | When their reading first opened. Their time runs from here |
+| voided_at | Set when the ID is voided. It stops signing in |
+
+**A participant is a student underneath.** The user row and the enrolment let the
+tutoring loop, the roster and the statistics treat them like anyone else. This
+table adds only what makes them a participant: the ID, the batch, and the clock.
 
 ### reading
 
@@ -232,7 +271,7 @@ One complete pass through the four SEE-I steps for one reading.
 | id | |
 | student_id | |
 | reading_id | |
-| status | in_progress, complete, or fallback |
+| status | in_progress, complete, fallback, or timed_out (trial mode: the clock ran out) |
 | current_step | State, Elaborate, Exemplify, or Illustrate |
 | started_at | |
 | ended_at | Null while in progress |
@@ -248,6 +287,10 @@ meaning of historical pass rates.
 Sessions are not resumable. A student who leaves mid-session confirms that it
 will be discarded, and the row is discarded with it. Nothing in `in_progress`
 survives the student walking away.
+
+A trial participant is the exception. They get one session, so a reload picks it
+back up from its transcript rather than starting another, and nothing they do
+discards it.
 
 A session with `status = fallback` is what raises the instructor's roster flag.
 The flag belongs to the session, not to the student: it is a fact about one
@@ -399,8 +442,9 @@ trial now runs on its own instance (`docs/context/trial.md`), where a participan
 signs in with their participant ID alone and the app never holds their name or
 email. Every record there is keyed to the ID from the start, so no substitution is
 needed at export, and deleting the study's data is deleting that instance's
-database. The `participant_identifier` column below is left in place until the
-trial's schema is built, which will decide whether it survives.
+database. The `participant_identifier` column survives in a narrower job: on the
+trial instance it holds the participant's ID, and it marks the user as a
+participant (see [participant](#participant)).
 
 That subset has to be identifiable, otherwise the study deletion in point 3
 cannot be carried out without destroying app data belonging to everyone else.

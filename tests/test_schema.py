@@ -47,6 +47,8 @@ EXPECTED_TABLES = {
     "assessment",
     "criterion_judgment",
     "tutor_message",
+    "participant_batch",
+    "participant",
 }
 
 

@@ -11,3 +11,8 @@ export function useMe() {
 export function useAuthConfig() {
   return useQuery({ queryKey: ["auth-config"], queryFn: getAuthConfig });
 }
+
+/** Whether this is the trial instance. The server decides; screens follow. */
+export function useTrialMode(): boolean {
+  return useAuthConfig().data?.trial_mode ?? false;
+}

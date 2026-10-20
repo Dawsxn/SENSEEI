@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
 from ..deps import require_instructor, require_student
-from ..models import User
+from ..models import ClassMode, User
 from ..schemas import (
     ClassDashboardOut,
     ClassDetailOut,
@@ -36,8 +36,10 @@ from ..services.class_service import (
     ClassNotFound,
     DuplicateClass,
     Fields,
+    ModeLocked,
     UnknownCode,
 )
+from ..settings import get_settings
 
 router = APIRouter(tags=["classes"])
 
@@ -45,6 +47,16 @@ NOT_FOUND = HTTPException(status_code=404, detail="class not found")
 DUPLICATE = HTTPException(
     status_code=409, detail="you already have a class with that name and section"
 )
+MODE_LOCKED = HTTPException(
+    status_code=409, detail="a participant has signed in, so the mode cannot change"
+)
+
+
+def _fields(body: ClassIn) -> Fields:
+    """The class as typed. The control groups' modes exist only in trial mode."""
+    if body.mode is not ClassMode.SEEI and not get_settings().trial_mode:
+        raise HTTPException(status_code=422, detail="only SEE-I classes outside the trial")
+    return Fields(body.name, body.section, body.mode)
 
 
 @router.get("/instructor/classes", response_model=list[ClassListItem])
@@ -63,9 +75,7 @@ async def create_class(
     db: AsyncSession = Depends(get_session),
 ) -> ClassListItem:
     try:
-        row = await class_service.create_class(
-            db, user.id, Fields(body.name, body.section)
-        )
+        row = await class_service.create_class(db, user.id, _fields(body))
     except DuplicateClass:
         raise DUPLICATE
     return ClassListItem(**row)
@@ -91,13 +101,13 @@ async def update_class(
     db: AsyncSession = Depends(get_session),
 ) -> ClassDetailOut:
     try:
-        row = await class_service.update_class(
-            db, user.id, class_id, Fields(body.name, body.section)
-        )
+        row = await class_service.update_class(db, user.id, class_id, _fields(body))
     except ClassNotFound:
         raise NOT_FOUND
     except DuplicateClass:
         raise DUPLICATE
+    except ModeLocked:
+        raise MODE_LOCKED
     return ClassDetailOut(**row)
 
 

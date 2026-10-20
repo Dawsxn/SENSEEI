@@ -19,7 +19,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from .db import dispose, get_session
 from .frontend import mount_frontend
-from .routers import auth, classes, library, readings, rubric, sessions
+from .routers import auth, classes, library, readings, rubric, sessions, trial
 from .settings import Settings, get_settings
 
 
@@ -51,6 +51,7 @@ app.include_router(library.router)
 app.include_router(readings.router)
 app.include_router(rubric.router)
 app.include_router(sessions.router)
+app.include_router(trial.router)
 
 
 @app.get("/health")

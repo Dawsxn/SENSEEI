@@ -73,6 +73,25 @@ design changes, so it always matches.
 | Reading in a class, no sessions | [png/08b-class-reading-no-sessions.png](png/08b-class-reading-no-sessions.png) |
 | Reading in a class, no students | [png/08b-class-reading-no-students.png](png/08b-class-reading-no-students.png) |
 | Class, phone | [png/08c-mobile-class.png](png/08c-mobile-class.png) |
+| Trial: sign in with an ID | [png/09-trial-sign-in.png](png/09-trial-sign-in.png) |
+| Trial: sign in, wrong ID | [png/09-trial-sign-in-wrong.png](png/09-trial-sign-in-wrong.png) |
+| Trial: sign in, ID no longer active | [png/09-trial-sign-in-closed.png](png/09-trial-sign-in-closed.png) |
+| Trial: reading, with the countdown | [png/09b-trial-reading.png](png/09b-trial-reading.png) |
+| Trial: tutoring, with the countdown | [png/09b-trial-tutoring.png](png/09b-trial-tutoring.png) |
+| Trial: the last five minutes | [png/09b-trial-last-minutes.png](png/09b-trial-last-minutes.png) |
+| Trial: done early | [png/09c-trial-done.png](png/09c-trial-done.png) |
+| Trial: time's up | [png/09c-trial-time-up.png](png/09c-trial-time-up.png) |
+| Trial: classes with a mode | [png/10-trial-classes.png](png/10-trial-classes.png) |
+| Trial: new class | [png/10-trial-new-class.png](png/10-trial-new-class.png) |
+| Trial: a class | [png/10a-trial-class.png](png/10a-trial-class.png) |
+| Trial: a reading in a class | [png/10a-trial-class-reading.png](png/10a-trial-class-reading.png) |
+| Trial: participant batches | [png/10b-participants.png](png/10b-participants.png) |
+| Trial: no batches yet | [png/10b-participants-empty.png](png/10b-participants-empty.png) |
+| Trial: new batch | [png/10b-new-batch.png](png/10b-new-batch.png) |
+| Trial: a batch | [png/10c-batch.png](png/10c-batch.png) |
+| Trial: close a batch | [png/10c-batch-close.png](png/10c-batch-close.png) |
+| Trial: void an ID | [png/10c-batch-void.png](png/10c-batch-void.png) |
+| Trial: printed slips | [png/10d-slips.png](png/10d-slips.png) |
 | Reading in a class, phone | [png/08c-mobile-class-reading.png](png/08c-mobile-class-reading.png) |
 
 Do not open a `.dc.html` in a browser expecting to see the screen. It renders a

@@ -60,6 +60,7 @@ from ..models import (
 from ..orchestrator import (
     FALLBACK_MESSAGE,
     MAX_ATTEMPTS,
+    TRIAL_FALLBACK_MESSAGE,
     MOVES,
     Decision,
     attempts_left,
@@ -67,6 +68,7 @@ from ..orchestrator import (
     resolve,
 )
 from ..settings import get_settings
+from . import trial_service
 
 
 def _sse(event: str, data: dict) -> str:
@@ -207,6 +209,11 @@ async def start_session(
         if reading is None:
             yield _sse("error", {"detail": "reading not found"})
             return
+        # Trial mode: one session per participant, inside their time.
+        refused = await trial_service.refuse_start(db, user_id)
+        if refused is not None:
+            yield _sse("error", {"detail": refused})
+            return
 
         sess = Session(
             student_id=user_id,
@@ -270,6 +277,21 @@ async def submit_response(
             .where(Attempt.session_id == sess.id, Attempt.step == step)
         )
         attempt_number = (prior or 0) + 1
+
+        # Trial mode: an answer sent after time is up is not graded. The session
+        # has just been ended by time, and the screen is told so.
+        if await trial_service.out_of_time(db, user_id):
+            yield _sse(
+                "state",
+                {
+                    "status": SessionStatus.TIMED_OUT.value,
+                    "current_step": step.value,
+                    "terminal": True,
+                    "attempts_used": prior or 0,
+                    "attempts_left": attempts_left(prior or 0),
+                },
+            )
+            return
 
         # Grade first. A provider failure here must not consume an attempt, so
         # nothing is persisted until the assessment succeeds.
@@ -335,9 +357,10 @@ async def submit_response(
             yield ev
 
         if decision.fallback:
-            async for ev in _emit_static_message(
-                db, sess.id, step, FALLBACK_MESSAGE
-            ):
+            fallback = (
+                TRIAL_FALLBACK_MESSAGE if get_settings().trial_mode else FALLBACK_MESSAGE
+            )
+            async for ev in _emit_static_message(db, sess.id, step, fallback):
                 yield ev
 
         sess.status = decision.new_status

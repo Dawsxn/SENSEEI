@@ -28,13 +28,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from agents.figures import Figure, FigureDescriber
 
 from ..models import (
+    FINISHED_STATUSES,
     Class,
     CoreComponent,
     Reading,
     ReadingAssignment,
     ReadingFile,
     Session,
-    SessionStatus,
     class_label,
     utcnow,
 )
@@ -258,9 +258,7 @@ async def list_readings(db: AsyncSession, instructor_id: uuid.UUID) -> list[dict
         .select_from(Session)
         .where(
             Session.reading_id == Reading.id,
-            Session.status.in_(
-                [SessionStatus.COMPLETE.value, SessionStatus.FALLBACK.value]
-            ),
+            Session.status.in_(FINISHED_STATUSES),
         )
         .scalar_subquery()
     )

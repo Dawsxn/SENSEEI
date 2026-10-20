@@ -167,6 +167,22 @@
       "y": 5560,
       "w": 390,
       "h": 844
+    },
+    {
+      "file": "TrialSession.dc.html",
+      "title": "9 · Trial participant (8 states)",
+      "x": 0,
+      "y": 6720,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "TrialParticipants.dc.html",
+      "title": "10 · Trial research team (11 states)",
+      "x": 1540,
+      "y": 6720,
+      "w": 1360,
+      "h": 900
     }
   ],
   "annotations": [
@@ -232,6 +248,13 @@
       "y": 5410,
       "w": 520,
       "text": "Classes → a class → a reading in that class → a student.\n\nStatistics are per class and per reading, never per reading alone: a reading's numbers only mean something inside the class that read it.\n\nThe flag is the fallback's other half. A session that ran out of attempts is the one an instructor has to act on."
+    },
+    {
+      "id": "trial-note",
+      "x": 0,
+      "y": 7780,
+      "w": 520,
+      "text": "Trial instance only (docs/context/trial.md). Participants sign in with an ID from a printed slip; the slips are shuffled and never show the class.\n\nThe clock starts when the reading opens and runs 40 minutes. A reload picks the one session back up."
     }
   ],
   "launch": {

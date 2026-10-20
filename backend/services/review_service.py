@@ -17,6 +17,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import (
+    FINISHED_STATUSES,
     STEP_ORDER,
     Assessment,
     Attempt,
@@ -72,9 +73,7 @@ async def list_sessions_for_reading(
             .where(
                 Session.student_id == user_id,
                 Session.reading_id == reading_id,
-                Session.status.in_(
-                    [SessionStatus.COMPLETE.value, SessionStatus.FALLBACK.value]
-                ),
+                Session.status.in_(FINISHED_STATUSES),
             )
             .order_by(Session.started_at)
         )
@@ -182,9 +181,7 @@ async def get_transcript(
         .where(
             Session.student_id == sess.student_id,
             Session.reading_id == sess.reading_id,
-            Session.status.in_(
-                [SessionStatus.COMPLETE.value, SessionStatus.FALLBACK.value]
-            ),
+            Session.status.in_(FINISHED_STATUSES),
             Session.started_at <= sess.started_at,
         )
     )

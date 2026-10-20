@@ -56,3 +56,13 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
+
+/* Printing the participant slips: the page prints whole, not clipped to the
+   window the app otherwise fills. */
+@media print {
+  html,
+  body,
+  #root {
+    height: auto;
+  }
+}

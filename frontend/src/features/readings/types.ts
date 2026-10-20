@@ -21,7 +21,7 @@ export interface ReadingDetail {
   has_file: boolean;
 }
 
-export type SessionStatus = "in_progress" | "complete" | "fallback";
+export type SessionStatus = "in_progress" | "complete" | "fallback" | "timed_out";
 
 export interface ReadingSessionItem {
   id: string;

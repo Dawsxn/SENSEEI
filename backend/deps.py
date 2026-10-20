@@ -20,6 +20,8 @@ from agents.figures import FigureDescriber
 from .agent_runtime import Agents, get_agents, get_figure_describer
 from .db import get_session
 from .models import Role, User
+from .services import trial_service
+from .settings import get_settings
 
 
 async def get_current_user(
@@ -37,6 +39,18 @@ async def get_current_user(
     if user is None:
         # The session points at a user that no longer exists.
         raise HTTPException(status_code=401, detail="not authenticated")
+    if user.participant_identifier is not None:
+        # A trial participant is signed in only while their ID works: closing
+        # the batch or voiding the ID signs them out on their next request, and
+        # outside trial mode an ID never works at all.
+        participant = await trial_service.participant_for(session, user.id)
+        if (
+            not get_settings().trial_mode
+            or participant is None
+            or not await trial_service.is_active(session, participant)
+        ):
+            request.session.clear()
+            raise HTTPException(status_code=401, detail="not authenticated")
     return user
 
 

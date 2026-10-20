@@ -3,10 +3,17 @@
 How the app supports the human evaluation: the three-group randomized controlled
 trial in the manuscript (§4.6), run on its own instance with `TRIAL_MODE` on.
 
-Nothing here is built yet. This records what was decided and why, so the trial
-work can be done as ordinary pull requests against an agreed plan. The study
-design itself (sittings, readings, the tests outside the app) is not final, so
-the app is built to fit whatever it settles on rather than one arrangement.
+This records what was decided and why, so the trial work can be done as ordinary
+pull requests against an agreed plan. The study design itself (sittings,
+readings, the tests outside the app) is not final, so the app is built to fit
+whatever it settles on rather than one arrangement.
+
+**Built so far:** `TRIAL_MODE`, class modes, participant IDs in batches, sign-in
+by ID, one session per participant, and the 40 minutes (steps 3 and 4 of the
+order of work below). The control groups' screens, the event log, export and the
+instance itself are still to come. Proposed changes to the study's procedure and
+analysis, for the group to discuss, are in
+`docs/thesis/human-evaluation-revisions.md`.
 
 ## The gate
 
@@ -49,7 +56,8 @@ used for real beyond the thesis.
 
 ## `TRIAL_MODE`
 
-One setting, read at startup, on for the trial instance and off everywhere else.
+One setting, `TRIAL_MODE=true`, read at startup, on for the trial instance and
+off everywhere else. `TRIAL_MINUTES` (default 40) sets a participant's time.
 One flag rather than several, because its rules come as a set: there is no useful
 trial with one session per participant but no time limit, and every extra switch
 is another combination that could be set wrong on the day.
@@ -67,7 +75,7 @@ What it changes:
 
 | | Ordinary | Trial mode |
 | --- | --- | --- |
-| Who signs in | DLSU Google accounts | Participants by ID; the research team by Google |
+| Who signs in | DLSU Google accounts | Participants by ID; the research team by Google, and no one else |
 | Sessions per reading | Unlimited | One per participant |
 | After a session ends | Start a new attempt | Nothing further |
 | Time | No limit | 40 minutes, with a countdown |
@@ -102,15 +110,26 @@ is collected.
 
 The trial instance honours this by **never holding identity at all**:
 
-1. **The team generates IDs** in the app before a sitting, as a batch for one
-   class: "15 for the SEE-I class". Each looks like `P-7K3Q-9TXM`, in the same
-   unambiguous alphabet as join codes. They are printed on slips.
-2. **At consent**, the researcher writes the participant's ID on their consent
-   form. That form is the only place an ID meets a name.
-3. **At the computer**, the participant types their ID. It is their whole sign-in:
+1. **The team makes a batch of IDs** on the Participants tab before a sitting,
+   choosing how many each class gets: "5 for each of the three classes". Each ID
+   looks like `P-7K3Q-9TXM`, in the same unambiguous alphabet as join codes, and
+   nothing in it hints at the group. The IDs are drawn in a shuffled order.
+2. **The slips are printed** in that order: the ID and where to enter it, never
+   the class. Handing them out from the top of the stack assigns the groups at
+   random, in equal numbers per sitting (block randomization).
+3. **At consent**, the participant draws a slip and the researcher writes the ID
+   on both consent copies. That form is the only place an ID meets a name, and
+   the participant does not know their group until they sign in.
+4. **At the computer**, the participant types their ID. It is their whole sign-in:
    no Google, no username, no password. It drops them into their class's mode.
-4. **After the sitting**, the team closes the batch. Its IDs stop working, so
-   nobody can return later and change their data.
+5. **During the sitting**, a spoiled slip or someone who leaves is handled by
+   voiding that one ID. It stops working at once.
+6. **After the sitting**, the team closes the batch. Its IDs stop working, anyone
+   still signed in with one is signed out, and any session still going ends as if
+   time ran out, so nobody can return later and change their data.
+
+A class's mode can be changed until its first participant signs in, then it is
+fixed.
 
 An ID works because it is random, only issued IDs exist, and a batch is open only
 for its sitting. A password would add a second thing to get wrong in the lab and
@@ -122,16 +141,20 @@ can learn who took part (§4.6.3).
 
 This also takes Google's sign-in settings out of the trial entirely: participants
 never meet Google's consent screen, so its publishing status and test-user list
-cannot block anyone on the day.
+cannot block anyone on the day. In trial mode a Google account that is not on
+`INSTRUCTOR_EMAILS` is turned away, so the only way in for anyone else is an ID.
 
 ## A participant's 40 minutes
 
 - **The clock starts when the reading opens.** The 40 minutes cover reading as
-  well as the activity, as the manuscript's intervention phase does.
+  well as the activity, as the manuscript's intervention phase does. The server
+  holds the clock; the countdown only draws it, so a reload does not restart it
+  and nothing the browser sends buys more time.
 - **A countdown is visible**, the same in all three groups, so no group is
-  treated differently.
+  treated differently. It turns amber in the last five minutes.
 - **At 40:00 everything stops.** The screen says time is up, and whatever was in
-  progress is recorded as ended by time. That ending is kept and counted: the
+  progress is recorded as ended by time (`timed_out`, at the deadline itself).
+  An answer sent after the deadline is not graded. That ending is kept and counted: the
   analysis is intention-to-treat (§4.6.2), so a session cut off at Exemplify
   counts exactly as one that reached Illustrate.
 - **Finishing early ends the activity, not the sitting.** A SEE-I participant who
@@ -141,13 +164,22 @@ cannot block anyone on the day.
 
 ### The SEE-I group
 
-The ordinary tutoring loop, once. No "Start a new attempt" after it ends.
+The ordinary tutoring loop, once. No "Start a new attempt" after it ends, no way
+out of the session, and no class label on screen, since a class name could name
+the group. A reload picks the session back up. Running out of attempts ends it
+like finishing does, without the usual "your instructor has been notified".
 
 ### The chatbot group (active control)
 
 A general-purpose chat with **no pedagogical prompt**, on **the same model** and
 settings as SENSEE-I's agents (§4.6.2), beside the same reading. Every message is
 recorded with its time, as a SEE-I session is.
+
+**The chatbot is not given the reading.** It knows only what the participant
+tells it; they may paste text from the reading in themselves. That is what
+unguided use looks like, which is what this group stands for. The cost is a
+second difference between the two AI groups, which the manuscript should state;
+the event log records how many chatbot participants pasted from the reading.
 
 ### The reading-only group (passive control)
 
@@ -271,10 +303,6 @@ Each step with screens starts with mockups, as every screen in this app has.
 
 ## Open questions
 
-- **Does the chatbot see the reading?** A general-purpose chatbot knows only what
-  it is told, so participants would have to paste the text in. Giving it the
-  reading automatically is more help than "unguided" may mean. A study-design
-  call.
 - **The consent wording**, including the event log and the outside AI service,
   signed off by the adviser and the ethics application.
 - **The sittings and readings.** The app does not need these settled; the classes

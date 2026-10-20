@@ -6,7 +6,7 @@
  * because they are user-facing vocabulary the UI shows as its own element. */
 
 export type SeeiStep = "State" | "Elaborate" | "Exemplify" | "Illustrate";
-export type SessionStatus = "in_progress" | "complete" | "fallback";
+export type SessionStatus = "in_progress" | "complete" | "fallback" | "timed_out";
 
 /** The situation a tutor message was written for. `fallback` is the static copy. */
 export type MessageKind =
