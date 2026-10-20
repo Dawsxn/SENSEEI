@@ -24,7 +24,12 @@ A session cannot be paused. If a student tries to leave mid-session, the app ask
 them to confirm, warning that the session will be discarded and cannot be
 resumed. On confirmation the session is discarded.
 
-There is no time limit on a session in the app.
+There is no time limit on a session in the app, except in trial mode.
+
+**In trial mode** (`docs/context/trial.md`) three of these rules change: a
+participant gets exactly one session, with no new attempt after it ends; the 40
+minutes from opening the reading are a hard limit, with a countdown; and a session
+cut off by time is kept and counted, never discarded.
 
 ## Entering a session
 
