@@ -20,7 +20,7 @@ from agents.providers.base import LLMProvider
 
 from ..db import get_session
 from ..deps import get_chatbot_dep, require_instructor, require_student
-from ..models import User
+from ..models import User, utcnow
 from ..schemas import (
     BatchIn,
     BatchListItem,
@@ -30,7 +30,8 @@ from ..schemas import (
     TrialEventsIn,
     TrialStatusOut,
 )
-from ..services import chat_service, trial_service
+from ..services import chat_service, export_service, trial_service
+from ..services.detach import detached
 from ..services.trial_service import (
     BatchNotFound,
     InvalidBatch,
@@ -128,7 +129,7 @@ async def chat(
 ) -> StreamingResponse:
     """Send the chatbot a message and stream its reply."""
     return StreamingResponse(
-        chat_service.send(user.id, body.text, model),
+        detached(chat_service.send(user.id, body.text, model)),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
@@ -136,6 +137,42 @@ async def chat(
 
 # --------------------------------------------------------------------------- #
 # the research team
+
+
+@router.get("/instructor/export")
+async def export(
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> Response:
+    """Everything the trial recorded, as a zip of spreadsheet files keyed by
+    participant ID."""
+    try:
+        data = await export_service.export(db)
+    except TrialOff:
+        raise NOT_FOUND
+    day = utcnow().date().isoformat()
+    return Response(
+        content=data,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="senseei-trial-{day}.zip"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@router.delete("/instructor/participants/{code}", status_code=204)
+async def withdraw(
+    code: str,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> Response:
+    """A participant withdraws: everything recorded for their ID is deleted."""
+    try:
+        await trial_service.withdraw(db, code)
+    except (TrialOff, UnknownParticipant):
+        raise NOT_FOUND
+    return Response(status_code=204)
 
 
 @router.get("/instructor/batches", response_model=list[BatchListItem])

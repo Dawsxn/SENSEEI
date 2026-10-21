@@ -5,7 +5,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { ChatText, parseBlocks } from "./ChatText";
-import { __queue, logTrial } from "./trialLog";
+import { __queue, logTrial, setTrialContext } from "./trialLog";
 import { initialChat, reduceChat } from "./useChatbot";
 
 describe("a chatbot reply", () => {
@@ -75,5 +75,16 @@ describe("the event log", () => {
     expect(event.kind).toBe("paste");
     expect(event.data).toEqual({ length: 412 });
     expect(Date.now() - Date.parse(event.at)).toBeLessThan(5000);
+  });
+
+  it("stamps each event with the SEE-I step and attempt it happened on", () => {
+    __queue.enable();
+    setTrialContext({ step: "Elaborate", attempt: 2 });
+    logTrial("panel_opened", { panel: "rubric" });
+    setTrialContext({});
+    logTrial("tab_left");
+    const [panel, tab] = __queue.peek();
+    expect(panel.data).toEqual({ panel: "rubric", step: "Elaborate", attempt: 2 });
+    expect(tab.data).toBeUndefined();
   });
 });

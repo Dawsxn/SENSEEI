@@ -115,3 +115,31 @@ def test_qa_switching_does_not_exist_in_production():
 def test_an_empty_provider_setting_means_the_free_mock(given, expected):
     # A dashboard leaves an unset variable empty, and empty must not cost money.
     assert Settings(llm_provider=given).llm_provider == expected
+
+
+# --------------------------------------------------------------------------- #
+# the trial instance
+
+
+def test_the_trial_blueprint_cannot_be_entered_without_an_id():
+    """The trial instance's settings that keep anyone from acting as a
+    participant, or the app changing mid-trial, are in the file, not left to
+    whoever fills in the dashboard."""
+    from pathlib import Path
+
+    import yaml
+
+    blueprint = yaml.safe_load(Path("render-trial.yaml").read_text(encoding="utf-8"))
+    (service,) = blueprint["services"]
+    env = {e["key"]: e.get("value") for e in service["envVars"]}
+
+    assert env["TRIAL_MODE"] == "true"
+    assert env["ENVIRONMENT"] == "production"      # no dev picker, no QA switching
+    assert env["AUTH_DEV_BYPASS"] == "false"
+    assert "QA_EMAILS" not in env
+    assert env["SEED_IF_EMPTY"] == "false"         # no fake students in the study's data
+    assert service["autoDeploy"] is False          # frozen between sittings
+    assert service["plan"] != "free"               # the free plan sleeps mid-sitting
+    assert blueprint["databases"][0]["plan"] != "free"
+    settings = Settings(environment=env["ENVIRONMENT"], auth_dev_bypass=False, qa_emails="a@dlsu.edu.ph")
+    assert settings.dev_bypass_enabled is False and settings.qa_allowlist == set()

@@ -92,6 +92,8 @@ design changes, so it always matches.
 | Trial: close a batch | [png/10c-batch-close.png](png/10c-batch-close.png) |
 | Trial: void an ID | [png/10c-batch-void.png](png/10c-batch-void.png) |
 | Trial: printed slips | [png/10d-slips.png](png/10d-slips.png) |
+| Trial: download data | [png/10e-download.png](png/10e-download.png) |
+| Trial: withdraw a participant | [png/10e-withdraw.png](png/10e-withdraw.png) |
 | Trial chatbot: before you start | [png/11-chatbot-intro.png](png/11-chatbot-intro.png) |
 | Trial chatbot: empty | [png/11-chatbot.png](png/11-chatbot.png) |
 | Trial chatbot: chatting | [png/11-chatbot-chatting.png](png/11-chatbot-chatting.png) |

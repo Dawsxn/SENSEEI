@@ -427,8 +427,9 @@ class TrialEventIn(BaseModel):
     kind: str = Field(max_length=32)
     #: When it happened, by the participant's browser.
     at: datetime
-    #: Small and specific to the kind: a panel name, a page, a paste's length.
-    data: dict[str, str | int | bool] | None = Field(default=None, max_length=4)
+    #: Small and specific to the kind: a panel name, a page, a paste's length,
+    #: and in a SEE-I session the step and attempt it happened on.
+    data: dict[str, str | int | bool] | None = Field(default=None, max_length=6)
 
 
 class TrialEventsIn(BaseModel):

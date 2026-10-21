@@ -10,8 +10,9 @@ whatever it settles on rather than one arrangement.
 
 **Built so far:** `TRIAL_MODE`, class modes, participant IDs in batches, sign-in
 by ID, one session per participant, the 40 minutes, the two control groups'
-screens and the event log (steps 3 to 6 of the order of work below). Export and
-the instance itself are still to come. Proposed changes to the study's procedure and
+screens, the event log, export, withdrawal by ID, the reliability fixes and the
+instance's Blueprint (steps 3 to 9 of the order of work below). What is left is
+standing it up, the dry run, and the trial itself. Proposed changes to the study's procedure and
 analysis, for the group to discuss, are in
 `docs/thesis/human-evaluation-revisions.md`.
 
@@ -239,6 +240,12 @@ only it can see in batches every few seconds, and once more as the page closes;
 the server records what only it knows. Unknown kinds are refused, and a browser
 clock more than an hour out is replaced by the server's.
 
+Every event from a SEE-I participant's session also carries the `step` they were
+on and the `attempt` they were about to make (`{"panel": "rubric", "step":
+"Elaborate", "attempt": 2}`), and every event from the reading step carries
+`"step": "Reading"`, so a row reads on its own without lining it up against the
+transcript.
+
 | Event | For |
 | --- | --- |
 | Event (`kind`) | For |
@@ -305,9 +312,48 @@ cover yet.
 
 ## Export
 
-A handful of spreadsheet files, all keyed by participant ID: participants (ID,
-group, class, sitting), sessions, attempts, criterion judgments, messages, and
-events. They open directly in Excel, SPSS, R or Python.
+**Download data** on the Participants tab gives one zip, `senseei-trial-<date>.zip`,
+of spreadsheet files, all keyed by participant ID, with a README saying what each
+holds:
+
+| File | One row per |
+| --- | --- |
+| `participants.csv` | ID: batch, class, group, signed in, reading opened, Done, time ran out, voided |
+| `sessions.csv` | SEE-I session: how it ended, the last step, and the versions that graded it |
+| `attempts.csv` | SEE-I answer, with its verdict |
+| `criteria.csv` | criterion judged on an answer, with the reason |
+| `tutor_messages.csv` | thing the tutor said, with its dialogue moves |
+| `chat_messages.csv` | chatbot message, either side |
+| `events.csv` | event in the log |
+
+They open directly in Excel, SPSS, R or Python; times are UTC. No file holds a
+name or an email, since the instance never has any. Every column, and the
+measures they give, are in `docs/context/trial-export.md`. Every participant from every
+batch is included, whoever on the team made the batch.
+
+## Withdrawal
+
+A participant who withdraws gives the team their ID (or their name, which the
+team looks up on the consent form). **Withdraw a participant** on the
+Participants tab takes the ID and, after asking, deletes everything recorded for
+it: the sessions and all they hold, the chat, the event log, and the ID itself.
+It cannot be undone. A withdrawal after an export means deleting their rows from
+that export by hand too.
+
+## Reliability
+
+Two things that could have cost a participant their one session:
+
+- **A dropped connection.** A turn runs to the end and saves everything even if
+  the browser stops listening partway (a closed lid, a reload mid-reply). The
+  participant finds it all there when they come back.
+- **A broken reply.** Where the session goes next (the next step, a retry, the
+  end) is saved before the reply is written, so a reply that fails costs the
+  message, not the participant's place. An opening question that never arrives
+  leaves no session behind, so the participant can start again.
+
+Nothing deletes an unfinished session. A participant cannot leave theirs, and one
+cut off by time or by the batch closing ends `timed_out` and is kept.
 
 ## The order of work
 
@@ -323,8 +369,9 @@ events. They open directly in Excel, SPSS, R or Python.
 7. **Export, and delete by ID.**
 8. **Reliability:** the dropped-connection bug, and abandoned sessions handled the
    trial's way (kept, never deleted).
-9. **The trial instance** in `render.yaml`: paid server and database, no automatic
-   deploys, pinned to a release.
+9. **The trial instance** in `render-trial.yaml`, a Blueprint of its own so it
+   costs nothing until created: paid server and database, production rules, no
+   automatic deploys, deploying `main`.
 10. **Stand it up:** release, the instance, a paid Gemini key, the classes and the
     reading.
 11. **A dry run** through all three groups, to set the exclusion cut-offs. Then

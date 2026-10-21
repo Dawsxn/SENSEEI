@@ -30,6 +30,7 @@ from ..schemas import (
     SubmitResponseIn,
 )
 from ..services import review_service, session_service
+from ..services.detach import detached
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
@@ -46,7 +47,7 @@ async def start_session(
 ) -> StreamingResponse:
     """Start a session for a reading and stream the opening Prompt."""
     return StreamingResponse(
-        session_service.start_session(user.id, body.reading_id, agents),
+        detached(session_service.start_session(user.id, body.reading_id, agents)),
         media_type="text/event-stream",
         headers=_SSE_HEADERS,
     )
@@ -61,7 +62,7 @@ async def submit_response(
 ) -> StreamingResponse:
     """Submit one attempt; stream the assessment result and the Tutor's reply."""
     return StreamingResponse(
-        session_service.submit_response(user.id, session_id, body.text, agents),
+        detached(session_service.submit_response(user.id, session_id, body.text, agents)),
         media_type="text/event-stream",
         headers=_SSE_HEADERS,
     )

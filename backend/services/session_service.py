@@ -233,11 +233,21 @@ async def start_session(
         yield _sse("session", _session_payload(sess, reading.title))
 
         components = await _components(db, reading_id)
+        failed = False
         async for ev in _stream_tutor_message(
             db, agents, sess.id, reading.content, components,
             SeeiStep.STATE, opening_situation(),
         ):
+            failed = failed or ev.startswith("event: error")
             yield ev
+        if failed:
+            # A session whose opening question never arrived has not begun:
+            # nothing was asked and nothing answered. Removing it lets the
+            # student start again, which matters most to a trial participant,
+            # who only gets one.
+            await db.delete(sess)
+            await db.commit()
+            return
         await db.commit()
 
         yield _sse(
@@ -348,6 +358,16 @@ async def submit_response(
 
         decision: Decision = resolve(step, attempt_number, verdict)
 
+        # Where the session goes next is settled before any of the reply is
+        # written. A reply that breaks off partway, or a provider that fails,
+        # then costs the student the message, not their place in the loop: a
+        # pass is never left looking like an attempt still to be answered.
+        sess.status = decision.new_status
+        sess.current_step = decision.new_current_step
+        if decision.terminal:
+            sess.ended_at = utcnow()
+        await db.commit()
+
         left = attempts_left(attempt_number)
         async for ev in _stream_tutor_message(
             db, agents, sess.id, reading.content, components, step,
@@ -365,11 +385,6 @@ async def submit_response(
             )
             async for ev in _emit_static_message(db, sess.id, step, fallback):
                 yield ev
-
-        sess.status = decision.new_status
-        sess.current_step = decision.new_current_step
-        if decision.terminal:
-            sess.ended_at = utcnow()
         await db.commit()
 
         # A pass that advanced owes the opening Prompt of the new step.

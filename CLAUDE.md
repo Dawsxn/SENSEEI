@@ -47,7 +47,8 @@ the LLM, once per reading, to describe its figures; it is not an agent (see
   (libraries, auth, deployment), `design-system.md` (tokens, type scale,
   component conventions), and `trial.md` (how the app supports the human
   evaluation: the trial instance, `TRIAL_MODE`, participant IDs, what is recorded,
-  and the order of work). Open these before writing app code. They record
+  and the order of work), with `trial-export.md` listing every file and column of
+  the trial's data export. Open these before writing app code. They record
   decisions that are not derivable from the codebase.
 - `backend/` — the FastAPI app: `settings.py` (environment config), `db.py`
   (async engine and the per-request session), `main.py` (the app), `models/`

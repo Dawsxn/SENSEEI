@@ -32,7 +32,7 @@ import secrets
 import uuid
 from datetime import datetime, timedelta
 
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import (
@@ -626,3 +626,24 @@ async def void_participant(
         participant.voided_at = utcnow()
         await db.commit()
     return await get_batch(db, instructor_id, batch_id)
+
+
+async def withdraw(db: AsyncSession, raw_code: str) -> str:
+    """Delete everything recorded for one participant ID. Returns the ID.
+
+    For a participant who withdraws. Their student row goes, and the database
+    takes everything under it with it: the enrolment, the sessions and all they
+    hold, the chat, the event log, and the ID itself. The research team can
+    withdraw anyone, whoever made the batch, as any of them may be the one a
+    participant asks.
+    """
+    require_trial()
+    participant = await db.scalar(
+        select(Participant).where(Participant.code == normalize_code(raw_code))
+    )
+    if participant is None:
+        raise UnknownParticipant
+    code = participant.code
+    await db.execute(delete(User).where(User.id == participant.user_id))
+    await db.commit()
+    return code

@@ -153,6 +153,15 @@ then frozen, with a database that holds only study participants and is deleted
 two years after the defense. It is not a staging tier; it is where the study
 happens. `docs/context/trial.md` has the whole of it.
 
+It is described by `render-trial.yaml`, a Blueprint separate from `render.yaml`
+so merging it creates nothing. To create it: **New > Blueprint**, this
+repository, Blueprint file `render-trial.yaml`; then fill in the values it asks
+for (`APP_BASE_URL`, the Google client, `INSTRUCTOR_EMAILS`, and a paid-tier
+`GEMINI_API_KEY`), and add the instance's `/auth/callback` to the Google client's
+redirect URIs. It runs on paid plans, with production rules (no dev sign-in, no
+QA switching), no seed, and no automatic deploys. Delete both its services once
+the export is safely stored.
+
 ### Seeding
 
 A student sees nothing until an instructor has created a class and uploaded a

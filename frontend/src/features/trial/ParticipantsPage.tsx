@@ -1,19 +1,23 @@
 /** The research team's participant IDs, one batch per sitting.
  *
  * Laid out like the Classes page: a heading with a green add button, and a
- * table, or an empty state holding the button when there is nothing yet. */
+ * table, or an empty state holding the button when there is nothing yet.
+ *
+ * Also where the trial's data leaves the app (Download data) and where a
+ * participant who withdraws is deleted. */
 
 import { useState } from "react";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Download, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
 import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
-import { createBatch } from "../../lib/api";
+import { TRIAL_EXPORT_URL, createBatch } from "../../lib/api";
 import { formatShortDate } from "../../lib/format";
 import { NewBatchDialog } from "./NewBatchDialog";
+import { WithdrawCard } from "./WithdrawCard";
 import type { NewBatch } from "./types";
 import { useBatches } from "./useTrial";
 
@@ -38,11 +42,24 @@ export function ParticipantsPage() {
           <div className="mb-5 flex h-9 items-center justify-between">
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Participants</h1>
             {batches.length > 0 && (
-              <Tooltip text="New batch" align="left">
-                <Button variant="accent" size="icon" aria-label="New batch" onClick={() => setCreating(true)}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </Tooltip>
+              <div className="flex gap-2">
+                {/* A plain link: the browser downloads the zip itself. */}
+                <Tooltip text="Download data" align="left">
+                  <a
+                    href={TRIAL_EXPORT_URL}
+                    download
+                    aria-label="Download data"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border bg-background transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Download className="h-4 w-4" />
+                  </a>
+                </Tooltip>
+                <Tooltip text="New batch" align="left">
+                  <Button variant="accent" size="icon" aria-label="New batch" onClick={() => setCreating(true)}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </Tooltip>
+              </div>
             )}
           </div>
 
@@ -101,6 +118,8 @@ export function ParticipantsPage() {
               ))}
             </div>
           )}
+
+          {batches.length > 0 && <WithdrawCard />}
         </div>
       </main>
 

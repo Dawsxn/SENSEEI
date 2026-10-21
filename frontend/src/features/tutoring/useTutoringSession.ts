@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
 
 import { getSession, getTranscript, startSession, submitResponse } from "../../lib/api";
+import { logTrial } from "../trial/trialLog";
 import type { SessionTranscript } from "../review/types";
 import type {
   MessageKind,
@@ -221,6 +222,11 @@ export function useTutoringSession(readingId: string, options: Options = {}) {
   const consume = useCallback(async (stream: AsyncGenerator<StreamEvent>) => {
     for await (const event of stream) {
       dispatch({ type: "event", event });
+      // A turn's last event: the reply has finished arriving, and the student
+      // can read it. Logged here, not from the screen's state, so picking a
+      // session back up after a reload is not mistaken for a new reply. (A
+      // no-op unless this is a trial participant.)
+      if (event.type === "state") logTrial("reply_shown");
     }
   }, []);
 

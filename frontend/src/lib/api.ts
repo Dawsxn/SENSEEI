@@ -323,5 +323,10 @@ export const createBatch = (batch: NewBatch) =>
   send<Batch>("/instructor/batches", "POST", batch);
 export const closeBatch = (id: string) =>
   send<Batch>(`/instructor/batches/${id}/close`, "POST");
+/** Where Download data points: a zip of the whole trial's records. */
+export const TRIAL_EXPORT_URL = "/instructor/export";
+/** Delete everything recorded for an ID. Throws an ApiError 404 if no such ID. */
+export const withdrawParticipant = (code: string) =>
+  send<void>(`/instructor/participants/${encodeURIComponent(code.trim())}`, "DELETE");
 export const voidParticipant = (batchId: string, participantId: string) =>
   send<Batch>(`/instructor/batches/${batchId}/participants/${participantId}/void`, "POST");
