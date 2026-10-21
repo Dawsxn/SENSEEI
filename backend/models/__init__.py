@@ -10,15 +10,26 @@ a trap with no current benefit; queries use explicit joins instead.
 """
 
 from .base import TS, Entity, SoftDelete, utcnow
-from .enums import STEP_ORDER, Role, SeeiStep, SessionStatus, Verdict
+from .enums import (
+    FINISHED_STATUSES,
+    STEP_ORDER,
+    ClassMode,
+    Role,
+    SeeiStep,
+    SessionStatus,
+    Verdict,
+)
 from .people import Class, Enrolment, User, class_label
 from .readings import CoreComponent, Reading, ReadingAssignment, ReadingFile
 from .sessions import Assessment, Attempt, CriterionJudgment, Session, TutorMessage
+from .trial import Participant, ParticipantBatch
 
 __all__ = [
     "TS", "Entity", "SoftDelete", "utcnow",
-    "STEP_ORDER", "Role", "SeeiStep", "SessionStatus", "Verdict",
+    "FINISHED_STATUSES", "STEP_ORDER", "ClassMode", "Role", "SeeiStep",
+    "SessionStatus", "Verdict",
     "User", "Class", "Enrolment", "class_label",
     "Reading", "CoreComponent", "ReadingAssignment", "ReadingFile",
     "Session", "Attempt", "Assessment", "CriterionJudgment", "TutorMessage",
+    "Participant", "ParticipantBatch",
 ]

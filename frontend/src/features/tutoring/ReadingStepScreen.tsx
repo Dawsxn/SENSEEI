@@ -14,16 +14,23 @@
  * Going back still asks first. No session exists to discard, so the warning is
  * not the session one, but the student loses their place in the reading and the
  * back link sits next to nothing else, which makes it easy to hit by accident.
+ *
+ * For a trial participant this is where their time starts. They have no back
+ * link, since they have nowhere else to go, and no class label, which could name
+ * their group. The countdown takes the right of the bar.
  */
 
-import { Suspense, lazy, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Button } from "../../components/ui/button";
-import { readingFileUrl } from "../../lib/api";
+import { readingFileUrl, startTrialClock } from "../../lib/api";
 import { useReading } from "../readings/useReadings";
+import { TrialClock, useTimeUp } from "../trial/TrialClock";
+import { useIsParticipant } from "../trial/useTrial";
 import { ReadingIntroDialog } from "./ReadingIntroDialog";
 import { ReadingPanel } from "./ReadingPanel";
 
@@ -37,26 +44,40 @@ export function ReadingStepScreen() {
   const navigate = useNavigate();
   const [showIntro, setShowIntro] = useState(true);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
+  const participant = useIsParticipant();
+  const timeUp = useTimeUp();
+  useStartTrialClock(participant);
 
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-14 shrink-0 items-center gap-3 border-b px-3 sm:px-5">
-        <button
-          onClick={() => setConfirmingLeave(true)}
-          className="flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ChevronLeft className="h-3.5 w-3.5" />
-          Readings
-        </button>
-        <div className="h-4 w-px shrink-0 bg-border" />
+        {!participant && (
+          <>
+            <button
+              onClick={() => setConfirmingLeave(true)}
+              className="flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Readings
+            </button>
+            <div className="h-4 w-px shrink-0 bg-border" />
+          </>
+        )}
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="truncate text-[14px] font-medium">
             {reading?.title ?? "…"}
           </span>
-          <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">
-            {reading?.class_name ?? ""}
-          </span>
+          {!participant && (
+            <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">
+              {reading?.class_name ?? ""}
+            </span>
+          )}
         </div>
+        {participant && (
+          <div className="ml-auto">
+            <TrialClock />
+          </div>
+        )}
       </header>
 
       <div className="min-h-0 flex-1">
@@ -76,9 +97,15 @@ export function ReadingStepScreen() {
       </div>
 
       {/* Pinned, so finishing does not require scrolling back to anywhere. */}
-      <footer className="flex shrink-0 items-center justify-end border-t px-4 py-3 sm:px-6">
-        <Button onClick={() => navigate(`/tutor/${readingId}`)}>Done</Button>
-      </footer>
+      {participant && timeUp ? (
+        <footer className="shrink-0 border-t px-6 py-4 text-center text-[13px] text-muted-foreground">
+          Time&rsquo;s up. Please wait for the next instructions.
+        </footer>
+      ) : (
+        <footer className="flex shrink-0 items-center justify-end border-t px-4 py-3 sm:px-6">
+          <Button onClick={() => navigate(`/tutor/${readingId}`)}>Done</Button>
+        </footer>
+      )}
 
       {showIntro && <ReadingIntroDialog onStart={() => setShowIntro(false)} />}
 
@@ -95,6 +122,18 @@ export function ReadingStepScreen() {
       )}
     </div>
   );
+}
+
+/** A participant's time starts when their reading opens. Asked once; the server
+ *  ignores the ask after the first, so a reload does not restart the clock. */
+function useStartTrialClock(participant: boolean) {
+  const queryClient = useQueryClient();
+  const asked = useRef(false);
+  useEffect(() => {
+    if (!participant || asked.current) return;
+    asked.current = true;
+    void startTrialClock().then((status) => queryClient.setQueryData(["trial"], status));
+  }, [participant, queryClient]);
 }
 
 function Notice({ children }: { children: React.ReactNode }) {

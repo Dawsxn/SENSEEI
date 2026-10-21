@@ -4,11 +4,15 @@
  * state, so the whole turn-by-turn behaviour is unit-tested without a network or
  * a component (see useTutoringSession.test.ts). The hook wraps it: it drives the
  * two streaming API calls, dispatches their events into the reducer, and aborts
- * the stream if the component unmounts mid-turn. */
+ * the stream if the component unmounts mid-turn.
+ *
+ * A trial participant has one session, so a reload cannot start another: the
+ * hook picks the existing one back up from its transcript instead. */
 
 import { useCallback, useEffect, useReducer, useRef } from "react";
 
-import { startSession, submitResponse } from "../../lib/api";
+import { getSession, getTranscript, startSession, submitResponse } from "../../lib/api";
+import type { SessionTranscript } from "../review/types";
 import type {
   MessageKind,
   SeeiStep,
@@ -67,7 +71,13 @@ export const initialState: TutoringState = {
 export type Action =
   | { type: "start" }
   | { type: "student"; text: string }
-  | { type: "event"; event: StreamEvent };
+  | { type: "event"; event: StreamEvent }
+  | {
+      type: "resume";
+      transcript: SessionTranscript;
+      status: SessionStatus;
+      currentStep: SeeiStep;
+    };
 
 function pushMessage(
   state: TutoringState,
@@ -115,7 +125,42 @@ export function reduce(state: TutoringState, action: Action): TutoringState {
 
     case "event":
       return applyEvent(state, action.event);
+
+    case "resume":
+      return resume(action.transcript, action.status, action.currentStep);
   }
+}
+
+/** A session picked back up after a reload, from its stored transcript. The
+ *  criteria a reply flagged are not stored with it, so they do not come back;
+ *  the reply itself does. */
+export function resume(
+  transcript: SessionTranscript,
+  status: SessionStatus,
+  currentStep: SeeiStep,
+): TutoringState {
+  const messages: ChatMessage[] = transcript.timeline.map((entry, i) => ({
+    key: `r${i}`,
+    role: entry.role,
+    step: entry.step,
+    content: entry.content,
+    unmet: [],
+    streaming: false,
+  }));
+  const used = transcript.timeline.filter(
+    (e) => e.role === "student" && e.step === currentStep,
+  ).length;
+  return {
+    ...initialState,
+    sessionId: transcript.id,
+    status,
+    currentStep,
+    attemptsUsed: used,
+    attemptsLeft: Math.max(3 - used, 0),
+    messages,
+    phase: status === "in_progress" ? "awaiting_input" : "terminal",
+    seq: messages.length,
+  };
 }
 
 function applyEvent(state: TutoringState, event: StreamEvent): TutoringState {
@@ -159,7 +204,15 @@ function applyEvent(state: TutoringState, event: StreamEvent): TutoringState {
   }
 }
 
-export function useTutoringSession(readingId: string) {
+interface Options {
+  /** Pick up this session rather than starting one. */
+  resumeId?: string | null;
+  /** Hold off until the caller knows whether there is one to resume. */
+  wait?: boolean;
+}
+
+export function useTutoringSession(readingId: string, options: Options = {}) {
+  const { resumeId = null, wait = false } = options;
   const [state, dispatch] = useReducer(reduce, initialState);
   const abortRef = useRef<AbortController | null>(null);
   // Guard against React 18 StrictMode double-invoking the start effect.
@@ -173,9 +226,29 @@ export function useTutoringSession(readingId: string) {
 
   const begin = useCallback(async () => {
     dispatch({ type: "start" });
+    if (resumeId) {
+      try {
+        const [transcript, session] = await Promise.all([
+          getTranscript(resumeId),
+          getSession(resumeId),
+        ]);
+        dispatch({
+          type: "resume",
+          transcript,
+          status: session.status,
+          currentStep: session.current_step,
+        });
+      } catch {
+        dispatch({
+          type: "event",
+          event: { type: "error", detail: "could not load your session" },
+        });
+      }
+      return;
+    }
     abortRef.current = new AbortController();
     await consume(startSession(readingId, abortRef.current.signal));
-  }, [readingId, consume]);
+  }, [readingId, resumeId, consume]);
 
   const submit = useCallback(
     async (text: string) => {
@@ -196,10 +269,10 @@ export function useTutoringSession(readingId: string) {
     // kill the one real start and the guard would stop it restarting). A stream
     // left running on a real unmount simply finishes in the background; its
     // dispatches to an unmounted reducer are no-ops.
-    if (startedRef.current) return;
+    if (wait || startedRef.current) return;
     startedRef.current = true;
     void begin();
-  }, [begin]);
+  }, [begin, wait]);
 
   return { state, submit };
 }

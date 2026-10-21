@@ -19,6 +19,9 @@ const PLACEHOLDER: Record<SeeiStep, string> = {
 interface ChatPanelProps {
   state: TutoringState;
   onSubmit: (text: string) => void;
+  /** Trial mode. The session ends in the trial's words, and `timeUp` ends it
+   *  whatever it was doing. */
+  trial?: { timeUp: boolean };
 }
 
 /** Is a tutor reply expected but not yet producing text? Covers both the opening
@@ -33,7 +36,7 @@ function awaitingReply(state: TutoringState): boolean {
   return tutor && last.streaming && last.content === "";
 }
 
-export function ChatPanel({ state, onSubmit }: ChatPanelProps) {
+export function ChatPanel({ state, onSubmit, trial }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const waiting = awaitingReply(state);
 
@@ -83,7 +86,7 @@ export function ChatPanel({ state, onSubmit }: ChatPanelProps) {
         {waiting && <TypingIndicator />}
       </div>
 
-      <Composer state={state} onSubmit={onSubmit} />
+      <Composer state={state} onSubmit={onSubmit} trial={trial} />
     </div>
   );
 }
@@ -217,7 +220,7 @@ function TypingIndicator() {
   );
 }
 
-function Composer({ state, onSubmit }: ChatPanelProps) {
+function Composer({ state, onSubmit, trial }: ChatPanelProps) {
   const [text, setText] = useState("");
   const canSubmit = state.phase === "awaiting_input" && text.trim().length > 0;
 
@@ -225,6 +228,18 @@ function Composer({ state, onSubmit }: ChatPanelProps) {
     if (!canSubmit) return;
     onSubmit(text.trim());
     setText("");
+  }
+
+  // A participant whose time is up, or whose session has ended either way, is
+  // told to wait: the activity is over, the sitting is not.
+  if (trial && (trial.timeUp || state.phase === "terminal")) {
+    return (
+      <div className="shrink-0 border-t px-6 py-4 text-center text-[13px] text-muted-foreground">
+        {trial.timeUp || state.status === "timed_out"
+          ? "Time's up. Please wait for the next instructions."
+          : "You're done. Please stay at your seat until time is up."}
+      </div>
+    );
   }
 
   if (state.phase === "terminal") {

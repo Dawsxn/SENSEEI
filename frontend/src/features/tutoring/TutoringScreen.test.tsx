@@ -24,6 +24,13 @@ vi.mock("react-router-dom", async () => ({
   useNavigate: () => navigate,
 }));
 
+// Not a trial participant: the trial's hooks answer as they would for a student.
+vi.mock("../trial/useTrial", () => ({
+  useIsParticipant: () => false,
+  useTrialStatus: () => ({ data: undefined }),
+}));
+vi.mock("../trial/TrialClock", () => ({ TrialClock: () => null, useTimeUp: () => false }));
+
 vi.mock("./PdfPanel", () => ({
   PdfPanel: ({ fileUrl }: { fileUrl: string }) => <div>pdf viewer: {fileUrl}</div>,
 }));

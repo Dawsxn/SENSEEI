@@ -84,6 +84,14 @@ class Settings(BaseSettings):
     # --- app ---------------------------------------------------------------
     environment: str = "local"   # local | development | production
 
+    # --- the trial ------------------------------------------------------------
+    # On only for the trial instance (docs/context/trial.md). One switch for the
+    # whole set of rules: participants sign in by ID, one session each, a clock,
+    # and classes in the control groups' modes. The server enforces every one.
+    trial_mode: bool = False
+    #: A participant's time, from the moment their reading opens.
+    trial_minutes: int = 40
+
     # --- auth --------------------------------------------------------------
     # Google OAuth client, from the Google Cloud console. Sign-in is disabled
     # (real flow) when these are blank, but the dev bypass still works.

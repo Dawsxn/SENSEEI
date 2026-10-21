@@ -31,6 +31,7 @@ import type {
   NewReading,
 } from "../features/library/types";
 import type { SessionTranscript } from "../features/review/types";
+import type { Batch, BatchListItem, NewBatch, TrialStatus } from "../features/trial/types";
 import type { Rubric } from "../features/tutoring/types";
 import type {
   SessionState,
@@ -289,3 +290,21 @@ export const setReadingClasses = (id: string, classIds: string[]) =>
   send<LibraryReading>(`/instructor/readings/${id}/classes`, "PUT", { class_ids: classIds });
 export const deleteLibraryReading = (id: string) =>
   send<void>(`/instructor/readings/${id}`, "DELETE");
+
+// --- the trial ------------------------------------------------------------------
+
+/** Sign in with a participant ID. Throws an ApiError: 404 unknown, 403 inactive. */
+export const participantSignIn = (code: string) =>
+  send<{ ok: boolean }>("/auth/participant", "POST", { code });
+export const getTrialStatus = () => send<TrialStatus>("/trial/me", "GET");
+/** Start the participant's clock. Only the first call starts it. */
+export const startTrialClock = () => send<TrialStatus>("/trial/clock", "POST");
+
+export const getBatches = () => send<BatchListItem[]>("/instructor/batches", "GET");
+export const getBatch = (id: string) => send<Batch>(`/instructor/batches/${id}`, "GET");
+export const createBatch = (batch: NewBatch) =>
+  send<Batch>("/instructor/batches", "POST", batch);
+export const closeBatch = (id: string) =>
+  send<Batch>(`/instructor/batches/${id}/close`, "POST");
+export const voidParticipant = (batchId: string, participantId: string) =>
+  send<Batch>(`/instructor/batches/${batchId}/participants/${participantId}/void`, "POST");

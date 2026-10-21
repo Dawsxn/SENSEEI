@@ -10,12 +10,18 @@
  *
  * The reading shows as its original PDF when one is stored, and as the extracted
  * text when it is not. The viewer is loaded lazily because pdfjs is by far the
- * largest thing the app ships, and no other screen needs it. */
+ * largest thing the app ships, and no other screen needs it.
+ *
+ * A trial participant gets the same screen with a countdown, no way out, and an
+ * ending in the trial's words. They have one session, so a reload picks it up
+ * rather than starting another. */
 
 import { Suspense, lazy, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useReading } from "../readings/useReadings";
+import { TrialClock, useTimeUp } from "../trial/TrialClock";
+import { useIsParticipant, useTrialStatus } from "../trial/useTrial";
 import { readingFileUrl } from "../../lib/api";
 import { cn } from "../../lib/utils";
 import { ChatPanel } from "./ChatPanel";
@@ -34,7 +40,14 @@ type Pane = "reading" | "chat";
 export function TutoringScreen() {
   const { readingId } = useParams<{ readingId: string }>();
   const { data: reading, isLoading, isError } = useReading(readingId);
-  const { state, submit } = useTutoringSession(readingId ?? "");
+  const participant = useIsParticipant();
+  const trial = useTrialStatus();
+  const timeUp = useTimeUp();
+  const { state, submit } = useTutoringSession(readingId ?? "", {
+    resumeId: trial.data?.session?.id ?? null,
+    // A participant's session may already exist; find out before starting one.
+    wait: participant && !trial.data,
+  });
   const [pane, setPane] = useState<Pane>("chat");
   const [confirmingExit, setConfirmingExit] = useState(false);
   const [panel, setPanel] = useState<"components" | "rubric" | null>(null);
@@ -63,6 +76,7 @@ export function TutoringScreen() {
         onExit={onExit}
         panel={panel}
         onTogglePanel={(p) => setPanel((open) => (open === p ? null : p))}
+        clock={participant ? <TrialClock /> : undefined}
       />
 
       {panel === "components" && (
@@ -104,7 +118,11 @@ export function TutoringScreen() {
             ))}
         </div>
         <div className={cn("h-full min-h-0", pane === "chat" ? "block" : "hidden", "lg:block")}>
-          <ChatPanel state={state} onSubmit={submit} />
+          <ChatPanel
+            state={state}
+            onSubmit={submit}
+            trial={participant ? { timeUp } : undefined}
+          />
         </div>
       </div>
     </div>

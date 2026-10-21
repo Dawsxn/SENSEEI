@@ -13,6 +13,8 @@
 import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { useTrialMode } from "../auth/useAuth";
+
 import { AppTopBar } from "../../components/AppTopBar";
 import { formatShortDate } from "../../lib/format";
 import { StatisticsSection } from "./StatisticsSection";
@@ -22,6 +24,7 @@ import { useClassReading } from "./useClasses";
 const STATUS: Record<ReadingProgress, string> = {
   completed: "Completed",
   stopped_early: "Stopped early",
+  timed_out: "Ran out of time",
   not_started: "Not started",
 };
 
@@ -29,6 +32,7 @@ export function ClassReadingPage() {
   const { classId, readingId } = useParams<{ classId: string; readingId: string }>();
   const { data, isLoading, isError } = useClassReading(classId, readingId);
   const navigate = useNavigate();
+  const trial = useTrialMode();
 
   return (
     <div className="flex h-full flex-col">
@@ -61,7 +65,7 @@ export function ClassReadingPage() {
 
               <section className="overflow-hidden rounded-lg border">
                 <div className="hidden h-10 grid-cols-[1fr_160px_200px_120px_24px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
-                  <span>Student</span>
+                  <span>{trial ? "Participant" : "Student"}</span>
                   <span>Progress</span>
                   <span>Status</span>
                   <span>Last session</span>
@@ -70,13 +74,14 @@ export function ClassReadingPage() {
 
                 {data.students.length === 0 ? (
                   <p className="px-6 py-12 text-center text-[14px] font-medium">
-                    No students yet
+                    {trial ? "No participants yet" : "No students yet"}
                   </p>
                 ) : (
                   data.students.map((s) => (
                     <StudentRow
                       key={s.id}
                       student={s}
+                      trial={trial}
                       onOpen={() => s.session_id && navigate(`/review/${s.session_id}`)}
                     />
                   ))
@@ -90,8 +95,17 @@ export function ClassReadingPage() {
   );
 }
 
-function StudentRow({ student, onOpen }: { student: RosterStudent; onOpen: () => void }) {
-  const stopped = student.status === "stopped_early";
+function StudentRow({
+  student,
+  trial,
+  onOpen,
+}: {
+  student: RosterStudent;
+  /** Trial mode: the student is a participant ID, with no name or email. */
+  trial: boolean;
+  onOpen: () => void;
+}) {
+  const stopped = student.status === "stopped_early" || student.status === "timed_out";
   const started = student.status !== "not_started";
 
   return (
@@ -101,17 +115,25 @@ function StudentRow({ student, onOpen }: { student: RosterStudent; onOpen: () =>
       className="grid w-full grid-cols-[1fr_24px] items-center gap-4 border-b px-4 py-2.5 text-left last:border-b-0 enabled:hover:bg-muted/40 sm:grid-cols-[1fr_160px_200px_120px_24px]"
     >
       <span className="flex min-w-0 items-center gap-3">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-medium text-muted-foreground">
-          {initials(student.name)}
-        </span>
+        {!trial && (
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-medium text-muted-foreground">
+            {initials(student.name)}
+          </span>
+        )}
         <span className="min-w-0">
-          <span className="flex items-center gap-1.5 text-[14px] font-medium">
+          <span
+            className={`flex items-center gap-1.5 ${
+              trial ? "font-mono text-[13px] tracking-wider" : "text-[14px] font-medium"
+            }`}
+          >
             <span className="truncate">{student.name}</span>
             {stopped && <Flag className="h-3 w-3 shrink-0 text-fail-foreground" />}
           </span>
-          <span className="block truncate text-[12px] text-muted-foreground">
-            {student.email}
-          </span>
+          {!trial && (
+            <span className="block truncate text-[12px] text-muted-foreground">
+              {student.email}
+            </span>
+          )}
           {/* On narrow screens the columns collapse into this line. */}
           <span className="mt-1 flex items-center gap-2 sm:hidden">
             <Progress passed={student.steps_passed} stopped={stopped} />

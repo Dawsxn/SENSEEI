@@ -17,6 +17,12 @@ import { ClassFormDialog } from "./ClassFormDialog";
 
 const joinClass = vi.hoisted(() => vi.fn());
 
+// An ordinary instance: the class form has no mode to choose.
+vi.mock("../auth/useAuth", async () => ({
+  ...(await vi.importActual<typeof import("../auth/useAuth")>("../auth/useAuth")),
+  useTrialMode: () => false,
+}));
+
 vi.mock("../../lib/api", async () => {
   const actual = await vi.importActual<typeof import("../../lib/api")>("../../lib/api");
   return { ...actual, joinClass };

@@ -8,11 +8,13 @@ export function SessionStatusBadge({ status }: { status: SessionStatus }) {
   const styles: Record<SessionStatus, string> = {
     complete: "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]",
     fallback: "border-fail-border bg-fail text-fail-foreground",
+    timed_out: "border-fail-border bg-fail text-fail-foreground",
     in_progress: "border-border text-muted-foreground",
   };
   const label: Record<SessionStatus, string> = {
     complete: "Complete",
     fallback: "Failed",
+    timed_out: "Ran out of time",
     in_progress: "In progress",
   };
   return (

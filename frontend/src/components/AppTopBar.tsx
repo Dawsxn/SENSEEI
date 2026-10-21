@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { SwitchUserDialog } from "../features/auth/SwitchUserDialog";
-import { useMe } from "../features/auth/useAuth";
+import { useMe, useTrialMode } from "../features/auth/useAuth";
 import { JoinClassDialog } from "../features/readings/JoinClassDialog";
 import { logout } from "../lib/api";
 import { Button } from "./ui/button";
@@ -47,6 +47,8 @@ export function AppTopBar() {
 }
 
 function Sections({ className }: { className: string }) {
+  // The trial instance adds a third: the participant IDs.
+  const trial = useTrialMode();
   const tab = ({ isActive }: { isActive: boolean }) =>
     `-mb-px flex items-center border-b-2 text-[14px] font-medium ${
       isActive
@@ -61,6 +63,11 @@ function Sections({ className }: { className: string }) {
       <NavLink to="/library" className={tab}>
         Readings
       </NavLink>
+      {trial && (
+        <NavLink to="/participants" className={tab}>
+          Participants
+        </NavLink>
+      )}
     </nav>
   );
 }

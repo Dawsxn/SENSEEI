@@ -33,6 +33,7 @@ API_PREFIXES = frozenset(
         "readings",
         "rubric",
         "sessions",
+        "trial",
         "docs",
         "redoc",
         "openapi.json",

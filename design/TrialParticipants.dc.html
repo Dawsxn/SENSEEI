@@ -1,0 +1,446 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap">
+  <style>
+    /* Matches the built app (frontend/src): AppTopBar, ClassListPage,
+       ClassDetailPage, ClassReadingPage, ClassFormDialog, ConfirmDialog. */
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .btn { border-radius: 6px; font-family: inherit; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; white-space: nowrap; }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+    .btn-md { height: 36px; padding: 0 16px; font-size: 14px; }
+    .btn-icon { height: 36px; width: 36px; }
+    .btn-primary { border: none; background: #16a34a; color: #ffffff; }
+    .btn-secondary { border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; }
+    .btn-danger { border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; }
+    .btn-accent { border: 1px solid #bbf7d0; background: #f0fdf4; color: #15803d; }
+    .tab { font-size: 14px; font-weight: 500; color: #71717a; height: 56px; display: flex; align-items: center; border-bottom: 2px solid transparent; box-sizing: border-box; margin-bottom: -1px; }
+    .tab-on { color: #09090b; border-bottom-color: #09090b; }
+    .th { font-size: 12px; font-weight: 500; color: #71717a; }
+    .mono { font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.05em; }
+    .card { border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden; }
+    .input { height: 36px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 0 12px; display: flex; align-items: center; font-size: 14px; box-sizing: border-box; }
+    .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
+    .dialog { width: 420px; box-sizing: border-box; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
+    .back { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #71717a; margin-bottom: 16px; }
+    .h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .cardhead { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; }
+    .stat-row { display: grid; grid-template-columns: 74px 1fr 44px; gap: 10px; align-items: center; font-size: 13px; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1360px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <!-- AppTopBar, with a third section in trial mode. -->
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 32px;">
+      <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: #16a34a;">SEE-I</span></span>
+      <div style="display: flex; gap: 24px;">
+        <span class="tab {{classesTab}}">Classes</span>
+        <span class="tab">Readings</span>
+        <span class="tab {{participantsTab}}">Participants</span>
+      </div>
+    </div>
+    <div style="width: 32px; height: 32px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; min-height: 0; overflow: hidden;">
+    <div style="width: 1100px; margin: 0 auto; padding: {{pagePad}}; box-sizing: border-box; display: flex; flex-direction: column;">
+
+    <!-- ───── Classes: Join code becomes Mode ───── -->
+    <sc-if value="{{onClasses}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h1 class="h1">Classes</h1>
+        <span class="btn btn-accent btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5v14"></path></svg>
+        </span>
+      </div>
+      <div class="card">
+        <div style="display: grid; grid-template-columns: 1fr 120px 160px 100px 100px 24px; gap: 16px; align-items: center; height: 40px; padding: 0 16px; border-bottom: 1px solid #e4e4e7;">
+          <span class="th">Class</span><span class="th">Section</span><span class="th">Mode</span><span class="th">Participants</span><span class="th">Readings</span><span></span>
+        </div>
+        <sc-for list="{{classes}}" as="c" hint-placeholder-count="3">
+          <div style="display: grid; grid-template-columns: 1fr 120px 160px 100px 100px 24px; gap: 16px; align-items: center; padding: 16px; border-bottom: 1px solid {{c.divider}};">
+            <span style="font-size: 14px; font-weight: 500;">{{c.name}}</span>
+            <span style="font-size: 13px; color: #3f3f46;">{{c.section}}</span>
+            <span style="font-size: 13px; color: #3f3f46;">{{c.mode}}</span>
+            <span style="font-size: 13px; color: #71717a;">{{c.people}}</span>
+            <span style="font-size: 13px; color: #71717a;">1</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ───── One class: no join code, participants by ID ───── -->
+    <sc-if value="{{onClass}}" hint-placeholder-val="{{false}}">
+      <div class="back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+        Classes
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <div style="display: flex; align-items: baseline; gap: 12px;">
+          <h1 class="h1">TRIAL S1-A</h1>
+          <span style="font-size: 14px; color: #71717a;">SEE-I</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <span class="btn btn-secondary btn-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"></path><path d="M15 5l4 4"></path></svg>
+          </span>
+          <span class="btn btn-danger btn-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><path d="M10 11v6M14 11v6"></path></svg>
+          </span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 380px; gap: 20px; align-items: start;">
+        <div class="card" style="overflow: visible;">
+          <div class="cardhead"><span>Participants</span><span style="font-size: 13px; font-weight: 400; color: #71717a;">5</span></div>
+          <sc-for list="{{classPeople}}" as="p" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: 1fr 140px; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid {{p.divider}};">
+              <span class="mono" style="font-size: 13px;">{{p.id}}</span>
+              <span style="font-size: 13px; color: {{p.color}};">{{p.status}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div class="card" style="overflow: visible;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #e4e4e7;">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600;">Readings <span style="font-size: 13px; font-weight: 400; color: #71717a;">1</span></span>
+            <span class="btn btn-accent" style="width: 32px; height: 32px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M17 8l-5-5-5 5"></path><path d="M12 3v12"></path></svg>
+            </span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 24px; gap: 12px; align-items: center; padding: 12px 16px;">
+            <span>
+              <span style="display: block; font-size: 14px; font-weight: 500;">Cognitive Offloading</span>
+              <span style="display: block; font-size: 12px; color: #71717a;">3 sessions</span>
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ───── One reading in a class: the roster, by ID ───── -->
+    <sc-if value="{{onClassReading}}" hint-placeholder-val="{{false}}">
+      <div class="back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+        TRIAL S1-A
+      </div>
+      <h1 class="h1" style="margin-bottom: 20px;">Cognitive Offloading</h1>
+
+      <div style="font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+        Statistics
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
+        <div class="card">
+          <div class="cardhead" style="justify-content: flex-start;">Pass rate by step</div>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px;">
+            <sc-for list="{{passRates}}" as="r" hint-placeholder-count="4">
+              <div class="stat-row">
+                <span style="color: #3f3f46;">{{r.step}}</span>
+                <span style="display: block; height: 6px; border-radius: 999px; background: #f4f4f5; overflow: hidden;"><span style="display: block; height: 6px; width: {{r.pct}}%; background: #16a34a; border-radius: 999px;"></span></span>
+                <span style="text-align: right; color: #71717a;">{{r.pct}}%</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardhead" style="justify-content: flex-start;">Most-failed criteria</div>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px;">
+            <sc-for list="{{failed}}" as="f" hint-placeholder-count="4">
+              <div class="stat-row"><span style="grid-column: span 2; color: #3f3f46;">{{f.name}}</span><span style="text-align: right; color: #71717a;">{{f.n}}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardhead" style="justify-content: flex-start;">Average attempts to pass</div>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px;">
+            <sc-for list="{{averages}}" as="a" hint-placeholder-count="4">
+              <div class="stat-row"><span style="grid-column: span 2; color: #3f3f46;">{{a.step}}</span><span style="text-align: right; color: #71717a;">{{a.avg}}</span></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display: grid; grid-template-columns: 1fr 160px 200px 120px 24px; gap: 16px; align-items: center; height: 40px; padding: 0 16px; border-bottom: 1px solid #e4e4e7;">
+          <span class="th">Participant</span><span class="th">Progress</span><span class="th">Status</span><span class="th">Last session</span><span></span>
+        </div>
+        <sc-for list="{{roster}}" as="s" hint-placeholder-count="5">
+          <div style="display: grid; grid-template-columns: 1fr 160px 200px 120px 24px; gap: 16px; align-items: center; padding: 10px 16px; border-bottom: 1px solid {{s.divider}};">
+            <span class="mono" style="font-size: 13px;">{{s.id}}</span>
+            <span style="display: flex; gap: 3px;">
+              <span style="display: block; width: 22px; height: 4px; border-radius: 2px; background: {{s.m1}};"></span>
+              <span style="display: block; width: 22px; height: 4px; border-radius: 2px; background: {{s.m2}};"></span>
+              <span style="display: block; width: 22px; height: 4px; border-radius: 2px; background: {{s.m3}};"></span>
+              <span style="display: block; width: 22px; height: 4px; border-radius: 2px; background: {{s.m4}};"></span>
+            </span>
+            <span style="display: flex; flex-direction: column; gap: 2px;">
+              <span style="font-size: 13px; color: {{s.color}};">{{s.status}}</span>
+              <span style="font-size: 12px; color: #71717a;">{{s.note}}</span>
+            </span>
+            <span style="font-size: 13px; color: #71717a;">{{s.when}}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="visibility: {{s.chev}};"><path d="M9 18l6-6-6-6"></path></svg>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ───── Participants: batches ───── -->
+    <sc-if value="{{onBatches}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; height: 36px;">
+        <h1 class="h1">Participants</h1>
+        <sc-if value="{{hasBatches}}" hint-placeholder-val="{{true}}">
+          <span class="btn btn-accent btn-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5v14"></path></svg>
+          </span>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{hasBatches}}" hint-placeholder-val="{{true}}">
+        <div class="card">
+          <div style="display: grid; grid-template-columns: 1fr 160px 100px 100px 100px 24px; gap: 16px; align-items: center; height: 40px; padding: 0 16px; border-bottom: 1px solid #e4e4e7;">
+            <span class="th">Batch</span><span class="th">Created</span><span class="th">IDs</span><span class="th">Used</span><span class="th">Status</span><span></span>
+          </div>
+          <sc-for list="{{batches}}" as="b" hint-placeholder-count="2">
+            <div style="display: grid; grid-template-columns: 1fr 160px 100px 100px 100px 24px; gap: 16px; align-items: center; padding: 16px; border-bottom: 1px solid {{b.divider}};">
+              <span style="font-size: 14px; font-weight: 500;">{{b.name}}</span>
+              <span style="font-size: 13px; color: #71717a;">{{b.created}}</span>
+              <span style="font-size: 13px; color: #71717a;">{{b.ids}}</span>
+              <span style="font-size: 13px; color: #71717a;">{{b.used}}</span>
+              <span style="font-size: 13px; color: {{b.color}};">{{b.status}}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{noBatches}}" hint-placeholder-val="{{false}}">
+        <div style="border: 1px dashed #e4e4e7; border-radius: 8px; padding: 64px 24px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
+          <span style="font-size: 15px; font-weight: 600;">No batches yet</span>
+          <span style="font-size: 14px; color: #71717a;">Make a batch of IDs for each sitting.</span>
+          <span class="btn btn-primary btn-md" style="margin-top: 12px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5v14"></path></svg>
+            New batch
+          </span>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <!-- ───── One batch ───── -->
+    <sc-if value="{{onBatch}}" hint-placeholder-val="{{false}}">
+      <div class="back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+        Participants
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <div style="display: flex; align-items: baseline; gap: 12px;">
+          <h1 class="h1">Sitting 1</h1>
+          <span style="font-size: 14px; color: #71717a;">15 IDs, 5 per class</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <span class="btn btn-secondary btn-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"></path><rect x="6" y="14" width="12" height="8" rx="1"></rect></svg>
+          </span>
+          <span class="btn btn-danger btn-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display: grid; grid-template-columns: 200px 1fr 140px 28px; gap: 16px; align-items: center; height: 40px; padding: 0 16px; border-bottom: 1px solid #e4e4e7;">
+          <span class="th">ID</span><span class="th">Class</span><span class="th">Status</span><span></span>
+        </div>
+        <sc-for list="{{ids}}" as="p" hint-placeholder-count="8">
+          <div style="display: grid; grid-template-columns: 200px 1fr 140px 28px; gap: 16px; align-items: center; padding: 10px 16px; border-bottom: 1px solid {{p.divider}};">
+            <span class="mono" style="font-size: 13px; color: {{p.idColor}}; text-decoration: {{p.strike}};">{{p.id}}</span>
+            <span style="font-size: 13px; color: #3f3f46;">{{p.klass}} <span style="color: #71717a;">&middot; {{p.mode}}</span></span>
+            <span style="font-size: 13px; color: {{p.color}};">{{p.status}}</span>
+            <span style="width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; visibility: {{p.voidVis}};">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M4.9 4.9l14.2 14.2"></path></svg>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ───── Print slips: the browser's print preview of this page ───── -->
+    <sc-if value="{{onSlips}}" hint-placeholder-val="{{false}}">
+      <div style="background: #e9e9ec; border-radius: 8px; padding: 24px; display: flex; justify-content: center; height: 780px; box-sizing: border-box; overflow: hidden;">
+        <div style="width: 620px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.14); padding: 28px; display: grid; grid-template-columns: repeat(3, 1fr); align-content: start;">
+          <sc-for list="{{slips}}" as="s" hint-placeholder-count="12">
+            <div style="border: 1px dashed #a1a1aa; margin: -0.5px; padding: 16px 14px; display: flex; flex-direction: column; gap: 6px;">
+              <span style="font-size: 10px; letter-spacing: 0.06em; color: #71717a;">PARTICIPANT ID</span>
+              <span class="mono" style="font-size: 17px; font-weight: 500;">{{s.id}}</span>
+              <span style="font-size: 9.5px; color: #71717a; line-height: 1.4;">Go to senseei-trial.onrender.com and enter this ID.</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+    </div>
+  </div>
+
+  <!-- ───── Dialogs (ClassFormDialog and ConfirmDialog sizes) ───── -->
+  <sc-if value="{{showNewClass}}" hint-placeholder-val="{{false}}">
+    <div class="overlay">
+      <div class="dialog">
+        <div style="font-size: 16px; font-weight: 600;">New class</div>
+        <div style="display: grid; grid-template-columns: 1fr 120px; gap: 12px; margin-top: 16px;">
+          <div style="font-size: 13px; font-weight: 500;">Name<div class="input" style="margin-top: 6px; font-weight: 400;">TRIAL</div></div>
+          <div style="font-size: 13px; font-weight: 500;">Section<div class="input" style="margin-top: 6px; font-weight: 400;">S1-A</div></div>
+        </div>
+        <div style="margin-top: 16px; font-size: 13px; font-weight: 500;">Mode</div>
+        <div style="margin-top: 6px; display: flex; gap: 2px; padding: 3px; background: #f4f4f5; border-radius: 6px;">
+          <span style="flex: 1; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">SEE-I</span>
+          <span style="flex: 1; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: #71717a;">Chatbot</span>
+          <span style="flex: 1; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: #71717a;">Reading only</span>
+        </div>
+        <p style="margin: 8px 0 0; font-size: 12px; color: #71717a;">Can't be changed once a participant signs in.</p>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <span class="btn btn-secondary btn-sm">Cancel</span>
+          <span class="btn btn-primary btn-sm">Create class</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showNewBatch}}" hint-placeholder-val="{{false}}">
+    <div class="overlay">
+      <div class="dialog">
+        <div style="font-size: 16px; font-weight: 600;">New batch</div>
+        <div style="margin-top: 16px; font-size: 13px; font-weight: 500;">Name<div class="input" style="margin-top: 6px; font-weight: 400;">Sitting 2</div></div>
+        <div style="margin-top: 16px; font-size: 13px; font-weight: 500;">IDs per class</div>
+        <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 8px;">
+          <sc-for list="{{batchRows}}" as="r" hint-placeholder-count="3">
+            <div style="display: grid; grid-template-columns: 1fr 72px; gap: 12px; align-items: center;">
+              <span style="font-size: 14px;">{{r.label}} <span style="color: #71717a;">&middot; {{r.mode}}</span></span>
+              <div class="input" style="justify-content: center;">5</div>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin: 8px 0 0; font-size: 12px; color: #71717a;">15 IDs, mixed so the slips don't show the class.</p>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <span class="btn btn-secondary btn-sm">Cancel</span>
+          <span class="btn btn-primary btn-sm">Create batch</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showConfirm}}" hint-placeholder-val="{{false}}">
+    <div class="overlay">
+      <div class="dialog">
+        <div style="font-size: 16px; font-weight: 600;">{{confirmTitle}}</div>
+        <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: #71717a;">{{confirmBody}}</p>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <span class="btn btn-secondary btn-sm">Cancel</span>
+          <span class="btn btn-danger btn-sm">{{confirmLabel}}</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"state":{"editor":"enum","options":["Classes","New class","Class","Class reading","Batches","No batches","New batch","Batch","Close batch","Void ID","Slips"],"default":"Batches","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'Batches';
+    const onClasses = state === 'Classes' || state === 'New class';
+    const onClass = state === 'Class';
+    const onClassReading = state === 'Class reading';
+    const onBatch = ['Batch', 'Close batch', 'Void ID'].includes(state);
+    const onSlips = state === 'Slips';
+    const classSide = onClasses || onClass || onClassReading;
+    const onBatches = !classSide && !onBatch && !onSlips;
+    const noBatches = state === 'No batches';
+    const last = (arr, i) => (i === arr.length - 1 ? 'transparent' : '#e4e4e7');
+
+    const classRows = [['TRIAL', 'S1-A', 'SEE-I', '5'], ['TRIAL', 'S1-B', 'Chatbot', '5'], ['TRIAL', 'S1-C', 'Reading only', '5']];
+    const classes = classRows.map(([name, section, mode, people], i) => ({ name, section, mode, people, divider: last(classRows, i) }));
+
+    const classPeopleData = [
+      ['P-7K3Q-9TXM', 'Signed in Oct 28', '#71717a'],
+      ['P-3MRX-8QWB', 'Signed in Oct 28', '#71717a'],
+      ['P-8RAV-4TMS', 'Signed in Oct 28', '#71717a'],
+      ['P-1NBG-9XZD', 'Not signed in', '#a1a1aa'],
+      ['P-3VKA-8RFW', 'Not signed in', '#a1a1aa'],
+    ];
+    const classPeople = classPeopleData.map(([id, status, color], i) => ({ id, status, color, divider: last(classPeopleData, i) }));
+
+    const G = '#16a34a', R = '#fecaca', E = '#e4e4e7';
+    const rosterData = [
+      ['P-7K3Q-9TXM', 4, false, 'Completed', '', 'Oct 28', '#09090b'],
+      ['P-3MRX-8QWB', 2, true, 'Ran out of time', 'Stopped on Exemplify', 'Oct 28', '#b91c1c'],
+      ['P-6QHT-2LMC', 1, true, 'Stopped early', 'Stopped on Elaborate', 'Oct 28', '#b91c1c'],
+      ['P-8RAV-4TMS', 0, false, 'Not started', '', '', 'rgba(113,113,122,0.7)'],
+    ];
+    const roster = rosterData.map(([id, passed, stopped, status, note, when, color], i) => {
+      const m = (k) => (k < passed ? (stopped ? R : G) : E);
+      return { id, status, note, when, color, m1: m(0), m2: m(1), m3: m(2), m4: m(3), chev: status === 'Not started' ? 'hidden' : 'visible', divider: last(rosterData, i) };
+    });
+
+    const batchData = [['Sitting 1', 'Oct 28', '15', '12', 'Open'], ['Dry run', 'Oct 21', '6', '6', 'Closed']];
+    const batches = batchData.map(([name, created, ids, used, status], i) => ({
+      name, created, ids, used, status, color: status === 'Open' ? '#15803d' : '#71717a', divider: last(batchData, i),
+    }));
+
+    const STATUS = { 'Not used': '#a1a1aa', 'Signed in': '#09090b', 'Finished': '#09090b', 'Voided': '#b91c1c' };
+    const idData = [
+      ['P-7K3Q-9TXM', 'TRIAL S1-A', 'SEE-I', 'Finished'],
+      ['P-4HWN-2RCE', 'TRIAL S1-C', 'Reading only', 'Finished'],
+      ['P-9ZTP-6KAD', 'TRIAL S1-B', 'Chatbot', 'Signed in'],
+      ['P-3MRX-8QWB', 'TRIAL S1-A', 'SEE-I', 'Signed in'],
+      ['P-6DFJ-5VNH', 'TRIAL S1-B', 'Chatbot', 'Voided'],
+      ['P-2CLE-7YUG', 'TRIAL S1-C', 'Reading only', 'Signed in'],
+      ['P-8RAV-4TMS', 'TRIAL S1-A', 'SEE-I', 'Not used'],
+      ['P-5WQE-3JPK', 'TRIAL S1-B', 'Chatbot', 'Not used'],
+    ];
+    const ids = idData.map(([id, klass, mode, status], i) => ({
+      id, klass, mode, status, color: STATUS[status],
+      idColor: status === 'Voided' ? '#a1a1aa' : '#09090b',
+      strike: status === 'Voided' ? 'line-through' : 'none',
+      voidVis: status === 'Voided' || status === 'Finished' ? 'hidden' : 'visible',
+      divider: last(idData, i),
+    }));
+
+    const slipIds = ['P-7K3Q-9TXM','P-4HWN-2RCE','P-9ZTP-6KAD','P-3MRX-8QWB','P-6DFJ-5VNH','P-2CLE-7YUG','P-8RAV-4TMS','P-5WQE-3JPK','P-1NBG-9XZD','P-6QHT-2LMC','P-3VKA-8RFW','P-9PSE-4DNJ'];
+
+    const confirm = {
+      'Close batch': ['Close Sitting 1?', 'Its IDs will stop working.', 'Close'],
+      'Void ID': ['Void P-6DFJ-5VNH?', 'This ID will stop working.', 'Void'],
+    }[state];
+
+    return {
+      classesTab: classSide ? 'tab-on' : '',
+      participantsTab: classSide ? '' : 'tab-on',
+      pagePad: onClasses || onBatches ? '32px 24px' : '24px 24px',
+      onClasses, onClass, onClassReading, onBatches, onBatch, onSlips,
+      hasBatches: !noBatches, noBatches,
+      classes, classPeople, roster, batches, ids,
+      passRates: [['State', 80], ['Elaborate', 64], ['Exemplify', 50], ['Illustrate', 40]].map(([step, pct]) => ({ step, pct })),
+      failed: [['Own Words', 6], ['Brevity', 4], ['Relevance', 3], ['Coherence', 2]].map(([name, n]) => ({ name, n })),
+      averages: [['State', '1.4'], ['Elaborate', '1.8'], ['Exemplify', '2.0'], ['Illustrate', '2.3']].map(([step, avg]) => ({ step, avg })),
+      slips: slipIds.map((id) => ({ id })),
+      batchRows: classRows.map(([name, section, mode]) => ({ label: name + ' ' + section, mode })),
+      showNewClass: state === 'New class',
+      showNewBatch: state === 'New batch',
+      showConfirm: !!confirm,
+      confirmTitle: confirm ? confirm[0] : '', confirmBody: confirm ? confirm[1] : '', confirmLabel: confirm ? confirm[2] : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

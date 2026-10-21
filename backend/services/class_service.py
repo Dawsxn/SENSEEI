@@ -24,7 +24,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import (
     Class,
+    ClassMode,
     Enrolment,
+    Participant,
     Reading,
     ReadingAssignment,
     User,
@@ -52,10 +54,15 @@ class UnknownCode(Exception):
     """No live class has this join code."""
 
 
+class ModeLocked(Exception):
+    """A participant has signed in to this class, so its mode cannot change."""
+
+
 @dataclass
 class Fields:
     name: str
     section: str
+    mode: ClassMode = ClassMode.SEEI
 
 
 # --------------------------------------------------------------------------- #
@@ -109,6 +116,7 @@ def _summary(klass: Class) -> dict:
         "section": klass.section,
         "label": f"{klass.name} {klass.section}".strip(),
         "join_code": klass.join_code,
+        "mode": ClassMode(klass.mode).value,
     }
 
 
@@ -148,11 +156,14 @@ async def get_class(
     """One class with its roster and the readings assigned to it."""
     klass = await _owned(db, instructor_id, class_id)
 
+    # Participants come with their ID and first sign-in, shown in place of a
+    # name and email they do not have. Ordinary students join nothing here.
     roster = await db.execute(
-        select(User, Enrolment.enrolled_at)
+        select(User, Enrolment.enrolled_at, Participant.code, Participant.signed_in_at)
         .join(Enrolment, Enrolment.student_id == User.id)
+        .outerjoin(Participant, Participant.user_id == User.id)
         .where(Enrolment.class_id == class_id, Enrolment.deleted_at.is_(None))
-        .order_by(Enrolment.enrolled_at, User.name)
+        .order_by(Enrolment.enrolled_at, Participant.position, User.name)
     )
     readings = await db.scalars(
         select(Reading)
@@ -166,15 +177,33 @@ async def get_class(
     )
     return {
         **_summary(klass),
+        "mode_locked": await _mode_locked(db, class_id),
         "students": [
-            {"id": u.id, "name": u.name, "email": u.email, "enrolled_at": at}
-            for u, at in roster
+            {
+                "id": u.id,
+                "name": u.name,
+                "email": u.email,
+                "enrolled_at": at,
+                "participant_code": code,
+                "signed_in_at": signed_in,
+            }
+            for u, at, code, signed_in in roster
         ],
         "readings": [
             {"id": r.id, "title": r.title, "description": r.description}
             for r in readings
         ],
     }
+
+
+async def _mode_locked(db: AsyncSession, class_id: uuid.UUID) -> bool:
+    """Trial mode: once a participant has signed in, the class's group is fixed."""
+    signed_in = await db.scalar(
+        select(func.count())
+        .select_from(Participant)
+        .where(Participant.class_id == class_id, Participant.signed_in_at.is_not(None))
+    )
+    return bool(signed_in)
 
 
 # --------------------------------------------------------------------------- #
@@ -196,6 +225,7 @@ async def create_class(
             name=fields.name,
             section=fields.section,
             join_code=new_join_code(),
+            mode=fields.mode,
         )
         db.add(klass)
         try:
@@ -215,7 +245,9 @@ async def update_class(
     db: AsyncSession, instructor_id: uuid.UUID, class_id: uuid.UUID, fields: Fields
 ) -> dict:
     klass = await _owned(db, instructor_id, class_id)
-    klass.name, klass.section = fields.name, fields.section
+    if ClassMode(klass.mode) is not fields.mode and await _mode_locked(db, class_id):
+        raise ModeLocked
+    klass.name, klass.section, klass.mode = fields.name, fields.section, fields.mode
     try:
         await db.commit()
     except IntegrityError as e:

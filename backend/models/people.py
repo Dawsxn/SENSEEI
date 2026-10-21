@@ -12,7 +12,7 @@ from sqlalchemy import Index, String, func, text
 from sqlmodel import Field
 
 from .base import TS, Entity, SoftDelete, utcnow
-from .enums import Role
+from .enums import ClassMode, Role
 
 
 class User(Entity, SoftDelete, table=True):
@@ -84,6 +84,12 @@ class Class(Entity, SoftDelete, table=True):
     #: The section within the course, e.g. K31.
     section: str
     join_code: str = Field(description="Generated on creation; students enrol with it")
+    #: What its students do with a reading. Always SEE-I outside trial mode.
+    mode: ClassMode = Field(
+        default=ClassMode.SEEI,
+        sa_type=String(16),
+        sa_column_kwargs={"server_default": ClassMode.SEEI.value},
+    )
     created_at: datetime = Field(default_factory=utcnow, sa_type=TS)
 
 

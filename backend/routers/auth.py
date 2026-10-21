@@ -24,12 +24,12 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..auth import google_oauth, is_dlsu_email
+from ..auth import google_oauth, is_dlsu_email, is_instructor
 from ..db import get_session
 from ..deps import get_current_user
 from ..models import Role, User
-from ..schemas import DevLoginIn, UserOut
-from ..services import auth_service
+from ..schemas import DevLoginIn, ParticipantSignInIn, UserOut
+from ..services import auth_service, trial_service
 from ..settings import get_settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -61,6 +61,10 @@ async def callback(request: Request, db: AsyncSession = Depends(get_session)):
     if not info.get("email_verified") or not is_dlsu_email(email):
         # A non-DLSU or unverified account may not sign in.
         return RedirectResponse(f"{home}/login?error=not_dlsu")
+    if settings.trial_mode and not is_instructor(email):
+        # On the trial instance Google is the research team's way in, and only
+        # theirs. Participants sign in with an ID.
+        return RedirectResponse(f"{home}/login?error=not_team")
 
     user = await auth_service.upsert_from_google(
         db, sub=info["sub"], email=email, name=info.get("name", "")
@@ -85,6 +89,7 @@ async def me(request: Request, user: User = Depends(get_current_user)) -> UserOu
         email=user.email,
         role=user.role,
         can_switch=may_act_as(request),
+        participant=user.participant_identifier is not None,
     )
 
 
@@ -95,7 +100,30 @@ async def config() -> dict:
     return {
         "dev_bypass": settings.dev_bypass_enabled,
         "google_configured": bool(settings.google_client_id),
+        "trial_mode": settings.trial_mode,
     }
+
+
+@router.post("/participant")
+async def participant_sign_in(
+    body: ParticipantSignInIn, request: Request, db: AsyncSession = Depends(get_session)
+) -> dict:
+    """Trial mode: sign in with a participant ID, and nothing else.
+
+    The ID is the whole credential. It works because it is random, only issued
+    IDs exist, and a batch is open only for its sitting (docs/context/trial.md).
+    """
+    try:
+        user = await trial_service.sign_in(db, body.code)
+    except trial_service.TrialOff:
+        raise HTTPException(status_code=404, detail="not found")
+    except trial_service.UnknownParticipant:
+        raise HTTPException(status_code=404, detail="unknown participant ID")
+    except trial_service.InactiveParticipant:
+        raise HTTPException(status_code=403, detail="participant ID no longer active")
+    request.session.clear()
+    request.session["user_id"] = str(user.id)
+    return {"ok": True}
 
 
 # --------------------------------------------------------------------------- #
@@ -124,7 +152,13 @@ def _require_act_as(request: Request) -> None:
 async def dev_users(request: Request, db: AsyncSession = Depends(get_session)) -> list[dict]:
     """The users to act as: the dev sign-in screen's list, and the switch menu's."""
     _require_act_as(request)
-    users = await db.scalars(select(User).order_by(User.role, User.name))
+    # Trial participants sign in with their ID, the way they will on the day,
+    # and a sitting's worth of them would bury everyone else in the list.
+    users = await db.scalars(
+        select(User)
+        .where(User.participant_identifier.is_(None))
+        .order_by(User.role, User.name)
+    )
     return [
         {"id": str(u.id), "name": u.name, "email": u.email, "role": Role(u.role).value}
         for u in users

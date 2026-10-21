@@ -18,6 +18,9 @@ interface SessionTopBarProps {
    *  shows which one is pressed; the screen owns the panels themselves. */
   panel: "components" | "rubric" | null;
   onTogglePanel: (panel: "components" | "rubric") => void;
+  /** Trial mode: the participant's countdown. With it, there is no way out and
+   *  no class label, which could name the participant's group. */
+  clock?: React.ReactNode;
 }
 
 /** The tutoring screen's own top bar: exit, the reading, step progress, rubric.
@@ -34,6 +37,7 @@ export function SessionTopBar({
   onExit,
   panel,
   onTogglePanel,
+  clock,
 }: SessionTopBarProps) {
   const currentIndex = currentStep ? STEPS.indexOf(currentStep) : 0;
   const complete = status === "complete" || phase === "terminal";
@@ -42,17 +46,23 @@ export function SessionTopBar({
     // Above the panels' click-away overlay, so switching straight from one
     // panel to the other is one click rather than two.
     <header className="relative z-50 flex h-14 shrink-0 items-center gap-3 border-b bg-background px-2 sm:px-4">
-      <Button variant="ghost" size="icon" aria-label="Leave session" onClick={onExit}>
-        <X className="h-[18px] w-[18px] text-muted-foreground" />
-      </Button>
+      {clock ? (
+        <span className="w-1" />
+      ) : (
+        <Button variant="ghost" size="icon" aria-label="Leave session" onClick={onExit}>
+          <X className="h-[18px] w-[18px] text-muted-foreground" />
+        </Button>
+      )}
 
       {/* Title, class and progress cluster together on the left, as in the
           mockup; the reference buttons are pushed to the right. */}
       <div className="flex min-w-0 items-baseline gap-2">
         <span className="truncate text-[14px] font-medium">{readingTitle}</span>
-        <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">
-          {section}
-        </span>
+        {!clock && (
+          <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">
+            {section}
+          </span>
+        )}
       </div>
 
       <div className="hidden shrink-0 items-center gap-1.5 sm:flex" aria-label="Progress">
@@ -76,6 +86,7 @@ export function SessionTopBar({
       {/* What the student can look up mid-answer: the concept's core components,
           and what each criterion asks for. */}
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        {clock}
         <Button
           variant="secondary"
           size="sm"

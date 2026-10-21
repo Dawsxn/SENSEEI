@@ -15,6 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import (
+    FINISHED_STATUSES,
     Class,
     CoreComponent,
     Enrolment,
@@ -67,9 +68,7 @@ async def _statuses(
         .where(
             Session.student_id == user_id,
             Session.reading_id.in_(reading_ids),
-            Session.status.in_(
-                [SessionStatus.COMPLETE.value, SessionStatus.FALLBACK.value]
-            ),
+            Session.status.in_(FINISHED_STATUSES),
         )
         .order_by(Session.started_at.desc())
     )
