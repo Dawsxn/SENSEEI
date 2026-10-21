@@ -16,12 +16,12 @@
  * ending in the trial's words. They have one session, so a reload picks it up
  * rather than starting another. */
 
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useReading } from "../readings/useReadings";
 import { TrialClock, useTimeUp } from "../trial/TrialClock";
-import { logTrial, useTrialLogging } from "../trial/trialLog";
+import { logTrial, setTrialContext, useTrialLogging } from "../trial/trialLog";
 import { useIsParticipant, useTrialStatus } from "../trial/useTrial";
 import { readingFileUrl } from "../../lib/api";
 import { cn } from "../../lib/utils";
@@ -54,7 +54,16 @@ export function TutoringScreen() {
   const [panel, setPanel] = useState<"components" | "rubric" | null>(null);
   const navigate = useNavigate();
   useTrialLogging(participant);
-  useLogReplies(state.phase);
+
+  // Every event from this screen says which step, and which attempt at it, the
+  // participant was on. The attempt is the one they are making next.
+  // Not cleared between turns, only when the screen closes: a reply is logged
+  // as it lands, against the attempt it answered, before this moves on.
+  useEffect(() => {
+    if (!state.currentStep) return;
+    setTrialContext({ step: state.currentStep, attempt: state.attemptsUsed + 1 });
+  }, [state.currentStep, state.attemptsUsed]);
+  useEffect(() => () => setTrialContext({}), []);
 
   // Every open and close is recorded, including the close that comes from
   // switching straight to the other panel.
@@ -142,19 +151,6 @@ export function TutoringScreen() {
       </div>
     </div>
   );
-}
-
-/** Records each tutor reply as it finishes arriving: the moment the participant
- *  could start reading it. Against their first keystroke, that is their thinking
- *  time. */
-function useLogReplies(phase: string) {
-  const previous = useRef(phase);
-  useEffect(() => {
-    if (previous.current !== phase && (phase === "awaiting_input" || phase === "terminal")) {
-      logTrial("reply_shown");
-    }
-    previous.current = phase;
-  }, [phase]);
 }
 
 function PaneNotice({ children }: { children: React.ReactNode }) {

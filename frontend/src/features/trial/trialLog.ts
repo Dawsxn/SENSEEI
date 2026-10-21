@@ -8,7 +8,11 @@
  * once more when the page is hidden or closed, through `sendBeacon` so the last
  * batch survives the tab closing. Each carries the time it happened, so a late
  * batch keeps its true order. Nothing typed or pasted is ever sent: a paste is
- * its length. */
+ * its length.
+ *
+ * In a SEE-I session every event also carries the step and the attempt being
+ * made, so each row reads on its own: "opened the rubric on Elaborate, before
+ * attempt 2" needs no lining up against the transcript afterwards. */
 
 import { useEffect } from "react";
 
@@ -31,15 +35,26 @@ interface QueuedEvent {
 const FLUSH_MS = 5000;
 const MAX_BATCH = 200;
 
+type EventData = Record<string, string | number | boolean>;
+
 let enabled = false;
 let queue: QueuedEvent[] = [];
+/** Where the participant is, added to every event: the SEE-I step and attempt. */
+let context: EventData = {};
 
-export function logTrial(
-  kind: TrialEventKind,
-  data?: Record<string, string | number | boolean>,
-): void {
+export function logTrial(kind: TrialEventKind, data?: EventData): void {
   if (!enabled) return;
-  queue.push({ kind, at: new Date().toISOString(), ...(data ? { data } : {}) });
+  const merged = { ...context, ...data };
+  queue.push({
+    kind,
+    at: new Date().toISOString(),
+    ...(Object.keys(merged).length ? { data: merged } : {}),
+  });
+}
+
+/** Set what every event from now on carries, or clear it with `{}`. */
+export function setTrialContext(next: EventData): void {
+  context = next;
 }
 
 function take(): QueuedEvent[] {
@@ -108,6 +123,7 @@ export const __queue = {
   reset: () => {
     queue = [];
     enabled = false;
+    context = {};
   },
   enable: () => {
     enabled = true;

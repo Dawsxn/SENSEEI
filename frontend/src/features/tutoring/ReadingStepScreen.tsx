@@ -20,7 +20,7 @@
  * their group. The countdown takes the right of the bar.
  */
 
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -29,7 +29,7 @@ import { Button } from "../../components/ui/button";
 import { readingFileUrl } from "../../lib/api";
 import { useReading } from "../readings/useReadings";
 import { TrialClock, useTimeUp } from "../trial/TrialClock";
-import { useTrialLogging } from "../trial/trialLog";
+import { setTrialContext, useTrialLogging } from "../trial/trialLog";
 import { useIntro } from "../trial/useIntro";
 import { useIsParticipant, useStartTrialClock } from "../trial/useTrial";
 import { ReadingIntroDialog } from "./ReadingIntroDialog";
@@ -49,6 +49,11 @@ export function ReadingStepScreen() {
   const timeUp = useTimeUp();
   useStartTrialClock(participant);
   useTrialLogging(participant);
+  // Page changes here happen before the session: reading, not a SEE-I step.
+  useEffect(() => {
+    setTrialContext({ step: "Reading" });
+    return () => setTrialContext({});
+  }, []);
 
   return (
     <div className="flex h-full flex-col">
