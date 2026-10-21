@@ -28,6 +28,7 @@ vi.mock("react-router-dom", async () => ({
 vi.mock("../trial/useTrial", () => ({
   useIsParticipant: () => false,
   useTrialStatus: () => ({ data: undefined }),
+  useStartTrialClock: () => undefined,
 }));
 vi.mock("../trial/TrialClock", () => ({ TrialClock: () => null, useTimeUp: () => false }));
 vi.mock("@tanstack/react-query", async () => ({

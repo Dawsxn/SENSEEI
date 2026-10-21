@@ -14,6 +14,7 @@ import { SessionReviewPage } from "./features/review/SessionReviewPage";
 import { ReadingStepScreen } from "./features/tutoring/ReadingStepScreen";
 import { TutoringScreen } from "./features/tutoring/TutoringScreen";
 import { BatchPage } from "./features/trial/BatchPage";
+import { ChatbotScreen, ReadingOnlyScreen } from "./features/trial/ControlGroupScreens";
 import { ParticipantsPage } from "./features/trial/ParticipantsPage";
 
 const signedIn = (page: ReactNode) => <RequireAuth>{page}</RequireAuth>;
@@ -46,6 +47,9 @@ const router = createBrowserRouter([
   // Trial mode only; the API under them answers 404 anywhere else.
   { path: "/participants", element: instructor(<ParticipantsPage />) },
   { path: "/participants/:batchId", element: instructor(<BatchPage />) },
+  // The trial's control groups. A participant lands on theirs from `/`.
+  { path: "/chat/:readingId", element: signedIn(<ChatbotScreen />) },
+  { path: "/reading/:readingId", element: signedIn(<ReadingOnlyScreen />) },
 ]);
 
 export default function App() {

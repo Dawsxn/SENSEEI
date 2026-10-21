@@ -16,11 +16,12 @@
  * ending in the trial's words. They have one session, so a reload picks it up
  * rather than starting another. */
 
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useReading } from "../readings/useReadings";
 import { TrialClock, useTimeUp } from "../trial/TrialClock";
+import { logTrial, useTrialLogging } from "../trial/trialLog";
 import { useIsParticipant, useTrialStatus } from "../trial/useTrial";
 import { readingFileUrl } from "../../lib/api";
 import { cn } from "../../lib/utils";
@@ -52,6 +53,20 @@ export function TutoringScreen() {
   const [confirmingExit, setConfirmingExit] = useState(false);
   const [panel, setPanel] = useState<"components" | "rubric" | null>(null);
   const navigate = useNavigate();
+  useTrialLogging(participant);
+  useLogReplies(state.phase);
+
+  // Every open and close is recorded, including the close that comes from
+  // switching straight to the other panel.
+  const togglePanel = (p: "components" | "rubric") => {
+    if (panel) logTrial("panel_closed", { panel });
+    if (panel !== p) logTrial("panel_opened", { panel: p });
+    setPanel(panel === p ? null : p);
+  };
+  const closePanel = () => {
+    if (panel) logTrial("panel_closed", { panel });
+    setPanel(null);
+  };
 
   const leave = () => navigate("/");
 
@@ -75,21 +90,21 @@ export function TutoringScreen() {
         phase={state.phase}
         onExit={onExit}
         panel={panel}
-        onTogglePanel={(p) => setPanel((open) => (open === p ? null : p))}
+        onTogglePanel={togglePanel}
         clock={participant ? <TrialClock /> : undefined}
       />
 
       {panel === "components" && (
         <ComponentsPanel
           components={reading?.core_components ?? []}
-          onClose={() => setPanel(null)}
+          onClose={closePanel}
         />
       )}
       {panel === "rubric" && (
         <RubricPanel
           currentStep={state.currentStep}
           unmet={unmet}
-          onClose={() => setPanel(null)}
+          onClose={closePanel}
         />
       )}
 
@@ -127,6 +142,19 @@ export function TutoringScreen() {
       </div>
     </div>
   );
+}
+
+/** Records each tutor reply as it finishes arriving: the moment the participant
+ *  could start reading it. Against their first keystroke, that is their thinking
+ *  time. */
+function useLogReplies(phase: string) {
+  const previous = useRef(phase);
+  useEffect(() => {
+    if (previous.current !== phase && (phase === "awaiting_input" || phase === "terminal")) {
+      logTrial("reply_shown");
+    }
+    previous.current = phase;
+  }, [phase]);
 }
 
 function PaneNotice({ children }: { children: React.ReactNode }) {

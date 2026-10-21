@@ -9,9 +9,9 @@ readings, the tests outside the app) is not final, so the app is built to fit
 whatever it settles on rather than one arrangement.
 
 **Built so far:** `TRIAL_MODE`, class modes, participant IDs in batches, sign-in
-by ID, one session per participant, and the 40 minutes (steps 3 and 4 of the
-order of work below). The control groups' screens, the event log, export and the
-instance itself are still to come. Proposed changes to the study's procedure and
+by ID, one session per participant, the 40 minutes, the two control groups'
+screens and the event log (steps 3 to 6 of the order of work below). Export and
+the instance itself are still to come. Proposed changes to the study's procedure and
 analysis, for the group to discuss, are in
 `docs/thesis/human-evaluation-revisions.md`.
 
@@ -181,11 +181,36 @@ unguided use looks like, which is what this group stands for. The cost is a
 second difference between the two AI groups, which the manuscript should state;
 the event log records how many chatbot participants pasted from the reading.
 
+**What it is, exactly:** the same provider, model, temperature and thinking level
+as the agents, sent the whole conversation each turn with no system prompt at
+all. Its replies are shown the way a general-purpose chatbot shows them, with
+lists and bold, and the participant's messages sit in grey rather than SEE-I's
+green, so the screen does not read as SENSEE-I. A reload picks the conversation
+back up. A reply that fails is not stored; the message that asked for it is, and
+the failure is in the event log.
+
+**Done** sits beside the countdown, green as it is on every screen. It asks first
+("Finish now? You won't be able to send more messages.") and then ends the chat.
+
 ### The reading-only group (passive control)
 
 The reading, the countdown, and a Done button. The time they press it is recorded,
 because the exclusion rule for this group is finishing faster than the text can
-realistically be read (§4.6.3).
+realistically be read (§4.6.3). Done asks first ("Finish now? You can't undo
+this."); the reading stays on screen afterwards.
+
+### Before you start
+
+Every group sees one line of instructions when its reading opens, so no group is
+told more than another:
+
+| Group | Says |
+| --- | --- |
+| SEE-I | The session goes through SEE-I a step at a time; read the whole material first; press Done when finished |
+| Chatbot | Read the material; use the chatbot beside it however you like; press Done when finished |
+| Reading only | Read the material in its entirety; press Done when finished |
+
+It shows once. A participant who reloads partway does not see it again.
 
 ## What is recorded
 
@@ -208,21 +233,29 @@ per step.
 
 ### Added in trial mode: the event log
 
-One timestamped row per interaction:
+One row per interaction in `trial_event`, stamped with when it happened by the
+participant's browser (and when the server received it). The browser sends what
+only it can see in batches every few seconds, and once more as the page closes;
+the server records what only it knows. Unknown kinds are refused, and a browser
+clock more than an hour out is replaced by the server's.
 
 | Event | For |
 | --- | --- |
-| Reading opened, Done pressed | Reading time before starting; the reading-only exclusion rule |
-| Rubric panel opened and closed | How often, at which step, for how long, and whether opening it before a retry helps |
-| Core components panel opened and closed | The same, for the core components |
-| PDF page changed during a session | Whether participants returned to the text, and to which page |
-| Tutor reply finished streaming | Time spent reading feedback before replying |
-| First keystroke after each prompt | Thinking time against typing time |
-| Paste: that it happened and its length, never its content | Relevant to the Own Words criterion |
-| Left the tab and came back | Whether a participant left the app mid-session |
-| An AI turn failed and was retried | Which participants had a rougher experience |
-| Time ran out | Which step a participant was on at 40:00 |
-| Chatbot message sent | The chatbot group's transcript, word counts and timing |
+| Event (`kind`) | For |
+| --- | --- |
+| Reading opened (`reading_opened`), Done pressed (`done`) | Reading time before starting; the reading-only exclusion rule |
+| Rubric or core components panel opened and closed (`panel_opened`, `panel_closed`, with the panel) | How often, at which step, for how long, and whether opening it before a retry helps |
+| PDF page changed (`page_changed`, with the page) | Whether participants returned to the text, and to which page |
+| Tutor or chatbot reply finished streaming (`reply_shown`) | Time spent reading a reply before answering |
+| First keystroke after each reply (`first_keystroke`) | Thinking time against typing time |
+| Paste (`paste`, with its length only, never its content) | Relevant to the Own Words criterion, and to how the chatbot group used the reading |
+| Left the tab and came back (`tab_left`, `tab_returned`) | Whether a participant left the app; a reload also counts as leaving |
+| An AI turn failed (`turn_failed`, with where: assessment, tutor or chatbot) | Which participants had a rougher experience |
+
+Two things the table used to list are recorded elsewhere, so they are not events:
+**time running out** is the clock's start plus 40 minutes, and a SEE-I session
+cut off by it ends `timed_out` on the step it was on; **chatbot messages** are
+rows in `chat_message`, both sides of the conversation, with their times.
 
 ### Deliberately not recorded
 

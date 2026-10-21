@@ -92,6 +92,16 @@ design changes, so it always matches.
 | Trial: close a batch | [png/10c-batch-close.png](png/10c-batch-close.png) |
 | Trial: void an ID | [png/10c-batch-void.png](png/10c-batch-void.png) |
 | Trial: printed slips | [png/10d-slips.png](png/10d-slips.png) |
+| Trial chatbot: before you start | [png/11-chatbot-intro.png](png/11-chatbot-intro.png) |
+| Trial chatbot: empty | [png/11-chatbot.png](png/11-chatbot.png) |
+| Trial chatbot: chatting | [png/11-chatbot-chatting.png](png/11-chatbot-chatting.png) |
+| Trial chatbot: finish | [png/11-chatbot-finish.png](png/11-chatbot-finish.png) |
+| Trial chatbot: done | [png/11-chatbot-done.png](png/11-chatbot-done.png) |
+| Trial chatbot: time's up | [png/11-chatbot-time-up.png](png/11-chatbot-time-up.png) |
+| Trial reading only: before you start | [png/11b-reading-only-intro.png](png/11b-reading-only-intro.png) |
+| Trial reading only | [png/11b-reading-only.png](png/11b-reading-only.png) |
+| Trial reading only: finish | [png/11b-reading-only-finish.png](png/11b-reading-only-finish.png) |
+| Trial reading only: done | [png/11b-reading-only-done.png](png/11b-reading-only-done.png) |
 | Reading in a class, phone | [png/08c-mobile-class-reading.png](png/08c-mobile-class-reading.png) |
 
 Do not open a `.dc.html` in a browser expecting to see the screen. It renders a

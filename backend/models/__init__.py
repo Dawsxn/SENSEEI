@@ -22,7 +22,7 @@ from .enums import (
 from .people import Class, Enrolment, User, class_label
 from .readings import CoreComponent, Reading, ReadingAssignment, ReadingFile
 from .sessions import Assessment, Attempt, CriterionJudgment, Session, TutorMessage
-from .trial import Participant, ParticipantBatch
+from .trial import ChatMessage, Participant, ParticipantBatch, TrialEvent
 
 __all__ = [
     "TS", "Entity", "SoftDelete", "utcnow",
@@ -31,5 +31,5 @@ __all__ = [
     "User", "Class", "Enrolment", "class_label",
     "Reading", "CoreComponent", "ReadingAssignment", "ReadingFile",
     "Session", "Attempt", "Assessment", "CriterionJudgment", "TutorMessage",
-    "Participant", "ParticipantBatch",
+    "Participant", "ParticipantBatch", "ChatMessage", "TrialEvent",
 ]

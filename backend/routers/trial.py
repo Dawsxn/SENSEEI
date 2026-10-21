@@ -1,5 +1,5 @@
-"""Trial endpoints: a participant's own status and clock, and the research
-team's batches of participant IDs.
+"""Trial endpoints: a participant's own status, clock, Done, chatbot and event
+log, and the research team's batches of participant IDs.
 
 Every route here is a 404 unless `TRIAL_MODE` is on, so on any other instance
 they do not seem to exist (docs/context/trial.md).
@@ -12,17 +12,29 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from agents.providers.base import LLMProvider
+
 from ..db import get_session
-from ..deps import require_instructor, require_student
+from ..deps import get_chatbot_dep, require_instructor, require_student
 from ..models import User
-from ..schemas import BatchIn, BatchListItem, BatchOut, TrialStatusOut
-from ..services import trial_service
+from ..schemas import (
+    BatchIn,
+    BatchListItem,
+    BatchOut,
+    ChatIn,
+    ChatMessageOut,
+    TrialEventsIn,
+    TrialStatusOut,
+)
+from ..services import chat_service, trial_service
 from ..services.trial_service import (
     BatchNotFound,
     InvalidBatch,
+    NotDoneable,
     TrialOff,
     UnknownParticipant,
 )
@@ -59,6 +71,67 @@ async def start_clock(
         return TrialStatusOut(**await trial_service.start_clock(db, user.id))
     except (TrialOff, UnknownParticipant):
         raise NOT_FOUND
+
+
+@router.post("/trial/done", response_model=TrialStatusOut)
+async def finish(
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> TrialStatusOut:
+    """Done, for the chatbot and reading-only groups. Pressing it twice, or after
+    time is up, changes nothing."""
+    try:
+        return TrialStatusOut(**await trial_service.finish(db, user.id))
+    except (TrialOff, UnknownParticipant):
+        raise NOT_FOUND
+    except NotDoneable as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+
+@router.post("/trial/events", status_code=204)
+async def record_events(
+    body: TrialEventsIn,
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> Response:
+    """What the participant's browser saw them do, sent in batches."""
+    try:
+        await trial_service.record(
+            db, user.id, [(e.kind, e.at, e.data) for e in body.events]
+        )
+    except (TrialOff, UnknownParticipant):
+        raise NOT_FOUND
+    return Response(status_code=204)
+
+
+@router.get("/trial/chat", response_model=list[ChatMessageOut])
+async def chat_history(
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> list[ChatMessageOut]:
+    """The chatbot conversation so far, for a reload."""
+    try:
+        rows = await trial_service.chat_history(db, user.id)
+    except (TrialOff, UnknownParticipant):
+        raise NOT_FOUND
+    return [
+        ChatMessageOut(id=m.id, role=m.role, content=m.content, created_at=m.created_at)
+        for m in rows
+    ]
+
+
+@router.post("/trial/chat")
+async def chat(
+    body: ChatIn,
+    user: User = Depends(require_student),
+    model: LLMProvider = Depends(get_chatbot_dep),
+) -> StreamingResponse:
+    """Send the chatbot a message and stream its reply."""
+    return StreamingResponse(
+        chat_service.send(user.id, body.text, model),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # --------------------------------------------------------------------------- #

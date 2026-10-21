@@ -49,6 +49,8 @@ EXPECTED_TABLES = {
     "tutor_message",
     "participant_batch",
     "participant",
+    "chat_message",
+    "trial_event",
 }
 
 

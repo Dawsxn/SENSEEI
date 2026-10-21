@@ -1,0 +1,213 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap">
+  <style>
+    /* The trial's two control groups. Built from the same parts as the SEE-I
+       screens (TrialSession.dc.html): top bar, countdown, PDF pane, composer. */
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .pdfbody { font-family: Georgia, 'Times New Roman', serif; font-size: 11px; line-height: 1.62; color: #1a1a1a; }
+    .btn { border-radius: 6px; font-family: inherit; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; white-space: nowrap; }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+    .btn-md { height: 36px; padding: 0 16px; font-size: 14px; }
+    .btn-primary { border: none; background: #16a34a; color: #ffffff; }
+    .btn-secondary { border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; }
+    .msg { font-size: 14px; line-height: 1.625; color: #09090b; margin: 0; }
+    .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
+    .dialog { width: 420px; box-sizing: border-box; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <!-- Top bar: the reading, the countdown, and Done. No class label, no way out. -->
+  <div style="display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px 0 20px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0; box-sizing: border-box;">
+    <span style="font-size: 14px; font-weight: 500;">Cognitive Offloading</span>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border-radius: 6px; background: {{clockBg}};">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{clockIcon}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+        <span style="font-size: 13px; font-weight: 500; color: {{clockFg}}; font-variant-numeric: tabular-nums;">{{clock}} left</span>
+      </div>
+      <sc-if value="{{showTopDone}}" hint-placeholder-val="{{true}}">
+        <span class="btn btn-sm btn-primary">Done</span>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- ───── Chatbot: the reading beside a plain chat ───── -->
+  <sc-if value="{{chatbot}}" hint-placeholder-val="{{true}}">
+    <div style="flex-grow: 1; display: flex; min-height: 0;">
+      <div style="width: 662px; flex-shrink: 0; border-right: 1px solid #e4e4e7; display: flex; flex-direction: column; min-height: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 12px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+            <span style="font-size: 12px; color: #71717a;">1 of 3</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 12px; color: #71717a;">84%</span>
+            <div style="width: 1px; height: 14px; background: #e4e4e7;"></div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>
+          </div>
+        </div>
+        <div style="flex-grow: 1; background: #e9e9ec; padding-top: 20px; display: flex; justify-content: center; overflow: hidden;">
+          <div style="width: 600px; height: 900px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.14); padding: 48px 60px; box-sizing: border-box;">
+            <p style="font-family: Georgia, serif; font-size: 14px; font-weight: 700; color: #1a1a1a; margin: 0 0 14px;">3.2&nbsp;&nbsp;Cognitive Offloading</p>
+            <div class="pdfbody">
+              <p style="margin: 0 0 10px; text-align: justify;">Cognitive offloading is the act of delegating a mental task to something outside the mind. Writing a phone number on a slip of paper, setting an alarm instead of remembering an appointment, or letting a spreadsheet hold a running total are all instances of the same move: work that could be done internally is handed to an external tool.</p>
+              <p style="margin: 0 0 10px; text-indent: 16px; text-align: justify;">The appeal is obvious. Working memory is narrow and easily disrupted, and offloading frees it for whatever the person considers the real task.</p>
+              <p style="margin: 0; text-indent: 16px; text-align: justify;">The cost appears later, and it is easy to miss. Retrieving information from memory is itself what strengthens the memory, so a mind that never retrieves never consolidates.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex-grow: 1; display: flex; flex-direction: column; min-height: 0;">
+        <sc-if value="{{chatEmpty}}" hint-placeholder-val="{{true}}">
+          <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 14px; color: #71717a;">Ask anything.</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{chatFull}}" hint-placeholder-val="{{false}}">
+          <div style="flex-grow: 1; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; overflow: hidden;">
+            <div style="display: flex; justify-content: flex-end;">
+              <div style="max-width: 85%; background: #f4f4f5; border-radius: 8px; padding: 10px 16px; font-size: 14px; line-height: 1.625; color: #3f3f46;">What is cognitive offloading, in simple terms?</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <p class="msg">Cognitive offloading means using something outside your head to do mental work for you, so your memory and attention are free for other things.</p>
+              <p class="msg">Common examples:</p>
+              <div style="display: flex; flex-direction: column; gap: 6px; padding-left: 4px;">
+                <div style="display: flex; gap: 10px; align-items: flex-start;"><span style="display: block; width: 4px; height: 4px; border-radius: 999px; background: #71717a; margin-top: 10px; flex-shrink: 0;"></span><p class="msg">Writing a shopping list instead of memorising it</p></div>
+                <div style="display: flex; gap: 10px; align-items: flex-start;"><span style="display: block; width: 4px; height: 4px; border-radius: 999px; background: #71717a; margin-top: 10px; flex-shrink: 0;"></span><p class="msg">Setting a phone reminder for an appointment</p></div>
+                <div style="display: flex; gap: 10px; align-items: flex-start;"><span style="display: block; width: 4px; height: 4px; border-radius: 999px; background: #71717a; margin-top: 10px; flex-shrink: 0;"></span><p class="msg">Using a calculator for arithmetic</p></div>
+              </div>
+              <p class="msg">It saves effort in the moment, but if you always offload, you practise remembering less, so the knowledge does not stick as well.</p>
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+              <div style="max-width: 85%; background: #f4f4f5; border-radius: 8px; padding: 10px 16px; font-size: 14px; line-height: 1.625; color: #3f3f46;">Can you give me an example from school?</div>
+            </div>
+            <p class="msg">Sure. Say you are revising for an exam and you highlight a textbook instead of testing yourself<span style="display: inline-block; width: 2px; height: 15px; background: #09090b; margin-left: 2px; vertical-align: -2px;"></span></p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{chatComposer}}" hint-placeholder-val="{{true}}">
+          <div style="flex-shrink: 0; border-top: 1px solid #e4e4e7; padding: 16px;">
+            <div style="display: flex; align-items: flex-end; gap: 8px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 8px 12px;">
+              <span style="flex-grow: 1; padding: 4px 0; font-size: 14px; color: #71717a;">Message&hellip;</span>
+              <span class="btn btn-sm btn-primary" style="opacity: 0.5;">Send</span>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{chatEnded}}" hint-placeholder-val="{{false}}">
+          <div style="flex-shrink: 0; border-top: 1px solid #e4e4e7; padding: 16px 24px; text-align: center; font-size: 13px; color: #71717a;">{{endText}}</div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ───── Reading only: the reading, and Done ───── -->
+  <sc-if value="{{readingOnly}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 12px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+        <span style="font-size: 12px; color: #71717a;">1 of 3</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 12px; color: #71717a;">96%</span>
+        <div style="width: 1px; height: 14px; background: #e4e4e7;"></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>
+      </div>
+    </div>
+    <div style="flex-grow: 1; min-height: 0; background: #e9e9ec; display: flex; justify-content: center; padding-top: 20px; overflow: hidden;">
+      <div style="width: 700px; height: 900px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.14); padding: 52px 76px; box-sizing: border-box;">
+        <p style="font-family: Georgia, serif; font-size: 16px; font-weight: 700; color: #1a1a1a; margin: 0 0 16px;">3.2&nbsp;&nbsp;Cognitive Offloading</p>
+        <div class="pdfbody" style="font-size: 12px;">
+          <p style="margin: 0 0 10px; text-align: justify;">Cognitive offloading is the act of delegating a mental task to something outside the mind. Writing a phone number on a slip of paper, setting an alarm instead of remembering an appointment, or letting a spreadsheet hold a running total are all instances of the same move: work that could be done internally is handed to an external tool.</p>
+          <p style="margin: 0 0 10px; text-indent: 16px; text-align: justify;">The appeal is obvious. Working memory is narrow and easily disrupted, and offloading frees it for whatever the person considers the real task. A navigator who no longer has to hold a route in mind can attend to traffic instead.</p>
+          <p style="margin: 0 0 10px; text-indent: 16px; text-align: justify;">The cost appears later, and it is easy to miss. Retrieving information from memory is itself what strengthens the memory, so a mind that never retrieves never consolidates.</p>
+          <p style="margin: 0; text-indent: 16px; text-align: justify;">This is why the same behaviour can be either efficient or corrosive depending on what is being offloaded and why.</p>
+        </div>
+      </div>
+    </div>
+    <sc-if value="{{readingFooterDone}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; align-items: center; justify-content: flex-end; padding: 12px 24px; border-top: 1px solid #e4e4e7; flex-shrink: 0;">
+        <span class="btn btn-md btn-primary">Done</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{readingEnded}}" hint-placeholder-val="{{false}}">
+      <div style="flex-shrink: 0; border-top: 1px solid #e4e4e7; padding: 16px 24px; text-align: center; font-size: 13px; color: #71717a;">{{endText}}</div>
+    </sc-if>
+  </sc-if>
+
+  <!-- ───── Before you start: one line per group, as the SEE-I group gets ───── -->
+  <sc-if value="{{intro}}" hint-placeholder-val="{{false}}">
+    <div class="overlay">
+      <div class="dialog">
+        <div style="font-size: 16px; font-weight: 600;">Before you start</div>
+        <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: #71717a;">{{introBody}}</p>
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+          <span class="btn btn-sm btn-primary">Start</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ───── Finishing early asks first: it cannot be undone ───── -->
+  <sc-if value="{{confirm}}" hint-placeholder-val="{{false}}">
+    <div class="overlay">
+      <div class="dialog">
+        <div style="font-size: 16px; font-weight: 600;">Finish now?</div>
+        <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: #71717a;">{{confirmBody}}</p>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <span class="btn btn-sm btn-secondary">Cancel</span>
+          <span class="btn btn-sm btn-primary">Finish</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"state":{"editor":"enum","options":["Chatbot, intro","Chatbot","Chatbot, chatting","Chatbot, finish","Chatbot, done","Chatbot, time up","Reading only, intro","Reading only","Reading only, finish","Reading only, done"],"default":"Chatbot","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'Chatbot';
+    const chatbot = state.startsWith('Chatbot');
+    const done = state.endsWith('done');
+    const timeUp = state.endsWith('time up');
+    const ended = done || timeUp;
+    const late = timeUp;
+    const intro = state.endsWith('intro');
+    const clock = { 'Chatbot, intro': '40:00', 'Chatbot': '39:48', 'Reading only, intro': '40:00', 'Chatbot, chatting': '31:05', 'Chatbot, finish': '22:40', 'Chatbot, done': '22:31', 'Chatbot, time up': '0:00', 'Reading only': '33:12', 'Reading only, finish': '18:02', 'Reading only, done': '17:55' }[state] || '';
+    return {
+      chatbot, readingOnly: !chatbot,
+      chatEmpty: state === 'Chatbot' || state === 'Chatbot, intro',
+      chatFull: chatbot && state !== 'Chatbot' && !intro,
+      intro,
+      introBody: chatbot
+        ? "Read the material. You can use the chatbot beside it however you like. Press Done when you're finished."
+        : "Read the material in its entirety. Press Done when you're finished.",
+      chatComposer: chatbot && !ended,
+      chatEnded: chatbot && ended,
+      showTopDone: chatbot && !ended,
+      readingFooterDone: !chatbot && !ended,
+      readingEnded: !chatbot && ended,
+      confirm: state.endsWith('finish'),
+      confirmBody: chatbot ? "You won't be able to send more messages." : "You can't undo this.",
+      endText: timeUp ? "Time's up. Please wait for the next instructions." : "You're done. Please stay at your seat until time is up.",
+      clock,
+      clockBg: late ? '#fffbeb' : 'transparent',
+      clockFg: late ? '#92400e' : '#3f3f46',
+      clockIcon: late ? '#92400e' : '#71717a',
+    };
+  }
+}
+</script>
+</body>
+</html>

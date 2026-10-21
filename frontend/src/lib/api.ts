@@ -31,7 +31,14 @@ import type {
   NewReading,
 } from "../features/library/types";
 import type { SessionTranscript } from "../features/review/types";
-import type { Batch, BatchListItem, NewBatch, TrialStatus } from "../features/trial/types";
+import type {
+  Batch,
+  BatchListItem,
+  ChatEvent,
+  ChatMessageRow,
+  NewBatch,
+  TrialStatus,
+} from "../features/trial/types";
 import type { Rubric } from "../features/tutoring/types";
 import type {
   SessionState,
@@ -39,17 +46,20 @@ import type {
   TutorMessageRow,
 } from "../features/tutoring/types";
 
-/** Map a raw SSE event to a typed StreamEvent, tagging the payload with `type`. */
-function toStreamEvent(event: string, data: string): StreamEvent {
+/** Map a raw SSE event to a typed event, tagging the payload with `type`. */
+function toStreamEvent<E>(event: string, data: string): E {
   const payload = data ? JSON.parse(data) : {};
-  return { type: event, ...payload } as StreamEvent;
+  return { type: event, ...payload } as E;
 }
 
-async function* streamPost(
+/** Every stream can fail the same two ways, so every event type includes this. */
+type StreamError = { type: "error"; detail: string };
+
+async function* streamPost<E extends { type: string } = StreamEvent>(
   path: string,
   body: unknown,
   signal?: AbortSignal,
-): AsyncGenerator<StreamEvent> {
+): AsyncGenerator<E | StreamError> {
   let response: Response;
   try {
     response = await fetch(path, {
@@ -75,7 +85,7 @@ async function* streamPost(
 
   try {
     for await (const raw of readSSE(response)) {
-      yield toStreamEvent(raw.event, raw.data);
+      yield toStreamEvent<E>(raw.event, raw.data);
     }
   } catch (e) {
     // The stream broke mid-flight. Again, an abort is intentional.
@@ -299,6 +309,13 @@ export const participantSignIn = (code: string) =>
 export const getTrialStatus = () => send<TrialStatus>("/trial/me", "GET");
 /** Start the participant's clock. Only the first call starts it. */
 export const startTrialClock = () => send<TrialStatus>("/trial/clock", "POST");
+/** Done, for the chatbot and reading-only groups. */
+export const finishTrial = () => send<TrialStatus>("/trial/done", "POST");
+export const getChat = () => send<ChatMessageRow[]>("/trial/chat", "GET");
+/** Send the chatbot a message. Streams its reply. */
+export function sendChat(text: string, signal?: AbortSignal): AsyncGenerator<ChatEvent> {
+  return streamPost<ChatEvent>("/trial/chat", { text }, signal);
+}
 
 export const getBatches = () => send<BatchListItem[]>("/instructor/batches", "GET");
 export const getBatch = (id: string) => send<Batch>(`/instructor/batches/${id}`, "GET");

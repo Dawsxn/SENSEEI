@@ -135,6 +135,46 @@ class GeminiProvider(LLMProvider):
             if text:
                 yield text
 
+    def chat_stream(self, turns: list[tuple[str, str]]):
+        """A real multi-turn conversation, with no system instruction.
+
+        Same model, temperature and thinking level as the agents, so the only
+        difference from SENSEE-I is what the trial's design intends: no
+        pedagogical prompt.
+        """
+        types = self._types
+        cfg_kwargs = dict(
+            temperature=self.temperature,
+            max_output_tokens=self.max_output_tokens,
+        )
+        if self.thinking_level:
+            cfg_kwargs["thinking_config"] = types.ThinkingConfig(
+                thinking_level=self.thinking_level
+            )
+        contents = [
+            types.Content(
+                role="user" if role == "user" else "model",
+                parts=[types.Part(text=text)],
+            )
+            for role, text in turns
+        ]
+        self.last_usage = None
+        self.last_finish_reason = None
+        for chunk in self.client.models.generate_content_stream(
+            model=self.model_name,
+            contents=contents,
+            config=types.GenerateContentConfig(**cfg_kwargs),
+        ):
+            usage = self._usage(chunk)
+            if usage is not None:
+                self.last_usage = usage
+            reason = self._finish_reason(chunk)
+            if reason is not None:
+                self.last_finish_reason = reason
+            text = getattr(chunk, "text", None)
+            if text:
+                yield text
+
     @staticmethod
     def _usage(resp) -> dict | None:
         um = getattr(resp, "usage_metadata", None)
