@@ -30,6 +30,7 @@ import { readingFileUrl } from "../../lib/api";
 import { useReading } from "../readings/useReadings";
 import { TrialClock, useTimeUp } from "../trial/TrialClock";
 import { useTrialLogging } from "../trial/trialLog";
+import { useIntro } from "../trial/useIntro";
 import { useIsParticipant, useStartTrialClock } from "../trial/useTrial";
 import { ReadingIntroDialog } from "./ReadingIntroDialog";
 import { ReadingPanel } from "./ReadingPanel";
@@ -42,9 +43,9 @@ export function ReadingStepScreen() {
   const { readingId } = useParams<{ readingId: string }>();
   const { data: reading, isLoading, isError } = useReading(readingId);
   const navigate = useNavigate();
-  const [showIntro, setShowIntro] = useState(true);
-  const [confirmingLeave, setConfirmingLeave] = useState(false);
   const participant = useIsParticipant();
+  const [showIntro, closeIntro] = useIntro(participant);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
   const timeUp = useTimeUp();
   useStartTrialClock(participant);
   useTrialLogging(participant);
@@ -108,7 +109,7 @@ export function ReadingStepScreen() {
         </footer>
       )}
 
-      {showIntro && <ReadingIntroDialog onStart={() => setShowIntro(false)} />}
+      {showIntro && <ReadingIntroDialog onStart={closeIntro} />}
 
       {confirmingLeave && (
         <ConfirmDialog

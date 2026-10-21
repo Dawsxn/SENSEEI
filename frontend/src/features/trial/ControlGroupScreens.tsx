@@ -11,7 +11,7 @@
  * group it is the measure their exclusion rule uses. */
 
 import { useQueryClient } from "@tanstack/react-query";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { ConfirmDialog } from "../../components/ConfirmDialog";
@@ -25,6 +25,7 @@ import { ChatText } from "./ChatText";
 import { TrialClock, useTimeUp } from "./TrialClock";
 import { logTrial, useTrialLogging } from "./trialLog";
 import { useChatbot } from "./useChatbot";
+import { useIntro } from "./useIntro";
 import { useStartTrialClock, useTrialStatus } from "./useTrial";
 
 const PdfPanel = lazy(() =>
@@ -37,10 +38,6 @@ const INTRO = {
   reading: "Read the material in its entirety. Press Done when you're finished.",
 };
 
-/** Seconds into the clock after which an open screen counts as a return, not a
- *  first visit. Long enough for a slow first load to still show the intro. */
-const RELOAD_GRACE = 15;
-
 const DONE_TEXT = "You're done. Please stay at your seat until time is up.";
 const TIME_UP_TEXT = "Time's up. Please wait for the next instructions.";
 
@@ -51,14 +48,7 @@ function useControlGroup() {
   const reading = useReading(readingId);
   const { data: status } = useTrialStatus();
   const timeUp = useTimeUp();
-  const [intro, setIntro] = useState(true);
-  // "Before you start" is for the start. A participant reloading partway
-  // through already started, so it stays closed for them.
-  const underway =
-    status?.seconds_left != null && status.seconds_left < status.minutes * 60 - RELOAD_GRACE;
-  useEffect(() => {
-    if (underway) setIntro(false);
-  }, [underway]);
+  const [intro, closeIntro] = useIntro(true);
   const [confirming, setConfirming] = useState(false);
   const queryClient = useQueryClient();
   useStartTrialClock(true);
@@ -74,7 +64,7 @@ function useControlGroup() {
     ended: done || timeUp,
     endText: timeUp && !done ? TIME_UP_TEXT : DONE_TEXT,
     intro,
-    closeIntro: () => setIntro(false),
+    closeIntro,
     confirming,
     askToFinish: () => setConfirming(true),
     cancelFinish: () => setConfirming(false),
