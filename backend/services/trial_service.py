@@ -15,6 +15,10 @@ statistics on one path. This module adds what makes them a participant:
   for `TRIAL_MINUTES`. A session still going when it runs out is ended as
   `timed_out` and kept, like any other ended session.
 - **One session per participant**, checked when one is started.
+- **Done**, for the two control groups, who have no session to finish.
+- **The event log**: what a participant did, for the analysis. Their browser
+  sends what it sees (panels, pages, pastes, the tab); the server records what
+  only it knows (the reading opening, Done, a failed AI turn).
 
 The server holds the clock. The countdown on screen is only a display of it, so
 nothing the browser sends can buy more time.
@@ -33,6 +37,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import (
     FINISHED_STATUSES,
+    ChatMessage,
     Class,
     ClassMode,
     Enrolment,
@@ -43,6 +48,7 @@ from ..models import (
     Role,
     Session,
     SessionStatus,
+    TrialEvent,
     User,
     class_label,
     utcnow,
@@ -53,6 +59,27 @@ from .class_service import CODE_ALPHABET, CODE_HALF
 #: Most IDs one batch may hold. Far above a sitting, low enough that a typo in a
 #: count cannot fill the database.
 MAX_BATCH = 300
+
+#: What a participant's browser may report. Each has a stated purpose in
+#: docs/context/trial.md; anything else is refused rather than stored.
+CLIENT_EVENTS = frozenset(
+    {
+        "panel_opened",      # data: {"panel": "rubric" | "components"}
+        "panel_closed",      # data: {"panel": ...}
+        "page_changed",      # data: {"page": n}
+        "reply_shown",       # a tutor or chatbot reply finished streaming
+        "first_keystroke",   # the first key typed after a reply
+        "paste",             # data: {"length": n}. Never the pasted text
+        "tab_left",
+        "tab_returned",
+    }
+)
+#: What the server records itself, because only it knows.
+SERVER_EVENTS = frozenset({"reading_opened", "done", "turn_failed"})
+
+#: A browser clock this far from the server's is not believed; the event is
+#: stamped with the server's time instead.
+CLOCK_TRUST = timedelta(hours=1)
 
 
 class TrialOff(Exception):
@@ -73,6 +100,10 @@ class BatchNotFound(Exception):
 
 class InvalidBatch(Exception):
     """The requested batch cannot be made; the message says why."""
+
+
+class NotDoneable(Exception):
+    """Done does not apply: a SEE-I participant, or one whose reading never opened."""
 
 
 def require_trial() -> None:
@@ -214,6 +245,7 @@ async def status(db: AsyncSession, user_id: uuid.UUID) -> dict:
     end = deadline(participant)
     return {
         "code": participant.code,
+        "done": participant.done_at is not None,
         "mode": ClassMode(mode).value,
         "reading_id": await _their_reading(db, participant.class_id),
         "minutes": get_settings().trial_minutes,
@@ -236,8 +268,109 @@ async def start_clock(db: AsyncSession, user_id: uuid.UUID) -> dict:
         raise UnknownParticipant
     if participant.clock_started_at is None:
         participant.clock_started_at = utcnow()
+        db.add(_event(participant, "reading_opened", at=participant.clock_started_at))
         await db.commit()
     return await status(db, user_id)
+
+
+async def finish(db: AsyncSession, user_id: uuid.UUID) -> dict:
+    """Done, for the chatbot and reading-only groups. Once, and only in time."""
+    require_trial()
+    participant = await participant_for(db, user_id)
+    if participant is None:
+        raise UnknownParticipant
+    mode = await db.scalar(select(Class.mode).where(Class.id == participant.class_id))
+    if ClassMode(mode) is ClassMode.SEEI:
+        raise NotDoneable("a SEE-I session ends by itself")
+    if participant.clock_started_at is None:
+        raise NotDoneable("the reading has not opened")
+    if participant.done_at is None and not await expire_if_due(db, participant):
+        participant.done_at = utcnow()
+        db.add(_event(participant, "done", at=participant.done_at))
+        await db.commit()
+    return await status(db, user_id)
+
+
+# --------------------------------------------------------------------------- #
+# the event log
+
+
+def _event(
+    participant: Participant, kind: str, data: dict | None = None, at: datetime | None = None
+) -> TrialEvent:
+    return TrialEvent(participant_id=participant.id, kind=kind, data=data, at=at or utcnow())
+
+
+async def record(
+    db: AsyncSession, user_id: uuid.UUID, events: list[tuple[str, datetime, dict | None]]
+) -> int:
+    """Store what a participant's browser reports. Unknown kinds are dropped,
+    and a time the browser's clock got badly wrong is replaced by the server's.
+    Returns how many were kept."""
+    require_trial()
+    participant = await participant_for(db, user_id)
+    if participant is None:
+        raise UnknownParticipant
+    now = utcnow()
+    kept = 0
+    for kind, at, data in events:
+        if kind not in CLIENT_EVENTS:
+            continue
+        if at.tzinfo is None or abs(at - now) > CLOCK_TRUST:
+            at = now
+        db.add(_event(participant, kind, data or None, at))
+        kept += 1
+    await db.commit()
+    return kept
+
+
+async def note(db: AsyncSession, user_id: uuid.UUID, kind: str, data: dict | None = None) -> None:
+    """Record a server-side event for a participant. Does nothing for anyone
+    else, or outside trial mode, so the shared code paths can call it freely."""
+    assert kind in SERVER_EVENTS
+    if not get_settings().trial_mode:
+        return
+    participant = await participant_for(db, user_id)
+    if participant is None:
+        return
+    db.add(_event(participant, kind, data))
+    await db.commit()
+
+
+# --------------------------------------------------------------------------- #
+# the chatbot group
+
+
+async def refuse_chat(db: AsyncSession, user_id: uuid.UUID) -> str | None:
+    """Why this participant may not send a chatbot message, or None."""
+    if not get_settings().trial_mode:
+        return "not found"
+    participant = await participant_for(db, user_id)
+    if participant is None:
+        return "not found"
+    mode = await db.scalar(select(Class.mode).where(Class.id == participant.class_id))
+    if ClassMode(mode) is not ClassMode.CHATBOT:
+        return "this class does not use the chatbot"
+    if participant.clock_started_at is None:
+        return "the reading has not opened"
+    if await expire_if_due(db, participant):
+        return "time is up"
+    if participant.done_at is not None:
+        return "you are done"
+    return None
+
+
+async def chat_history(db: AsyncSession, user_id: uuid.UUID) -> list[ChatMessage]:
+    require_trial()
+    participant = await participant_for(db, user_id)
+    if participant is None:
+        raise UnknownParticipant
+    rows = await db.scalars(
+        select(ChatMessage)
+        .where(ChatMessage.participant_id == participant.id)
+        .order_by(ChatMessage.created_at)
+    )
+    return list(rows)
 
 
 async def refuse_start(db: AsyncSession, user_id: uuid.UUID) -> str | None:
@@ -359,6 +492,13 @@ async def get_batch(
             )
         )
     )
+    # The control groups have no session: pressing Done, or running out of
+    # time, is how they finish.
+    now = utcnow()
+    for p, _, _ in rows:
+        end = deadline(p)
+        if p.done_at is not None or (end is not None and now >= end):
+            finished.add(p.user_id)
     return {
         "id": batch.id,
         "name": batch.name,

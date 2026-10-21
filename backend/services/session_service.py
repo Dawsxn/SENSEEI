@@ -154,6 +154,8 @@ async def _stream_tutor_message(
             pieces.append(chunk)
             yield _sse("delta", {"text": chunk})
     except Exception as e:  # a provider failure mid-generation
+        student_id = await db.scalar(select(Session.student_id).where(Session.id == session_id))
+        await trial_service.note(db, student_id, "turn_failed", {"where": "tutor"})
         yield _sse("error", {"detail": f"tutor failed: {type(e).__name__}"})
         return
 
@@ -299,6 +301,7 @@ async def submit_response(
             agents.assessor.assess, reading.content, step.value, text
         )
         if not result.parse_ok or result.verdict not in ("PASS", "FAIL"):
+            await trial_service.note(db, user_id, "turn_failed", {"where": "assessment"})
             yield _sse(
                 "error",
                 {"detail": f"assessment failed: {result.error or 'no verdict'}"},

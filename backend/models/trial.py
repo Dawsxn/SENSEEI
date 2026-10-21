@@ -16,6 +16,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import Index, String
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field
 
 from .base import TS, Entity, utcnow
@@ -64,3 +65,44 @@ class Participant(Entity, table=True):
     #: When the reading first opened. Their time runs from here.
     clock_started_at: datetime | None = Field(default=None, sa_type=TS)
     voided_at: datetime | None = Field(default=None, sa_type=TS)
+    #: When they pressed Done, in the chatbot and reading-only groups. The
+    #: reading-only group's exclusion rule is how soon after the reading opened.
+    done_at: datetime | None = Field(default=None, sa_type=TS)
+
+
+class ChatMessage(Entity, table=True):
+    """One message in the chatbot group's conversation, theirs or the model's.
+
+    A reply that failed partway is not stored; the failure is in the event log.
+    """
+
+    __tablename__ = "chat_message"
+
+    participant_id: uuid.UUID = Field(
+        foreign_key="participant.id", ondelete="CASCADE", index=True
+    )
+    #: `user` or `assistant`.
+    role: str = Field(sa_type=String(16))
+    content: str
+    created_at: datetime = Field(default_factory=utcnow, sa_type=TS)
+
+
+class TrialEvent(Entity, table=True):
+    """One thing a participant did, for the analysis (docs/context/trial.md).
+
+    `at` is when it happened, by the participant's browser, so a batch sent a
+    few seconds late keeps its true order; `received_at` is the server's time.
+    `data` carries what each kind needs: which panel, which page, a paste's
+    length. Never typed or pasted text.
+    """
+
+    __tablename__ = "trial_event"
+    __table_args__ = (Index("ix_trial_event_participant_at", "participant_id", "at"),)
+
+    participant_id: uuid.UUID = Field(
+        foreign_key="participant.id", ondelete="CASCADE", index=True
+    )
+    kind: str = Field(sa_type=String(32))
+    data: dict | None = Field(default=None, sa_type=JSONB)
+    at: datetime = Field(sa_type=TS)
+    received_at: datetime = Field(default_factory=utcnow, sa_type=TS)

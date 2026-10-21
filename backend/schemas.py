@@ -366,6 +366,8 @@ class TrialStatusOut(BaseModel):
 
     code: str
     mode: ClassMode
+    #: Pressed Done: the chatbot and reading-only groups' way to finish early.
+    done: bool = False
     #: Their class's reading. None until one is assigned.
     reading_id: uuid.UUID | None
     minutes: int
@@ -419,3 +421,31 @@ class BatchOut(BaseModel):
     closed_at: datetime | None
     #: In the order the slips print: shuffled, so the classes are mixed.
     participants: list[BatchParticipant]
+
+
+class TrialEventIn(BaseModel):
+    kind: str = Field(max_length=32)
+    #: When it happened, by the participant's browser.
+    at: datetime
+    #: Small and specific to the kind: a panel name, a page, a paste's length.
+    data: dict[str, str | int | bool] | None = Field(default=None, max_length=4)
+
+
+class TrialEventsIn(BaseModel):
+    events: list[TrialEventIn] = Field(max_length=200)
+
+
+class ChatIn(BaseModel):
+    text: str = Field(min_length=1, max_length=8000)
+
+    @field_validator("text", mode="before")
+    @classmethod
+    def _trim(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
+
+
+class ChatMessageOut(BaseModel):
+    id: uuid.UUID
+    role: Literal["user", "assistant"]
+    content: str
+    created_at: datetime

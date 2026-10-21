@@ -17,7 +17,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.figures import FigureDescriber
 
-from .agent_runtime import Agents, get_agents, get_figure_describer
+from agents.providers.base import LLMProvider
+
+from .agent_runtime import Agents, get_agents, get_chatbot, get_figure_describer
 from .db import get_session
 from .models import Role, User
 from .services import trial_service
@@ -73,6 +75,11 @@ async def require_student(user: User = Depends(get_current_user)) -> User:
 def get_agents_dep() -> Agents:
     """The process-wide agent pair. A seam for tests to override."""
     return get_agents()
+
+
+def get_chatbot_dep() -> LLMProvider:
+    """The trial chatbot's model. A seam for tests, like the agent pair."""
+    return get_chatbot()
 
 
 def get_figure_describer_dep() -> FigureDescriber:

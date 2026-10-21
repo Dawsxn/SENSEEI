@@ -20,17 +20,18 @@
  * their group. The countdown takes the right of the bar.
  */
 
-import { useQueryClient } from "@tanstack/react-query";
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Button } from "../../components/ui/button";
-import { readingFileUrl, startTrialClock } from "../../lib/api";
+import { readingFileUrl } from "../../lib/api";
 import { useReading } from "../readings/useReadings";
 import { TrialClock, useTimeUp } from "../trial/TrialClock";
-import { useIsParticipant } from "../trial/useTrial";
+import { useTrialLogging } from "../trial/trialLog";
+import { useIntro } from "../trial/useIntro";
+import { useIsParticipant, useStartTrialClock } from "../trial/useTrial";
 import { ReadingIntroDialog } from "./ReadingIntroDialog";
 import { ReadingPanel } from "./ReadingPanel";
 
@@ -42,11 +43,12 @@ export function ReadingStepScreen() {
   const { readingId } = useParams<{ readingId: string }>();
   const { data: reading, isLoading, isError } = useReading(readingId);
   const navigate = useNavigate();
-  const [showIntro, setShowIntro] = useState(true);
-  const [confirmingLeave, setConfirmingLeave] = useState(false);
   const participant = useIsParticipant();
+  const [showIntro, closeIntro] = useIntro(participant);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
   const timeUp = useTimeUp();
   useStartTrialClock(participant);
+  useTrialLogging(participant);
 
   return (
     <div className="flex h-full flex-col">
@@ -107,7 +109,7 @@ export function ReadingStepScreen() {
         </footer>
       )}
 
-      {showIntro && <ReadingIntroDialog onStart={() => setShowIntro(false)} />}
+      {showIntro && <ReadingIntroDialog onStart={closeIntro} />}
 
       {confirmingLeave && (
         <ConfirmDialog
@@ -122,18 +124,6 @@ export function ReadingStepScreen() {
       )}
     </div>
   );
-}
-
-/** A participant's time starts when their reading opens. Asked once; the server
- *  ignores the ask after the first, so a reload does not restart the clock. */
-function useStartTrialClock(participant: boolean) {
-  const queryClient = useQueryClient();
-  const asked = useRef(false);
-  useEffect(() => {
-    if (!participant || asked.current) return;
-    asked.current = true;
-    void startTrialClock().then((status) => queryClient.setQueryData(["trial"], status));
-  }, [participant, queryClient]);
 }
 
 function Notice({ children }: { children: React.ReactNode }) {

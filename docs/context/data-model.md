@@ -71,9 +71,12 @@ erDiagram
     PARTICIPANT_BATCH ||--o{ PARTICIPANT : holds
     PARTICIPANT ||--|| USER : "signs in as"
     CLASS ||--o{ PARTICIPANT : "is the group of"
+    PARTICIPANT ||--o{ CHAT_MESSAGE : "chats in"
+    PARTICIPANT ||--o{ TRIAL_EVENT : "is logged by"
 ```
 
-The two `PARTICIPANT` tables exist only for the trial (`docs/context/trial.md`).
+The participant tables and the two below them exist only for the trial
+(`docs/context/trial.md`).
 
 ## Entities
 
@@ -162,10 +165,37 @@ Trial mode only. One participant ID, and the student it signs in as.
 | signed_in_at | First sign-in |
 | clock_started_at | When their reading first opened. Their time runs from here |
 | voided_at | Set when the ID is voided. It stops signing in |
+| done_at | When they pressed Done (chatbot and reading-only groups) |
 
 **A participant is a student underneath.** The user row and the enrolment let the
 tutoring loop, the roster and the statistics treat them like anyone else. This
 table adds only what makes them a participant: the ID, the batch, and the clock.
+
+### chat_message
+
+Trial mode only. The chatbot group's conversation, both sides.
+
+| Field | Notes |
+| --- | --- |
+| participant_id | |
+| role | `user` or `assistant` |
+| content | |
+| created_at | |
+
+A reply that failed is not stored; the message that asked for it is.
+
+### trial_event
+
+Trial mode only. One row per thing a participant did that the analysis uses
+(the kinds are listed in `docs/context/trial.md`).
+
+| Field | Notes |
+| --- | --- |
+| participant_id | |
+| kind | e.g. `panel_opened`, `paste`, `done` |
+| data | Small and specific to the kind: a panel, a page, a paste's length. Never typed or pasted text |
+| at | When it happened, by the participant's browser |
+| received_at | When the server got it |
 
 ### reading
 

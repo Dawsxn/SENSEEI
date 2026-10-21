@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 
-import { getBatch, getBatches, getTrialStatus } from "../../lib/api";
+import { getBatch, getBatches, getTrialStatus, startTrialClock } from "../../lib/api";
 import { useMe } from "../auth/useAuth";
 
 /** Whether the signed-in user is a trial participant, signed in by ID. The
@@ -51,4 +51,16 @@ export function useCountdown(
   }, []);
   if (secondsLeft === null || secondsLeft === undefined) return null;
   return Math.max(0, secondsLeft - Math.floor((now - receivedAt) / 1000));
+}
+
+/** A participant's time starts when their reading opens. Asked once; the server
+ *  ignores the ask after the first, so a reload does not restart the clock. */
+export function useStartTrialClock(participant: boolean) {
+  const queryClient = useQueryClient();
+  const asked = useRef(false);
+  useEffect(() => {
+    if (!participant || asked.current) return;
+    asked.current = true;
+    void startTrialClock().then((status) => queryClient.setQueryData(["trial"], status));
+  }, [participant, queryClient]);
 }

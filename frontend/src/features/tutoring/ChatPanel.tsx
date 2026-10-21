@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
+import { logTrial } from "../trial/trialLog";
 import type { ChatMessage, TutoringState } from "./useTutoringSession";
 import type { SeeiStep } from "./types";
 import { useSmoothText } from "./useSmoothText";
@@ -222,6 +223,12 @@ function TypingIndicator() {
 
 function Composer({ state, onSubmit, trial }: ChatPanelProps) {
   const [text, setText] = useState("");
+  // The trial records when typing starts after each reply, against when the
+  // reply arrived: thinking time, apart from typing time.
+  const typedThisTurn = useRef(false);
+  useEffect(() => {
+    if (state.phase === "awaiting_input") typedThisTurn.current = false;
+  }, [state.phase]);
   const canSubmit = state.phase === "awaiting_input" && text.trim().length > 0;
 
   function send() {
@@ -273,7 +280,14 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
           value={text}
           disabled={disabled}
           rows={1}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            if (!typedThisTurn.current && e.target.value) {
+              typedThisTurn.current = true;
+              logTrial("first_keystroke");
+            }
+            setText(e.target.value);
+          }}
+          onPaste={(e) => logTrial("paste", { length: e.clipboardData.getData("text").length })}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();

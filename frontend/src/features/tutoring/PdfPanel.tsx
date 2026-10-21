@@ -14,6 +14,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { logTrial } from "../trial/trialLog";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
 
@@ -76,6 +78,15 @@ export function PdfPanel({ fileUrl, fallback }: PdfPanelProps) {
     const page = await pdf.getPage(1);
     setNaturalWidth(page.getViewport({ scale: 1 }).width);
   }, []);
+
+  // The trial records which pages a participant went back to. Not the first
+  // page, which every reading opens on.
+  const seenPage = useRef(1);
+  useEffect(() => {
+    if (current === seenPage.current) return;
+    seenPage.current = current;
+    logTrial("page_changed", { page: current });
+  }, [current]);
 
   // The counter follows the scroll: the current page is the last one whose top
   // has passed the top of the viewport.

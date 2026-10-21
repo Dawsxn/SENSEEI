@@ -136,3 +136,25 @@ class MockProvider(LLMProvider):
         words = text.split(" ")
         for i, word in enumerate(words):
             yield word if i == 0 else " " + word
+
+    def chat_stream(self, turns: list[tuple[str, str]]):
+        """A canned chatbot reply, in word-sized pieces. It quotes the question
+        and carries a list and bold text, so the chat screen's formatting can be
+        seen offline."""
+        self.last_usage = {
+            "input_tokens": 200 * len(turns),
+            "output_tokens": 60,
+            "thinking_tokens": 0,
+            "total_tokens": 200 * len(turns) + 60,
+        }
+        self.last_finish_reason = "STOP"
+        question = turns[-1][1] if turns else ""
+        text = (
+            f'[MOCK chatbot] You asked: "{question}"\n\n'
+            "Here is a **made-up** answer with a list:\n\n"
+            "- the first point\n- the second point\n\n"
+            f"This is message {sum(1 for r, _ in turns if r == 'user')} of the conversation."
+        )
+        words = text.split(" ")
+        for i, word in enumerate(words):
+            yield word if i == 0 else " " + word

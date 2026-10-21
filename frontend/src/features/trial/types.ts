@@ -8,6 +8,8 @@ import type { SessionStatus } from "../tutoring/types";
 export interface TrialStatus {
   code: string;
   mode: ClassMode;
+  /** Pressed Done: the chatbot and reading-only groups' way to finish early. */
+  done: boolean;
   reading_id: string | null;
   minutes: number;
   /** Null until the reading first opens and the clock starts. */
@@ -49,3 +51,17 @@ export interface NewBatch {
   name: string;
   classes: { class_id: string; count: number }[];
 }
+
+export interface ChatMessageRow {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+}
+
+/** What the chatbot's reply stream sends. */
+export type ChatEvent =
+  | { type: "message_start" }
+  | { type: "delta"; text: string }
+  | { type: "message_end"; id: string; content: string }
+  | { type: "error"; detail: string };

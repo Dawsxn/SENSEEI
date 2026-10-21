@@ -12,7 +12,19 @@ import { useEffect } from "react";
 
 import { Button } from "../../components/ui/button";
 
-export function ReadingIntroDialog({ onStart }: { onStart: () => void }) {
+const SEEI_INTRO =
+  "This session will take you through SEE-I one step at a time. Read the material " +
+  "in its entirety first, as the session will test your conceptual understanding " +
+  "of it. Press Done when you are finished.";
+
+/** `body` replaces the SEE-I wording, for the trial's control groups. */
+export function ReadingIntroDialog({
+  onStart,
+  body = SEEI_INTRO,
+}: {
+  onStart: () => void;
+  body?: string;
+}) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onStart();
     document.addEventListener("keydown", onKey);
@@ -34,11 +46,7 @@ export function ReadingIntroDialog({ onStart }: { onStart: () => void }) {
         <h2 id="reading-intro-title" className="text-[16px] font-semibold">
           Before you start
         </h2>
-        <p className="mt-2 text-[14px] leading-[1.6] text-muted-foreground">
-          This session will take you through SEE-I one step at a time. Read the material
-          in its entirety first, as the session will test your conceptual understanding
-          of it. Press Done when you are finished.
-        </p>
+        <p className="mt-2 text-[14px] leading-[1.6] text-muted-foreground">{body}</p>
 
         <div className="mt-5 flex justify-end">
           <Button size="sm" onClick={onStart} autoFocus>

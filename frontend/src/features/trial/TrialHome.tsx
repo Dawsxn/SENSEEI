@@ -2,7 +2,8 @@
  * screen. There is no reading list; a participant has one reading.
  *
  * A reload lands here too, so it sends them back where they were: the session
- * if they started one, the reading if not. */
+ * if they started one, the reading if not. The control groups each have a
+ * single screen, which a reload simply reopens. */
 
 import { Navigate } from "react-router-dom";
 
@@ -14,10 +15,13 @@ export function TrialHome() {
   if (isLoading) return <Notice>Loading&hellip;</Notice>;
   if (isError || !data) return <Notice>Something went wrong. Please ask for help.</Notice>;
 
-  // The control groups' screens come next; until then, nothing to show.
-  if (data.mode !== "seei") return <Notice>This part isn&rsquo;t ready yet.</Notice>;
   if (!data.reading_id) {
     return <Notice>No reading yet. Please wait for the next instructions.</Notice>;
+  }
+  // The control groups have one screen each, which shows its own ending.
+  if (data.mode === "chatbot") return <Navigate to={`/chat/${data.reading_id}`} replace />;
+  if (data.mode === "reading_only") {
+    return <Navigate to={`/reading/${data.reading_id}`} replace />;
   }
   if (data.session) return <Navigate to={`/tutor/${data.reading_id}`} replace />;
   if (data.time_up) return <Notice>Time&rsquo;s up. Please wait for the next instructions.</Notice>;

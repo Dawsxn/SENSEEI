@@ -21,6 +21,7 @@ import agents as agents_pkg
 from agents.assessment import AssessmentAgent
 from agents.figures import FigureDescriber
 from agents.providers import get_provider
+from agents.providers.base import LLMProvider
 from agents.rubric import load_rubric, render_rubric
 from agents.tutor import TutorAgent
 
@@ -86,3 +87,13 @@ def get_figure_describer() -> FigureDescriber:
     prompt = _prompt(f"figure_prompt_{settings.figure_prompt_version}.md")
     provider = get_provider({**settings.provider_config(), "json_mode": True})
     return FigureDescriber(provider, prompt)
+
+
+@lru_cache
+def get_chatbot() -> LLMProvider:
+    """The trial chatbot group's model: the agents' provider, model and settings,
+    talking in prose with no system prompt (docs/context/trial.md). Not an agent:
+    it has no instructions at all, which is the point of the control."""
+    settings = get_settings()
+    load_dotenv(AGENTS_DIR.parent / ".env")
+    return get_provider({**settings.provider_config(), "json_mode": False})
