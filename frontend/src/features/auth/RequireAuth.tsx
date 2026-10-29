@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 
+import { DevSignOut } from "../trial/DevSignOut";
 import { useMe } from "./useAuth";
 
 /** Gate a route on being signed in. While the check is in flight, render
@@ -16,5 +17,11 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     );
   }
   if (isError || !data) return <Navigate to="/login" replace />;
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {/* Local testing only: a trial participant has no way out otherwise. */}
+      <DevSignOut />
+    </>
+  );
 }

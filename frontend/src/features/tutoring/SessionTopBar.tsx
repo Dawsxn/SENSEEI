@@ -40,7 +40,11 @@ export function SessionTopBar({
   clock,
 }: SessionTopBarProps) {
   const currentIndex = currentStep ? STEPS.indexOf(currentStep) : 0;
-  const complete = status === "complete" || phase === "terminal";
+  // Only a completed session fills the bar. One that ended early (out of
+  // attempts, or out of time) shows the steps passed, and the step it stopped
+  // on in the soft failure colour, as the instructor's roster does.
+  const complete = status === "complete";
+  const stopped = !complete && phase === "terminal";
 
   return (
     // Above the panels' click-away overlay, so switching straight from one
@@ -68,7 +72,8 @@ export function SessionTopBar({
       <div className="hidden shrink-0 items-center gap-1.5 sm:flex" aria-label="Progress">
         {STEPS.map((step, i) => {
           const done = complete || i < currentIndex;
-          const active = !complete && i === currentIndex;
+          const active = !complete && !stopped && i === currentIndex;
+          const stoppedHere = stopped && i === currentIndex;
           return (
             <span
               key={step}
@@ -76,7 +81,8 @@ export function SessionTopBar({
                 "h-1 w-8 rounded-full",
                 done && "bg-primary",
                 active && "bg-foreground",
-                !done && !active && "bg-border",
+                stoppedHere && "bg-fail-border",
+                !done && !active && !stoppedHere && "bg-border",
               )}
             />
           );
