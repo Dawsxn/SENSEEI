@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .card { border: 1px solid #e4e4e7; border-radius: 8px; background: #ffffff; padding: 20px 22px 22px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+    .tag { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #a1a1aa; }
+    .note { font-size: 12px; line-height: 1.5; color: #71717a; margin: 4px 0 16px; }
+    .student { background: #f0fdf4; border-radius: 8px; padding: 10px 14px; font-size: 13px; line-height: 1.6; color: #14532d; margin-left: 88px; }
+    .tutor { font-size: 13px; line-height: 1.7; color: #09090b; margin: 14px 0 0; }
+    .chip { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; border: 1px solid #fecaca; background: #fef2f2; font-size: 12px; font-weight: 500; color: #b91c1c; }
+    .divider { display: flex; align-items: center; gap: 10px; margin: 2px 0 12px; }
+    .divider-line { flex-grow: 1; height: 1px; background: #e4e4e7; }
+    .step { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #a1a1aa; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 1230px; background: #fafafa; color: #09090b; padding: 36px 40px; box-sizing: border-box;">
+
+  <div style="margin-bottom: 24px;">
+    <h1 style="margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em;">Showing what a response missed</h1>
+    <p style="margin: 0; font-size: 13px; color: #71717a; max-width: 900px;">
+      Six ways to tell the student which criteria were not met, on the same failed State attempt.
+      C and D need nothing from the backend: the Tutor Agent already names the criteria in its
+      sentence, and markdown is what weights them. A, B, E and F take the names out of the prose
+      and send them as data, which also means the tutor has nothing left to bold.
+    </p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+
+    <!-- A: tags under the message -->
+    <div class="card">
+      <div class="tag">A &nbsp;&middot;&nbsp; Tags under the message</div>
+      <div class="note">Always visible, nothing to open. Reads as the outcome of the attempt it sits under.</div>
+      <div class="student">Cognitive offloading is a thing where people use phones and the internet so they don&rsquo;t have to remember things.</div>
+      <p class="tutor">You have the right idea, but your statement contains unnecessary tangents. Try stating what cognitive offloading is again, this time in a single focused sentence.</p>
+      <div style="display: flex; gap: 6px; margin-top: 12px;">
+        <span class="chip">Brevity</span>
+        <span class="chip">Clarity</span>
+      </div>
+    </div>
+
+    <!-- B: collapsed row, shown both ways -->
+    <div class="card">
+      <div class="tag">B &nbsp;&middot;&nbsp; Collapsed row, opened</div>
+      <div class="note">A click that reveals only the names is worse than A. It earns the click by carrying what each criterion asks for, taken from the rubric. Never the Assessment Agent&rsquo;s reason, which says where the response went wrong.</div>
+      <div class="student">Cognitive offloading is a thing where people use phones and the internet so they don&rsquo;t have to remember things.</div>
+      <p class="tutor">You have the right idea, but your statement contains unnecessary tangents. Try stating what cognitive offloading is again, this time in a single focused sentence.</p>
+
+      <div style="display: flex; align-items: center; gap: 6px; margin-top: 12px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 7px 10px; width: fit-content;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+        <span style="font-size: 12px; font-weight: 500; color: #3f3f46;">2 criteria not met</span>
+      </div>
+      <div style="font-size: 11px; color: #a1a1aa; margin: 8px 0 10px;">closed &nbsp;&darr;&nbsp; open</div>
+
+      <div style="border: 1px solid #e4e4e7; border-radius: 6px; overflow: hidden;">
+        <div style="display: flex; align-items: center; gap: 6px; padding: 7px 10px; background: #fafafa; border-bottom: 1px solid #e4e4e7;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+          <span style="font-size: 12px; font-weight: 500; color: #3f3f46;">2 criteria not met</span>
+        </div>
+        <div style="padding: 12px 12px 13px; display: flex; flex-direction: column; gap: 11px;">
+          <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <span class="chip" style="height: 20px; font-size: 11px; flex-shrink: 0;">Brevity</span>
+            <span style="font-size: 12px; line-height: 1.55; color: #52525b;">Concise and straight to the point, with no filler, repetition or tangents.</span>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <span class="chip" style="height: 20px; font-size: 11px; flex-shrink: 0;">Clarity</span>
+            <span style="font-size: 12px; line-height: 1.55; color: #52525b;">Clear and precise. Well formulated and not vague.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C: bold only -->
+    <div class="card">
+      <div class="tag">C &nbsp;&middot;&nbsp; Bold in the sentence, no element</div>
+      <div class="note">No backend change at all. The tutor keeps naming them, markdown just weights them. Nothing to scan: they only exist mid-sentence.</div>
+      <div class="student">Cognitive offloading is a thing where people use phones and the internet so they don&rsquo;t have to remember things.</div>
+      <p class="tutor">You have the right idea, but your statement contains unnecessary tangents. That leaves <b>Brevity</b> and <b>Clarity</b> unmet. Try stating what cognitive offloading is again, this time in a single focused sentence.</p>
+    </div>
+
+    <!-- D: inline colour -->
+    <div class="card">
+      <div class="tag">D &nbsp;&middot;&nbsp; Coloured in the sentence</div>
+      <div class="note">The original mockup. Stronger than bold, but colour inside a sentence reads as an error rather than a label, and it needs the names matched in prose.</div>
+      <div class="student">Cognitive offloading is a thing where people use phones and the internet so they don&rsquo;t have to remember things.</div>
+      <p class="tutor">You have the right idea, but your statement contains unnecessary tangents. That leaves <span style="color: #b91c1c; font-weight: 500;">Brevity</span> and <span style="color: #b91c1c; font-weight: 500;">Clarity</span> unmet. Try stating what cognitive offloading is again, this time in a single focused sentence.</p>
+    </div>
+
+    <!-- E: quiet label row -->
+    <div class="card">
+      <div class="tag">E &nbsp;&middot;&nbsp; Quiet label row</div>
+      <div class="note">Structured like A but without the pills, so it stays out of the way. Less scannable when several criteria fail at once.</div>
+      <div class="student">Cognitive offloading is a thing where people use phones and the internet so they don&rsquo;t have to remember things.</div>
+      <p class="tutor">You have the right idea, but your statement contains unnecessary tangents. Try stating what cognitive offloading is again, this time in a single focused sentence.</p>
+      <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 12px;">
+        <span style="font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #a1a1aa;">Not met</span>
+        <span style="font-size: 12px; color: #b91c1c;">Brevity &nbsp;&middot;&nbsp; Clarity</span>
+      </div>
+    </div>
+
+    <!-- F: on the step divider -->
+    <div class="card">
+      <div class="tag">F &nbsp;&middot;&nbsp; On the step divider</div>
+      <div class="note">Collects the step&rsquo;s misses in one place above the exchange. Reads as a summary of the step rather than of this attempt, which is wrong when the next try fails on something else.</div>
+      <div class="divider">
+        <span class="step">State</span>
+        <span class="divider-line"></span>
+        <span class="chip" style="height: 20px; font-size: 11px;">Brevity</span>
+        <span class="chip" style="height: 20px; font-size: 11px;">Clarity</span>
+      </div>
+      <div class="student">Cognitive offloading is a thing where people use phones and the internet so they don&rsquo;t have to remember things.</div>
+      <p class="tutor">You have the right idea, but your statement contains unnecessary tangents. Try stating what cognitive offloading is again, this time in a single focused sentence.</p>
+    </div>
+
+  </div>
+
+  <p style="margin: 26px 0 0; font-size: 12px; color: #a1a1aa;">
+    All six show the same judgment: a State attempt that failed Brevity and Clarity. The student bubble and
+    tutor prose are unchanged between them except where the criteria appear.
+  </p>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { primary: this.props.primary ?? '#16a34a' };
+  }
+}
+</script>
+</body>
+</html>

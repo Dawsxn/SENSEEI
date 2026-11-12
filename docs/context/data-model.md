@@ -1,0 +1,523 @@
+# Data model
+
+Entities, relationships, and the constraints that come from how the system is
+meant to behave.
+
+The manuscript names what is stored (readings, core components, sessions,
+responses, assessments, classes) but specifies no schema. Everything below is a
+proposal.
+
+## How it fits together
+
+In plain terms, reading down the chain:
+
+**An instructor creates a class.** The class gets a join code. Students enter that
+code to enrol. Enrolment is the only thing that decides what a student can see.
+
+**The instructor uploads a reading** and, at upload time, types in its core
+components: the essential defining parts of the concept that reading covers. They
+also pick which classes the reading is assigned to. A student sees a reading only
+if one of their classes has it assigned.
+
+**A student opens a reading and starts a session.** One session is one full pass
+through the four SEE-I steps for that one reading. The session row tracks which
+step they are on and whether it is still running, finished, or ended in fallback.
+
+**Within a session, each thing the student types is an attempt.** An attempt
+belongs to a session and records which step it was for and which try it was, so
+the first try at Elaborate and the third try at Elaborate are two rows that both
+point at the same session.
+
+**Every attempt gets graded, and that grade is an assessment.** One attempt, one
+assessment. The assessment holds the overall verdict and the bookkeeping around
+the model call.
+
+**The assessment breaks down into criterion judgments**, one row per rubric
+criterion the agent looked at, each saying whether it passed and why. This is the
+finest-grained thing stored, and it is what the instructor analytics count.
+
+**Separately, the chat itself is stored as tutor messages**, so the transcript can
+be replayed exactly as the student saw it.
+
+The reason the chain goes session, attempt, assessment, criterion judgment
+instead of collapsing into fewer tables is that the instructor dashboard asks
+questions at each level: how many students finished (session), how many tries do
+they need on average (attempt), what is the pass rate per step (assessment), and
+which criteria do they fail most (criterion judgment). Each level has a consumer.
+
+## Shape
+
+```mermaid
+erDiagram
+    USER ||--o{ ENROLMENT : "enrols via"
+    USER ||--o{ CLASS : teaches
+    USER ||--o{ READING : uploads
+    USER ||--o{ SESSION : works_through
+
+    CLASS ||--o{ ENROLMENT : has
+    CLASS ||--o{ READING_ASSIGNMENT : "is assigned"
+
+    READING ||--o{ CORE_COMPONENT : defines
+    READING ||--|| READING_FILE : "read from"
+    READING ||--o{ READING_ASSIGNMENT : "assigned to"
+    READING ||--o{ SESSION : "studied in"
+
+    SESSION ||--o{ ATTEMPT : contains
+    SESSION ||--o{ TUTOR_MESSAGE : transcript
+
+    ATTEMPT ||--|| ASSESSMENT : graded_by
+    ASSESSMENT ||--o{ CRITERION_JUDGMENT : breaks_down
+
+    PARTICIPANT_BATCH ||--o{ PARTICIPANT : holds
+    PARTICIPANT ||--|| USER : "signs in as"
+    CLASS ||--o{ PARTICIPANT : "is the group of"
+    PARTICIPANT ||--o{ CHAT_MESSAGE : "chats in"
+    PARTICIPANT ||--o{ TRIAL_EVENT : "is logged by"
+```
+
+The participant tables and the two below them exist only for the trial
+(`docs/context/trial.md`).
+
+## Entities
+
+### user
+
+One table for both roles. A user is either an instructor or a student, never
+both.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| role | student or instructor |
+| name | |
+| email | |
+| google_sub | Google account subject, the stable identifier from sign-in |
+| participant_identifier | Null for ordinary users. On the trial instance, the participant's ID, see [participant](#participant) |
+| created_at | |
+
+Sign-in is Google OAuth, restricted to DLSU addresses. A non-DLSU Google account
+cannot sign in at all, so enrolment is not the only gate.
+
+### class
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| instructor_id | Exactly one. Co-teaching is not supported |
+| name | The course, e.g. `STRAMA` |
+| section | The section, e.g. `K31`. Unique with name per instructor, ignoring case |
+| join_code | Generated on creation. Students enrol with it (§4.3.4) |
+| mode | `seei`, `chatbot` or `reading_only`. Always `seei` outside trial mode |
+| created_at | |
+
+**Students see one label, `STRAMA K31`.** Name and section are stored apart
+because one course runs in several sections, but every student-facing screen
+shows them joined, built by `class_label()` so it reads the same everywhere.
+
+**Join codes** are eight characters, `4KQ2-9TXM`, from an alphabet with no
+`0/O` or `1/I`, because they are read aloud in a room. Entry is forgiving about
+case, spaces and the hyphen. An instructor can replace a class's code; the old
+one stops working and nobody is unenrolled. That is also how to keep out a
+student who was removed, since a removed student can otherwise rejoin with the
+code.
+
+**Deleting a class, or removing a student, takes access away, not data.** Both
+are soft deletes. The student can no longer see the class's readings or reach
+their sessions in it, not even through a saved link. The sessions stay in the
+database because they are the study's results, and only the research export
+reads them once the class is gone.
+
+### enrolment
+
+Join table between student and class. Enrolment decides which readings a student
+can see (§4.3.4).
+
+| Field | Notes |
+| --- | --- |
+| student_id | |
+| class_id | |
+| enrolled_at | |
+
+### participant_batch
+
+Trial mode only. The participant IDs made together for one sitting.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| instructor_id | The research team member who made it |
+| name | e.g. `Sitting 1` |
+| created_at | |
+| closed_at | Set when the sitting ends. Its IDs stop signing in |
+
+### participant
+
+Trial mode only. One participant ID, and the student it signs in as.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| batch_id | |
+| user_id | A student made for this ID: name is the ID, email is empty |
+| class_id | Their group. They are enrolled in it like any student |
+| code | `P-7K3Q-9TXM`, the join code alphabet. Unique |
+| position | The shuffled order the IDs were drawn in, which the slips print in |
+| signed_in_at | First sign-in |
+| clock_started_at | When their reading first opened. Their time runs from here |
+| voided_at | Set when the ID is voided. It stops signing in |
+| done_at | When they pressed Done (chatbot and reading-only groups) |
+
+**A participant is a student underneath.** The user row and the enrolment let the
+tutoring loop, the roster and the statistics treat them like anyone else. This
+table adds only what makes them a participant: the ID, the batch, and the clock.
+
+### chat_message
+
+Trial mode only. The chatbot group's conversation, both sides.
+
+| Field | Notes |
+| --- | --- |
+| participant_id | |
+| role | `user` or `assistant` |
+| content | |
+| created_at | |
+
+A reply that failed is not stored; the message that asked for it is.
+
+### trial_event
+
+Trial mode only. One row per thing a participant did that the analysis uses
+(the kinds are listed in `docs/context/trial.md`).
+
+| Field | Notes |
+| --- | --- |
+| participant_id | |
+| kind | e.g. `panel_opened`, `paste`, `done` |
+| data | Small and specific to the kind: a panel, a page, a paste's length. Never typed or pasted text |
+| at | When it happened, by the participant's browser |
+| received_at | When the server got it |
+
+### reading
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| uploaded_by | Instructor |
+| title | |
+| description | A one-line topic summary, shown under the title in the reading list. Nullable. Set by the instructor on upload; see note below |
+| content | Extracted plain text. This is what the agents receive |
+| created_at | |
+
+**A reading has two faces, and they have different audiences.** `content` is the
+extracted plain text, and it is what both agents grade against. The original
+upload, in `reading_file`, is what the student reads on screen.
+
+This reverses an earlier decision to store only the extracted text. That decision
+rested on a premise that no longer holds: that nothing but the agents ever
+consumes a reading. Once the student reads the document itself — with its
+figures, tables and layout intact — the original is no longer a redundant copy of
+`content`, it is a second thing, shown to a second audience.
+
+The two must not drift, and the only thing keeping them together is the review
+step at upload. That was true before and is more true now: extraction is lossy,
+`content` is what every agent grades against, and a mangled extraction nobody
+caught would silently poison every session on that reading. The difference is
+that a student can now *see* what the agent could not, so a figure dropped in
+extraction is no longer invisible — it is a student citing something the
+Assessment Agent was never shown.
+
+**The upload flow closes that gap.** The instructor uploads a PDF, it is parsed
+to text, each figure is described in words by the figure describer
+(`docs/context/agent-contracts.md`), and the instructor edits the result beside
+the PDF before the reading is saved. Nothing is stored until the final save, so
+an upload abandoned midway leaves no rows behind. A reading without a stored
+file, which only the seed can produce, falls back to showing `content`.
+
+`description` is a short topic summary the reading list shows under the title.
+It is optional on the upload screen, so it is nullable, and a reading without one
+simply shows no subtitle.
+
+### reading_file
+
+The instructor's original upload. Exactly one per reading, or none.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| reading_id | Unique — one file per reading |
+| filename | |
+| media_type | `application/pdf` |
+| byte_size | |
+| data | The bytes |
+| created_at | |
+
+**A separate table, not a column on `reading`.** The reading list selects whole
+reading rows, so a blob on that model would be pulled across the wire by every
+request that only wanted a title. Nothing but the file endpoint reads this table.
+
+Stored in Postgres rather than object storage: a course's readings are a handful
+of files, one deploy artifact is simpler than two, and the existing backup covers
+them. If readings ever number in the thousands this is the row to move out.
+
+### core_component
+
+One or more per reading. The essential defining parts of the concept.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| reading_id | |
+| text | |
+| position | Display order |
+
+**Immutable after upload.** An instructor may not change a reading's core
+components once uploaded, because doing so would invalidate the results and
+statistics of prior sessions on that reading (§4.3.4). Enforce this in code, not
+by convention. The same holds for `reading.content`, for the same reason. The API
+has no way to change either: after saving, only a reading's title, description
+and classes can be edited.
+
+### reading_assignment
+
+Which classes a reading is assigned to.
+
+| Field | Notes |
+| --- | --- |
+| reading_id | |
+| class_id | |
+
+**Mutable**, unlike core components. Assignment only affects who can see a
+reading, not its content, so instructors can change it freely after upload
+(§4.3.4). A reading may have no classes at all: it is saved, and no student sees
+it until one is assigned. A reading assigned to two classes a student is in is
+listed to that student once.
+
+### session
+
+One complete pass through the four SEE-I steps for one reading.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| student_id | |
+| reading_id | |
+| status | in_progress, complete, fallback, or timed_out (trial mode: the clock ran out) |
+| current_step | State, Elaborate, Exemplify, or Illustrate |
+| started_at | |
+| ended_at | Null while in progress |
+| rubric_version | The rubric this session was graded under |
+| prompt_version | The agent prompts used |
+| model | The LLM that graded it |
+
+The last three exist so a session stays interpretable after the rubric or prompts
+change. The eval harness already pins and stamps these on every run; sessions
+need the same discipline, otherwise a rubric revision silently changes the
+meaning of historical pass rates.
+
+Sessions are not resumable. A student who leaves mid-session confirms that it
+will be discarded, and the row is discarded with it. Nothing in `in_progress`
+survives the student walking away.
+
+A trial participant is the exception. They get one session, so a reload picks it
+back up from its transcript rather than starting another, and nothing they do
+discards it.
+
+A session with `status = fallback` is what raises the instructor's roster flag.
+The flag belongs to the session, not to the student: it is a fact about one
+session that ended a particular way, derived from `status` rather than stored.
+It is not dismissible. A student with three fallback sessions on a reading has
+three of them, and clearing one would mean editing the record of what happened.
+
+Students can view all of their past sessions for a reading, not only the most
+recent.
+
+### attempt
+
+One student response to one step. A step can have several.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| session_id | |
+| step | |
+| attempt_number | 1-based, resets per step |
+| response_text | |
+| submitted_at | |
+
+Attempts are rows rather than a counter because §4.3.6 requires the average
+number of attempts students need to pass each step, and because the instructor
+transcript view shows the student's reasoning chain, which means every attempt
+has to survive.
+
+A failed provider call must not create an attempt row. See open question 3 in
+`agent-contracts.md`.
+
+### assessment
+
+The Assessment Agent's judgment of one attempt. One to one with attempt.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| attempt_id | |
+| verdict | PASS or FAIL, derived in code |
+| model_verdict | What the model stated, kept as a cross-check |
+| raw_response | The model's justification |
+| warnings | Parse warnings, hallucinated or missing criteria |
+| usage | Token counts |
+| created_at | |
+
+`verdict` and `model_verdict` are stored separately on purpose. A disagreement
+between them is a signal worth keeping rather than collapsing.
+
+### criterion_judgment
+
+One row per criterion the agent judged.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| assessment_id | |
+| criterion | Criterion name, canonical form |
+| passed | |
+| reason | |
+
+Rows rather than a JSON blob because §4.3.6 requires the most frequently failed
+criteria across a class, which is a query over this table.
+
+### tutor_message
+
+The chat transcript.
+
+| Field | Notes |
+| --- | --- |
+| id | |
+| session_id | |
+| step | |
+| attempt_id | Null for an opening Prompt |
+| moves | Which dialogue moves this message composed |
+| content | What the student saw |
+| created_at | |
+
+Storing `moves` makes it possible to check later that the Tutor Agent behaved as
+specified, and to reconstruct the transcript without re-inferring intent from
+prose.
+
+## What the analytics need
+
+§4.3.6 specifies three class-wide statistics, narrowable to a single reading.
+Each maps onto the schema:
+
+| Statistic | Query over |
+| --- | --- |
+| Pass rate per SEE-I step | attempt joined to assessment, grouped by step |
+| Most frequently failed criteria | criterion_judgment where passed is false |
+| Average attempts to pass each step | attempt, max attempt_number per session and step |
+
+If a schema change makes any of these three awkward, the schema is wrong.
+
+**Which sessions they count**, as built in `backend/services/analytics_service.py`:
+those by a student enrolled in the class, on a reading assigned to the class,
+that finished. In-progress sessions are excluded, since an abandoned one would
+sit in the numbers forever. A student enrolled in two classes that both use a
+reading has their session counted in both, which is right: each class's numbers
+describe that class.
+
+A step nobody has reached is absent rather than reported as zero. No data and a
+pass rate of zero are different things, and only one of them is bad news.
+
+**The roster** beside those statistics is a fourth query, per reading: each
+student's latest finished session on it, how many steps they passed, and whether
+it ended in fallback. The statistics count every finished session; only the
+roster picks one, because it is the one an instructor would act on.
+
+## Retention and privacy
+
+Two separate regimes. Do not conflate them.
+
+### Study data
+
+Binding, from the manuscript (§4.6.6, §4.7.1, §4.7.4). These apply to data
+collected from human participants during the experiment:
+
+1. **Participants are pseudonymised.** Each is assigned a randomly generated
+   participant identifier at consent, and all performance records including
+   session transcripts are keyed to that identifier rather than to their
+   identity.
+2. **Identifiers are held separately from research data** where applicable.
+3. **Data is deleted at the end of the retention period**, along with consent
+   forms. Nothing is kept beyond the study.
+4. **A withdrawing participant's record is deleted** before the end of that
+   period, at any point they ask.
+
+Points 3 and 4 mean deletion cannot be an afterthought. Deleting one student has
+to remove their sessions, attempts, assessments, criterion judgments, and
+messages, which the cascade above supports but only if foreign keys are declared
+with that in mind. Build the delete path early; retrofitting it is painful.
+
+### App data
+
+The app is meant to run long term, not only for the duration of the experiment.
+Ordinary data is not on a deletion clock: sessions, attempts, and transcripts
+persist for as long as the account and the class exist, because a student
+reviewing last term's sessions and an instructor comparing this year's cohort to
+last year's both depend on that.
+
+The study rules above apply to the subset of users who consented to participate,
+not to the app's users at large.
+
+**Superseded for the trial.** What follows assumed participants would be ordinary
+users of this instance, with a participant identifier added to their account. The
+trial now runs on its own instance (`docs/context/trial.md`), where a participant
+signs in with their participant ID alone and the app never holds their name or
+email. Every record there is keyed to the ID from the start, so no substitution is
+needed at export, and deleting the study's data is deleting that instance's
+database. The `participant_identifier` column survives in a narrower job: on the
+trial instance it holds the participant's ID, and it marks the user as a
+participant (see [participant](#participant)).
+
+That subset has to be identifiable, otherwise the study deletion in point 3
+cannot be carried out without destroying app data belonging to everyone else.
+The `participant_identifier` field on `user` does this job: null for an ordinary
+user, set for a consented participant.
+
+## Pseudonymisation
+
+Replacing someone's identity with a meaningless code, so their data can be
+analysed without revealing who they are. Participant `P-047` rather than a name
+and an email. It differs from anonymisation in being reversible: the link back to
+the person still exists, held separately and access-controlled, which is what
+lets a participant withdraw later and have their record found and deleted.
+
+The manuscript requires it for study data (§4.6.6): every participant is assigned
+a random identifier at consent, and performance records are keyed to it rather
+than to their identity.
+
+How this fits an app that also needs real identities for its own features:
+
+| Context | Uses |
+| --- | --- |
+| The app itself | Real identity. The instructor roster is unusable without names |
+| Research exports | The participant identifier, with name and email dropped |
+
+So the identifier is stored on the user row, and the substitution happens when
+research data is exported. Storing it rather than generating it per export means
+the same participant maps to the same code every time, so two exports can be
+compared.
+
+## Open questions
+
+| # | Question | Blocks |
+| --- | --- | --- |
+| 1 | Which upload formats are supported beyond PDF? PDF only for now | Upload flow |
+
+**On question 1.** Upload is PDF only, up to 20 MB. Paste-as-text and DOCX can
+follow if instructors ask. Whatever the format, the instructor sees the extracted
+text before the reading is saved and can correct it, because extraction is lossy,
+that text is what every agent grades against, and a mangled extraction would
+silently poison every session on that reading.
+
+## Related
+
+- `docs/context/student-tutoring-loop.md`, the behaviour this stores
+- `docs/context/agent-contracts.md`, what produces assessments

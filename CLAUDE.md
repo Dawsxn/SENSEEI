@@ -17,8 +17,10 @@ Four layers, frontend to back:
   Assessment Agent
 - **External** — PostgreSQL, and an LLM provider (not yet chosen)
 
-Only the two agents call an LLM. The Orchestrator is fixed-rule code, not a
-third agent.
+Only the two agents call an LLM while a student is being tutored. The
+Orchestrator is fixed-rule code, not a third agent. One upload tool also calls
+the LLM, once per reading, to describe its figures; it is not an agent (see
+`docs/context/agent-contracts.md`).
 
 ## Conventions — always apply
 
@@ -27,8 +29,52 @@ third agent.
 
 ## Reference — open when relevant
 
+- `agents/` — the shared agent package: both agents (`assessment.py` grades a
+  response, `tutor.py` writes what the student reads), the upload tool that
+  describes a reading's figures (`figures.py`), the rubric loader
+  (`rubric.py`), shared provider backoff (`retry.py`), the swappable LLM
+  `providers/`, and the versioned `prompts/` and `rubrics/`. Installed via the root `pyproject.toml`
+  (`pip install -e ".[gemini]"`), so the eval harness and the future FastAPI
+  backend import the *same* code — the eval must never validate a separate
+  implementation from the one that ships.
 - `assessment-agent-eval/` — the standalone Assessment Agent evaluation harness
-  (rubric, labeled dataset, eval runner). Has its own README and CHANGELOG.
+  (labeled dataset, eval runner, comparison + reporting). Measures the agent in
+  `agents/`; does not contain it. Has its own README and CHANGELOG.
+- `docs/context/` holds the design context for the app itself:
+  `student-tutoring-loop.md` (session state machine, dialogue moves, fallback),
+  `agent-contracts.md` (what each agent receives and returns),
+  `data-model.md` (entities, relationships, retention), `tech-stack.md`
+  (libraries, auth, deployment), `design-system.md` (tokens, type scale,
+  component conventions), and `trial.md` (how the app supports the human
+  evaluation: the trial instance, `TRIAL_MODE`, participant IDs, what is recorded,
+  and the order of work), with `trial-export.md` listing every file and column of
+  the trial's data export. Open these before writing app code. They record
+  decisions that are not derivable from the codebase.
+- `backend/` — the FastAPI app: `settings.py` (environment config), `db.py`
+  (async engine and the per-request session), `main.py` (the app), `models/`
+  (the SQLModel schema from `docs/context/data-model.md`, no ORM relationships —
+  under async, lazy loads raise, so queries use explicit joins), `orchestrator.py`
+  (the fixed-rule loop: pass/fail, retries, step advancement — pure, no LLM and no
+  database), `services/` (the imperative shell that carries a decision out, over
+  Server-Sent Events), `routers/` (the HTTP endpoints), `auth.py` (Google OAuth,
+  the DLSU restriction and the instructor allowlist), and `deps.py` (the current
+  user from the session cookie, and the agent pair). Imports the agents
+  rather than reimplementing them. Run it with `uvicorn backend.main:app --reload`,
+  after `docker compose up -d --wait`.
+- `migrations/` — Alembic, reading its URL from `backend.settings`. Bring a
+  local database up to date with `alembic upgrade head`. `scripts/seed.py` then
+  fills it with development data (one instructor, two classes, five students,
+  three readings, some with real sessions), sourced from the eval dataset so the
+  app and the eval study the same material.
+- `scripts/session.py` — plays one tutoring session in the terminal, so the
+  agents can be exercised without a database, server or UI. `--offline` stubs
+  both and costs nothing. It has its own inline copy of the loop for the terminal;
+  the backend's authoritative loop is `backend/orchestrator.py`, and both now
+  share the attempt limit from there.
+- `Dockerfile`, `render.yaml`, `scripts/start.py` — the deploy: one image
+  serving the API and the built frontend, the Render development environment,
+  and the start command that migrates and seeds. See "Deployment" in
+  `docs/context/tech-stack.md`.
 - `docs/thesis/` — thesis artifacts: diagrams and presentation decks. Not code.
 
 ## Skills

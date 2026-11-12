@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: {{primary}}; text-decoration: none; }
+    a:hover { color: #15803d; }
+  </style>
+</helmet>
+<div style="width: 1360px; height: 900px; background: #ffffff; color: #09090b; display: flex; align-items: center; justify-content: center;">
+
+  <div style="width: 380px; display: flex; flex-direction: column; gap: 36px;">
+
+    <div style="display: flex; align-items: center; gap: 13px;">
+      <svg width="42" height="42" viewBox="0 0 100 100" fill="{{primary}}" style="flex-shrink: 0;">
+        <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+        <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+        <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+        <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+      </svg>
+      <span style="font-size: 30px; font-weight: 600; letter-spacing: -0.03em;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+    </div>
+
+    <div style="border: 1px solid #e4e4e7; border-radius: 8px; background: #ffffff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);">
+      <div style="padding: 24px 24px 20px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 16px; font-weight: 600; letter-spacing: -0.015em;">Sign in</span>
+        <span style="font-size: 14px; line-height: 1.5; color: #71717a;">Use your DLSU Google account.</span>
+      </div>
+      <div style="padding: 0 24px 24px;">
+        <button style="width: 100%; height: 36px; border: 1px solid #e4e4e7; border-radius: 6px; background: #ffffff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); font-family: inherit; font-size: 14px; font-weight: 500; color: #09090b; cursor: pointer;">Continue with Google</button>
+      </div>
+    </div>
+
+
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { primary: this.props.primary ?? '#16a34a' };
+  }
+}
+</script>
+</body>
+</html>

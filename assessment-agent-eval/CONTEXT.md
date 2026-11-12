@@ -11,6 +11,14 @@ This eval harness (`assessment-agent-eval/`) develops and measures that one
 agent in isolation, against a human-labeled set of example responses, before
 it's wired into the full tutoring pipeline.
 
+The agent itself lives at the repo root in `agents/` (`assessment.py`,
+`rubric.py`, `providers/`, plus the versioned `prompts/` and `rubrics/`),
+installed as a package so the harness and the eventual FastAPI backend import
+the *same* code. That is deliberate: it is what lets the alignment numbers
+measured here describe the agent that actually ships. The harness keeps only
+what is specific to measuring — the labeled dataset, the comparison and report
+code, and the run artifacts.
+
 ## The rubric
 Each SEE-I step has several criteria. Each criterion has a single **PASS
 condition** (pass-only schema — not meeting it means it fails; there's no
@@ -36,7 +44,7 @@ Two new mechanics in v3:
   come with a genuine contrasting non-example that clarifies the concept's
   boundary (e.g., a near-miss that could be mistaken for the concept but isn't).
 
-Rubric is versioned as YAML (`rubric/rubric_vN.yaml`) — the single source of
+Rubric is versioned as YAML (`agents/rubrics/rubric_vN.yaml`) — the single source of
 truth, rendered into the agent's system prompt and used by code for
 validation/stats. A rubric change (rename/add/remove criteria) is always
 paired with a matching relabeled example set of the same version.

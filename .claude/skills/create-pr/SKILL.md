@@ -60,18 +60,41 @@ them; that file is the source of truth.
 
    Required, and CI fails without them:
 
-   - **Summary** — one to three sentences on what and why. Written for someone
-     who has not followed the branch.
-   - **Changes** — one bullet per meaningful piece. Group related files rather
+   - **Summary**: what the PR does. See the rules below, they matter.
+   - **Changes**: one bullet per meaningful piece. Group related files rather
      than listing every path.
-   - **How to test** — concrete steps a reviewer can follow. Real commands and
-     real URLs where they apply.
 
    Optional, delete the heading entirely when unused:
 
-   - **Screenshots** — only if the diff touches UI files. Do not fabricate
+   - **How to test**: concrete steps a reviewer can follow, with real commands
+     and real URLs. Include it when there is something to run or click. Omit it
+     for documentation, config, and anything with nothing to execute. Do not
+     invent a procedure just to fill the section.
+   - **Screenshots**: only if the diff touches UI files. Do not fabricate
      these: leave the section with a note asking the user to attach them.
-   - **Notes & caveats** — follow-ups, known limitations, anything risky.
+   - **Notes & caveats**: one line each, three or four at most. A caveat earns
+     its place only if it changes what a reviewer does or watches for. No
+     hedging, no restating **Changes**, no recounting what you considered and
+     rejected. Delete the section rather than padding it.
+
+   **Writing the summary.** Lead with what the PR does. First sentence, present
+   tense, starting with the change:
+
+   ```
+   Adds retry handling to the submit endpoint.
+   Moves the Assessment Agent into a shared package.
+   ```
+
+   Do not open with background, with the state of the world before the change,
+   or with what the PR is "part of". Add a second sentence of why only when the
+   reason is not obvious from the change. Two sentences is usually the whole
+   summary; if it runs longer, the detail belongs in **Changes**.
+
+   **Never reference the thesis manuscript.** No chapters, sections, tables, or
+   figures. The manuscript is not in the repository and a reviewer cannot follow
+   the pointer. State the decision or behaviour directly instead of citing where
+   it came from. This applies to the PR title and description only; repository
+   documentation may cite it.
 
 6. **Show the user the full title and description and ask for confirmation.**
    Do not skip this. Opening a PR is visible to the whole team.

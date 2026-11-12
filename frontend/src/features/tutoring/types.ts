@@ -1,0 +1,111 @@
+/** Domain types shared by the API client and the tutoring UI.
+ *
+ * These mirror what the backend sends. The stream event names and payloads are
+ * documented on backend/services/session_service.py. The grade is deliberately
+ * not among them: the student hears only the Tutor. The criterion names are,
+ * because they are user-facing vocabulary the UI shows as its own element. */
+
+export type SeeiStep = "State" | "Elaborate" | "Exemplify" | "Illustrate";
+export type SessionStatus = "in_progress" | "complete" | "fallback" | "timed_out";
+
+/** The situation a tutor message was written for. `fallback` is the static copy. */
+export type MessageKind =
+  | "first_attempt"
+  | "retry"
+  | "final_fail"
+  | "passed"
+  | "fallback";
+
+export interface SessionState {
+  id: string;
+  reading_id: string;
+  reading_title: string;
+  status: SessionStatus;
+  current_step: SeeiStep;
+  started_at: string;
+  ended_at: string | null;
+}
+
+export interface TutorMessageRow {
+  id: string;
+  step: SeeiStep;
+  attempt_id: string | null;
+  moves: string[] | null;
+  content: string;
+  created_at: string;
+}
+
+// --- the streamed turn, as a discriminated union on `type` --------------------
+
+export interface SessionEvent {
+  type: "session";
+  id: string;
+  reading_id: string;
+  reading_title: string;
+  status: SessionStatus;
+  current_step: SeeiStep;
+  started_at: string;
+  ended_at: string | null;
+}
+
+export interface MessageStartEvent {
+  type: "message_start";
+  step: SeeiStep;
+  kind: MessageKind;
+  moves: string[];
+  /** Criteria this attempt did not meet. Names only: the reasons say where the
+   *  response went wrong, and the student is not told that. Empty unless the
+   *  message is feedback on a failed attempt. */
+  unmet: string[];
+}
+
+export interface DeltaEvent {
+  type: "delta";
+  text: string;
+}
+
+export interface MessageEndEvent {
+  type: "message_end";
+  id: string;
+  content: string;
+}
+
+export interface StateEvent {
+  type: "state";
+  status: SessionStatus;
+  current_step: SeeiStep;
+  terminal: boolean;
+  attempts_used: number;
+  attempts_left: number;
+}
+
+export interface ErrorEvent {
+  type: "error";
+  detail: string;
+}
+
+export type StreamEvent =
+  | SessionEvent
+  | MessageStartEvent
+  | DeltaEvent
+  | MessageEndEvent
+  | StateEvent
+  | ErrorEvent;
+
+// --- the rubric, as the student may read it ---------------------------------
+
+export interface RubricCriterion {
+  name: string;
+  /** The rubric's own wording, never a paraphrase. */
+  requirement: string;
+}
+
+export interface RubricStep {
+  step: SeeiStep;
+  criteria: RubricCriterion[];
+}
+
+export interface Rubric {
+  version: string;
+  steps: RubricStep[];
+}

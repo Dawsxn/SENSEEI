@@ -1,0 +1,64 @@
+# Render Blueprint: the trial instance, used for the study and nothing else
+# (docs/context/trial.md).
+#
+# A file of its own, not part of render.yaml, so it costs nothing until someone
+# chooses to create it: in the Render dashboard, New > Blueprint, pick this
+# repository, and set the Blueprint file to `render-trial.yaml`. Render then
+# asks for every value marked `sync: false`.
+#
+# Paid plans, because the trial cannot sleep mid-sitting or lose its database
+# after 30 days, as the free ones do. Delete both when the export is safe.
+#
+# Frozen: it deploys `main` once and never again by itself (`autoDeploy:
+# false`), so nothing merged during the trial can change the app between one
+# sitting and the next. Deploy by hand, only before the dry run, and only from a
+# release that has been tested.
+
+databases:
+  - name: senseei-trial-db
+    databaseName: senseei
+    plan: basic-256mb
+    region: singapore
+
+services:
+  - type: web
+    name: senseei-trial
+    runtime: docker
+    plan: starter
+    region: singapore
+    branch: main
+    autoDeploy: false
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: senseei-trial-db
+          property: connectionString
+      - key: TRIAL_MODE
+        value: "true"
+      - key: TRIAL_MINUTES
+        value: "40"
+      # Production rules: the dev sign-in picker and QA switching cannot exist
+      # here, whatever else is set, so no one can act as a participant.
+      - key: ENVIRONMENT
+        value: production
+      - key: AUTH_DEV_BYPASS
+        value: "false"
+      # An empty database stays empty. The trial holds participants only.
+      - key: SEED_IF_EMPTY
+        value: "false"
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: SESSION_SECRET
+        generateValue: true
+      # Entered in the dashboard. Never in this file.
+      - key: APP_BASE_URL          # https://senseei-trial.onrender.com, or whatever Render assigns
+        sync: false
+      - key: GOOGLE_CLIENT_ID      # the research team signs in with Google
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: INSTRUCTOR_EMAILS     # the research team, and no one else
+        sync: false
+      - key: GEMINI_API_KEY        # a paid-tier key, so answers are not used for training
+        sync: false

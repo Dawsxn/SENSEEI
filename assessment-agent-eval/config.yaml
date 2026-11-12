@@ -6,9 +6,11 @@
 # Every run uses exactly these versions and stamps them on the report,
 # results.json, and results_log.csv. The rubric + example set are a MATCHED
 # PAIR: bump them together when criteria are renamed/removed/redefined.
-# Resolves to: prompts/system_prompt_<prompt_version>.md,
-#              rubric/rubric_<rubric_version>.yaml,
+# Resolves to: ../agents/prompts/system_prompt_<prompt_version>.md,
+#              ../agents/rubrics/rubric_<rubric_version>.yaml,
 #              data/example_set_<example_set_version>.csv
+# The prompt and rubric come from the shared `agents` package (the code the
+# backend will import); only the example set is local to the eval.
 # Override any of them per-run with --prompt / --rubric / --csv (explicit paths).
 prompt_version: v3
 rubric_version: v3

@@ -1,8 +1,0 @@
-# Core
-python-dotenv>=1.0.0
-PyYAML>=6.0
-Jinja2>=3.1
-
-# LLM providers (install only the one you use; both are listed for convenience)
-google-genai>=2.9.0          # provider: gemini (default) — official SDK; supports thinking_level
-openai>=1.40.0               # provider: openai_compat (Groq / OpenRouter / Together / Ollama / OpenAI)

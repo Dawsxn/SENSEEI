@@ -1,0 +1,196 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: {{primary}}; text-decoration: none; }
+    a:hover { color: #15803d; }
+    .lbl { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #a1a1aa; }
+    .cap { font-size: 12px; color: #71717a; }
+  </style>
+</helmet>
+<div style="width: 1240px; height: 800px; background: #ffffff; color: #09090b; padding: 40px 44px; box-sizing: border-box; display: flex; flex-direction: column; gap: 26px;">
+
+  <div style="display: flex; align-items: baseline; gap: 12px;">
+    <h1 style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em;">Direction B3</h1>
+    <span class="cap">Two tones, crossed collar, no scarf, book pulled in from the edges.</span>
+  </div>
+
+  <div style="display: flex; gap: 36px;">
+
+    <div style="width: 260px; height: 260px; border: 1px solid #e4e4e7; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+      <svg width="180" height="180" viewBox="0 0 100 100">
+        <path fill="{{primary}}" d="{{hood}}"></path>
+        <rect x="35" y="28" width="30" height="8.5" rx="2.5" fill="{{dark}}"></rect>
+        <path fill="{{primary}}" d="{{body}}"></path>
+        <path fill="{{dark}}" d="{{collar}}"></path>
+        <path fill="{{dark}}" d="{{book}}"></path>
+      </svg>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; justify-content: center;">
+      <span class="lbl">Three cues, in order of legibility</span>
+      <div style="display: flex; gap: 12px;">
+        <sc-for list="{{cues}}" as="c" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+            <div style="width: 92px; height: 92px; background: #f4f4f5; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <svg width="62" height="62" viewBox="0 0 100 100">
+                <path fill="{{c.c1}}" d="{{hood}}"></path>
+                <rect x="35" y="28" width="30" height="8.5" rx="2.5" fill="{{c.c2}}"></rect>
+                <path fill="{{c.c1}}" d="{{body}}"></path>
+                <path fill="{{c.c3}}" d="{{collar}}"></path>
+                <path fill="{{c.c4}}" d="{{book}}"></path>
+              </svg>
+            </div>
+            <span style="font-size: 11px; color: #a1a1aa;">{{c.n}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #71717a; max-width: 430px; text-wrap: pretty;">
+        The eye band does the work. The crossed collar is the second tone earning its place: it reads as a wrapped garment, where the previous neck piece read as a dark slab.
+      </p>
+    </div>
+
+  </div>
+
+  <div style="height: 1px; background: #e4e4e7;"></div>
+
+  <div style="display: flex; gap: 44px;">
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span class="lbl">At size</span>
+      <div style="display: flex; align-items: flex-end; gap: 24px;">
+        <sc-for list="{{sizes}}" as="s" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <svg width="{{s.px}}" height="{{s.px}}" viewBox="0 0 100 100">
+              <path fill="{{primary}}" d="{{hood}}"></path>
+              <rect x="{{s.bx}}" y="{{s.by}}" width="{{s.bw}}" height="{{s.bh}}" rx="2.5" fill="{{dark}}"></rect>
+              <path fill="{{primary}}" d="{{body}}"></path>
+              <path fill="{{s.collar}}" d="{{collar}}"></path>
+              <path fill="{{dark}}" d="{{s.book}}"></path>
+            </svg>
+            <span style="font-size: 11px; color: #a1a1aa;">{{s.px}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <span class="cap">The collar drops below 24px. The band and the book carry it.</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span class="lbl">Contained</span>
+      <div style="display: flex; align-items: flex-end; gap: 18px;">
+        <sc-for list="{{tiles}}" as="t" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div style="width: {{t.box}}px; height: {{t.box}}px; background: {{primary}}; border-radius: {{t.r}}px; display: flex; align-items: center; justify-content: center;">
+              <svg width="{{t.glyph}}" height="{{t.glyph}}" viewBox="0 0 100 100">
+                <path fill="#ffffff" d="{{hood}}"></path>
+                <rect x="35" y="28" width="30" height="8.5" rx="2.5" fill="{{dark}}"></rect>
+                <path fill="#ffffff" d="{{body}}"></path>
+                <path fill="{{t.collar}}" d="{{collar}}"></path>
+                <path fill="{{dark}}" d="{{t.book}}"></path>
+              </svg>
+            </div>
+            <span style="font-size: 11px; color: #a1a1aa;">{{t.box}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <span class="cap">Glyph sits at 58 percent of the tile, so nothing touches the edge.</span>
+    </div>
+
+  </div>
+
+  <div style="height: 1px; background: #e4e4e7;"></div>
+
+  <div style="display: flex; gap: 48px; align-items: flex-start;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span class="lbl">Lockup</span>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <svg width="44" height="44" viewBox="0 0 100 100">
+          <path fill="{{primary}}" d="{{hood}}"></path>
+          <rect x="35" y="28" width="30" height="8.5" rx="2.5" fill="{{dark}}"></rect>
+          <path fill="{{primary}}" d="{{body}}"></path>
+          <path fill="{{dark}}" d="{{collar}}"></path>
+          <path fill="{{dark}}" d="{{book}}"></path>
+        </svg>
+        <span style="font-size: 27px; font-weight: 600; letter-spacing: -0.03em;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span class="lbl">Stacked</span>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <svg width="52" height="52" viewBox="0 0 100 100">
+          <path fill="{{primary}}" d="{{hood}}"></path>
+          <rect x="35" y="28" width="30" height="8.5" rx="2.5" fill="{{dark}}"></rect>
+          <path fill="{{primary}}" d="{{body}}"></path>
+          <path fill="{{dark}}" d="{{collar}}"></path>
+          <path fill="{{dark}}" d="{{book}}"></path>
+        </svg>
+        <span style="font-size: 19px; font-weight: 600; letter-spacing: -0.02em;">SENSEE-I</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; flex-grow: 1;">
+      <span class="lbl">Reversed</span>
+      <div style="background: #09090b; border-radius: 10px; padding: 20px 26px; display: flex; align-items: center; gap: 12px;">
+        <svg width="44" height="44" viewBox="0 0 100 100">
+          <path fill="#ffffff" d="{{hood}}"></path>
+          <rect x="35" y="28" width="30" height="8.5" rx="2.5" fill="{{primary}}"></rect>
+          <path fill="#ffffff" d="{{body}}"></path>
+          <path fill="{{primary}}" d="{{collar}}"></path>
+          <path fill="{{primary}}" d="{{book}}"></path>
+        </svg>
+        <span style="font-size: 27px; font-weight: 600; letter-spacing: -0.03em; color: #ffffff;">SENSEE-I</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#16a34a';
+    const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(primary);
+    const dark = m
+      ? '#' + [1, 2, 3].map((i) => Math.round(parseInt(m[i], 16) * 0.5).toString(16).padStart(2, '0')).join('')
+      : '#0b5225';
+    const none = 'rgba(0,0,0,0)';
+
+    const hood = 'M50 12 C39 12 34 20 33 30 C32 38 36 45 41 48 L59 48 C64 45 68 38 67 30 C66 20 61 12 50 12 Z';
+    const body = 'M50 49 C35 51 26 62 24 88 L76 88 C74 62 65 51 50 49 Z';
+    const collar = 'M42 48 L50 57 L58 48 L61.5 50 L50 62 L38.5 50 Z';
+    const book = 'M50 69 C45 66 38 64 32 64 L32 77 C38 77 45 79 50 82 C55 79 62 77 68 77 L68 64 C62 64 55 66 50 69 Z';
+    const bookWide = 'M50 69 C45 66 37 64 31 64 L31 78 C38 78 45 80 50 83 C55 80 62 78 69 78 L69 64 C63 64 55 66 50 69 Z';
+
+    return {
+      primary, dark, hood, body, collar, book,
+      cues: [
+        { n: 'Eye band', c1: primary, c2: dark, c3: none, c4: none },
+        { n: 'Collar',   c1: primary, c2: dark, c3: dark, c4: none },
+        { n: 'Book',     c1: primary, c2: dark, c3: dark, c4: dark }
+      ],
+      sizes: [
+        { px: 64, bx: 35, by: 28, bw: 30, bh: 8.5, collar: dark, book: book },
+        { px: 40, bx: 35, by: 28, bw: 30, bh: 8.5, collar: dark, book: book },
+        { px: 24, bx: 34, by: 27, bw: 32, bh: 10,  collar: none, book: bookWide },
+        { px: 16, bx: 34, by: 26, bw: 32, bh: 11,  collar: none, book: bookWide }
+      ],
+      tiles: [
+        { box: 64, r: 14, glyph: 37, collar: dark, book: book },
+        { box: 32, r: 8,  glyph: 19, collar: none, book: bookWide },
+        { box: 16, r: 4,  glyph: 10, collar: none, book: bookWide }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

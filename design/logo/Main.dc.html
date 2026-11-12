@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: {{primary}}; text-decoration: none; }
+    a:hover { color: #15803d; }
+    .lbl { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #a1a1aa; }
+    .cap { font-size: 12px; color: #71717a; }
+  </style>
+</helmet>
+<div style="width: 1240px; height: 1020px; background: #ffffff; color: #09090b; padding: 40px 44px; box-sizing: border-box; display: flex; flex-direction: column; gap: 30px;">
+
+  <div style="display: flex; align-items: baseline; gap: 12px;">
+    <h1 style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em;">Direction A</h1>
+    <span class="cap">Four tapered strokes. A statement above an open book.</span>
+  </div>
+
+  <div style="display: flex; gap: 40px;">
+
+    <div style="width: 300px; height: 300px; border: 1px solid #e4e4e7; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+      <svg width="180" height="180" viewBox="0 0 100 100" fill="{{primary}}">
+        <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+        <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+        <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+        <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+      </svg>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px; justify-content: center;">
+      <span class="lbl">Built in four strokes</span>
+      <div style="display: flex; gap: 14px;">
+        <sc-for list="{{build}}" as="b" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; gap: 9px; align-items: center;">
+            <div style="width: 96px; height: 96px; background: #f4f4f5; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <svg width="62" height="62" viewBox="0 0 100 100">
+                <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z" fill="{{b.c1}}"></path>
+                <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z" fill="{{b.c2}}"></path>
+                <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z" fill="{{b.c3}}"></path>
+                <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z" fill="{{b.c4}}"></path>
+              </svg>
+            </div>
+            <span style="font-size: 11px; color: #a1a1aa;">{{b.n}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #71717a; max-width: 460px; text-wrap: pretty;">
+        Kanji are learned one stroke at a time, in a fixed order, and skipping ahead is simply wrong. That is the same claim SEE-I makes about understanding a concept.
+      </p>
+    </div>
+
+  </div>
+
+  <div style="height: 1px; background: #e4e4e7;"></div>
+
+  <div style="display: flex; gap: 48px;">
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <span class="lbl">Freestanding, at size</span>
+      <div style="display: flex; align-items: flex-end; gap: 26px;">
+        <sc-for list="{{sizes}}" as="s" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <svg width="{{s.px}}" height="{{s.px}}" viewBox="0 0 100 100" fill="{{primary}}">
+              <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+              <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+              <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+              <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+            </svg>
+            <span style="font-size: 11px; color: #a1a1aa;">{{s.px}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <span class="lbl">Contained</span>
+      <div style="display: flex; align-items: flex-end; gap: 20px;">
+        <sc-for list="{{tiles}}" as="t" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div style="width: {{t.box}}px; height: {{t.box}}px; background: {{primary}}; border-radius: {{t.r}}px; display: flex; align-items: center; justify-content: center;">
+              <svg width="{{t.glyph}}" height="{{t.glyph}}" viewBox="0 0 100 100" fill="#ffffff">
+                <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+                <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+                <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+                <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+              </svg>
+            </div>
+            <span style="font-size: 11px; color: #a1a1aa;">{{t.box}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="height: 1px; background: #e4e4e7;"></div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <span class="lbl">Wordmark</span>
+    <div style="display: flex; align-items: baseline; gap: 56px;">
+      <span style="font-size: 40px; font-weight: 600; letter-spacing: -0.035em;">SENSEE-I</span>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 40px; font-weight: 600; letter-spacing: -0.035em;">SEN<span style="color: {{primary}};">SEE-I</span></span>
+        <span class="cap">The framework already sits inside the name.</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 1px; background: #e4e4e7;"></div>
+
+  <div style="display: flex; gap: 56px; align-items: flex-start;">
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <span class="lbl">Lockup, horizontal</span>
+      <div style="display: flex; align-items: center; gap: 13px;">
+        <svg width="42" height="42" viewBox="0 0 100 100" fill="{{primary}}">
+          <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+          <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+          <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+          <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+        </svg>
+        <span style="font-size: 27px; font-weight: 600; letter-spacing: -0.03em;">SENSEE-I</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <span class="lbl">Stacked</span>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <svg width="56" height="56" viewBox="0 0 100 100" fill="{{primary}}">
+          <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+          <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+          <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+          <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+        </svg>
+        <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.02em;">SENSEE-I</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px; flex-grow: 1;">
+      <span class="lbl">Reversed</span>
+      <div style="background: #09090b; border-radius: 10px; padding: 26px 30px; display: flex; align-items: center; gap: 13px;">
+        <svg width="42" height="42" viewBox="0 0 100 100" fill="#ffffff">
+          <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+          <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+          <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+          <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+        </svg>
+        <span style="font-size: 27px; font-weight: 600; letter-spacing: -0.03em; color: #ffffff;">SENSEE-I</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primary":{"editor":"color","default":"#16a34a","section":"Theme"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#16a34a';
+    const off = '#e4e4e7';
+    return {
+      primary,
+      build: [
+        { n: '1', c1: primary, c2: off,     c3: off,     c4: off },
+        { n: '2', c1: primary, c2: primary, c3: off,     c4: off },
+        { n: '3', c1: primary, c2: primary, c3: primary, c4: off },
+        { n: '4', c1: primary, c2: primary, c3: primary, c4: primary }
+      ],
+      sizes: [{ px: 64 }, { px: 40 }, { px: 24 }, { px: 16 }],
+      tiles: [
+        { box: 64, r: 14, glyph: 40 },
+        { box: 32, r: 8,  glyph: 21 },
+        { box: 16, r: 4,  glyph: 11 }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

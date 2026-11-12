@@ -48,7 +48,9 @@ jobs:
         with:
           script: |
             const body = context.payload.pull_request.body || "";
-            const required = ["Summary", "Changes", "How to test"];
+            // "How to test", "Screenshots" and "Notes & caveats" are optional:
+            // authors delete the heading when the section does not apply.
+            const required = ["Summary", "Changes"];
             const problems = [];
 
             // split the body on "## " headings into { heading -> content }

@@ -52,21 +52,79 @@ feat(session): fix bug            type says feature, subject says fix
 
 ## Description
 
-The template gives you five sections. Three are required and CI will fail the PR
+The template gives you five sections. Two are required, and CI will fail the PR
 if they are missing or empty:
 
-- **Summary** — one to three sentences: what this does and why
-- **Changes** — the key pieces added or changed, one bullet each
-- **How to test** — the steps a reviewer follows to verify it works
+- **Summary**: what this PR does
+- **Changes**: the key pieces added or changed, one bullet each
 
-Two are optional. Delete them when they do not apply:
+Three are optional. Delete the heading entirely when it does not apply:
 
-- **Screenshots** — UI changes only. Before and after if you are replacing
+- **How to test**: the steps a reviewer follows to verify it works. Include it
+  when there is something to run or click. Skip it for documentation, config,
+  and anything with nothing to execute.
+- **Screenshots**: UI changes only. Before and after if you are replacing
   something.
-- **Notes & caveats** — follow-ups, known limitations, anything a reviewer
-  should watch for
+- **Notes & caveats**: one line each, a few at most.
 
 Write the description for someone who has not been following your branch.
+
+### Keeping notes and caveats short
+
+A caveat earns its place only if it changes what a reviewer does or watches for.
+One line each. No hedging, no restating what is already in **Changes**, no
+recounting everything you considered.
+
+```
+The attempt limit of 3 is provisional.                                  good
+Charts are stubbed; the real query lands next PR.                       good
+
+It is worth noting that the attempt limit of 3 was chosen provisionally  no
+and may need revisiting once we have more data, though nothing
+currently depends on it either way.
+```
+
+If there is nothing that fits, delete the section. An empty-but-present caveats
+list reads as though something is being withheld.
+
+### Writing the summary
+
+Lead with what the PR does. First sentence, present tense, the change itself:
+
+```
+Adds retry handling to the submit endpoint.
+Fixes attempts being counted per session instead of per step.
+Moves the Assessment Agent into a shared package.
+```
+
+Not this:
+
+```
+Currently the submit endpoint has no way of knowing how many attempts a
+student has made, which means...
+
+This PR is part of the ongoing effort to...
+```
+
+Add a second sentence of why only when the reason is not obvious from the change
+itself. Two sentences is usually the whole summary. If it is running long, the
+detail belongs in **Changes**.
+
+### Do not reference the thesis manuscript
+
+The manuscript is not in this repository. A reviewer reading the PR cannot follow
+a pointer to a section, table, or figure in it, so the reference costs them
+something and gives nothing back.
+
+State the decision or the behaviour directly:
+
+```
+Sessions cannot be resumed once abandoned.          good
+Sessions cannot be resumed, per section 4.3.1.      no
+```
+
+Repository documentation may cite the manuscript, since it is a reference that
+outlives any one change. Pull requests may not.
 
 ## Review
 

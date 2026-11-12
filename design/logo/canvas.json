@@ -1,0 +1,12 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "A · Stroke order", "x": 0, "y": 0, "w": 1240, "h": 1020 },
+    { "file": "Figure.dc.html", "title": "B · Sensei with book", "x": 1340, "y": 0, "w": 1240, "h": 1020 },
+    { "file": "StrokeRough.dc.html", "title": "A2 · Rough brush, asymmetric", "x": 0, "y": 1140, "w": 1240, "h": 800 },
+    { "file": "Ninja.dc.html", "title": "B3 · Two-tone ninja", "x": 1340, "y": 1140, "w": 1240, "h": 800 }
+  ],
+  "annotations": [
+    { "id": "brief", "x": 0, "y": -150, "w": 520, "text": "SENSEE-I logo. Originals on the top row, revisions below.\n\nTapered strokes, green only, freestanding and contained. Each artboard carries the mark, the wordmark, and both together.\n\nJudge them at 16px first. That is where marks die." }
+  ],
+  "launch": { "view": "canvas" }
+}
