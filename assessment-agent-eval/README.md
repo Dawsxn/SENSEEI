@@ -104,6 +104,8 @@ instead of crashing.
    - rubric → copy `agents/rubrics/rubric_vN.yaml` → next N
    - examples → copy `data/example_set_vN.csv` → next N
 
+   The [prompt editor](#prompt-editor-local) does the first two for you.
+
    The rubric and example set are a **matched pair** — a rubric change that
    renames/removes/redefines criteria needs a matching example-set bump. Then point
    `config.yaml` (`prompt_version` / `rubric_version` / `example_set_version`) at the
@@ -115,6 +117,45 @@ instead of crashing.
 `python run_eval.py --from-run runs/<dir>` rebuilds a report from saved raw outputs
 without spending any API calls.
 
+## Prompt editor (local)
+
+```bash
+python serve.py        # opens http://127.0.0.1:8765; Ctrl+C to stop
+```
+
+A small local page for step 3 above. Pick a version to start from, edit the Assessment Agent's
+system prompt or the rubric, and **Save** writes the next number
+(`agents/prompts/system_prompt_v4.md`, `agents/rubrics/rubric_v4.yaml`) and adds a line to
+`versions.csv` beside it (version, based on, time, your note). It never overwrites an existing
+version, refuses a save with no changes, and numbers prompts and rubrics separately. The tutor and
+figure prompts in the same folder are left alone.
+
+Saving changes nothing that runs. The eval keeps using what `config.yaml` pins and the backend
+what its settings pin (`assessment_prompt_version`, `rubric_version`); a new version is used only
+once someone pins it.
+
+- **Show changes** diffs against the version you started from, with checks: the prompt must keep
+  `{{RUBRIC}}` exactly once, and the rubric must be valid YAML with all four steps and a pass
+  condition for every criterion. If a criterion that the pinned example set expects to fail is
+  renamed or removed, it warns, since those rows could no longer match.
+- **Preview what the model sees** fills the rubric into the prompt and shows the hash that
+  `results_log.csv` records for a run with it.
+- After a save it shows the command to try it without pinning it
+  (`python run_eval.py --prompt ../agents/prompts/system_prompt_v4.md`).
+- **Compare versions** diffs any two prompts (or rubrics), with changed words highlighted and a
+  "show whole file" switch. Each side shows when the version was created (the save log, or for
+  older versions the commit that first added the file) and the runs in `results_log.csv` that
+  used it. Compare accuracy only between runs on the same model and example set.
+
+It listens on `127.0.0.1` only and refuses requests from other hosts or origins, since it can
+write files. It needs nothing beyond the base install; `--port N` and `--no-open` are available.
+Its tests need no key or database:
+
+```bash
+pip install -e ".[dev]"                 # once, for pytest
+pytest assessment-agent-eval/tests      # from the repo root
+```
+
 ## Ground truth (note for adviser review)
 
 The active `v2` example set (`data/example_set_v2.csv`) is a fresh, hand-written set
@@ -125,6 +166,21 @@ being treated as final ground truth.
 
 The earlier `v1` set is preserved as `data/example_set_v1.csv` (its matched rubric is
 `agents/rubrics/rubric_v1.yaml`) so the 2026-06-19 baseline run stays reproducible.
+
+### Example set v4 (human-annotated)
+
+`data/example_set_v4.csv` holds **69 responses** labeled by human annotators, one
+consensus (or adjudicated) pass/fail per criterion, collapsed to one row per response:
+`criterion_targeted` lists the criteria the humans failed and `rationale` their remarks.
+Its criterion names match rubric `v3`.
+
+Every row reads `data/readings/gamble-ch1-2.txt`, the full text of chapters 1-2 of the
+Gamble textbook. That file is **git-ignored** because this repository is public, so a
+fresh clone does not have it and a v4 run stops with a missing-file error until it is
+added. Get the PDF from the team, convert it to plain text (for example with Poppler:
+`pdftotext -layout gamble-ch1-2.pdf data/readings/gamble-ch1-2.txt`), and place it at
+that path. Each v4 call sends the whole reading (about 25k tokens), so a v4 run costs
+far more than the short-excerpt sets.
 
 ## Layout
 
@@ -144,13 +200,18 @@ SENSEEI/
 │  └─ session.py             play one tutoring session in the terminal
 └─ assessment-agent-eval/    THE HARNESS — measures the agent above
    ├─ run_eval.py            entry point
+   ├─ serve.py               local prompt/rubric editor (see Prompt editor)
    ├─ config.yaml            provider/model + pinned input versions (eval runs only)
    ├─ data/
    │  ├─ example_set_vN.csv  labeled examples (matched to a rubric version)
    │  └─ readings/*.txt      the source texts the examples respond to
    ├─ src/
    │  ├─ compare.py          expected-vs-actual + stats
-   │  └─ report.py           HTML rendering
+   │  ├─ report.py           HTML rendering
+   │  ├─ versions.py         editor: versioning, checks, diffs
+   │  └─ webui.py            editor: localhost-only JSON API
+   ├─ ui/editor.html         the editor page
+   ├─ tests/                 editor tests (pytest assessment-agent-eval/tests)
    ├─ runs/                  raw JSON per run (reproducibility cache)
    ├─ reports/               timestamped HTML reports
    ├─ results_log.csv        per-run summary metrics
