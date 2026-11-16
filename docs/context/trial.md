@@ -34,7 +34,7 @@ longest item on the way to the trial.
 | | Development | Trial | Production |
 | --- | --- | --- | --- |
 | Purpose | QA | The study, and nothing else | Ordinary use, if the app gets any after the thesis |
-| Deploys | Every merge to `develop` | Once, from a fixed release, then frozen | On release to `main` |
+| Deploys | Every merge to `develop` | On release to `main`; no releases during the trial | On release to `main` |
 | `TRIAL_MODE` | Off | **On** | Off |
 | Data | Fake seed | Study participants only | Real users |
 | Lives | Indefinitely | The trial, then two years, then deleted | Indefinitely |
@@ -44,8 +44,9 @@ one session per participant, a hard 40 minutes, two control-group screens that
 make no sense outside a study. And its data has rules ordinary data does not: keyed
 to participant IDs, exported for analysis, deleted after two years. A database
 holding only trial participants makes the export "everything in it" and the
-deletion "this database". Frozen at one release, nothing merged elsewhere can
-change the app between one sitting and the next.
+deletion "this database". It deploys only releases to `main`, and nothing is
+released from the first sitting until the last is done, so nothing merged
+elsewhere can change the app between one sitting and the next.
 
 **Why the same code.** The trial has to measure the SENSEE-I that ships, for the
 same reason the eval must measure the agent the app uses: a copy kept for the
@@ -370,13 +371,13 @@ cut off by time or by the batch closing ends `timed_out` and is kept.
 8. **Reliability:** the dropped-connection bug, and abandoned sessions handled the
    trial's way (kept, never deleted).
 9. **The trial instance** in `render-trial.yaml`, a Blueprint of its own so it
-   costs nothing until created: paid server and database, production rules, no
-   automatic deploys, deploying `main`.
+   costs nothing until created: paid server and database, production rules,
+   deploying each release to `main`.
 10. **Stand it up:** release, the instance, a paid Gemini key, the classes and the
     reading.
-11. **A dry run** through all three groups, to set the exclusion cut-offs. Then
-    wipe the database.
-12. **The trial.** The instance stays frozen until the last sitting is done.
+11. **A dry run** through all three groups, to find what is broken and to set the
+    exclusion cut-offs. Fix and release what it finds, then wipe the database.
+12. **The trial.** No releases to `main` from the first sitting until the last.
 13. **After:** export, analyse, keep two years, delete.
 
 Each step with screens starts with mockups, as every screen in this app has.
