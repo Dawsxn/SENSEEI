@@ -2,7 +2,7 @@
  *  conversation's state moves, and what the event log keeps. */
 
 import { render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ChatText, parseBlocks } from "./ChatText";
 import { __queue, logTrial, setTrialContext } from "./trialLog";
@@ -86,5 +86,25 @@ describe("the event log", () => {
     const [panel, tab] = __queue.peek();
     expect(panel.data).toEqual({ panel: "rubric", step: "Elaborate", attempt: 2 });
     expect(tab.data).toBeUndefined();
+  });
+
+  it("keeps a batch for the next try when the server errors", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 503 })));
+    __queue.enable();
+    logTrial("tab_left");
+    await __queue.flush();
+    expect(__queue.peek().map((e) => e.kind)).toEqual(["tab_left"]);
+    vi.unstubAllGlobals();
+  });
+
+  it("lets a batch go once it is sent, or refused for good", async () => {
+    for (const status of [204, 403]) {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status })));
+      __queue.enable();
+      logTrial("tab_left");
+      await __queue.flush();
+      expect(__queue.peek()).toEqual([]);
+    }
+    vi.unstubAllGlobals();
   });
 });
