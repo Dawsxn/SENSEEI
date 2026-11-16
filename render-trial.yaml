@@ -9,10 +9,10 @@
 # Paid plans, because the trial cannot sleep mid-sitting or lose its database
 # after 30 days, as the free ones do. Delete both when the export is safe.
 #
-# Frozen: it deploys `main` once and never again by itself (`autoDeploy:
-# false`), so nothing merged during the trial can change the app between one
-# sitting and the next. Deploy by hand, only before the dry run, and only from a
-# release that has been tested.
+# Deploys every release to `main`, and only those. `main` changes only through a
+# release, so the rule that keeps the app the same for every participant is a
+# release rule: release what the dry run finds, then nothing from the first
+# sitting until the last is done.
 
 databases:
   - name: senseei-trial-db
@@ -27,7 +27,7 @@ services:
     plan: starter
     region: singapore
     branch: main
-    autoDeploy: false
+    autoDeploy: true
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL

@@ -138,7 +138,7 @@ def test_the_trial_blueprint_cannot_be_entered_without_an_id():
     assert env["AUTH_DEV_BYPASS"] == "false"
     assert "QA_EMAILS" not in env
     assert env["SEED_IF_EMPTY"] == "false"         # no fake students in the study's data
-    assert service["autoDeploy"] is False          # frozen between sittings
+    assert service["branch"] == "main"             # only a release reaches it
     assert service["plan"] != "free"               # the free plan sleeps mid-sitting
     assert blueprint["databases"][0]["plan"] != "free"
     settings = Settings(environment=env["ENVIRONMENT"], auth_dev_bypass=False, qa_emails="a@dlsu.edu.ph")
