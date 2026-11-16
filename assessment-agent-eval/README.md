@@ -28,6 +28,28 @@ backend will import, not a copy of it.
 
 The report lands in `reports/<timestamp>_<promptversion>.html`. Open it in a browser.
 
+### Common commands
+
+All from `assessment-agent-eval/`. Explicit paths are relative to this folder.
+
+| What | Command |
+| --- | --- |
+| Offline smoke test (no key, no cost) | `python run_eval.py --provider mock` |
+| Real run with the versions pinned in `config.yaml` | `python run_eval.py` |
+| Quick check on the first few rows | `python run_eval.py --limit 3` |
+| Run the human-annotated set (see [Example set v4](#example-set-v4-human-annotated)) | `python run_eval.py --csv data/example_set_v4.csv` |
+| Try a prompt without pinning it | `python run_eval.py --prompt ../agents/prompts/system_prompt_v4.md` |
+| Try a rubric without pinning it | `python run_eval.py --rubric ../agents/rubrics/rubric_v4.yaml` |
+| Another model | `python run_eval.py --model <model-id>` |
+| Rebuild a report, no API calls | `python run_eval.py --from-run runs/<dir>` |
+| Edit and compare prompts and rubrics | `python serve.py` (see [Prompt editor](#prompt-editor-local)) |
+
+Flags combine, e.g. `python run_eval.py --csv data/example_set_v4.csv --limit 3`. Every run, the
+mock included, adds a folder under `runs/`, a report under `reports/` and a row in
+`results_log.csv`.
+Calls are spaced to `requests_per_minute` in `config.yaml` (15), so 69 responses take about
+5 minutes.
+
 ## How it works
 
 ```
@@ -175,12 +197,17 @@ consensus (or adjudicated) pass/fail per criterion, collapsed to one row per res
 Its criterion names match rubric `v3`.
 
 Every row reads `data/readings/gamble-ch1-2.txt`, the full text of chapters 1-2 of the
-Gamble textbook. That file is **git-ignored** because this repository is public, so a
-fresh clone does not have it and a v4 run stops with a missing-file error until it is
-added. Get the PDF from the team, convert it to plain text (for example with Poppler:
-`pdftotext -layout gamble-ch1-2.pdf data/readings/gamble-ch1-2.txt`), and place it at
-that path. Each v4 call sends the whole reading (about 25k tokens), so a v4 run costs
-far more than the short-excerpt sets.
+Gamble textbook, as extracted by this app's own upload page (`/library/new`), so the
+agent is graded on the text it sees in the app. That file is **git-ignored** because this
+repository is public, so a fresh clone does not have it and a v4 run stops with a
+missing-file error until it is added. Get `gamble-ch1-2.txt` from the team and place it at
+that path. Do not reconvert the PDF with another tool: a different converter gives
+different text, and the results would no longer be comparable.
+
+Each v4 call sends the whole reading (about 26k tokens), so a full v4 run costs roughly
+$4 at the Gemini pricing in `config.yaml`, against cents for the short-excerpt sets. Try
+`--limit 3` first and check the cost line. To make v4 the default, set
+`example_set_version: v4` in `config.yaml`.
 
 ## Layout
 
