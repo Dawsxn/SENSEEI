@@ -8,8 +8,12 @@ import { useAuthConfig } from "./useAuth";
 
 export function SignInScreen() {
   const [params] = useSearchParams();
-  const { data: config } = useAuthConfig();
+  const { data: config, isPending } = useAuthConfig();
   const error = params.get("error");
+
+  // Nothing until the server says which sign-in this is, or the trial instance
+  // would flash the ordinary Google screen first.
+  if (isPending) return null;
 
   // The trial instance: participants sign in with their ID, and Google is the
   // research team's way in, kept to a link under the card.
@@ -24,7 +28,9 @@ export function SignInScreen() {
             notice={
               error === "not_team"
                 ? "That account isn't on the research team."
-                : error === "oauth"
+                : error === "not_dlsu"
+                  ? "That account isn't a DLSU address. Sign in with your @dlsu.edu.ph account."
+                  : error === "oauth"
                   ? "Sign-in didn't complete. Please try again."
                   : undefined
             }

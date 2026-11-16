@@ -238,7 +238,8 @@ per step.
 One row per interaction in `trial_event`, stamped with when it happened by the
 participant's browser (and when the server received it). The browser sends what
 only it can see in batches every few seconds, and once more as the page closes;
-the server records what only it knows. Unknown kinds are refused, and a browser
+a batch that meets a lost connection or a server error is kept and sent again.
+The server records what only it knows. Unknown kinds are refused, and a browser
 clock more than an hour out is replaced by the server's.
 
 Every event from a SEE-I participant's session also carries the `step` they were

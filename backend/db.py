@@ -28,6 +28,11 @@ def engine() -> AsyncEngine:
             s.database_url,
             echo=s.db_echo,
             pool_pre_ping=True,   # a pooled connection can be dead after a restart
+            # Up to 25 at once, not the default 15: a trial sitting of 45 can
+            # submit answers together, each holding one while it is graded. Kept
+            # well under the database's 100, whose smallest plan has 256 MB.
+            pool_size=10,
+            max_overflow=15,
         )
     return _engine
 

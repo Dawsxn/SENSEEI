@@ -67,14 +67,18 @@ async function flush(): Promise<void> {
   while (queue.length) {
     const events = take();
     try {
-      await fetch("/trial/events", {
+      const res = await fetch("/trial/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ events }),
         keepalive: true,
       });
+      // A busy or failing server is worth another try. A refusal (signed out,
+      // a closed batch) would be refused again, so that batch is let go.
+      if (res.status >= 500 || res.status === 429) throw new Error(`${res.status}`);
     } catch {
-      // Put them back for the next try; losing the network should not lose them.
+      // Put them back for the next try; losing the network, or the server
+      // stumbling, should not lose them.
       queue = [...events, ...queue];
       return;
     }
@@ -128,4 +132,5 @@ export const __queue = {
   enable: () => {
     enabled = true;
   },
+  flush: () => flush(),
 };
