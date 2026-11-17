@@ -1,0 +1,3107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SENSEEI Assessment Agent — v4 — 20261117_020348</title>
+<style>
+  :root {
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2128; --line:#30363d;
+    --ink:#e6edf3; --muted:#8b949e; --accent:#58a6ff;
+    --agree:#3fb950; --agree-bg:rgba(63,185,80,.15); --agree-bd:rgba(63,185,80,.4);
+    --criteria:#d29922; --criteria-bg:rgba(210,153,34,.15); --criteria-bd:rgba(210,153,34,.4);
+    --verdict:#f85149; --verdict-bg:rgba(248,81,73,.15); --verdict-bd:rgba(248,81,73,.4);
+    --error:#8b949e; --error-bg:rgba(139,148,158,.15); --error-bd:rgba(139,148,158,.4);
+  }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+         color:var(--ink); margin:0; padding:24px; background:var(--bg); }
+  h1 { font-size:20px; margin:0 0 4px; }
+  h2 { font-size:15px; margin:30px 0 6px; font-weight:600; }
+  a { color:var(--accent); }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:4px; }
+  .hint { color:var(--muted); font-size:12px; margin:10px 0 0; font-style:italic; }
+  .meta { font-size:12px; color:var(--muted); margin-top:10px; line-height:1.7; }
+  .meta code { background:var(--panel2); padding:1px 6px; border-radius:5px; color:var(--ink); }
+  .secdesc { color:var(--muted); font-size:12.5px; margin:0 0 10px; max-width:760px; }
+
+  .cards { display:flex; flex-wrap:wrap; gap:12px; margin:14px 0 4px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+          padding:14px 16px; min-width:160px; }
+  .card .big { font-size:26px; font-weight:600; }
+  .card .lbl { font-size:12px; color:var(--muted); margin-top:2px; }
+  .card .sub2 { font-size:11px; color:var(--muted); margin-top:3px; }
+
+  .chips { display:flex; flex-wrap:wrap; gap:10px; margin:6px 0 2px; }
+  .chip { display:inline-flex; align-items:center; gap:8px; padding:8px 13px;
+          border-radius:999px; font-size:13px; font-weight:600; border:1px solid var(--line); }
+  .chip .n { font-size:15px; }
+  .c-agree { background:var(--agree-bg); color:var(--agree); border-color:var(--agree-bd); }
+  .c-criteria_diff { background:var(--criteria-bg); color:var(--criteria); border-color:var(--criteria-bd); }
+  .c-verdict_diff { background:var(--verdict-bg); color:var(--verdict); border-color:var(--verdict-bd); }
+  .c-error { background:var(--error-bg); color:var(--error); border-color:var(--error-bd); }
+
+  table { width:100%; border-collapse:collapse; background:var(--panel);
+          border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:13px; }
+  th,td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--panel2); font-weight:600; color:var(--ink); }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--panel2); }
+
+  .pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px;
+          font-weight:600; white-space:nowrap; }
+  .s-agree { background:var(--agree-bg); color:var(--agree); }
+  .s-criteria_diff { background:var(--criteria-bg); color:var(--criteria); }
+  .s-verdict_diff { background:var(--verdict-bg); color:var(--verdict); }
+  .s-error { background:var(--error-bg); color:var(--error); }
+  td.status-agree { border-left:3px solid var(--agree); }
+  td.status-criteria_diff { border-left:3px solid var(--criteria); }
+  td.status-verdict_diff { border-left:3px solid var(--verdict); }
+  td.status-error { border-left:3px solid var(--error); }
+
+  .crit { display:inline-block; padding:1px 7px; margin:1px 2px; border-radius:6px;
+          font-size:11px; border:1px solid var(--line); color:var(--ink); }
+  .c-match { background:var(--agree-bg); color:var(--agree); border-color:var(--agree-bd); }
+  .c-miss  { background:var(--verdict-bg); color:var(--verdict); border-color:var(--verdict-bd); }
+  .c-extra { background:var(--criteria-bg); color:var(--criteria); border-color:var(--criteria-bd); }
+  .resp { max-width:430px; }
+  .muted { color:var(--muted); }
+  .bar { background:var(--panel2); border-radius:4px; height:8px; width:90px; display:inline-block;
+         vertical-align:middle; overflow:hidden; border:1px solid var(--line); }
+  .bar > span { display:block; height:100%; background:var(--agree); }
+  details { margin-top:6px; }
+  summary { cursor:pointer; color:var(--accent); font-size:12px; }
+  details .reason { margin-top:4px; }
+  .warn { color:var(--criteria); font-size:11px; }
+  .err { color:var(--verdict); font-size:12px; }
+  .key { font-family:ui-monospace,Consolas,monospace; font-size:12px; }
+
+  /* filter bar */
+  .toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin:10px 0; font-size:13px; }
+  .toolbar label { color:var(--muted); display:inline-flex; align-items:center; gap:6px; }
+  .toolbar select { background:var(--panel2); color:var(--ink); border:1px solid var(--line);
+                    border-radius:6px; padding:5px 8px; font-size:13px; }
+  #counter { margin-left:auto; }
+
+  /* hover tooltip (the ⓘ) */
+  .info { display:inline-block; width:14px; height:14px; line-height:13px; text-align:center;
+          border:1px solid var(--line); border-radius:50%; font-size:9px; font-style:normal;
+          color:var(--muted); background:var(--panel2); cursor:help; vertical-align:middle; }
+  .tip { position:relative; }
+  .tip:hover::after {
+    content:attr(data-tip); position:absolute; left:0; top:140%; z-index:20;
+    width:max-content; max-width:300px; white-space:normal;
+    background:#000; color:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:8px 10px; font-size:12px; font-weight:400; line-height:1.45;
+    box-shadow:0 6px 20px rgba(0,0,0,.5);
+  }
+  th.tip:hover::after { font-weight:400; }
+</style>
+</head>
+<body>
+  <h1>SENSEEI — Student Assessment Agent</h1>
+  <div class="sub">Evaluation report · 20261117_020348</div>
+  <div class="meta">
+    Prompt: <code>v4</code> (<code>ea423ddbfd</code>) ·
+    Rubric: <code>v4</code> ·
+    Example set: <code>v4</code> ·
+    Provider: <code>gemini</code> · Model: <code>gemini-3.1-pro-preview</code> · Thinking: <code>low</code> ·
+    Examples: <code>69</code> · Source: <code>example_set_v4.csv</code>
+  </div>
+  <p class="hint">Hover any ⓘ for a plain-language explanation of the metric.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="big">91.3%</div>
+      <div class="lbl tip" data-tip="Share of responses where the agent's overall PASS/FAIL verdict matched the human label. This is the headline number.">Verdict accuracy <span class="info">i</span></div>
+      <div class="sub2">63/69 responses correct</div>
+    </div>
+    
+    <div class="card">
+      <div class="big">$3.8414</div>
+      <div class="lbl tip" data-tip="Estimated cost of this run in USD, from token usage at the configured prices (thinking + output are billed at the output rate).">Est. cost <span class="info">i</span></div>
+      <div class="sub2">this run</div>
+    </div>
+    <div class="card">
+      <div class="big" style="font-size:15px;line-height:1.6">
+        1,632,359 in<br>
+        28,142 thinking<br>
+        19,917 out</div>
+      <div class="lbl tip" data-tip="Tokens consumed this run: prompt input sent to the model, the model's internal thinking, and its visible output.">Tokens <span class="info">i</span></div>
+    </div>
+    
+  </div>
+
+  <h2 class="tip" data-tip="Every response falls into exactly one of these outcomes. The colors match the left border of each row in the per-example table below.">Outcome breakdown <span class="info">i</span></h2>
+  <div class="chips">
+    <span class="chip c-agree tip" data-tip="Verdict AND the exact set of failing criteria both match the label. A full, clean agreement.">agree <span class="n">47</span></span>
+    <span class="chip c-criteria_diff tip" data-tip="The PASS/FAIL verdict matches, but the agent flagged a different set of criteria than expected.">criteria differ <span class="n">16</span></span>
+    <span class="chip c-verdict_diff tip" data-tip="The agent's PASS/FAIL disagrees with the label. This is the most serious kind of error.">verdict mismatch <span class="n">6</span></span>
+    <span class="chip c-error tip" data-tip="No usable verdict was produced (a JSON-parse or provider error, e.g. a truncated response).">error <span class="n">0</span></span>
+  </div>
+
+  <h2 class="tip" data-tip="Verdict accuracy split by SEE-I step, so you can see which step the agent judges best and worst.">Accuracy by SEE-I step <span class="info">i</span></h2>
+  <table>
+    <thead><tr><th>Step</th><th>Examples</th><th>Correct</th><th>Accuracy</th></tr></thead>
+    <tbody>
+    
+    <tr>
+      <td>State</td><td>18</td><td>17/18</td>
+      <td><span class="bar"><span style="width:94.0%"></span></span>
+          94.4%</td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>15</td><td>15/15</td>
+      <td><span class="bar"><span style="width:100.0%"></span></span>
+          100.0%</td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>20</td><td>17/20</td>
+      <td><span class="bar"><span style="width:85.0%"></span></span>
+          85.0%</td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>16</td><td>14/16</td>
+      <td><span class="bar"><span style="width:87.0%"></span></span>
+          87.5%</td>
+    </tr>
+    
+    </tbody>
+  </table>
+
+  <h2 class="tip" data-tip="Per rubric criterion: of the examples that SHOULD fail it, how many the agent caught — and how often it flagged the criterion when it shouldn't have. Your guide to which criterion to tune next.">Per-criterion catch rate <span class="info">i</span></h2>
+  <table>
+    <thead><tr>
+      <th>Step</th><th>Criterion</th>
+      <th class="tip" data-tip="Of the examples expected to fail this criterion, how many the agent flagged. (— means no example targets it.)">Caught <span class="info">i</span></th>
+      <th class="tip" data-tip="Times the agent flagged this criterion on an example that was NOT expected to fail it (over-flagging).">False flags <span class="info">i</span></th>
+    </tr></thead>
+    <tbody>
+    
+    <tr>
+      <td>State</td><td>Brevity</td>
+      <td>3/3
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Own Words</td>
+      <td>1/1
+          <span class="muted">(100%)</span></td>
+      <td><span class="warn">2</span></td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Clarity</td>
+      <td>5/5
+          <span class="muted">(100%)</span></td>
+      <td><span class="warn">1</span></td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Completeness</td>
+      <td>7/8
+          <span class="muted">(88%)</span></td>
+      <td><span class="warn">1</span></td>
+    </tr>
+    
+    <tr>
+      <td>State</td><td>Accuracy</td>
+      <td>3/4
+          <span class="muted">(75%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Completeness</td>
+      <td>9/9
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Own Words</td>
+      <td>3/3
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Coherence</td>
+      <td>3/3
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Elaborate</td><td>Accuracy</td>
+      <td>3/3
+          <span class="muted">(100%)</span></td>
+      <td><span class="warn">1</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Originality</td>
+      <td>2/2
+          <span class="muted">(100%)</span></td>
+      <td><span class="warn">1</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Fit</td>
+      <td>4/5
+          <span class="muted">(80%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Concreteness</td>
+      <td>3/3
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Explicit Mapping</td>
+      <td>6/12
+          <span class="muted">(50%)</span></td>
+      <td><span class="warn">1</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Contrast</td>
+      <td>3/6
+          <span class="muted">(50%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Accuracy</td>
+      <td>2/2
+          <span class="muted">(100%)</span></td>
+      <td><span class="warn">1</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Analogy</td>
+      <td>2/3
+          <span class="muted">(67%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Match</td>
+      <td>8/11
+          <span class="muted">(73%)</span></td>
+      <td><span class="warn">1</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Imagery</td>
+      <td>3/4
+          <span class="muted">(75%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    <tr>
+      <td>Illustrate</td><td>Accuracy</td>
+      <td>4/10
+          <span class="muted">(40%)</span></td>
+      <td><span class="muted">0</span></td>
+    </tr>
+    
+    </tbody>
+  </table>
+
+  <h2>Per-example results</h2>
+  <p class="secdesc">One row per labeled response. The colored left border and the Status pill show the
+    outcome (see the breakdown above). Use the agent reasoning toggle to see why each criterion was judged.</p>
+  <div class="toolbar">
+    <label>Status
+      <select id="f-status" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="agree">Agree</option>
+        <option value="criteria_diff">Criteria differ</option>
+        <option value="verdict_diff">Verdict mismatch</option>
+        <option value="error">Error</option>
+      </select>
+    </label>
+    <label>SEE-I step
+      <select id="f-step" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="State">State</option><option value="Elaborate">Elaborate</option><option value="Exemplify">Exemplify</option><option value="Illustrate">Illustrate</option>
+      </select>
+    </label>
+    <span class="muted" id="counter">Showing 69 of 69</span>
+  </div>
+  <table id="results">
+    <thead><tr>
+      <th>ID</th><th>Step</th><th>Response</th>
+      <th>Expected</th><th>Agent</th>
+      <th class="tip" data-tip="How the agent's failing criteria compare to the expected ones. ✓ matched = expected to fail and flagged; ✗ missed = expected to fail but not flagged; + extra = flagged but not expected.">Criteria diff <span class="info">i</span></th>
+      <th>Status</th>
+    </tr></thead>
+    <tbody>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-STR-P1</td>
+      <td>State</td>
+      <td class="resp">
+        A company's strategy is the set of coordinated moves its managers choose in order to outperform rivals and earn stronger-than-average profits.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response adequately paraphrases the text by using synonyms like 'moves', 'rivals', and 'stronger-than-average profits'.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The definition is clear, precise, and easy to understand.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The statement captures all essential components of the concept, including coordinated actions, outperforming competitors, and achieving superior profitability.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response is entirely faithful to the reading and accurately defines a company's strategy.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-STR-BC</td>
+      <td>State</td>
+      <td class="resp">
+        A company's strategy is, in a way, kind of the overall big-picture set of various different things and moves that the managers sort of decide to go with, all in the general effort to somehow end up doing better than the other competitors out there and make good money in the end.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: FAIL — <span class="muted">The response is heavily padded with filler words and phrases such as 'in a way', 'kind of', 'sort of', and 'somehow'.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The student expresses the definition in their own words rather than copying directly from the text.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The excessive use of filler words and vague phrasing like 'various different things' makes the statement imprecise and unclear.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The statement successfully captures the core components of managerial actions, outperforming competitors, and achieving profitability.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the key concept that strategy involves managerial actions aimed at beating competitors and making a profit.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Brevity</span><span class="crit">Clarity</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Brevity</span><span class="crit">Clarity</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Brevity</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="State">
+      <td class="status-criteria_diff key">ST-STR-CC</td>
+      <td>State</td>
+      <td class="resp">
+        A company's strategy is basically just about the company trying to do well and be successful in its industry.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and short, despite a couple of minor filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words and is not copied from the text.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The phrase 'basically just about the company trying to do well' is vague and lacks precision.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The statement fails to capture the core components of the concept, omitting the need for a coordinated set of actions, outperforming competitors, and achieving superior profitability.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">While vague and incomplete, the statement does not explicitly contradict the reading's definition of strategy.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Completeness</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Accuracy</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-BM-P1</td>
+      <td>State</td>
+      <td class="resp">
+        A company's business model is management's blueprint for how its strategy will create value for customers while still earning enough revenue to cover costs and turn a profit, resting on its customer value proposition and its profit formula.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words or unnecessary repetition.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is a close but acceptable paraphrase of the reading's definition.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clear, precise, and well-formulated.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The statement captures all essential core components, including value creation, profit generation, the customer value proposition, and the profit formula.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response is entirely faithful to the reading and accurately represents the concept of a business model.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-STR-OWC</td>
+      <td>State</td>
+      <td class="resp">
+        A company's strategy is the coordinated set of actions that its managers take.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: FAIL — <span class="muted">The response is directly copied from the reading rather than being expressed in your own words.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clearly formulated and easy to understand.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The statement omits the essential core component that these actions are taken to outperform competitors and achieve superior profitability.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The portion of the concept that is stated is correct and aligns with the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Own Words</span><span class="crit">Completeness</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Own Words</span><span class="crit">Completeness</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Own Words</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-STR-A</td>
+      <td>State</td>
+      <td class="resp">
+        A company's strategy is its plan to copy whatever its most successful competitors are doing so it can keep up with the rest of the market.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of unnecessary filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The student uses their own words to define the concept rather than copying from the text.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clearly formulated and easy to understand.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The response fails to capture the core components of outperforming competitors and achieving superior profitability.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response directly contradicts the reading, which explicitly states that mimicking competitors never works and that strategy is about taking actions to outperform them.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="State">
+      <td class="status-criteria_diff key">ST-BM-BC</td>
+      <td>State</td>
+      <td class="resp">
+        A company's business model is, honestly, sort of the whole entire blueprint thing about how the business is going to, you know, give people something they actually value, that's like its value proposition, while at the same time still somehow bringing in enough money through its profit formula to cover everything and stay profitable in the end.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: FAIL — <span class="muted">The response is heavily padded with filler words and phrases such as 'honestly', 'sort of', 'you know', and 'still somehow'.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The student expresses the definition using their own conversational phrasing rather than copying directly from the text.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The excessive use of filler words makes the statement poorly formulated and less precise.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The statement successfully captures both core components: the customer value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a business model.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Brevity</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Brevity</span><span class="crit">Clarity</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Brevity</span>
+        
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Clarity</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-BM-CC</td>
+      <td>State</td>
+      <td class="resp">
+        A company's business model is basically the general idea of how the company plans to make money somehow.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and not overly padded with filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The student uses their own phrasing rather than copying directly from the text.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The use of phrases like 'basically the general idea' and 'somehow' makes the statement vague and imprecise.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The response only mentions making money (the profit formula) and completely omits the customer value proposition.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">While incomplete, the assertion that a business model involves how a company plans to make money is correct according to the text.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Completeness</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Completeness</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-BM-P2</td>
+      <td>State</td>
+      <td class="resp">
+        A company's business model explains how the firm will deliver something customers value and still make money doing it - its customer value proposition on one side and its profit formula on the other.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response effectively paraphrases the text into the student's own words while retaining the necessary terminology.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clear, precise, and easy to understand.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The response captures both core components of the concept: the customer value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a business model.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-VIS-P1</td>
+      <td>State</td>
+      <td class="resp">
+        A strategic vision lays out where the company is headed - the long-term direction management has set and the future products, customers, markets, and technologies it intends to focus on.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The statement is a close paraphrase of the reading, using the student's own words.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clear, precise, and well-formulated.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The statement captures the core components of a strategic vision, including the long-term direction and future focus.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the reading's definition of a strategic vision.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="State">
+      <td class="status-criteria_diff key">ST-VIS-OWC</td>
+      <td>State</td>
+      <td class="resp">
+        A strategic vision describes where we are going, the course and direction that management has charted.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: FAIL — <span class="muted">The response is directly copied from the reading ('describes where we are going, the course and direction that management has charted').</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clear and easy to understand.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The statement omits the core component regarding the company's future product-customer-market-technology focus.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a strategic vision.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Own Words</span><span class="crit">Completeness</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span>
+        
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Own Words</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="State">
+      <td class="status-criteria_diff key">ST-VIS-A</td>
+      <td>State</td>
+      <td class="resp">
+        A strategic vision is the company's detailed one-year plan listing the exact steps, budgets, and targets it must hit this year.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The statement is written in the student's own words.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clear and precise in its formulation.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The statement attempts to capture the core component of what a strategic vision is, albeit incorrectly.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response incorrectly defines a strategic vision as a detailed one-year plan with budgets and targets, whereas the reading defines it as a description of the company's long-term direction and future focus.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Completeness</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-STR-P2</td>
+      <td>State</td>
+      <td class="resp">
+        A company's strategy is the coherent set of choices its managers make about how to compete so the firm can beat its rivals and earn better profits over the long run.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words or unnecessary repetition.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response effectively paraphrases the text using the student's own phrasing, such as 'coherent set of choices' and 'beat its rivals'.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The definition is clear, precise, and easy to understand.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The statement captures all essential core components of the concept: managerial choices, outperforming competitors, and achieving superior profitability.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response is entirely faithful to the reading and accurately reflects the provided key concept.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="verdict_diff" data-step="State">
+      <td class="status-verdict_diff key">ST-BM-OWC</td>
+      <td>State</td>
+      <td class="resp">
+        A company's business model sets forth how its strategy and operating approaches will create value for customers while generating revenues to cover costs and realizing a profit.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: FAIL — <span class="muted">The response is almost a direct word-for-word copy of the text rather than being expressed in the student's own words.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clear, precise, and easy to understand.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The statement fails to name the two core elements of a business model identified in the key concept: the customer value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The information provided is correct and consistent with the source text.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Own Words</span><span class="crit">Completeness</span>
+      </td>
+      <td>
+        
+        
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Own Words</span><span class="crit c-extra" title="extra: flagged but not expected">+ Completeness</span>
+      </td>
+      <td><span class="pill s-verdict_diff">✗ verdict</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-BM-A</td>
+      <td>State</td>
+      <td class="resp">
+        A company's business model is the legal structure it registers under, such as whether it is a sole proprietorship, a partnership, or a corporation.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words and not copied from the text.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clearly formulated and easy to understand.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The response fails to mention the core components of a business model, which are the customer value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response inaccurately defines a business model as a legal structure, which contradicts the reading's definition.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-VIS-CC</td>
+      <td>State</td>
+      <td class="resp">
+        A strategic vision is basically just about a company having some kind of goal or dream for where it wants to be in the future.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and consists of a single sentence without excessive repetition.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words rather than being copied directly from the text.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The phrasing 'basically just about' and 'some kind of goal or dream' is vague and lacks the precision expected of a strategic definition.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The statement fails to mention the essential core component of a strategic vision: the company's future product-customer-market-technology focus.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">While vague and incomplete, the assertion that a strategic vision involves where a company wants to be in the future does not contradict the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Completeness</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Clarity</span><span class="crit">Completeness</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-STR-P1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        In other words, a strategy is not a single decision but a whole set of choices that fit together - how the firm competes on price or quality, how it positions itself, what capabilities it builds - all aligned so the company can beat rivals rather than merely match them. Pulling these choices into a coherent whole is what lets it earn profits that are consistently higher than average and hold up over the long term, not just a quick win.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The response fully explains the core components of the concept in greater detail, elaborating on the coordinated actions, outperforming competitors, and achieving superior profitability.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The elaboration is written in the student's own words, demonstrating a personal understanding of the concept rather than copying the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on explaining the concept of strategy without drifting into unrelated tangents or jumping ahead to specific examples.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The explanation is entirely faithful to the reading and accurately reflects the definition and goals of a company's strategy.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-STR-COC</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A company's strategy is about how it competes to do better than rivals. Speaking of competition, it is interesting how competition in economics is usually shown with supply and demand curves, and how a monopoly behaves very differently from perfect competition - a whole topic in microeconomics with lots of graphs that businesses have to study.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The response fails to explain the core components of the concept in greater detail, omitting the coordinated set of actions and the goal of superior profitability.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: FAIL — <span class="muted">The response drifts into an unrelated tangent about microeconomics, supply and demand curves, and monopolies.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response does not contradict the reading, as the unrelated tangent does not constitute an accuracy failure.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Coherence</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Coherence</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Coherence</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-BM-P1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        In other words, a business model is the logic of how a company actually makes money by serving customers. On one side is the customer value proposition - what the company offers and why buyers will pay for it. On the other is the profit formula - how the revenue from that offering exceeds the cost of delivering it, so the firm earns a profit. The model ties the two together: the value given to customers has to translate into revenue that covers costs and leaves a margin.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The response fully explains both core components of the business model (the customer value proposition and the profit formula) in detail.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The elaboration is written in the student's own words, demonstrating personal understanding rather than copying the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays entirely focused on explaining the components of a business model without drifting into unrelated tangents or examples.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The explanation accurately reflects the reading's definition of a business model, its customer value proposition, and its profit formula.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-BM-OWC</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A company's business model sets forth how its strategy and operating approaches will create value for customers while generating revenues to cover costs and realizing a profit. So it is really about creating value for customers and making revenue to cover costs and get a profit.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The elaboration merely restates the definition without providing greater detail or explaining the two core elements of a business model (customer value proposition and profit formula).</span></div>
+          
+            <div class="reason"><b>Own Words</b>: FAIL — <span class="muted">The response directly copies the first sentence from the reading and closely paraphrases it in the second sentence.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on explaining the concept of a business model without drifting into unrelated tangents.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The information provided about creating value for customers and generating revenue to cover costs is correct and consistent with the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Own Words</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Own Words</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Own Words</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Elaborate">
+      <td class="status-criteria_diff key">EL-BM-COC</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A business model is how a company plans to make money from its customers. This reminds me that pricing strategy is really important too - companies use penetration pricing, price skimming, and psychological pricing like ending prices in .99, and picking the right pricing method can really change how many units they sell.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The elaboration fails to explain the core components of the business model (customer value proposition and profit formula) in fullness, merely restating that it is how a company plans to make money.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: FAIL — <span class="muted">The response drifts into an unrelated tangent about specific pricing strategies (penetration pricing, price skimming, psychological pricing) rather than focusing on explaining the business model.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response relies on claims about specific pricing strategies (penetration pricing, price skimming, psychological pricing) that are not supported by the source text.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Coherence</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Coherence</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Coherence</span>
+        
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Accuracy</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-VIS-P2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        To elaborate, a strategic vision paints the picture of the company's intended future. Management charts a direction and then fleshes it out in terms of the product, customer, market, and technology focus it is heading toward, so the whole organization understands where the firm is trying to go over the long run rather than just what it must do next quarter.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The elaboration fully explains the core components of a strategic vision, detailing the future direction and the product-customer-market-technology focus.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words, demonstrating personal understanding rather than copying the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The elaboration stays focused on explaining the concept of a strategic vision without drifting into unrelated tangents.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading and the key concept by describing a strategic vision as the company's future direction and focus.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-VIS-COC</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A strategic vision is about where the company wants to go in the future. On that note, mission statements are another thing companies write, and people often confuse vision and mission; some companies also have core values, slogans, and logos that all form part of their branding and corporate identity.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The response merely restates the basic definition without explaining the core components, such as the product-customer-market-technology focus, in greater detail.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: FAIL — <span class="muted">The response drifts into an unrelated tangent about mission statements, core values, slogans, and logos instead of focusing on explaining the strategic vision.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response does not contain any inaccurate claims about the concept.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Coherence</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Coherence</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Coherence</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-VIS-A</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A strategic vision works by describing exactly where the company already is right now - its current products, its current market share, and this quarter's results - so that everyone in the firm knows the present state of the business.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The elaboration fails to explain the core components of a strategic vision, as it focuses on the present state rather than the future direction.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on explaining the concept of a strategic vision, even though the explanation is incorrect.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response contradicts the reading by stating that a strategic vision describes where the company is right now, whereas the reading defines it as describing 'where we are going' and the company's future focus.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-STR-CEM</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Imagine a company that makes a bunch of smart decisions across its business so that it ends up doing better than other companies in the same industry. That is what a strategy looks like. A company that just does things randomly with no direction would be the opposite and would not have a strategy.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response provides an original scenario not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: FAIL — <span class="muted">The response provides a generic description of the concept rather than a specific, genuine instance of a company's strategy.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The example is vague and lacks specific details about a real or realistic company and the actual decisions it makes.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">Because the example is too generic, it fails to explicitly map specific coordinated actions to how they help the company outperform competitors.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a contrasting example of a company doing things randomly with no direction.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the concept that a strategy involves coordinated decisions to outperform competitors.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span><span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span><span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Fit</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Concreteness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="verdict_diff" data-step="Exemplify">
+      <td class="status-verdict_diff key">EX-STR-EM</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Smart Communications built its 5G network faster than Globe in key cities, bundled it with lower-cost postpaid plans, and partnered with popular content platforms for exclusive deals. A telecom company with no clear plan that just matches whatever promo a rival runs, with no coordination across its network, pricing, and partnerships, would not have a strategy.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of Smart Communications and Globe is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example genuinely displays a coordinated set of actions taken to outperform competitors.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example points to real telecom companies and specific actions like building a 5G network and bundling plans.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example to the concept by contrasting it with a non-example that lacks coordination across network, pricing, and partnerships.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a contrasting non-example of a telecom company with no clear plan or coordination.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the concept of strategy as a coordinated set of actions to outperform competitors, consistent with the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Explicit Mapping</span>
+        
+      </td>
+      <td><span class="pill s-verdict_diff">✗ verdict</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-BM-P2</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A community pharmacy's business model rests on its customer value proposition - keeping essential medicines in stock and accessible in the neighborhood - and its profit formula - buying in bulk at wholesale prices and marking up just enough to cover rent and staff while still profiting on each sale. Both halves work together, which is what makes it a real business model. A pop-up stall selling whatever cheap goods it can find that week, with no consistent plan for what it offers or how its pricing covers costs, does not really have a designed business model.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a community pharmacy is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example genuinely displays the concept of a business model, including both the customer value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example of a community pharmacy is concrete and realistic.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example to the core components of the concept (customer value proposition and profit formula).</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a contrasting example of a pop-up stall with no consistent plan, clarifying the concept's boundary.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a business model and its two core elements.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-BM-CEM</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Imagine a company that gives customers something useful and also finds a way to make money doing it. That is basically what a business model is. A company with no plan for giving customers value or making money would not really have one.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response does not copy an example from the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: FAIL — <span class="muted">The response merely restates the definition of a business model rather than providing a genuine, specific instance of one.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The example of 'a company that gives customers something useful' is entirely abstract and lacks any specific, real-world details.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">Because there is no concrete example provided, the response fails to explicitly map how a specific instance demonstrates the customer value proposition and profit formula.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: FAIL — <span class="muted">The contrasting example is just a negative restatement of the definition rather than a genuine, specific non-example that clarifies the concept's boundaries.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the core components of a business model, which are providing value and making a profit.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span><span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span><span class="crit">Contrast</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span><span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span><span class="crit">Contrast</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Fit</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Concreteness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Contrast</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-BM-EM</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A subscription meal-kit company delivers pre-portioned ingredients and recipes to households every week for a flat monthly fee, sourcing ingredients in bulk to keep its per-box cost well below what it charges subscribers. A company that ships boxes of random groceries with no recipe, no bulk sourcing plan, and fees that do not reliably cover shipping costs would not have a working business model.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The meal-kit subscription example is original and not found in the provided reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example accurately represents a business model by illustrating both a way to deliver value and a way to generate profit.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example of a subscription meal-kit company is a concrete, real-world scenario.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response fails to explicitly name the core components of the concept (customer value proposition and profit formula) and map them to the specific parts of the example.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a clear non-example of a company shipping random groceries without a viable plan to cover costs.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response is accurate and consistent with the reading's definition of a business model.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-BM-OEM</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        101.5 FM keeps listeners tuned in with music and talk shows they enjoy, and it makes money by selling ad slots between songs and charging for on-air shoutouts. A station that plays the same songs every day with no plan for attracting advertisers or generating revenue would not really have a working business model.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The example is based on the over-the-air broadcast radio example already provided in the reading's Concepts & Connections 1.1 box.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example accurately represents a business model by showing how a company creates value and generates revenue.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example of a specific radio station (101.5 FM) selling ad slots is concrete and realistic.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response describes the two parts of the business model but fails to explicitly name the core components (customer value proposition and profit formula) that the example demonstrates.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a clear non-example of a station with no plan for generating revenue.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response's claims about what constitutes a working business model are accurate and consistent with the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Originality</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Exemplify">
+      <td class="status-criteria_diff key">EX-VIS-CTR</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A software company's strategic vision is to become the leading project-management platform for small businesses across Asia within the next decade, expanding beyond its current desktop tool into mobile apps and AI-powered scheduling. This charts the direction and future focus a strategic vision is supposed to describe. In contrast, another project-management software company is also trying to grow across Asia.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a software company expanding into mobile apps and AI scheduling in Asia is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example genuinely displays a strategic vision by outlining a specific future product, customer, and market focus.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example is concrete, specifying the type of software, target audience, and geographic market.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example to the concept by stating that it charts the direction and future focus.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: FAIL — <span class="muted">The contrasting example provided is just another company trying to grow, rather than a genuine non-example of a strategic vision (such as a mission statement or a vague, unhelpful vision) that clarifies the concept's boundaries.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a strategic vision.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Explicit Mapping</span><span class="crit">Contrast</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Contrast</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Contrast</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Explicit Mapping</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Exemplify">
+      <td class="status-criteria_diff key">EX-VIS-FA</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A bakery chain's strategic vision is to hit its sales target of two million pesos this quarter, since setting a clear number to reach is exactly what gives the company its sense of direction for the future. In contrast, a bakery chain with no sales targets at all and no plan for what to sell next quarter would not have a strategic vision.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a bakery chain is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: FAIL — <span class="muted">The example describes a short-term financial objective (a sales target), which is not a true instance of a strategic vision.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example of a bakery chain aiming for a specific sales target is concrete and easy to visualize.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example to the concept by explaining that the sales target provides the company's sense of direction.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a clear non-example of a bakery chain with no sales targets or plans.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response incorrectly equates a strategic vision with a short-term financial target, contradicting the reading's distinction between a vision and an objective.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span><span class="crit">Explicit Mapping</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Fit</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Explicit Mapping</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-VIS-EM</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        An online learning platform plans to become the primary place working professionals across the region go to reskill for new careers, moving from its current handful of tech courses into a full range of business, creative, and healthcare training over the next several years. A tutoring center with no stated plans beyond running this semester's classes would not have anything like this kind of vision.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of an online learning platform and a tutoring center is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example accurately represents a strategic vision by describing a company's future direction and product-market focus.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example is concrete, specifying an online learning platform expanding its course offerings for working professionals.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response fails to explicitly explain how the example demonstrates the core components of a strategic vision, leaving the reader to infer the connection.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a clear contrasting example of a tutoring center with no future plans.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response is accurate and consistent with the reading's definition of a strategic vision.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">IL-STR-P2</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A company's strategy is like a chess player's opening plan: each move - developing pieces, controlling the center, protecting the king - is chosen together as part of one coordinated plan aimed at gaining a lasting advantage over the opponent, not winning by one lucky move.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares a company's strategy to a chess player's opening plan, which is an analogy outside the context of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The illustration captures the core elements of the concept by mapping the coordinated set of actions to chess moves and the goal of outperforming competitors to gaining a lasting advantage over the opponent.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The response provides concrete imagery by mentioning specific chess actions like developing pieces, controlling the center, and protecting the king.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The comparison accurately reflects the reading's definition of strategy as a coordinated set of actions designed for lasting success rather than temporary luck.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-STR-P2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        To elaborate, a company's strategy is the deliberate pattern behind its competitive choices. Managers decide where to compete and how - what to offer customers, how to keep costs or quality ahead of rivals - and they coordinate those moves so they reinforce one another. Done well, this lets the firm outperform competitors and secure superior, lasting profitability instead of average returns.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The response fully explains the core components of the concept in greater detail, expanding on how managers coordinate actions and the ultimate goal of lasting profitability.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The elaboration is written in the student's own words, using original phrasing like 'deliberate pattern behind its competitive choices' rather than copying the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays strictly focused on explaining the concept of a company's strategy without drifting into unrelated tangents or providing specific examples.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The explanation is entirely accurate and consistent with the reading's definition of strategy as a coordinated set of actions to outperform rivals and achieve profitability.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-STR-OWC</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability. So basically it is the actions the managers coordinate to beat competitors and be more profitable.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The response merely restates the definition without providing any additional detail or explanation.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: FAIL — <span class="muted">The first sentence is directly copied from the text, and the second is a very close paraphrase.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on the concept of a company's strategy without drifting into unrelated tangents.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a company's strategy.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Own Words</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Own Words</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Own Words</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-BM-A</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A business model works by keeping all of a company's revenue as pure profit. The whole idea is that a good model means the company has no costs to worry about, so everything it earns goes straight to the bottom line.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The elaboration fails to explain the core components of a business model, omitting both the customer value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words and does not copy the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on explaining the concept of a business model without drifting into unrelated tangents.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response inaccurately claims that a business model means a company has no costs and keeps all revenue as pure profit, which contradicts the reading's explanation of generating revenues to cover costs.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-VIS-P1</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        In other words, a strategic vision is management's considered answer to 'where are we going?' It sets a direction - not this year's targets, but the longer-term course the company means to follow - and it makes that course concrete by describing the future it is aiming for: the products it wants to offer, the customers and markets it wants to serve, and the technologies it wants to build around. It gives everyone a shared sense of the destination.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The response fully explains the core components of a strategic vision, detailing the long-term direction and the specific product, market, and technology focus.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The student uses their own phrasing to explain the concept, demonstrating personal understanding rather than just copying the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The elaboration remains tightly focused on explaining the concept of a strategic vision without drifting into tangents or examples.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The explanation is entirely accurate and consistent with the reading's definition of a strategic vision.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-VIS-OWC</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A strategic vision describes where we are going, meaning the course and direction management has charted and the company's future product-customer-market and technology focus. Basically it is just where the company is going in terms of its direction and future focus.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The response merely restates the definition and summarizes it briefly without providing greater detail or explaining the concept in its fullness.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: FAIL — <span class="muted">The elaboration heavily copies the exact phrasing from the reading rather than using the student's own words.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on the concept of a strategic vision without drifting into unrelated tangents.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The information provided about the strategic vision is correct and consistent with the source text.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Own Words</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Own Words</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Own Words</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Exemplify">
+      <td class="status-criteria_diff key">EX-STR-FA</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Union Trust Bank's strategy is simply keeping more money in reserve than rival banks, since whichever bank has the largest cash reserves will automatically outperform the others and stay the most profitable over time. This shows the bank's strategy because it explains why the bank does better than its rivals. In contrast, a small rural bank with no consistent plan that just copies whichever rates a bigger competitor sets each month, with no coordination across its lending, savings, and fee decisions, would not have a strategy.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of Union Trust Bank is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example describes a coordinated set of actions (keeping more money in reserve) aimed at outperforming competitors and achieving profitability, which fits the concept of strategy.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example of Union Trust Bank keeping cash reserves is concrete and realistic.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example to the concept by stating it shows the bank's strategy because it explains why the bank does better than its rivals.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a contrasting example of a small rural bank with no consistent plan that just copies competitors.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response claims that having the largest cash reserves automatically guarantees outperforming others and staying the most profitable over time, which contradicts the reading's assertion that strategy requires a coordinated set of actions and choices, not just a single automatic guarantee.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span><span class="crit">Explicit Mapping</span><span class="crit">Contrast</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Fit</span><span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Explicit Mapping</span><span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Contrast</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-STR-OEM</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Apple designs its own operating systems, hardware, and software so its devices work together seamlessly, spends billions every year on R&D to keep releasing new products, runs its own stores staffed with knowledgeable employees, and keeps its prices at a premium to protect its brand image. A computer maker that simply matches whatever its rivals release and cuts prices whenever sales dip, with no plan tying its products, stores, and pricing together, would not have a strategy.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The example of Apple and its specific business practices is taken directly from the provided reading (Concepts & Connections 1.2) rather than being the student's own original example.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example of a company coordinating its product design, R&D, retail, and pricing genuinely represents a business strategy.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The response uses a real, well-known company (Apple) and specific business actions, making it highly concrete.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response lists Apple's actions but fails to explicitly state how these actions map to the core components of the concept (a coordinated set of actions designed to outperform competitors and achieve superior profitability).</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a clear non-example of a computer maker that merely reacts to rivals without a cohesive plan.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The details provided about Apple's business practices and the nature of strategy are completely accurate and consistent with the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Originality</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Illustrate">
+      <td class="status-criteria_diff key">IL-STR-MI</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A company's strategy is like a set of simultaneous equations that must all be satisfied at once for the system to reach equilibrium.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares a company's strategy to a set of simultaneous equations, which is an analogy outside the context of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: FAIL — <span class="muted">The illustration fails to capture the defining elements of the concept (coordinated actions to outperform competitors and achieve superior profitability), focusing instead on satisfying equations to reach equilibrium, which does not meaningfully map to the core components.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The comparison to a set of simultaneous equations provides a concrete mental image of a mathematical system.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response does not contradict the reading or misrepresent the concept, even though the match is poor.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Imagery</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Match</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Imagery</span><span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Accuracy</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="verdict_diff" data-step="Illustrate">
+      <td class="status-verdict_diff key">IL-BM-P2</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A business model is like a bridge connecting two riverbanks: one side is the customers waiting to be served, and the other side is the money that needs to keep flowing back to the company. The bridge - the business model - is what connects delivering value on one side with earning enough revenue on the other.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response uses a bridge connecting two riverbanks as an analogy for a business model.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The bridge analogy captures the core elements of the business model: delivering value to customers (one riverbank) and generating revenue/profit (the other riverbank).</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The image of a bridge connecting two riverbanks provides a clear and concrete mental picture.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The illustration accurately reflects the reading's definition of a business model as balancing customer value with revenue generation.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Match</span><span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Accuracy</span>
+        
+      </td>
+      <td><span class="pill s-verdict_diff">✗ verdict</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Illustrate">
+      <td class="status-criteria_diff key">IL-BM-MA</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A business model is like a sandwich - it has different layers stacked together to make one thing.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares a business model to a sandwich, which is an analogy outside the context of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: FAIL — <span class="muted">The illustration of 'different layers stacked together' is too generic and fails to capture the core elements of a business model, namely the customer value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The image of a sandwich with different layers provides a concrete mental picture.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response does not assert anything factually incorrect about the concept, even though the comparison is overly simplistic.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Match</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Accuracy</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">IL-BM-AC</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A company's business model is like a water tank with a big hole in the bottom - as long as the tank looks appealing to customers on the outside, it does not matter that money is leaking out from operations, because eventually the tank will refill itself.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares a business model to a water tank, which is a clear analogy outside the context of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: FAIL — <span class="muted">The analogy fails to capture the profit formula element, incorrectly suggesting that covering operational costs does not matter.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The image of a water tank with a hole in the bottom is concrete and easy to picture in the mind.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response contradicts the reading by claiming that leaking money (failing to cover costs) does not matter, whereas the text emphasizes the need to generate ample revenues to cover costs and realize a profit.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Match</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">IL-VIS-MA</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A strategic vision is like a beautiful painting hanging in the lobby - it looks nice and makes a good impression on visitors.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response successfully uses a simile by comparing a strategic vision to a beautiful painting in a lobby.</span></div>
+          
+            <div class="reason"><b>Match</b>: FAIL — <span class="muted">The illustration completely misses the core element of a strategic vision, which is to provide future direction and chart a course, focusing instead only on making a good impression.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The image of a beautiful painting hanging in a lobby is concrete and easy to picture in the mind.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The comparison contradicts the reading, which explicitly states that a strategic vision should not be just a generic, feel-good public relations statement meant to impress.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Match</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">IL-VIS-AC</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A strategic vision is like a photograph taken of the company today - it should capture exactly what the company currently looks like, its current products and its current customers, so employees know precisely where they already stand.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares a strategic vision to a photograph, which is a valid analogy outside the context of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: FAIL — <span class="muted">The illustration fails to capture the defining element of a strategic vision, which is its forward-looking focus on the future, instead comparing it to a snapshot of the present.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The comparison to a photograph provides a clear and concrete mental image.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response contradicts the reading by stating that a strategic vision captures what the company currently looks like, whereas the text explicitly defines it as describing where the company is going in the future.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Match</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-BM-P2</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        To put it another way, a business model spells out how a firm's strategy turns into money. It has to answer two things: what makes customers choose and pay for the product (its value proposition), and how the money coming in stays ahead of the cost of serving them (its profit formula). Only when both hold together does the company create value and still turn a profit.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The elaboration fully explains the core components of the business model, detailing both the customer value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words, demonstrating personal understanding rather than copying the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The elaboration stays focused on explaining the business model and directly extends from the concept without drifting into unrelated tangents.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading and the key concept, correctly identifying the value proposition and profit formula as the two elements of a business model.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Exemplify">
+      <td class="status-criteria_diff key">EX-BM-FA</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A furniture store's business model is having the lowest prices in town no matter what, since charging less than every competitor automatically means the company creates value for customers and earns a profit. In contrast, a furniture store with no consistent pricing at all, changing prices randomly with no plan, would not really have a business model.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The furniture store example is original and not found in the provided reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: FAIL — <span class="muted">The example does not genuinely display a complete business model because simply having the lowest prices does not account for the cost structure needed to actually realize a profit.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example of a furniture store is concrete and points to a realistic business scenario.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example to the core components of creating customer value and earning a profit.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a contrasting non-example of a furniture store with no consistent pricing plan.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response inaccurately asserts that charging less than competitors automatically means the company earns a profit, contradicting the reading's explanation that a profit formula requires a cost structure that allows for acceptable profits given the pricing.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Fit</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Fit</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Explicit Mapping</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Accuracy</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Illustrate">
+      <td class="status-criteria_diff key">IL-BM-MI</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A company's business model is like a two-variable function where the output must remain non-negative for the system to be considered valid.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares the business model to a mathematical two-variable function, which is outside the context of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The two variables effectively represent the customer value proposition and profit formula, while the non-negative output represents the need to generate a profit.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: FAIL — <span class="muted">A mathematical function is highly abstract and does not provide a concrete, expressive mental image that the reader can easily picture.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The illustration accurately reflects the concept's requirement that the components must work together to yield a positive financial outcome.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Imagery</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Imagery</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Imagery</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Match</span><span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Accuracy</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Illustrate">
+      <td class="status-criteria_diff key">IL-VIS-MI</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A strategic vision is like an open-ended optimization objective with no fixed constraints, to be maximized indefinitely over an infinite time horizon.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response provides an analogy by comparing a strategic vision to an open-ended optimization objective.</span></div>
+          
+            <div class="reason"><b>Match</b>: FAIL — <span class="muted">The illustration fails to capture the core element of a strategic vision, which is charting a specific course and direction for the company's future focus, rather than being an open-ended objective with no constraints.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: FAIL — <span class="muted">The comparison to an 'open-ended optimization objective' is highly abstract and mathematical, failing to provide a concrete mental image for the reader.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response does not contradict the reading, although it is a poor match for the concept.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Imagery</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Imagery</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Match</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Imagery</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Accuracy</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="verdict_diff" data-step="Exemplify">
+      <td class="status-verdict_diff key">EX-BM-P1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Grab's business model rests on two elements: its customer value proposition is a fast, cashless way to book a ride from a phone, while its profit formula is a commission per fare plus a small booking fee, with enough trips flowing through the app to cover driver incentives and technology costs and still leave a profit. This shows both halves of a business model working together. A jeepney driver following a fixed, government-set route and fare, with no distinct value proposition and no separate profit formula to plan around, would not really have a business model of its own to describe.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of Grab and the contrasting example of a jeepney driver are original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example of Grab genuinely displays the concept of a business model, including both the customer value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example of Grab is a concrete, real-world company that the reader can easily connect with.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example to the core components of the concept by identifying Grab's customer value proposition and its profit formula.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a contrasting example of a jeepney driver to clarify the boundaries of what constitutes a business model.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a business model, correctly identifying its two main elements.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Contrast</span>
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Contrast</span>
+        
+      </td>
+      <td><span class="pill s-verdict_diff">✗ verdict</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-VIS-P1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A ride-hailing startup's strategic vision is to become the primary way people in mid-sized Philippine cities get around without owning a car, expanding from ride-hailing today into bike rentals, package delivery, and eventually EV charging stations over the next decade. This describes where the company is headed - exactly what a strategic vision does. A courier company with no stated direction beyond 'do a good job delivering packages this month' would not really have a strategic vision.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a ride-hailing startup in the Philippines is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example genuinely displays a strategic vision by outlining a specific future product-customer-market-technology focus.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example is concrete, detailing specific services like bike rentals, package delivery, and EV charging stations in mid-sized Philippine cities.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example back to the concept by stating that it describes where the company is headed.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a contrasting example of a courier company with no stated direction beyond doing a good job this month.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a strategic vision as describing where the company is going and its future focus.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-VIS-P2</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A regional coffee chain's strategic vision is to become the go-to everyday coffee brand for young professionals across Southeast Asia within ten years, growing from its current single-country stores into a multi-country chain built around fast digital ordering. This lays out the direction and future focus a strategic vision is supposed to capture. A cafe that just focuses on serving good coffee today with no stated plan for its future would not really have a strategic vision.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a regional coffee chain is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example accurately represents a strategic vision by detailing a future product-customer-market focus.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example is concrete, describing a realistic coffee chain expanding across Southeast Asia.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example to the concept by stating it lays out the direction and future focus.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a clear contrasting example of a cafe with no stated plan for its future.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response is accurate and consistent with the reading's definition of a strategic vision.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Exemplify">
+      <td class="status-criteria_diff key">EX-VIS-CEM</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Imagine a company that has some idea of where it wants to be down the road and what kind of customers and products it wants to focus on later on. That is what having a strategic vision means. A company with absolutely no idea what it wants for its future would not have one.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response provides an original, albeit generic, hypothetical example not found in the text.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The hypothetical scenario accurately reflects the concept of having a future direction.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The example is entirely abstract and lacks specific, concrete details of a real or realistic company.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the hypothetical company's future focus to the concept of a strategic vision.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a contrasting example of a company with no idea about its future.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the concept of a strategic vision as described in the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span><span class="crit">Contrast</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Concreteness</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Concreteness</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Explicit Mapping</span><span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Contrast</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Illustrate">
+      <td class="status-criteria_diff key">IL-STR-MA</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A company's strategy is like a rainbow - it has many different colors that come together to make something beautiful.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response uses a simile, comparing a company's strategy to a rainbow.</span></div>
+          
+            <div class="reason"><b>Match</b>: FAIL — <span class="muted">The illustration fails to capture the defining elements of the concept, such as outperforming competitors or achieving superior profitability, focusing only on the idea of multiple parts coming together.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The comparison to a rainbow provides a clear and concrete mental image.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The illustration does not contradict the reading or misrepresent the concept, even though it is incomplete in its match.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Analogy</span><span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Match</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Analogy</span><span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Accuracy</span>
+        
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">IL-STR-AC</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A company's strategy is like a factory assembly line - once management sets up the line, it should never be adjusted or rearranged again, because changing the line means the strategy has failed.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares a company's strategy to a factory assembly line, which is a valid comparison outside the context of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: FAIL — <span class="muted">The illustration fails to capture the core element of coordinated actions aimed at outperforming competitors, instead focusing on an incorrect notion of rigidity.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The factory assembly line provides a concrete and expressive mental image for the reader.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response contradicts the reading, which explicitly states that a company's strategy evolves over time and is a work in progress, rather than something that should never be adjusted.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Match</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="verdict_diff" data-step="Illustrate">
+      <td class="status-verdict_diff key">IL-BM-P1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A business model is like a two-sided coin: one side is the value customers get, and the other side is the profit formula that brings in enough money to cover costs and leave a profit. A coin needs both sides to be a real coin, and a business model needs both elements to actually work.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares a business model to a two-sided coin, which is a clear analogy outside the context of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The illustration captures the two core elements of the business model (customer value proposition and profit formula) as the two sides of the coin.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">A two-sided coin provides a concrete and easily visualizable image.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a business model and its two core components.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Match</span>
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Match</span>
+        
+      </td>
+      <td><span class="pill s-verdict_diff">✗ verdict</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">IL-VIS-P2</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A strategic vision is like a compass bearing set at the start of a long hike: it does not map out every step or obstacle along the trail, but it fixes the direction the hiker is committed to and the particular destination they mean to reach.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares a strategic vision to a compass bearing on a hike, which is a clear analogy outside the context of business strategy.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The illustration effectively captures the core element of a strategic vision as setting a future direction and destination.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The comparison to a hiker setting a compass bearing on a trail provides a concrete and easily visualized mental image.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The analogy accurately reflects the reading's definition of a strategic vision as a directional guide for the future.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-VIS-BC</td>
+      <td>State</td>
+      <td class="resp">
+        A strategic vision is, in a sense, kind of the big overall future-looking idea or picture that management sort of comes up with about, you know, the general direction the whole company is heading in and the kinds of product and market and technology things it is more or less planning to focus on eventually someday.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: FAIL — <span class="muted">The response is heavily padded with filler phrases such as 'in a sense', 'kind of', 'sort of', 'you know', and 'more or less'.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The student defines the concept using their own phrasing rather than copying directly from the text.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The excessive use of filler words and vague language makes the statement imprecise and poorly formulated.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The statement captures the core components of future direction and the product, market, and technology focus.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a strategic vision.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Brevity</span><span class="crit">Clarity</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Brevity</span><span class="crit">Clarity</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Brevity</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Elaborate">
+      <td class="status-agree key">EL-STR-A</td>
+      <td>Elaborate</td>
+      <td class="resp">
+        A company's strategy works by making sure the business never changes what it does. Once managers pick a set of actions, the whole point is to lock them in permanently and repeat them exactly, because changing anything later would mean the strategy has failed.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Completeness</b>: FAIL — <span class="muted">The elaboration fails to explain the core components of the concept, omitting any mention of outperforming competitors or achieving superior profitability.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response is written in the student's own words rather than being copied from the text.</span></div>
+          
+            <div class="reason"><b>Coherence</b>: PASS — <span class="muted">The response stays focused on explaining its interpretation of the concept without drifting into unrelated tangents or jumping to examples.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response directly contradicts the reading, which explicitly states that a company's strategy evolves over time and is a work in progress, rather than being permanently locked in.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Completeness</span><span class="crit">Accuracy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Completeness</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="criteria_diff" data-step="Illustrate">
+      <td class="status-criteria_diff key">IL-VIS-AN</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A strategic vision is like Amazon's vision to become the most customer-centric company in the world, offering everything customers might want to buy online.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: FAIL — <span class="muted">The response provides a literal example of a strategic vision (Amazon's vision) rather than a figurative comparison, analogy, or metaphor.</span></div>
+          
+            <div class="reason"><b>Match</b>: FAIL — <span class="muted">Because the response is a literal example rather than a figurative illustration, it fails to provide a meaningful comparison that captures the concept's essence.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: FAIL — <span class="muted">The response states a corporate goal rather than providing a concrete, expressive comparison that forms a mental picture.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the concept of a strategic vision as a company's future direction.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Analogy</span><span class="crit">Imagery</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Analogy</span><span class="crit">Match</span><span class="crit">Imagery</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Analogy</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Imagery</span>
+        
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Match</span>
+      </td>
+      <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-STR-P1</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Cebu Pacific coordinates a set of actions - budget fares, a single aircraft type to cut maintenance costs, and quick turnarounds - all aimed at undercutting rivals like PAL on price while still turning a profit. This is a strategy because every choice reinforces the same competitive goal. In contrast, a small regional airline that simply reacts week to week with no coordinated plan behind its moves would not be following a strategy.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of Cebu Pacific is original and not found in the provided reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example accurately represents a coordinated set of actions designed to outperform competitors and achieve profitability.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The response uses a specific, real-world company (Cebu Pacific) and concrete actions (budget fares, single aircraft type).</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly explains how the example's coordinated choices reinforce the competitive goal, mapping back to the core components of strategy.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a clear non-example of a regional airline reacting week to week without a coordinated plan.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response is entirely consistent with the reading's definition of strategy.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-STR-P2</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Jollibee coordinates a menu built around local taste, aggressive expansion into small towns ahead of global rivals, and marketing built on Filipino family values, all pulling together to help it outsell competitors and stay profitable. This is a strategy because the choices work toward the same competitive goal. A fast food chain that opens branches wherever rent is cheap, with no consistent menu or brand focus, would just be making ad hoc decisions, not following a strategy.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of Jollibee is original and does not appear in the provided reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example genuinely illustrates a coordinated set of actions designed to outperform competitors and achieve profitability.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example is highly concrete, referencing a specific real-world company and its specific business actions.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the example to the concept by explaining that the choices work together toward the same competitive goal.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a clear non-example of a fast food chain making ad hoc, uncoordinated decisions.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of strategy as a coordinated set of actions aimed at competitive success.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Exemplify">
+      <td class="status-agree key">EX-BM-CTR</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        A courier startup's business model offers same-day delivery within the city as its value proposition, and charges a delivery fee per package plus a small commission from partner merchants, with enough volume to cover riders' pay and still profit, as its profit formula - both elements working together to make it a real business model. In contrast, another courier startup also offers same-day delivery and charges similar fees.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a courier startup is original and not found in the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example genuinely displays a business model by illustrating both a customer value proposition and a profit formula.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The example is concrete, describing specific services (same-day delivery) and revenue streams (delivery fees, merchant commissions).</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly maps the example to the core components by identifying the value proposition and the profit formula.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: FAIL — <span class="muted">The contrasting example provided is just another instance of a business model, not a genuine non-example that clarifies the concept's boundary.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the reading's definition of a business model and its two core elements.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Contrast</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Contrast</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Contrast</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">IL-STR-P1</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A company's strategy is like a basketball coach's game plan for a match: every play - the defense, the substitutions, the pace - is chosen and coordinated ahead of time so the team can beat the opposing squad and keep winning over the season, not just survive one possession.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: PASS — <span class="muted">The response compares a company's strategy to a basketball coach's game plan, which is a clear analogy outside the context of the reading.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The illustration successfully captures the core elements of the concept, mapping coordinated actions to 'every play chosen and coordinated', outperforming competitors to 'beat the opposing squad', and superior profitability to 'keep winning over the season'.</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The example of a basketball coach calling plays, managing defense, and making substitutions provides strong, concrete mental imagery.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The comparison accurately reflects the reading's definition of strategy as a coordinated set of actions designed to achieve long-term competitive success.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="Illustrate">
+      <td class="status-agree key">IL-BM-AN</td>
+      <td>Illustrate</td>
+      <td class="resp">
+        A company's business model is like how different radio broadcasting companies each design their own business models - some earn money mainly from advertising slots between songs, while others charge listeners a subscription fee for ad-free content.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Analogy</b>: FAIL — <span class="muted">The response provides a literal example of the concept (which is also taken directly from the reading) rather than a figurative comparison or analogy outside the context of the text.</span></div>
+          
+            <div class="reason"><b>Match</b>: PASS — <span class="muted">The response successfully highlights the core elements of a business model, specifically the customer value proposition (ad-free content) and the profit formula (advertising vs. subscriptions).</span></div>
+          
+            <div class="reason"><b>Imagery</b>: PASS — <span class="muted">The response includes concrete details like radio broadcasting, advertising slots, and subscription fees that are easy to picture.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately describes the components of a business model as they apply to radio broadcasting, consistent with the reading.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Analogy</span>
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Analogy</span>
+      </td>
+      <td>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Analogy</span>
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="agree" data-step="State">
+      <td class="status-agree key">ST-VIS-P2</td>
+      <td>State</td>
+      <td class="resp">
+        A strategic vision is management's picture of the company's future course: where it is trying to go and what product, market, customer, and technology focus it is aiming for down the road.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Brevity</b>: PASS — <span class="muted">The statement is concise and free of filler words.</span></div>
+          
+            <div class="reason"><b>Own Words</b>: PASS — <span class="muted">The response adequately paraphrases the text's definition in the student's own words.</span></div>
+          
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The statement is clear, precise, and easy to understand.</span></div>
+          
+            <div class="reason"><b>Completeness</b>: PASS — <span class="muted">The statement captures all essential core components, including the future direction and the product-customer-market-technology focus.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response is entirely faithful to the reading and accurately defines a strategic vision.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        
+        
+        
+      </td>
+      <td><span class="pill s-agree">✓ agree</span></td>
+    </tr>
+    
+    <tr data-status="verdict_diff" data-step="Exemplify">
+      <td class="status-verdict_diff key">EX-VIS-OEM</td>
+      <td>Exemplify</td>
+      <td class="resp">
+        Google's founders set out to organize the world's information and make it universally accessible and useful, and the company went on to build web search, maps, email, and video services. A small web directory whose owners only wanted to keep its current list of links online would not have a strategic vision.
+        
+        <details><summary>agent reasoning</summary>
+          
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The example of Google's vision to organize the world's information is taken directly from the reading.</span></div>
+          
+            <div class="reason"><b>Fit</b>: PASS — <span class="muted">The example of Google's vision is a genuine instance of a strategic vision.</span></div>
+          
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The response uses a concrete, real-world company (Google) and a realistic contrasting example.</span></div>
+          
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response does not explicitly explain how the Google example demonstrates the core components of a strategic vision, such as charting a future course or direction.</span></div>
+          
+            <div class="reason"><b>Contrast</b>: PASS — <span class="muted">The response includes a contrasting example of a small web directory that lacks a strategic vision.</span></div>
+          
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response is factually accurate and consistent with the reading's definition of a strategic vision.</span></div>
+          
+        </details>
+        
+        
+        
+        
+      </td>
+      <td>
+        <b>PASS</b>
+        
+      </td>
+      <td>
+        <b>FAIL</b>
+        <span class="crit">Originality</span><span class="crit">Explicit Mapping</span>
+      </td>
+      <td>
+        
+        
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Originality</span><span class="crit c-extra" title="extra: flagged but not expected">+ Explicit Mapping</span>
+      </td>
+      <td><span class="pill s-verdict_diff">✗ verdict</span></td>
+    </tr>
+    
+    </tbody>
+  </table>
+
+  <script>
+    function applyFilters() {
+      var st = document.getElementById('f-status').value;
+      var sp = document.getElementById('f-step').value;
+      var rows = document.querySelectorAll('#results tbody tr');
+      var shown = 0;
+      rows.forEach(function(tr){
+        var ok = (st === 'all' || tr.dataset.status === st) &&
+                 (sp === 'all' || tr.dataset.step === sp);
+        tr.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      });
+      document.getElementById('counter').textContent = 'Showing ' + shown + ' of ' + rows.length;
+    }
+  </script>
+</body>
+</html>
