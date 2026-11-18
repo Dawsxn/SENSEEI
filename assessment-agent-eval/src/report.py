@@ -131,6 +131,13 @@ _TEMPLATE = Template(
       <div class="lbl tip" data-tip="Share of responses where the agent's overall PASS/FAIL verdict matched the human label. This is the headline number.">Verdict accuracy <span class="info">i</span></div>
       <div class="sub2">{{ summary.verdict_correct }}/{{ summary.total }} responses correct</div>
     </div>
+    {% if summary.criteria_cells %}
+    <div class="card">
+      <div class="big">{{ "%.1f"|format(summary.criteria_cell_accuracy*100) }}%</div>
+      <div class="lbl tip" data-tip="Every rubric criterion of every response, judged one at a time: the share where the agent and the human label agree, both failing it or both passing it. A response the agent could not judge (error) counts as wrong on all its criteria.">Criteria matched <span class="info">i</span></div>
+      <div class="sub2">{{ summary.criteria_cells_correct }}/{{ summary.criteria_cells }} criteria correct</div>
+    </div>
+    {% endif %}
     {% if meta.cost and meta.cost.est_cost_usd is not none %}
     <div class="card">
       <div class="big">${{ "%.4f"|format(meta.cost.est_cost_usd) }}</div>
@@ -157,13 +164,16 @@ _TEMPLATE = Template(
 
   <h2 class="tip" data-tip="Verdict accuracy split by SEE-I step, so you can see which step the agent judges best and worst.">Accuracy by SEE-I step <span class="info">i</span></h2>
   <table>
-    <thead><tr><th>Step</th><th>Examples</th><th>Correct</th><th>Accuracy</th></tr></thead>
+    <thead><tr><th>Step</th><th>Examples</th><th>Correct</th><th>Accuracy</th>
+      <th class="tip" data-tip="Of all the criteria judged in this step (each response's criteria counted one by one), how many the agent judged the same as the human label.">Criteria matched <span class="info">i</span></th></tr></thead>
     <tbody>
     {% for s in summary.per_step %}
     <tr>
       <td>{{ s.step }}</td><td>{{ s.n }}</td><td>{{ s.correct }}/{{ s.n }}</td>
       <td><span class="bar"><span style="width:{{ (s.accuracy*100)|round(0,'floor') }}%"></span></span>
           {{ "%.1f"|format(s.accuracy*100) }}%</td>
+      <td>{% if s.cells %}{{ s.cells_correct }}/{{ s.cells }}
+          <span class="muted">({{ "%.1f"|format(s.cell_accuracy*100) }}%)</span>{% else %}<span class="muted">—</span>{% endif %}</td>
     </tr>
     {% endfor %}
     </tbody>
@@ -175,6 +185,7 @@ _TEMPLATE = Template(
       <th>Step</th><th>Criterion</th>
       <th class="tip" data-tip="Of the examples expected to fail this criterion, how many the agent flagged. (— means no example targets it.)">Caught <span class="info">i</span></th>
       <th class="tip" data-tip="Times the agent flagged this criterion on an example that was NOT expected to fail it (over-flagging).">False flags <span class="info">i</span></th>
+      <th class="tip" data-tip="Of the responses in this step, how many the agent judged the same as the label on this criterion, whether that is a pass or a fail.">Matched <span class="info">i</span></th>
     </tr></thead>
     <tbody>
     {% for c in summary.per_criterion %}
@@ -183,6 +194,8 @@ _TEMPLATE = Template(
       <td>{% if c.recall is none %}<span class="muted">—</span>{% else %}{{ c.caught }}/{{ c.expected }}
           <span class="muted">({{ "%.0f"|format(c.recall*100) }}%)</span>{% endif %}</td>
       <td>{% if c.false_flag %}<span class="warn">{{ c.false_flag }}</span>{% else %}<span class="muted">0</span>{% endif %}</td>
+      <td>{% if c.cells %}{{ c.cells_correct }}/{{ c.cells }}
+          <span class="muted">({{ "%.0f"|format(c.cell_accuracy*100) }}%)</span>{% else %}<span class="muted">—</span>{% endif %}</td>
     </tr>
     {% endfor %}
     </tbody>

@@ -6,56 +6,96 @@
 <title>SENSEEI Assessment Agent — v1 — 20260619_170457</title>
 <style>
   :root {
-    --agree:#1a7f37; --agree-bg:#e6f4ea;
-    --criteria:#9a6700; --criteria-bg:#fff8e1;
-    --verdict:#cf222e; --verdict-bg:#ffebe9;
-    --error:#57606a; --error-bg:#eaeef2;
-    --line:#d0d7de; --ink:#1f2328; --muted:#57606a; --bg:#ffffff;
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2128; --line:#30363d;
+    --ink:#e6edf3; --muted:#8b949e; --accent:#58a6ff;
+    --agree:#3fb950; --agree-bg:rgba(63,185,80,.15); --agree-bd:rgba(63,185,80,.4);
+    --criteria:#d29922; --criteria-bg:rgba(210,153,34,.15); --criteria-bd:rgba(210,153,34,.4);
+    --verdict:#f85149; --verdict-bg:rgba(248,81,73,.15); --verdict-bd:rgba(248,81,73,.4);
+    --error:#8b949e; --error-bg:rgba(139,148,158,.15); --error-bd:rgba(139,148,158,.4);
   }
   * { box-sizing:border-box; }
   body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-         color:var(--ink); margin:0; padding:24px; background:#f6f8fa; }
+         color:var(--ink); margin:0; padding:24px; background:var(--bg); }
   h1 { font-size:20px; margin:0 0 4px; }
-  h2 { font-size:15px; margin:28px 0 10px; }
-  .sub { color:var(--muted); font-size:13px; margin-bottom:16px; }
-  .meta { font-size:12px; color:var(--muted); }
-  .meta code { background:#eaeef2; padding:1px 5px; border-radius:4px; }
-  .cards { display:flex; flex-wrap:wrap; gap:12px; margin:8px 0 4px; }
-  .card { background:var(--bg); border:1px solid var(--line); border-radius:8px;
-          padding:12px 16px; min-width:150px; }
-  .card .big { font-size:24px; font-weight:600; }
-  .card .lbl { font-size:12px; color:var(--muted); }
-  table { width:100%; border-collapse:collapse; background:var(--bg);
-          border:1px solid var(--line); border-radius:8px; overflow:hidden; font-size:13px; }
-  th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
-  th { background:#f6f8fa; font-weight:600; position:sticky; top:0; }
-  tr:last-child td { border-bottom:none; }
-  .pill { display:inline-block; padding:1px 8px; border-radius:999px; font-size:11px;
+  h2 { font-size:15px; margin:30px 0 6px; font-weight:600; }
+  a { color:var(--accent); }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:4px; }
+  .hint { color:var(--muted); font-size:12px; margin:10px 0 0; font-style:italic; }
+  .meta { font-size:12px; color:var(--muted); margin-top:10px; line-height:1.7; }
+  .meta code { background:var(--panel2); padding:1px 6px; border-radius:5px; color:var(--ink); }
+  .secdesc { color:var(--muted); font-size:12.5px; margin:0 0 10px; max-width:760px; }
+
+  .cards { display:flex; flex-wrap:wrap; gap:12px; margin:14px 0 4px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+          padding:14px 16px; min-width:160px; }
+  .card .big { font-size:26px; font-weight:600; }
+  .card .lbl { font-size:12px; color:var(--muted); margin-top:2px; }
+  .card .sub2 { font-size:11px; color:var(--muted); margin-top:3px; }
+
+  .chips { display:flex; flex-wrap:wrap; gap:10px; margin:6px 0 2px; }
+  .chip { display:inline-flex; align-items:center; gap:8px; padding:8px 13px;
+          border-radius:999px; font-size:13px; font-weight:600; border:1px solid var(--line); }
+  .chip .n { font-size:15px; }
+  .c-agree { background:var(--agree-bg); color:var(--agree); border-color:var(--agree-bd); }
+  .c-criteria_diff { background:var(--criteria-bg); color:var(--criteria); border-color:var(--criteria-bd); }
+  .c-verdict_diff { background:var(--verdict-bg); color:var(--verdict); border-color:var(--verdict-bd); }
+  .c-error { background:var(--error-bg); color:var(--error); border-color:var(--error-bd); }
+
+  table { width:100%; border-collapse:collapse; background:var(--panel);
+          border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:13px; }
+  th,td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--panel2); font-weight:600; color:var(--ink); }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--panel2); }
+
+  .pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px;
           font-weight:600; white-space:nowrap; }
   .s-agree { background:var(--agree-bg); color:var(--agree); }
   .s-criteria_diff { background:var(--criteria-bg); color:var(--criteria); }
   .s-verdict_diff { background:var(--verdict-bg); color:var(--verdict); }
   .s-error { background:var(--error-bg); color:var(--error); }
-  td.status-agree { border-left:4px solid var(--agree); }
-  td.status-criteria_diff { border-left:4px solid var(--criteria); }
-  td.status-verdict_diff { border-left:4px solid var(--verdict); }
-  td.status-error { border-left:4px solid var(--error); }
+  td.status-agree { border-left:3px solid var(--agree); }
+  td.status-criteria_diff { border-left:3px solid var(--criteria); }
+  td.status-verdict_diff { border-left:3px solid var(--verdict); }
+  td.status-error { border-left:3px solid var(--error); }
+
   .crit { display:inline-block; padding:1px 7px; margin:1px 2px; border-radius:6px;
-          font-size:11px; border:1px solid var(--line); }
-  .c-match { background:var(--agree-bg); color:var(--agree); border-color:#acd9b8; }
-  .c-miss  { background:var(--verdict-bg); color:var(--verdict); border-color:#f3b6ba; }
-  .c-extra { background:var(--criteria-bg); color:var(--criteria); border-color:#ecd9a0; }
-  .resp { max-width:420px; }
+          font-size:11px; border:1px solid var(--line); color:var(--ink); }
+  .c-match { background:var(--agree-bg); color:var(--agree); border-color:var(--agree-bd); }
+  .c-miss  { background:var(--verdict-bg); color:var(--verdict); border-color:var(--verdict-bd); }
+  .c-extra { background:var(--criteria-bg); color:var(--criteria); border-color:var(--criteria-bd); }
+  .resp { max-width:430px; }
   .muted { color:var(--muted); }
-  .bar { background:#eaeef2; border-radius:4px; height:8px; width:80px; display:inline-block; vertical-align:middle; overflow:hidden; }
+  .bar { background:var(--panel2); border-radius:4px; height:8px; width:90px; display:inline-block;
+         vertical-align:middle; overflow:hidden; border:1px solid var(--line); }
   .bar > span { display:block; height:100%; background:var(--agree); }
   details { margin-top:6px; }
-  summary { cursor:pointer; color:var(--muted); font-size:12px; }
+  summary { cursor:pointer; color:var(--accent); font-size:12px; }
+  details .reason { margin-top:4px; }
   .warn { color:var(--criteria); font-size:11px; }
   .err { color:var(--verdict); font-size:12px; }
-  .toolbar { margin:12px 0; font-size:13px; }
-  .legend span { margin-right:14px; font-size:12px; }
   .key { font-family:ui-monospace,Consolas,monospace; font-size:12px; }
+
+  /* filter bar */
+  .toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin:10px 0; font-size:13px; }
+  .toolbar label { color:var(--muted); display:inline-flex; align-items:center; gap:6px; }
+  .toolbar select { background:var(--panel2); color:var(--ink); border:1px solid var(--line);
+                    border-radius:6px; padding:5px 8px; font-size:13px; }
+  #counter { margin-left:auto; }
+
+  /* hover tooltip (the ⓘ) */
+  .info { display:inline-block; width:14px; height:14px; line-height:13px; text-align:center;
+          border:1px solid var(--line); border-radius:50%; font-size:9px; font-style:normal;
+          color:var(--muted); background:var(--panel2); cursor:help; vertical-align:middle; }
+  .tip { position:relative; }
+  .tip:hover::after {
+    content:attr(data-tip); position:absolute; left:0; top:140%; z-index:20;
+    width:max-content; max-width:300px; white-space:normal;
+    background:#000; color:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:8px 10px; font-size:12px; font-weight:400; line-height:1.45;
+    box-shadow:0 6px 20px rgba(0,0,0,.5);
+  }
+  th.tip:hover::after { font-weight:400; }
 </style>
 </head>
 <body>
@@ -66,197 +106,227 @@
     Provider: <code>gemini</code> · Model: <code>gemini-3.1-pro-preview</code> ·
     Examples: <code>46</code> · Source: <code>example_set.csv</code>
   </div>
+  <p class="hint">Hover any ⓘ for a plain-language explanation of the metric.</p>
 
   <div class="cards">
-    <div class="card"><div class="big">87.0%</div>
-      <div class="lbl">Verdict accuracy (40/46)</div></div>
-    <div class="card"><div class="big">55.3%</div>
-      <div class="lbl">Criteria exact-match (21/38 FAILs)</div></div>
-    <div class="card"><div class="big" style="color:var(--agree)">27</div>
-      <div class="lbl">Full agreement</div></div>
-    <div class="card"><div class="big" style="color:var(--criteria)">13</div>
-      <div class="lbl">Criteria differ</div></div>
-    <div class="card"><div class="big" style="color:var(--verdict)">2</div>
-      <div class="lbl">Verdict mismatch</div></div>
+    <div class="card">
+      <div class="big">87.0%</div>
+      <div class="lbl tip" data-tip="Share of responses where the agent's overall PASS/FAIL verdict matched the human label. This is the headline number.">Verdict accuracy <span class="info">i</span></div>
+      <div class="sub2">40/46 responses correct</div>
+    </div>
     
-    <div class="card"><div class="big" style="color:var(--error)">4</div>
-      <div class="lbl">Errors</div></div>
+    <div class="card">
+      <div class="big">81.8%</div>
+      <div class="lbl tip" data-tip="Every rubric criterion of every response, judged one at a time: the share where the agent and the human label agree, both failing it or both passing it. A response the agent could not judge (error) counts as wrong on all its criteria.">Criteria matched <span class="info">i</span></div>
+      <div class="sub2">148/181 criteria correct</div>
+    </div>
+    
     
   </div>
 
-  <h2>Accuracy by SEE-I step</h2>
+  <h2 class="tip" data-tip="Every response falls into exactly one of these outcomes. The colors match the left border of each row in the per-example table below.">Outcome breakdown <span class="info">i</span></h2>
+  <div class="chips">
+    <span class="chip c-agree tip" data-tip="Verdict AND the exact set of failing criteria both match the label. A full, clean agreement.">agree <span class="n">27</span></span>
+    <span class="chip c-criteria_diff tip" data-tip="The PASS/FAIL verdict matches, but the agent flagged a different set of criteria than expected.">criteria differ <span class="n">13</span></span>
+    <span class="chip c-verdict_diff tip" data-tip="The agent's PASS/FAIL disagrees with the label. This is the most serious kind of error.">verdict mismatch <span class="n">2</span></span>
+    <span class="chip c-error tip" data-tip="No usable verdict was produced (a JSON-parse or provider error, e.g. a truncated response).">error <span class="n">4</span></span>
+  </div>
+
+  <h2 class="tip" data-tip="Verdict accuracy split by SEE-I step, so you can see which step the agent judges best and worst.">Accuracy by SEE-I step <span class="info">i</span></h2>
   <table>
-    <tr><th>Step</th><th>n</th><th>Verdict correct</th><th>Accuracy</th></tr>
+    <thead><tr><th>Step</th><th>Examples</th><th>Correct</th><th>Accuracy</th>
+      <th class="tip" data-tip="Of all the criteria judged in this step (each response's criteria counted one by one), how many the agent judged the same as the human label.">Criteria matched <span class="info">i</span></th></tr></thead>
+    <tbody>
     
     <tr>
       <td>State</td><td>14</td><td>14/14</td>
       <td><span class="bar"><span style="width:100.0%"></span></span>
           100.0%</td>
+      <td>48/51
+          <span class="muted">(94.1%)</span></td>
     </tr>
     
     <tr>
       <td>Elaborate</td><td>12</td><td>10/12</td>
       <td><span class="bar"><span style="width:83.0%"></span></span>
           83.3%</td>
+      <td>36/46
+          <span class="muted">(78.3%)</span></td>
     </tr>
     
     <tr>
       <td>Exemplify</td><td>10</td><td>7/10</td>
       <td><span class="bar"><span style="width:70.0%"></span></span>
           70.0%</td>
+      <td>26/40
+          <span class="muted">(65.0%)</span></td>
     </tr>
     
     <tr>
       <td>Illustrate</td><td>10</td><td>9/10</td>
       <td><span class="bar"><span style="width:90.0%"></span></span>
           90.0%</td>
+      <td>38/44
+          <span class="muted">(86.4%)</span></td>
     </tr>
     
+    </tbody>
   </table>
 
-  <h2>Per-criterion catch rate <span class="muted">(how often the agent flags a criterion that should fail)</span></h2>
+  <h2 class="tip" data-tip="Per rubric criterion: of the examples that SHOULD fail it, how many the agent caught — and how often it flagged the criterion when it shouldn't have. Your guide to which criterion to tune next.">Per-criterion catch rate <span class="info">i</span></h2>
   <table>
-    <tr><th>Step</th><th>Criterion</th><th>Expected fails</th><th>Caught (recall)</th><th>False flags</th></tr>
+    <thead><tr>
+      <th>Step</th><th>Criterion</th>
+      <th class="tip" data-tip="Of the examples expected to fail this criterion, how many the agent flagged. (— means no example targets it.)">Caught <span class="info">i</span></th>
+      <th class="tip" data-tip="Times the agent flagged this criterion on an example that was NOT expected to fail it (over-flagging).">False flags <span class="info">i</span></th>
+      <th class="tip" data-tip="Of the responses in this step, how many the agent judged the same as the label on this criterion, whether that is a pass or a fail.">Matched <span class="info">i</span></th>
+    </tr></thead>
+    <tbody>
     
     <tr>
-      <td>State</td><td>Length</td>
-      <td>2</td>
-      <td>2/2
-          (100%)</td>
-      <td>0</td>
-    </tr>
-    
-    <tr>
-      <td>State</td><td>Originality</td>
-      <td>2</td>
-      <td>2/2
-          (100%)</td>
-      <td><span class="warn">3</span></td>
-    </tr>
-    
-    <tr>
-      <td>State</td><td>Scope</td>
-      <td>2</td>
-      <td>2/2
-          (100%)</td>
-      <td>0</td>
+      <td>State</td><td>Brevity</td>
+      <td><span class="muted">—</span></td>
+      <td><span class="muted">0</span></td>
+      <td>14/14
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
       <td>State</td><td>Clarity</td>
-      <td>4</td>
       <td>4/4
-          (100%)</td>
-      <td>0</td>
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+      <td>14/14
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
       <td>State</td><td>Accuracy</td>
-      <td>4</td>
       <td>4/4
-          (100%)</td>
-      <td>0</td>
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+      <td>14/14
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
       <td>Elaborate</td><td>Expansion</td>
-      <td>4</td>
       <td>4/4
-          (100%)</td>
-      <td>0</td>
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+      <td>10/12
+          <span class="muted">(83%)</span></td>
     </tr>
     
     <tr>
-      <td>Elaborate</td><td>Jargon Translation</td>
-      <td>2</td>
-      <td>2/2
-          (100%)</td>
-      <td>0</td>
+      <td>Elaborate</td><td>Own Words</td>
+      <td><span class="muted">—</span></td>
+      <td><span class="muted">0</span></td>
+      <td>10/12
+          <span class="muted">(83%)</span></td>
     </tr>
     
     <tr>
-      <td>Elaborate</td><td>Relationship Accuracy</td>
-      <td>2</td>
-      <td>1/2
-          (50%)</td>
-      <td><span class="warn">2</span></td>
-    </tr>
-    
-    <tr>
-      <td>Elaborate</td><td>Focus</td>
-      <td>4</td>
-      <td>3/4
-          (75%)</td>
-      <td>0</td>
+      <td>Elaborate</td><td>Coherence</td>
+      <td><span class="muted">—</span></td>
+      <td><span class="muted">0</span></td>
+      <td>10/12
+          <span class="muted">(83%)</span></td>
     </tr>
     
     <tr>
       <td>Exemplify</td><td>Originality</td>
-      <td>4</td>
       <td>4/4
-          (100%)</td>
-      <td>0</td>
+          <span class="muted">(100%)</span></td>
+      <td><span class="muted">0</span></td>
+      <td>8/10
+          <span class="muted">(80%)</span></td>
+    </tr>
+    
+    <tr>
+      <td>Exemplify</td><td>Fit</td>
+      <td><span class="muted">—</span></td>
+      <td><span class="muted">0</span></td>
+      <td>8/10
+          <span class="muted">(80%)</span></td>
     </tr>
     
     <tr>
       <td>Exemplify</td><td>Concreteness</td>
-      <td>2</td>
       <td>1/2
-          (50%)</td>
+          <span class="muted">(50%)</span></td>
       <td><span class="warn">5</span></td>
+      <td>3/10
+          <span class="muted">(30%)</span></td>
     </tr>
     
     <tr>
       <td>Exemplify</td><td>Explicit Mapping</td>
-      <td>4</td>
       <td>4/4
-          (100%)</td>
+          <span class="muted">(100%)</span></td>
       <td><span class="warn">1</span></td>
+      <td>7/10
+          <span class="muted">(70%)</span></td>
     </tr>
     
     <tr>
-      <td>Illustrate</td><td>Cross-Domain</td>
-      <td>4</td>
-      <td>4/4
-          (100%)</td>
-      <td><span class="warn">2</span></td>
+      <td>Illustrate</td><td>Comparison</td>
+      <td><span class="muted">—</span></td>
+      <td><span class="muted">0</span></td>
+      <td>10/10
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
-      <td>Illustrate</td><td>Structural Match</td>
-      <td>4</td>
-      <td>2/4
-          (50%)</td>
-      <td><span class="warn">2</span></td>
+      <td>Illustrate</td><td>Match</td>
+      <td><span class="muted">—</span></td>
+      <td><span class="muted">0</span></td>
+      <td>10/10
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
-      <td>Illustrate</td><td>Format</td>
-      <td>2</td>
-      <td>2/2
-          (100%)</td>
-      <td>0</td>
+      <td>Illustrate</td><td>Imagery</td>
+      <td><span class="muted">—</span></td>
+      <td><span class="muted">0</span></td>
+      <td>10/10
+          <span class="muted">(100%)</span></td>
     </tr>
     
+    </tbody>
   </table>
 
   <h2>Per-example results</h2>
+  <p class="secdesc">One row per labeled response. The colored left border and the Status pill show the
+    outcome (see the breakdown above). Use the agent reasoning toggle to see why each criterion was judged.</p>
   <div class="toolbar">
-    <label><input type="checkbox" id="mmOnly" onchange="toggleMM()"> Show mismatches only</label>
-    <span class="legend" style="margin-left:18px;">
-      <span class="pill s-agree">agree</span>
-      <span class="pill s-criteria_diff">criteria differ</span>
-      <span class="pill s-verdict_diff">verdict mismatch</span>
-      <span class="pill s-error">error</span>
-    </span>
+    <label>Status
+      <select id="f-status" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="agree">Agree</option>
+        <option value="criteria_diff">Criteria differ</option>
+        <option value="verdict_diff">Verdict mismatch</option>
+        <option value="error">Error</option>
+      </select>
+    </label>
+    <label>SEE-I step
+      <select id="f-step" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="State">State</option><option value="Elaborate">Elaborate</option><option value="Exemplify">Exemplify</option><option value="Illustrate">Illustrate</option>
+      </select>
+    </label>
+    <span class="muted" id="counter">Showing 46 of 46</span>
   </div>
   <table id="results">
-    <tr>
+    <thead><tr>
       <th>ID</th><th>Step</th><th>Response</th>
-      <th>Expected</th><th>Agent</th><th>Criteria diff</th><th>Status</th>
-    </tr>
+      <th>Expected</th><th>Agent</th>
+      <th class="tip" data-tip="How the agent's failing criteria compare to the expected ones. ✓ matched = expected to fail and flagged; ✗ missed = expected to fail but not flagged; + extra = flagged but not expected.">Criteria diff <span class="info">i</span></th>
+      <th>Status</th>
+    </tr></thead>
+    <tbody>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">P-S-1</td>
       <td>State</td>
       <td class="resp">
@@ -264,17 +334,18 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response adequately paraphrases the text without copying more than three consecutive non-technical words.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response adequately paraphrases the text without copying more than three consecutive non-technical words.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response captures the main theme of what a sunk cost is and its active relationship to business decision-making.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response captures the main theme of what a sunk cost is and its active relationship to business decision-making.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the sentence.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the sentence.</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's core premise that sunk costs cannot be recovered and should not influence future decisions.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's core premise that sunk costs cannot be recovered and should not influence future decisions.</span></div>
           
         </details>
+        
         
         
         
@@ -295,7 +366,7 @@
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">P-S-2</td>
       <td>State</td>
       <td class="resp">
@@ -303,17 +374,18 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response successfully paraphrases the text without using more than three consecutive non-technical words from the source.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response successfully paraphrases the text without using more than three consecutive non-technical words from the source.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response captures the main theme of the text by defining the concept and its active relationship to future business decisions.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response captures the main theme of the text by defining the concept and its active relationship to future business decisions.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the sentence.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the sentence.</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the core premise of the text that unrecoverable past expenses should not influence future decisions.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the core premise of the text that unrecoverable past expenses should not influence future decisions.</span></div>
           
         </details>
+        
         
         
         
@@ -334,7 +406,7 @@
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="State">
       <td class="status-criteria_diff key">F-S-L-1</td>
       <td>State</td>
       <td class="resp">
@@ -342,17 +414,18 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: FAIL — <span class="muted">The response contains three sentences, violating the rule that it must be exactly one or two sentences.</span></div>
+            <div class="reason"><b>Length</b>: FAIL — <span class="muted">The response contains three sentences, violating the rule that it must be exactly one or two sentences.</span></div>
           
-            <div><b>Originality</b>: FAIL — <span class="muted">The phrase 'is a cost that' copies four consecutive non-technical words directly from the source text.</span></div>
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The phrase 'is a cost that' copies four consecutive non-technical words directly from the source text.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response correctly identifies the main theme of the text regarding sunk costs and decision-making.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response correctly identifies the main theme of the text regarding sunk costs and decision-making.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the response.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the response.</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct based on the text and does not contradict the core premise.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct based on the text and does not contradict the core premise.</span></div>
           
         </details>
+        
         
         
         
@@ -366,14 +439,14 @@
         <span class="crit">Length</span><span class="crit">Originality</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Length</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Length</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Originality</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Originality</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="State">
       <td class="status-criteria_diff key">F-S-L-2</td>
       <td>State</td>
       <td class="resp">
@@ -381,17 +454,18 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: FAIL — <span class="muted">The response is an incomplete sentence fragment because it uses the participle 'being' instead of a main verb.</span></div>
+            <div class="reason"><b>Length</b>: FAIL — <span class="muted">The response is an incomplete sentence fragment because it uses the participle 'being' instead of a main verb.</span></div>
           
-            <div><b>Originality</b>: FAIL — <span class="muted">The response copies four consecutive words ('and cannot be recovered') directly from the source text.</span></div>
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The response copies four consecutive words ('and cannot be recovered') directly from the source text.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response correctly captures the main theme by defining the core concept of a sunk cost.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response correctly captures the main theme by defining the core concept of a sunk cost.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'sunk cost' is explicitly named at the beginning of the response.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'sunk cost' is explicitly named at the beginning of the response.</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the text's definition that sunk costs are unrecoverable past expenses.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the text's definition that sunk costs are unrecoverable past expenses.</span></div>
           
         </details>
+        
         
         
         
@@ -405,14 +479,14 @@
         <span class="crit">Length</span><span class="crit">Originality</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Length</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Length</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Originality</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Originality</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">F-S-O-1</td>
       <td>State</td>
       <td class="resp">
@@ -420,20 +494,21 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: FAIL — <span class="muted">The response copies an entire sentence verbatim from the source text ('A sunk cost is a cost that has already occurred and cannot be recovered by any means.').</span></div>
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The response copies an entire sentence verbatim from the source text ('A sunk cost is a cost that has already occurred and cannot be recovered by any means.').</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response successfully states the main theme of the text by defining the core concept.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response successfully states the main theme of the text by defining the core concept.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the sentence.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named at the beginning of the sentence.</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct and aligns perfectly with the text's definition.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct and aligns perfectly with the text's definition.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -444,14 +519,14 @@
         <span class="crit">Originality</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Originality</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Originality</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">F-S-O-2</td>
       <td>State</td>
       <td class="resp">
@@ -459,20 +534,21 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: FAIL — <span class="muted">The response copies an entire sentence verbatim from the source text.</span></div>
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The response copies an entire sentence verbatim from the source text.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response states the main theme of how sunk costs relate to decision-making.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response states the main theme of how sunk costs relate to decision-making.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'Sunk costs' is explicitly named at the beginning of the sentence.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'Sunk costs' is explicitly named at the beginning of the sentence.</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the core premise of the text regarding sunk costs.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The statement accurately reflects the core premise of the text regarding sunk costs.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -483,14 +559,14 @@
         <span class="crit">Originality</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Originality</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Originality</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">F-S-SC-1</td>
       <td>State</td>
       <td class="resp">
@@ -498,20 +574,21 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy more than three consecutive words from the source text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy more than three consecutive words from the source text.</span></div>
           
-            <div><b>Scope</b>: FAIL — <span class="muted">The response merely lists alternative names for the concept, which is a static fact rather than stating the main theme or active relationship of what a sunk cost is.</span></div>
+            <div class="reason"><b>Scope</b>: FAIL — <span class="muted">The response merely lists alternative names for the concept, which is a static fact rather than stating the main theme or active relationship of what a sunk cost is.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'Sunk costs' is explicitly named at the beginning of the sentence.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'Sunk costs' is explicitly named at the beginning of the sentence.</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The response does not contradict the core premise of the text, even though it introduces synonyms not explicitly mentioned in the reading.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response does not contradict the core premise of the text, even though it introduces synonyms not explicitly mentioned in the reading.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -522,14 +599,14 @@
         <span class="crit">Scope</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Scope</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Scope</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">F-S-SC-2</td>
       <td>State</td>
       <td class="resp">
@@ -537,20 +614,21 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy entire clauses from the text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy entire clauses from the text.</span></div>
           
-            <div><b>Scope</b>: FAIL — <span class="muted">The response states a static fact about where the term is used rather than explaining the main theme or active relationship of what a sunk cost actually is.</span></div>
+            <div class="reason"><b>Scope</b>: FAIL — <span class="muted">The response states a static fact about where the term is used rather than explaining the main theme or active relationship of what a sunk cost actually is.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'sunk cost' is explicitly named and the sentence does not start with an ambiguous pronoun.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'sunk cost' is explicitly named and the sentence does not start with an ambiguous pronoun.</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct and does not contradict the text.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The statement is factually correct and does not contradict the text.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -561,14 +639,14 @@
         <span class="crit">Scope</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Scope</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Scope</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">F-S-CL-1</td>
       <td>State</td>
       <td class="resp">
@@ -576,20 +654,21 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response is written in the student's own words and does not copy more than 3 consecutive words from the text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response is written in the student's own words and does not copy more than 3 consecutive words from the text.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response states the main theme of the concept and its active relationship to future actions.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response states the main theme of the concept and its active relationship to future actions.</span></div>
           
-            <div><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun phrase 'It is when...' instead of explicitly naming the subject (sunk cost).</span></div>
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun phrase 'It is when...' instead of explicitly naming the subject (sunk cost).</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's core premise that unrecoverable costs should not influence future decisions.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's core premise that unrecoverable costs should not influence future decisions.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -600,14 +679,14 @@
         <span class="crit">Clarity</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Clarity</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="State">
       <td class="status-criteria_diff key">F-S-CL-2</td>
       <td>State</td>
       <td class="resp">
@@ -615,17 +694,18 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: FAIL — <span class="muted">The response copies the four-word phrase "excluded from future decisions" directly from the source text.</span></div>
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The response copies the four-word phrase "excluded from future decisions" directly from the source text.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response states the main theme of how unrecoverable resources relate to future choices rather than just a static fact.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response states the main theme of how unrecoverable resources relate to future choices rather than just a static fact.</span></div>
           
-            <div><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun "This" instead of explicitly naming the subject "sunk cost".</span></div>
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun "This" instead of explicitly naming the subject "sunk cost".</span></div>
           
-            <div><b>Accuracy</b>: PASS — <span class="muted">The response accurately captures the core premise that unrecoverable costs should not influence future decisions.</span></div>
+            <div class="reason"><b>Accuracy</b>: PASS — <span class="muted">The response accurately captures the core premise that unrecoverable costs should not influence future decisions.</span></div>
           
         </details>
+        
         
         
         
@@ -639,14 +719,14 @@
         <span class="crit">Originality</span><span class="crit">Clarity</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Clarity</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Originality</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Originality</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">F-S-A-1</td>
       <td>State</td>
       <td class="resp">
@@ -654,20 +734,21 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy clauses directly from the source text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy clauses directly from the source text.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response attempts to state the main definition and mechanism of the concept rather than a static statistic or date.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response attempts to state the main definition and mechanism of the concept rather than a static statistic or date.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named rather than starting with an ambiguous pronoun.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named rather than starting with an ambiguous pronoun.</span></div>
           
-            <div><b>Accuracy</b>: FAIL — <span class="muted">The response completely contradicts the text by claiming a sunk cost is a future, recoverable expense rather than a past, unrecoverable one.</span></div>
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response completely contradicts the text by claiming a sunk cost is a future, recoverable expense rather than a past, unrecoverable one.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -678,14 +759,14 @@
         <span class="crit">Accuracy</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Accuracy</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">F-S-A-2</td>
       <td>State</td>
       <td class="resp">
@@ -693,20 +774,21 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy clauses directly from the source text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy clauses directly from the source text.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response attempts to define the main concept rather than stating a static fact or statistic.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response attempts to define the main concept rather than stating a static fact or statistic.</span></div>
           
-            <div><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named and the response does not start with an ambiguous pronoun.</span></div>
+            <div class="reason"><b>Clarity</b>: PASS — <span class="muted">The subject 'A sunk cost' is explicitly named and the response does not start with an ambiguous pronoun.</span></div>
           
-            <div><b>Accuracy</b>: FAIL — <span class="muted">The response incorrectly claims that a sunk cost can be recovered, which directly contradicts the text's core premise that it cannot be recovered by any means.</span></div>
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response incorrectly claims that a sunk cost can be recovered, which directly contradicts the text's core premise that it cannot be recovered by any means.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -717,14 +799,14 @@
         <span class="crit">Accuracy</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Accuracy</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Elaborate">
       <td class="status-agree key">P-E-1</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -732,15 +814,16 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: PASS — <span class="muted">The response expands on the basic definition by explaining why sunk costs tempt decision-makers and how rational decisions should be made.</span></div>
+            <div class="reason"><b>Expansion</b>: PASS — <span class="muted">The response expands on the basic definition by explaining why sunk costs tempt decision-makers and how rational decisions should be made.</span></div>
           
-            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language, such as 'money is already gone' and 'looking only at what each option will cost', to explain the concept without relying on undefined jargon.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language, such as 'money is already gone' and 'looking only at what each option will cost', to explain the concept without relying on undefined jargon.</span></div>
           
-            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately captures the cause-and-effect relationship between sunk costs and irrational decision-making as described in the text.</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately captures the cause-and-effect relationship between sunk costs and irrational decision-making as described in the text.</span></div>
           
-            <div><b>Focus</b>: PASS — <span class="muted">All details in the response directly serve to explain the central concept of sunk costs and their impact on decision-making, with no tangents.</span></div>
+            <div class="reason"><b>Focus</b>: PASS — <span class="muted">All details in the response directly serve to explain the central concept of sunk costs and their impact on decision-making, with no tangents.</span></div>
           
         </details>
+        
         
         
         
@@ -761,7 +844,7 @@
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Elaborate">
       <td class="status-agree key">P-E-2</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -769,15 +852,16 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: PASS — <span class="muted">The response expands on the concept by explaining why sunk costs are dangerous and how businesses can actively avoid letting them influence decisions.</span></div>
+            <div class="reason"><b>Expansion</b>: PASS — <span class="muted">The response expands on the concept by explaining why sunk costs are dangerous and how businesses can actively avoid letting them influence decisions.</span></div>
           
-            <div><b>Jargon Translation</b>: PASS — <span class="muted">The student uses clear, plain language such as 'money that is already gone' and 'past spending' rather than relying on undefined technical terms.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: PASS — <span class="muted">The student uses clear, plain language such as 'money that is already gone' and 'past spending' rather than relying on undefined technical terms.</span></div>
           
-            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's premise that because past spending cannot be recovered, it must be treated as irrelevant to future outcomes.</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's premise that because past spending cannot be recovered, it must be treated as irrelevant to future outcomes.</span></div>
           
-            <div><b>Focus</b>: PASS — <span class="muted">Every sentence directly serves to explain the central concept of sunk costs and their role in decision-making, with no tangents or minor trivia.</span></div>
+            <div class="reason"><b>Focus</b>: PASS — <span class="muted">Every sentence directly serves to explain the central concept of sunk costs and their role in decision-making, with no tangents or minor trivia.</span></div>
           
         </details>
+        
         
         
         
@@ -798,7 +882,7 @@
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Elaborate">
       <td class="status-agree key">F-E-EX-1</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -806,18 +890,19 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: FAIL — <span class="muted">The response merely paraphrases the basic definition of a sunk cost without explaining the underlying mechanism of why it shouldn't affect future decisions.</span></div>
+            <div class="reason"><b>Expansion</b>: FAIL — <span class="muted">The response merely paraphrases the basic definition of a sunk cost without explaining the underlying mechanism of why it shouldn't affect future decisions.</span></div>
           
-            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language and does not rely on undefined technical jargon.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language and does not rely on undefined technical jargon.</span></div>
           
-            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's premise that unrecoverable costs should not influence business decisions.</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately reflects the text's premise that unrecoverable costs should not influence business decisions.</span></div>
           
-            <div><b>Focus</b>: PASS — <span class="muted">All details in the response directly relate to the central concept of sunk costs without introducing tangents.</span></div>
+            <div class="reason"><b>Focus</b>: PASS — <span class="muted">All details in the response directly relate to the central concept of sunk costs without introducing tangents.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -828,14 +913,14 @@
         <span class="crit">Expansion</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Expansion</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Expansion</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Elaborate">
       <td class="status-agree key">F-E-EX-2</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -843,18 +928,19 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: FAIL — <span class="muted">The response merely paraphrases the basic definition of a sunk cost without expanding on the underlying mechanisms or deeper reasons why it shouldn't affect future decisions.</span></div>
+            <div class="reason"><b>Expansion</b>: FAIL — <span class="muted">The response merely paraphrases the basic definition of a sunk cost without expanding on the underlying mechanisms or deeper reasons why it shouldn't affect future decisions.</span></div>
           
-            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language, such as 'past costs that are unrecoverable', to explain the concept.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language, such as 'past costs that are unrecoverable', to explain the concept.</span></div>
           
-            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately identifies the cause-and-effect relationship that unrecoverable costs should be excluded from future decision-making.</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately identifies the cause-and-effect relationship that unrecoverable costs should be excluded from future decision-making.</span></div>
           
-            <div><b>Focus</b>: PASS — <span class="muted">All details in the response directly serve to explain the central concept without introducing tangents or minor trivia.</span></div>
+            <div class="reason"><b>Focus</b>: PASS — <span class="muted">All details in the response directly serve to explain the central concept without introducing tangents or minor trivia.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -865,14 +951,14 @@
         <span class="crit">Expansion</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Expansion</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Expansion</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Elaborate">
       <td class="status-criteria_diff key">F-E-JT-1</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -880,15 +966,16 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: PASS — <span class="muted">The response successfully expands on the concept by attempting to explain the 'why' behind irrational decisions related to sunk costs.</span></div>
+            <div class="reason"><b>Expansion</b>: PASS — <span class="muted">The response successfully expands on the concept by attempting to explain the 'why' behind irrational decisions related to sunk costs.</span></div>
           
-            <div><b>Jargon Translation</b>: FAIL — <span class="muted">The response relies heavily on undefined technical jargon, specifically 'loss aversion', 'escalation of commitment', and 'negative NPV project'.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: FAIL — <span class="muted">The response relies heavily on undefined technical jargon, specifically 'loss aversion', 'escalation of commitment', and 'negative NPV project'.</span></div>
           
-            <div><b>Relationship Accuracy</b>: FAIL — <span class="muted">The response claims causes and effects, such as 'escalation of commitment' and 'negative NPV project', that are not mentioned or supported by the provided text.</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: FAIL — <span class="muted">The response claims causes and effects, such as 'escalation of commitment' and 'negative NPV project', that are not mentioned or supported by the provided text.</span></div>
           
-            <div><b>Focus</b>: PASS — <span class="muted">The details provided, although flawed in other areas, are directly focused on explaining the central concept rather than introducing minor trivia from the text.</span></div>
+            <div class="reason"><b>Focus</b>: PASS — <span class="muted">The details provided, although flawed in other areas, are directly focused on explaining the central concept rather than introducing minor trivia from the text.</span></div>
           
         </details>
+        
         
         
         
@@ -902,14 +989,14 @@
         <span class="crit">Jargon Translation</span><span class="crit">Relationship Accuracy</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Jargon Translation</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Jargon Translation</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Relationship Accuracy</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Relationship Accuracy</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Elaborate">
       <td class="status-criteria_diff key">F-E-JT-2</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -917,15 +1004,16 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: PASS — <span class="muted">The response successfully introduces the 'why' of the concept by attempting to explain the underlying causes of the sunk cost fallacy.</span></div>
+            <div class="reason"><b>Expansion</b>: PASS — <span class="muted">The response successfully introduces the 'why' of the concept by attempting to explain the underlying causes of the sunk cost fallacy.</span></div>
           
-            <div><b>Jargon Translation</b>: FAIL — <span class="muted">The response relies on undefined technical jargon such as 'loss aversion', 'status quo bias', and 'retrospective cost'.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: FAIL — <span class="muted">The response relies on undefined technical jargon such as 'loss aversion', 'status quo bias', and 'retrospective cost'.</span></div>
           
-            <div><b>Relationship Accuracy</b>: FAIL — <span class="muted">The response claims the fallacy is caused by 'status quo bias', which is a cause-and-effect relationship not supported or mentioned in the provided text.</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: FAIL — <span class="muted">The response claims the fallacy is caused by 'status quo bias', which is a cause-and-effect relationship not supported or mentioned in the provided text.</span></div>
           
-            <div><b>Focus</b>: PASS — <span class="muted">Although it uses outside terms, the details provided are directly aimed at explaining the central concept of the sunk cost fallacy.</span></div>
+            <div class="reason"><b>Focus</b>: PASS — <span class="muted">Although it uses outside terms, the details provided are directly aimed at explaining the central concept of the sunk cost fallacy.</span></div>
           
         </details>
+        
         
         
         
@@ -939,14 +1027,14 @@
         <span class="crit">Jargon Translation</span><span class="crit">Relationship Accuracy</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Jargon Translation</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Jargon Translation</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Relationship Accuracy</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Relationship Accuracy</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="error">
+    <tr data-status="error" data-step="Elaborate">
       <td class="status-error key">F-E-RA-1</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -954,6 +1042,7 @@
         
         
         <div class="err">⚠ JSON parse failed: Unterminated string starting at: line 11 column 17 (char 187)</div>
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -965,13 +1054,13 @@
       </td>
       <td>
         
-        <span class="crit c-miss" title="expected but not flagged">✗ Relationship Accuracy</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Relationship Accuracy</span>
         
       </td>
       <td><span class="pill s-error">⚠ error</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Elaborate">
       <td class="status-agree key">F-E-RA-2</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -979,18 +1068,19 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: PASS — <span class="muted">The response introduces a 'why' mechanism by attempting to explain the rationale behind considering past investments.</span></div>
+            <div class="reason"><b>Expansion</b>: PASS — <span class="muted">The response introduces a 'why' mechanism by attempting to explain the rationale behind considering past investments.</span></div>
           
-            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language like 'past investments' and 'future profits' without relying on undefined technical jargon.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language like 'past investments' and 'future profits' without relying on undefined technical jargon.</span></div>
           
-            <div><b>Relationship Accuracy</b>: FAIL — <span class="muted">The response claims sunk costs are considered to recover past investments, directly contradicting the text which states they cannot be recovered and should not be considered.</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: FAIL — <span class="muted">The response claims sunk costs are considered to recover past investments, directly contradicting the text which states they cannot be recovered and should not be considered.</span></div>
           
-            <div><b>Focus</b>: PASS — <span class="muted">The response remains focused on the central concept of sunk costs in business decisions without introducing unrelated tangents.</span></div>
+            <div class="reason"><b>Focus</b>: PASS — <span class="muted">The response remains focused on the central concept of sunk costs in business decisions without introducing unrelated tangents.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1001,14 +1091,14 @@
         <span class="crit">Relationship Accuracy</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Relationship Accuracy</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Relationship Accuracy</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="error">
+    <tr data-status="error" data-step="Elaborate">
       <td class="status-error key">F-E-F-1</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -1016,6 +1106,7 @@
         
         
         <div class="err">⚠ JSON parse failed: Expecting ',' delimiter: line 26 column 4 (char 978)</div>
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1027,13 +1118,13 @@
       </td>
       <td>
         
-        <span class="crit c-miss" title="expected but not flagged">✗ Focus</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Focus</span>
         
       </td>
       <td><span class="pill s-error">⚠ error</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Elaborate">
       <td class="status-agree key">F-E-F-2</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -1041,18 +1132,19 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: PASS — <span class="muted">The response explains the 'why' of the concept by stating that sunk costs should be ignored because they are unrecoverable.</span></div>
+            <div class="reason"><b>Expansion</b>: PASS — <span class="muted">The response explains the 'why' of the concept by stating that sunk costs should be ignored because they are unrecoverable.</span></div>
           
-            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language and does not rely on undefined technical jargon to explain the concept.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language and does not rely on undefined technical jargon to explain the concept.</span></div>
           
-            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately identifies the cause-and-effect relationship described in the text (sunk costs are ignored because they cannot be recovered).</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: PASS — <span class="muted">The response accurately identifies the cause-and-effect relationship described in the text (sunk costs are ignored because they cannot be recovered).</span></div>
           
-            <div><b>Focus</b>: FAIL — <span class="muted">The response introduces a tangent about managing variable costs, which does not directly serve to explain the central concept of sunk costs.</span></div>
+            <div class="reason"><b>Focus</b>: FAIL — <span class="muted">The response introduces a tangent about managing variable costs, which does not directly serve to explain the central concept of sunk costs.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1063,14 +1155,14 @@
         <span class="crit">Focus</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Focus</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Focus</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="error">
+    <tr data-status="error" data-step="Exemplify">
       <td class="status-error key">P-EX-1</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1078,6 +1170,7 @@
         
         
         <div class="err">⚠ JSON parse failed: Unterminated string starting at: line 9 column 17 (char 141)</div>
+        
       </td>
       <td>
         <b>PASS</b>
@@ -1095,7 +1188,7 @@
       <td><span class="pill s-error">⚠ error</span></td>
     </tr>
     
-    <tr data-status="verdict_diff">
+    <tr data-status="verdict_diff" data-step="Exemplify">
       <td class="status-verdict_diff key">P-EX-2</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1103,13 +1196,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The gym equipment example is original and does not appear in the source text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The gym equipment example is original and does not appear in the source text.</span></div>
           
-            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a hypothetical scenario about an unnamed 'gym owner' rather than pointing to a specific, named real-world entity or event.</span></div>
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The response uses a hypothetical scenario about an unnamed 'gym owner' rather than pointing to a specific, named real-world entity or event.</span></div>
           
-            <div><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the PHP 1,000,000 to the concept by explaining that the money is gone and should not drive future decisions.</span></div>
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the PHP 1,000,000 to the concept by explaining that the money is gone and should not drive future decisions.</span></div>
           
         </details>
+        
         
         
         
@@ -1125,12 +1219,12 @@
       <td>
         
         
-        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Concreteness</span>
       </td>
       <td><span class="pill s-verdict_diff">✗ verdict</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Exemplify">
       <td class="status-agree key">F-EX-O-1</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1138,16 +1232,17 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Originality</b>: FAIL — <span class="muted">The response reuses the $200 snowboarding trip example that was explicitly provided in the source text.</span></div>
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The response reuses the $200 snowboarding trip example that was explicitly provided in the source text.</span></div>
           
-            <div><b>Concreteness</b>: PASS — <span class="muted">The response uses a specific, concrete scenario involving a $200 snowboarding trip.</span></div>
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The response uses a specific, concrete scenario involving a $200 snowboarding trip.</span></div>
           
-            <div><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the $200 spent to the concept by stating it is already spent, cannot be recovered, and should not influence the choice.</span></div>
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the $200 spent to the concept by stating it is already spent, cannot be recovered, and should not influence the choice.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1158,14 +1253,14 @@
         <span class="crit">Originality</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Originality</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Originality</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Exemplify">
       <td class="status-criteria_diff key">F-EX-O-2</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1173,13 +1268,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Originality</b>: FAIL — <span class="muted">The response reuses the exact $10,000 ERP training example provided in the source text.</span></div>
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The response reuses the exact $10,000 ERP training example provided in the source text.</span></div>
           
-            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A company') rather than pointing to a specific, named real-world entity or event.</span></div>
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A company') rather than pointing to a specific, named real-world entity or event.</span></div>
           
-            <div><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the $10,000 spent in the example to the concept of a sunk cost that should not affect future decisions.</span></div>
+            <div class="reason"><b>Explicit Mapping</b>: PASS — <span class="muted">The response explicitly connects the $10,000 spent in the example to the concept of a sunk cost that should not affect future decisions.</span></div>
           
         </details>
+        
         
         
         
@@ -1193,14 +1289,14 @@
         <span class="crit">Originality</span><span class="crit">Concreteness</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Originality</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Originality</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Concreteness</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Exemplify">
       <td class="status-criteria_diff key">F-EX-C-1</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1208,13 +1304,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response provides a new scenario rather than reusing the airplane, ERP software, or snowboarding examples from the text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response provides a new scenario rather than reusing the airplane, ERP software, or snowboarding examples from the text.</span></div>
           
-            <div><b>Concreteness</b>: FAIL — <span class="muted">The response relies on a vague hypothetical ('Imagine if a company...') rather than pointing to a specific, named entity or real-world event.</span></div>
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The response relies on a vague hypothetical ('Imagine if a company...') rather than pointing to a specific, named entity or real-world event.</span></div>
           
-            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explicitly explaining how the scenario demonstrates the principle that the lost money should not influence the company's decision.</span></div>
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explicitly explaining how the scenario demonstrates the principle that the lost money should not influence the company's decision.</span></div>
           
         </details>
+        
         
         
         
@@ -1228,14 +1325,14 @@
         <span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Concreteness</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Concreteness</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Explicit Mapping</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Explicit Mapping</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="error">
+    <tr data-status="error" data-step="Exemplify">
       <td class="status-error key">F-EX-C-2</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1243,6 +1340,7 @@
         
         
         <div class="err">⚠ JSON parse failed: Expecting ',' delimiter: line 20 column 4 (char 684)</div>
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1254,13 +1352,13 @@
       </td>
       <td>
         
-        <span class="crit c-miss" title="expected but not flagged">✗ Concreteness</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Concreteness</span>
         
       </td>
       <td><span class="pill s-error">⚠ error</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Exemplify">
       <td class="status-criteria_diff key">F-EX-EM-1</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1268,13 +1366,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The example of a startup developing a mobile app is not mentioned in the source text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a startup developing a mobile app is not mentioned in the source text.</span></div>
           
-            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A startup') rather than pointing to a specific, named entity or real-world instance.</span></div>
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A startup') rather than pointing to a specific, named entity or real-world instance.</span></div>
           
-            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explaining how the PHP 2,000,000 represents a sunk cost or how it relates to the concept.</span></div>
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explaining how the PHP 2,000,000 represents a sunk cost or how it relates to the concept.</span></div>
           
         </details>
+        
         
         
         
@@ -1288,14 +1387,14 @@
         <span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Explicit Mapping</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Concreteness</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Exemplify">
       <td class="status-agree key">F-EX-EM-2</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1303,16 +1402,17 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The example of a clothing brand's celebrity endorsement deal is not mentioned in the source text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The example of a clothing brand's celebrity endorsement deal is not mentioned in the source text.</span></div>
           
-            <div><b>Concreteness</b>: PASS — <span class="muted">The response provides a specific scenario with concrete details, such as the PHP 800,000 cost and the one-month timeline.</span></div>
+            <div class="reason"><b>Concreteness</b>: PASS — <span class="muted">The response provides a specific scenario with concrete details, such as the PHP 800,000 cost and the one-month timeline.</span></div>
           
-            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explaining how the PHP 800,000 spent on the endorsement represents a sunk cost that cannot be recovered.</span></div>
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explaining how the PHP 800,000 spent on the endorsement represents a sunk cost that cannot be recovered.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1323,14 +1423,14 @@
         <span class="crit">Explicit Mapping</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Explicit Mapping</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Illustrate">
       <td class="status-agree key">P-I-1</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1338,13 +1438,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: PASS — <span class="muted">The response compares the financial concept of sunk costs to the everyday physical act of digging a hole.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: PASS — <span class="muted">The response compares the financial concept of sunk costs to the everyday physical act of digging a hole.</span></div>
           
-            <div><b>Structural Match</b>: PASS — <span class="muted">The analogy correctly maps the unrecoverable time spent digging to a sunk cost and the irrational continuation of digging to the sunk cost fallacy.</span></div>
+            <div class="reason"><b>Structural Match</b>: PASS — <span class="muted">The analogy correctly maps the unrecoverable time spent digging to a sunk cost and the irrational continuation of digging to the sunk cost fallacy.</span></div>
           
-            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a clear simile using the phrase 'is like'.</span></div>
+            <div class="reason"><b>Format</b>: PASS — <span class="muted">The response is formatted as a clear simile using the phrase 'is like'.</span></div>
           
         </details>
+        
         
         
         
@@ -1365,7 +1466,7 @@
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Illustrate">
       <td class="status-agree key">P-I-2</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1373,13 +1474,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: PASS — <span class="muted">The response compares the corporate finance concept to an everyday life scenario of buying a bus ticket.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: PASS — <span class="muted">The response compares the corporate finance concept to an everyday life scenario of buying a bus ticket.</span></div>
           
-            <div><b>Structural Match</b>: PASS — <span class="muted">The unrecoverable ticket money perfectly mirrors an unrecoverable business cost, and choosing a different destination mirrors making a rational future decision.</span></div>
+            <div class="reason"><b>Structural Match</b>: PASS — <span class="muted">The unrecoverable ticket money perfectly mirrors an unrecoverable business cost, and choosing a different destination mirrors making a rational future decision.</span></div>
           
-            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a clear simile using the phrase 'is like'.</span></div>
+            <div class="reason"><b>Format</b>: PASS — <span class="muted">The response is formatted as a clear simile using the phrase 'is like'.</span></div>
           
         </details>
+        
         
         
         
@@ -1400,7 +1502,7 @@
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Illustrate">
       <td class="status-agree key">F-I-CD-1</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1408,16 +1510,17 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response provides a literal business example rather than comparing the concept to a completely different field or everyday life.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: FAIL — <span class="muted">The response provides a literal business example rather than comparing the concept to a completely different field or everyday life.</span></div>
           
-            <div><b>Structural Match</b>: PASS — <span class="muted">The mechanism of continuing a failing endeavor due to past investment accurately matches the sunk cost fallacy.</span></div>
+            <div class="reason"><b>Structural Match</b>: PASS — <span class="muted">The mechanism of continuing a failing endeavor due to past investment accurately matches the sunk cost fallacy.</span></div>
           
-            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the word 'like'.</span></div>
+            <div class="reason"><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the word 'like'.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1428,14 +1531,14 @@
         <span class="crit">Cross-Domain</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Cross-Domain</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Cross-Domain</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Illustrate">
       <td class="status-agree key">F-I-CD-2</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1443,16 +1546,17 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response provides another literal business example (a retailer stocking inventory) rather than comparing the concept to a completely different field or everyday life.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: FAIL — <span class="muted">The response provides another literal business example (a retailer stocking inventory) rather than comparing the concept to a completely different field or everyday life.</span></div>
           
-            <div><b>Structural Match</b>: PASS — <span class="muted">The scenario accurately reflects the mechanism of the sunk cost fallacy, where past unrecoverable expenses drive irrational future actions.</span></div>
+            <div class="reason"><b>Structural Match</b>: PASS — <span class="muted">The scenario accurately reflects the mechanism of the sunk cost fallacy, where past unrecoverable expenses drive irrational future actions.</span></div>
           
-            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the phrase 'It is like'.</span></div>
+            <div class="reason"><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the phrase 'It is like'.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1463,14 +1567,14 @@
         <span class="crit">Cross-Domain</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Cross-Domain</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Cross-Domain</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Illustrate">
       <td class="status-agree key">F-I-SM-1</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1478,16 +1582,17 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: PASS — <span class="muted">The response successfully compares the financial concept to an everyday object, a broken umbrella.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: PASS — <span class="muted">The response successfully compares the financial concept to an everyday object, a broken umbrella.</span></div>
           
-            <div><b>Structural Match</b>: FAIL — <span class="muted">The analogy only captures the unrecoverable nature of the cost but fails to match the underlying mechanism of the sunk cost fallacy, which involves making irrational future decisions based on that past loss.</span></div>
+            <div class="reason"><b>Structural Match</b>: FAIL — <span class="muted">The analogy only captures the unrecoverable nature of the cost but fails to match the underlying mechanism of the sunk cost fallacy, which involves making irrational future decisions based on that past loss.</span></div>
           
-            <div><b>Format</b>: PASS — <span class="muted">The response is correctly formatted as a simile using the phrase 'is like'.</span></div>
+            <div class="reason"><b>Format</b>: PASS — <span class="muted">The response is correctly formatted as a simile using the phrase 'is like'.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1498,14 +1603,14 @@
         <span class="crit">Structural Match</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Structural Match</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Structural Match</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="verdict_diff">
+    <tr data-status="verdict_diff" data-step="Illustrate">
       <td class="status-verdict_diff key">F-I-SM-2</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1513,13 +1618,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: PASS — <span class="muted">The response compares a business and finance concept to an everyday experience of a melted ice cream cone.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: PASS — <span class="muted">The response compares a business and finance concept to an everyday experience of a melted ice cream cone.</span></div>
           
-            <div><b>Structural Match</b>: PASS — <span class="muted">The analogy correctly maps the unrecoverable nature of a melted ice cream cone to the unrecoverable nature of a sunk cost.</span></div>
+            <div class="reason"><b>Structural Match</b>: PASS — <span class="muted">The analogy correctly maps the unrecoverable nature of a melted ice cream cone to the unrecoverable nature of a sunk cost.</span></div>
           
-            <div><b>Format</b>: PASS — <span class="muted">The response is explicitly formatted as a simile using the phrase 'It is like a'.</span></div>
+            <div class="reason"><b>Format</b>: PASS — <span class="muted">The response is explicitly formatted as a simile using the phrase 'It is like a'.</span></div>
           
         </details>
+        
         
         
         
@@ -1534,13 +1640,13 @@
       </td>
       <td>
         
-        <span class="crit c-miss" title="expected but not flagged">✗ Structural Match</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Structural Match</span>
         
       </td>
       <td><span class="pill s-verdict_diff">✗ verdict</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Illustrate">
       <td class="status-criteria_diff key">F-I-F-1</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1548,13 +1654,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response describes a literal business scenario rather than comparing the concept to a completely different field or everyday life.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: FAIL — <span class="muted">The response describes a literal business scenario rather than comparing the concept to a completely different field or everyday life.</span></div>
           
-            <div><b>Structural Match</b>: FAIL — <span class="muted">Because there is no analogy or metaphor provided, there is no structural match to evaluate.</span></div>
+            <div class="reason"><b>Structural Match</b>: FAIL — <span class="muted">Because there is no analogy or metaphor provided, there is no structural match to evaluate.</span></div>
           
-            <div><b>Format</b>: FAIL — <span class="muted">The response is a literal restatement of the concept's definition rather than a metaphor, simile, or analogy.</span></div>
+            <div class="reason"><b>Format</b>: FAIL — <span class="muted">The response is a literal restatement of the concept's definition rather than a metaphor, simile, or analogy.</span></div>
           
         </details>
+        
         
         
         
@@ -1568,14 +1675,14 @@
         <span class="crit">Cross-Domain</span><span class="crit">Structural Match</span><span class="crit">Format</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Format</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Format</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Cross-Domain</span><span class="crit c-extra" title="flagged but not expected">+ Structural Match</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Cross-Domain</span><span class="crit c-extra" title="extra: flagged but not expected">+ Structural Match</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Illustrate">
       <td class="status-criteria_diff key">F-I-F-2</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1583,13 +1690,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response stays within the original domain of business and finance rather than introducing a comparison from a completely different field.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: FAIL — <span class="muted">The response stays within the original domain of business and finance rather than introducing a comparison from a completely different field.</span></div>
           
-            <div><b>Structural Match</b>: FAIL — <span class="muted">Because there is no analogy or metaphor provided, there is no structural match to evaluate.</span></div>
+            <div class="reason"><b>Structural Match</b>: FAIL — <span class="muted">Because there is no analogy or metaphor provided, there is no structural match to evaluate.</span></div>
           
-            <div><b>Format</b>: FAIL — <span class="muted">The response is a literal restatement of the concept's definition rather than a metaphor, simile, or analogy.</span></div>
+            <div class="reason"><b>Format</b>: FAIL — <span class="muted">The response is a literal restatement of the concept's definition rather than a metaphor, simile, or analogy.</span></div>
           
         </details>
+        
         
         
         
@@ -1603,14 +1711,14 @@
         <span class="crit">Cross-Domain</span><span class="crit">Structural Match</span><span class="crit">Format</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Format</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Format</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Cross-Domain</span><span class="crit c-extra" title="flagged but not expected">+ Structural Match</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Cross-Domain</span><span class="crit c-extra" title="extra: flagged but not expected">+ Structural Match</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">MC-S-1</td>
       <td>State</td>
       <td class="resp">
@@ -1618,20 +1726,21 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy more than three consecutive words from the text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy more than three consecutive words from the text.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response attempts to state the main theme of the concept rather than listing a static fact, statistic, or date.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response attempts to state the main theme of the concept rather than listing a static fact, statistic, or date.</span></div>
           
-            <div><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun 'It' instead of explicitly naming the subject.</span></div>
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun 'It' instead of explicitly naming the subject.</span></div>
           
-            <div><b>Accuracy</b>: FAIL — <span class="muted">The response completely contradicts the text by claiming a sunk cost is a future, recoverable cost rather than a past, unrecoverable one.</span></div>
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response completely contradicts the text by claiming a sunk cost is a future, recoverable cost rather than a past, unrecoverable one.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1642,14 +1751,14 @@
         <span class="crit">Clarity</span><span class="crit">Accuracy</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Clarity</span><span class="crit c-match" title="matched">✓ Accuracy</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="State">
       <td class="status-agree key">MC-S-2</td>
       <td>State</td>
       <td class="resp">
@@ -1657,20 +1766,21 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
+            <div class="reason"><b>Length</b>: PASS — <span class="muted">The response is exactly one complete sentence.</span></div>
           
-            <div><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy more than three consecutive words from the text.</span></div>
+            <div class="reason"><b>Originality</b>: PASS — <span class="muted">The response uses original phrasing and does not copy more than three consecutive words from the text.</span></div>
           
-            <div><b>Scope</b>: PASS — <span class="muted">The response attempts to state a conceptual definition rather than a static date or statistic.</span></div>
+            <div class="reason"><b>Scope</b>: PASS — <span class="muted">The response attempts to state a conceptual definition rather than a static date or statistic.</span></div>
           
-            <div><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun 'This' instead of explicitly naming the subject as a sunk cost.</span></div>
+            <div class="reason"><b>Clarity</b>: FAIL — <span class="muted">The response starts with the ambiguous pronoun 'This' instead of explicitly naming the subject as a sunk cost.</span></div>
           
-            <div><b>Accuracy</b>: FAIL — <span class="muted">The response directly contradicts the text by claiming the money can be recovered, whereas the text explicitly states sunk costs cannot be recovered.</span></div>
+            <div class="reason"><b>Accuracy</b>: FAIL — <span class="muted">The response directly contradicts the text by claiming the money can be recovered, whereas the text explicitly states sunk costs cannot be recovered.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1681,14 +1791,14 @@
         <span class="crit">Clarity</span><span class="crit">Accuracy</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Clarity</span><span class="crit c-match" title="matched">✓ Accuracy</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Clarity</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Accuracy</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Elaborate">
       <td class="status-agree key">MC-E-1</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -1696,18 +1806,19 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: FAIL — <span class="muted">The response merely restates the basic definition of a sunk cost without explaining why it should not influence future decisions or how the fallacy works.</span></div>
+            <div class="reason"><b>Expansion</b>: FAIL — <span class="muted">The response merely restates the basic definition of a sunk cost without explaining why it should not influence future decisions or how the fallacy works.</span></div>
           
-            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language to describe a sunk cost as money already spent that cannot be recovered.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: PASS — <span class="muted">The response uses plain language to describe a sunk cost as money already spent that cannot be recovered.</span></div>
           
-            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response does not claim any inaccurate cause-and-effect relationships regarding the text.</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: PASS — <span class="muted">The response does not claim any inaccurate cause-and-effect relationships regarding the text.</span></div>
           
-            <div><b>Focus</b>: FAIL — <span class="muted">The response includes an irrelevant tangent about fixed and variable costs that does not serve to explain the central concept.</span></div>
+            <div class="reason"><b>Focus</b>: FAIL — <span class="muted">The response includes an irrelevant tangent about fixed and variable costs that does not serve to explain the central concept.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1718,14 +1829,14 @@
         <span class="crit">Expansion</span><span class="crit">Focus</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Expansion</span><span class="crit c-match" title="matched">✓ Focus</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Expansion</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Focus</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Elaborate">
       <td class="status-agree key">MC-E-2</td>
       <td>Elaborate</td>
       <td class="resp">
@@ -1733,18 +1844,19 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Expansion</b>: FAIL — <span class="muted">The response merely restates the basic definition of a sunk cost without explaining the 'why' or 'how' of its role in decision-making.</span></div>
+            <div class="reason"><b>Expansion</b>: FAIL — <span class="muted">The response merely restates the basic definition of a sunk cost without explaining the 'why' or 'how' of its role in decision-making.</span></div>
           
-            <div><b>Jargon Translation</b>: PASS — <span class="muted">The response defines the new term it introduces and does not rely on unexplained technical jargon.</span></div>
+            <div class="reason"><b>Jargon Translation</b>: PASS — <span class="muted">The response defines the new term it introduces and does not rely on unexplained technical jargon.</span></div>
           
-            <div><b>Relationship Accuracy</b>: PASS — <span class="muted">The response does not claim any cause-and-effect relationships that contradict or are unsupported by the text.</span></div>
+            <div class="reason"><b>Relationship Accuracy</b>: PASS — <span class="muted">The response does not claim any cause-and-effect relationships that contradict or are unsupported by the text.</span></div>
           
-            <div><b>Focus</b>: FAIL — <span class="muted">The response introduces a tangent about opportunity cost, which is not in the text and does not help explain the central concept of sunk costs.</span></div>
+            <div class="reason"><b>Focus</b>: FAIL — <span class="muted">The response introduces a tangent about opportunity cost, which is not in the text and does not help explain the central concept of sunk costs.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1755,14 +1867,14 @@
         <span class="crit">Expansion</span><span class="crit">Focus</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Expansion</span><span class="crit c-match" title="matched">✓ Focus</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Expansion</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Focus</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Exemplify">
       <td class="status-criteria_diff key">MC-EX-1</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1770,13 +1882,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Originality</b>: FAIL — <span class="muted">The response reuses the exact $5 million airplane example provided in the source text.</span></div>
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The response reuses the exact $5 million airplane example provided in the source text.</span></div>
           
-            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A company') rather than pointing to a specific, named real-world entity or event.</span></div>
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A company') rather than pointing to a specific, named real-world entity or event.</span></div>
           
-            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response simply states the scenario without explaining how the $5 million spent demonstrates the concept of a sunk cost.</span></div>
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response simply states the scenario without explaining how the $5 million spent demonstrates the concept of a sunk cost.</span></div>
           
         </details>
+        
         
         
         
@@ -1790,14 +1903,14 @@
         <span class="crit">Originality</span><span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Originality</span><span class="crit c-match" title="matched">✓ Explicit Mapping</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Originality</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Concreteness</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Exemplify">
       <td class="status-criteria_diff key">MC-EX-2</td>
       <td>Exemplify</td>
       <td class="resp">
@@ -1805,13 +1918,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Originality</b>: FAIL — <span class="muted">The response reuses the exact ERP system training example provided in the source text.</span></div>
+            <div class="reason"><b>Originality</b>: FAIL — <span class="muted">The response reuses the exact ERP system training example provided in the source text.</span></div>
           
-            <div><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A company') rather than pointing to a specific, named real-world entity or event.</span></div>
+            <div class="reason"><b>Concreteness</b>: FAIL — <span class="muted">The response uses a vague hypothetical ('A company') rather than pointing to a specific, named real-world entity or event.</span></div>
           
-            <div><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explaining how the $10,000 spent relates to the concept of a sunk cost.</span></div>
+            <div class="reason"><b>Explicit Mapping</b>: FAIL — <span class="muted">The response drops the example without explaining how the $10,000 spent relates to the concept of a sunk cost.</span></div>
           
         </details>
+        
         
         
         
@@ -1825,14 +1939,14 @@
         <span class="crit">Originality</span><span class="crit">Concreteness</span><span class="crit">Explicit Mapping</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Originality</span><span class="crit c-match" title="matched">✓ Explicit Mapping</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Originality</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Explicit Mapping</span>
         
-        <span class="crit c-extra" title="flagged but not expected">+ Concreteness</span>
+        <span class="crit c-extra" title="extra: flagged but not expected">+ Concreteness</span>
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="criteria_diff">
+    <tr data-status="criteria_diff" data-step="Illustrate">
       <td class="status-criteria_diff key">MC-I-1</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1840,13 +1954,14 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The response provides another literal business example rather than comparing the concept to a completely different field or everyday life.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: FAIL — <span class="muted">The response provides another literal business example rather than comparing the concept to a completely different field or everyday life.</span></div>
           
-            <div><b>Structural Match</b>: PASS — <span class="muted">The analogy correctly captures the underlying mechanism of holding onto a failing asset due to past expenses.</span></div>
+            <div class="reason"><b>Structural Match</b>: PASS — <span class="muted">The analogy correctly captures the underlying mechanism of holding onto a failing asset due to past expenses.</span></div>
           
-            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the phrase 'It is like'.</span></div>
+            <div class="reason"><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the phrase 'It is like'.</span></div>
           
         </details>
+        
         
         
         
@@ -1860,14 +1975,14 @@
         <span class="crit">Cross-Domain</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Cross-Domain</span>
-        <span class="crit c-miss" title="expected but not flagged">✗ Structural Match</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Cross-Domain</span>
+        <span class="crit c-miss" title="missed: expected to fail but not flagged">✗ Structural Match</span>
         
       </td>
       <td><span class="pill s-criteria_diff">≈ criteria differ</span></td>
     </tr>
     
-    <tr data-status="agree">
+    <tr data-status="agree" data-step="Illustrate">
       <td class="status-agree key">MC-I-2</td>
       <td>Illustrate</td>
       <td class="resp">
@@ -1875,16 +1990,17 @@
         
         <details><summary>agent reasoning</summary>
           
-            <div><b>Cross-Domain</b>: FAIL — <span class="muted">The analogy uses a shop holding unsold stock, which is another literal business example rather than a comparison to a completely different field or domain.</span></div>
+            <div class="reason"><b>Cross-Domain</b>: FAIL — <span class="muted">The analogy uses a shop holding unsold stock, which is another literal business example rather than a comparison to a completely different field or domain.</span></div>
           
-            <div><b>Structural Match</b>: FAIL — <span class="muted">The analogy only describes stock gathering dust, failing to match the core mechanism of making an irrational future decision based on unrecoverable past costs.</span></div>
+            <div class="reason"><b>Structural Match</b>: FAIL — <span class="muted">The analogy only describes stock gathering dust, failing to match the core mechanism of making an irrational future decision based on unrecoverable past costs.</span></div>
           
-            <div><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the phrase 'is like'.</span></div>
+            <div class="reason"><b>Format</b>: PASS — <span class="muted">The response is formatted as a simile using the phrase 'is like'.</span></div>
           
         </details>
         
         
         
+        
       </td>
       <td>
         <b>FAIL</b>
@@ -1895,21 +2011,29 @@
         <span class="crit">Cross-Domain</span><span class="crit">Structural Match</span>
       </td>
       <td>
-        <span class="crit c-match" title="matched">✓ Cross-Domain</span><span class="crit c-match" title="matched">✓ Structural Match</span>
+        <span class="crit c-match" title="matched: expected to fail and flagged">✓ Cross-Domain</span><span class="crit c-match" title="matched: expected to fail and flagged">✓ Structural Match</span>
         
         
       </td>
       <td><span class="pill s-agree">✓ agree</span></td>
     </tr>
     
+    </tbody>
   </table>
 
   <script>
-    function toggleMM() {
-      var only = document.getElementById('mmOnly').checked;
-      document.querySelectorAll('#results tr[data-status]').forEach(function(tr){
-        tr.style.display = (only && tr.getAttribute('data-status') === 'agree') ? 'none' : '';
+    function applyFilters() {
+      var st = document.getElementById('f-status').value;
+      var sp = document.getElementById('f-step').value;
+      var rows = document.querySelectorAll('#results tbody tr');
+      var shown = 0;
+      rows.forEach(function(tr){
+        var ok = (st === 'all' || tr.dataset.status === st) &&
+                 (sp === 'all' || tr.dataset.step === sp);
+        tr.style.display = ok ? '' : 'none';
+        if (ok) shown++;
       });
+      document.getElementById('counter').textContent = 'Showing ' + shown + ' of ' + rows.length;
     }
   </script>
 </body>
