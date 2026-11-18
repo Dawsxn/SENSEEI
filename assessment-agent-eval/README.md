@@ -199,7 +199,7 @@ humans failed and `rationale` their remarks on those criteria. Criterion names m
 | Set | Responses | From the annotation export of | Changes |
 | --- | --- | --- | --- |
 | `example_set_v4.csv` | 69 (47 FAIL, 22 PASS) | 2026-11-02 | first human-annotated set |
-| `example_set_v5.csv` | 72 (50 FAIL, 22 PASS) | 2026-11-18 | adds `EX-STR-CTR`, `IL-STR-AN`, `IL-VIS-P1`; `EX-VIS-OEM` now fails Originality and Explicit Mapping; two remarks cleared |
+| `example_set_v5.csv` | 69 (48 FAIL, 21 PASS) | 2026-11-18 | the same responses as v4; `EX-VIS-OEM` now fails Originality and Explicit Mapping; two remarks cleared |
 
 Use v5 for new runs. v4 is kept so the runs already made on it stay comparable.
 
