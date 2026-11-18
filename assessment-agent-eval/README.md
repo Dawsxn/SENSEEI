@@ -38,7 +38,7 @@ All from `assessment-agent-eval/`. Explicit paths are relative to this folder.
 | Real run with the versions pinned in `config.yaml` | `python run_eval.py` |
 | Quick check on the first few rows | `python run_eval.py --limit 3` |
 | Run the human-annotated set (see [Example sets v4 and v5](#example-sets-v4-and-v5-human-annotated)) | `python run_eval.py --csv data/example_set_v5.csv` |
-| Try a prompt without pinning it | `python run_eval.py --prompt ../agents/prompts/system_prompt_v4.md` |
+| Try a prompt without pinning it | `python run_eval.py --prompt ../agents/prompts/system_prompt_v5.md` |
 | Try a rubric without pinning it | `python run_eval.py --rubric ../agents/rubrics/rubric_v4.yaml` |
 | Another model | `python run_eval.py --model <model-id>` |
 | Rebuild a report, no API calls | `python run_eval.py --from-run runs/<dir>` |
@@ -147,7 +147,7 @@ python serve.py        # opens http://127.0.0.1:8765; Ctrl+C to stop
 
 A small local page for step 3 above. Pick a version to start from, edit the Assessment Agent's
 system prompt or the rubric, and **Save** writes the next number
-(`agents/prompts/system_prompt_v5.md`, `agents/rubrics/rubric_v5.yaml`) and adds a line to
+(one above the highest `agents/prompts/system_prompt_vN.md` or `agents/rubrics/rubric_vN.yaml`) and adds a line to
 `versions.csv` beside it (version, based on, time, your note). It never overwrites an existing
 version, refuses a save with no changes, and numbers prompts and rubrics separately. The tutor and
 figure prompts in the same folder are left alone.
@@ -163,7 +163,7 @@ once someone pins it.
 - **Preview what the model sees** fills the rubric into the prompt and shows the hash that
   `results_log.csv` records for a run with it.
 - After a save it shows the command to try it without pinning it
-  (`python run_eval.py --prompt ../agents/prompts/system_prompt_v5.md`).
+  (`python run_eval.py --prompt ../agents/prompts/system_prompt_vN.md`).
 - **Compare versions** diffs any two prompts (or rubrics), with changed words highlighted and a
   "show whole file" switch. Each side shows when the version was created (the save log, or for
   older versions the commit that first added the file) and the runs in `results_log.csv` that
