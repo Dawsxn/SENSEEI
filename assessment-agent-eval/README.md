@@ -37,14 +37,14 @@ All from `assessment-agent-eval/`. Explicit paths are relative to this folder.
 | Offline smoke test (no key, no cost) | `python run_eval.py --provider mock` |
 | Real run with the versions pinned in `config.yaml` | `python run_eval.py` |
 | Quick check on the first few rows | `python run_eval.py --limit 3` |
-| Run the human-annotated set (see [Example set v4](#example-set-v4-human-annotated)) | `python run_eval.py --csv data/example_set_v4.csv` |
+| Run the human-annotated set (see [Example sets v4 and v5](#example-sets-v4-and-v5-human-annotated)) | `python run_eval.py --csv data/example_set_v5.csv` |
 | Try a prompt without pinning it | `python run_eval.py --prompt ../agents/prompts/system_prompt_v4.md` |
 | Try a rubric without pinning it | `python run_eval.py --rubric ../agents/rubrics/rubric_v4.yaml` |
 | Another model | `python run_eval.py --model <model-id>` |
 | Rebuild a report, no API calls | `python run_eval.py --from-run runs/<dir>` |
 | Edit and compare prompts and rubrics | `python serve.py` (see [Prompt editor](#prompt-editor-local)) |
 
-Flags combine, e.g. `python run_eval.py --csv data/example_set_v4.csv --limit 3`. Every run, the
+Flags combine, e.g. `python run_eval.py --csv data/example_set_v5.csv --limit 3`. Every run, the
 mock included, adds a folder under `runs/`, a report under `reports/` and a row in
 `results_log.csv`.
 Calls are spaced to `requests_per_minute` in `config.yaml` (15), so 69 responses take about
@@ -147,7 +147,7 @@ python serve.py        # opens http://127.0.0.1:8765; Ctrl+C to stop
 
 A small local page for step 3 above. Pick a version to start from, edit the Assessment Agent's
 system prompt or the rubric, and **Save** writes the next number
-(`agents/prompts/system_prompt_v4.md`, `agents/rubrics/rubric_v4.yaml`) and adds a line to
+(`agents/prompts/system_prompt_v5.md`, `agents/rubrics/rubric_v5.yaml`) and adds a line to
 `versions.csv` beside it (version, based on, time, your note). It never overwrites an existing
 version, refuses a save with no changes, and numbers prompts and rubrics separately. The tutor and
 figure prompts in the same folder are left alone.
@@ -163,7 +163,7 @@ once someone pins it.
 - **Preview what the model sees** fills the rubric into the prompt and shows the hash that
   `results_log.csv` records for a run with it.
 - After a save it shows the command to try it without pinning it
-  (`python run_eval.py --prompt ../agents/prompts/system_prompt_v4.md`).
+  (`python run_eval.py --prompt ../agents/prompts/system_prompt_v5.md`).
 - **Compare versions** diffs any two prompts (or rubrics), with changed words highlighted and a
   "show whole file" switch. Each side shows when the version was created (the save log, or for
   older versions the commit that first added the file) and the runs in `results_log.csv` that
@@ -189,25 +189,32 @@ being treated as final ground truth.
 The earlier `v1` set is preserved as `data/example_set_v1.csv` (its matched rubric is
 `agents/rubrics/rubric_v1.yaml`) so the 2026-06-19 baseline run stays reproducible.
 
-### Example set v4 (human-annotated)
+### Example sets v4 and v5 (human-annotated)
 
-`data/example_set_v4.csv` holds **69 responses** labeled by human annotators, one
-consensus (or adjudicated) pass/fail per criterion, collapsed to one row per response:
-`criterion_targeted` lists the criteria the humans failed and `rationale` their remarks.
-Its criterion names match rubric `v3`.
+Both hold responses labeled by human annotators, one consensus (or adjudicated) pass/fail per
+criterion, collapsed to one row per response: `criterion_targeted` lists the criteria the
+humans failed and `rationale` their remarks on those criteria. Criterion names match rubrics
+`v3` and `v4`.
+
+| Set | Responses | From the annotation export of | Changes |
+| --- | --- | --- | --- |
+| `example_set_v4.csv` | 69 (47 FAIL, 22 PASS) | 2026-11-02 | first human-annotated set |
+| `example_set_v5.csv` | 72 (50 FAIL, 22 PASS) | 2026-11-18 | adds `EX-STR-CTR`, `IL-STR-AN`, `IL-VIS-P1`; `EX-VIS-OEM` now fails Originality and Explicit Mapping; two remarks cleared |
+
+Use v5 for new runs. v4 is kept so the runs already made on it stay comparable.
 
 Every row reads `data/readings/gamble-ch1-2.txt`, the full text of chapters 1-2 of the
 Gamble textbook, as extracted by this app's own upload page (`/library/new`), so the
 agent is graded on the text it sees in the app. That file is **git-ignored** because this
-repository is public, so a fresh clone does not have it and a v4 run stops with a
+repository is public, so a fresh clone does not have it and a v4 or v5 run stops with a
 missing-file error until it is added. Get `gamble-ch1-2.txt` from the team and place it at
 that path. Do not reconvert the PDF with another tool: a different converter gives
 different text, and the results would no longer be comparable.
 
-Each v4 call sends the whole reading (about 26k tokens), so a full v4 run costs roughly
-$4 at the Gemini pricing in `config.yaml`, against cents for the short-excerpt sets. Try
-`--limit 3` first and check the cost line. To make v4 the default, set
-`example_set_version: v4` in `config.yaml`.
+Each call sends the whole reading (about 26k tokens), so a full run costs roughly $4 at the
+Gemini pricing in `config.yaml`, against cents for the short-excerpt sets. Try `--limit 3`
+first and check the cost line. To make v5 the default, set `example_set_version: v5` in
+`config.yaml`.
 
 ## Layout
 
