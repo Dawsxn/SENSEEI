@@ -9,9 +9,10 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Full textbook text for example_set_v4 (two chapters of Gamble). This repo is public, so it
-# stays local; see "Example set v4" in README.md for how to get it.
+# Full textbook text (two chapters of Gamble) that the first v4 runs used. This repo is public,
+# so it stays local; v4 and v5 now read the section readings beside it.
 data/readings/gamble-ch1-2.txt
 
-# Local PDFs of the readings. The eval reads the .txt files; PDFs stay out of this public repo.
+# Stray local PDFs of the readings. The eval reads the .txt files; the section PDFs they come
+# from are in data/readings/sources/.
 data/readings/*.pdf

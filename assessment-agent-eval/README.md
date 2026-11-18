@@ -203,18 +203,27 @@ humans failed and `rationale` their remarks on those criteria. Criterion names m
 
 Use v5 for new runs. v4 is kept so the runs already made on it stay comparable.
 
-Every row reads `data/readings/gamble-ch1-2.txt`, the full text of chapters 1-2 of the
-Gamble textbook, as extracted by this app's own upload page (`/library/new`), so the
-agent is graded on the text it sees in the app. That file is **git-ignored** because this
-repository is public, so a fresh clone does not have it and a v4 or v5 run stops with a
-missing-file error until it is added. Get `gamble-ch1-2.txt` from the team and place it at
-that path. Do not reconvert the PDF with another tool: a different converter gives
-different text, and the results would no longer be comparable.
+Each row reads the section of the Gamble textbook (chapters 1-2) for its concept, plus the
+pages that hold that concept's examples, so the agent can tell when a student reuses one
+(Exemplify's Originality):
 
-Each call sends the whole reading (about 26k tokens), so a full run costs roughly $4 at the
-Gemini pricing in `config.yaml`, against cents for the short-excerpt sets. Try `--limit 3`
-first and check the cost line. To make v5 the default, set `example_set_version: v5` in
-`config.yaml`.
+| Reading | Book pages | Examples it includes |
+| --- | --- | --- |
+| `strategy_section.txt` | 3, 4, 5, 7, 8 | the companies on p. 3; the five competitive strategies (Walmart, Southwest, Johnson & Johnson, Apple, private labels, Louis Vuitton, Rolex, Target); Concepts & Connections 1.2 (Apple) |
+| `business_model_section.txt` | 4, 5, 6, 22 | cable TV, Rolls-Royce, Gillette; Concepts & Connections 1.1 (Pandora, Sirius XM, broadcast radio) and 2.2 (TOMS Shoes) |
+| `strategic_vision_section.txt` | 17, 18, 19, 20, 34 | Google, Henry Ford; Concepts & Connections 2.1 (vision critiques); Disney, Mayo Clinic, Greenpeace slogans; the stonemason analogy; the end-of-chapter vision statements |
+
+The source PDFs are in `data/readings/sources/`: the two section pages of each concept with
+the example pages appended. The `.txt` files are those PDFs converted by this app's own
+upload code (`backend/services/pdf_text.py`, as on `/library/new`, without figure
+descriptions), so the agent is graded on the text it sees in the app. That converter drops a
+few table cells (on p. 34, MasterCard's statement and the start of American Express's). Do not
+reconvert with another tool: a different converter gives different text, and results would no
+longer be comparable.
+
+Runs made before 2026-11-18 used the full two chapters (`gamble-ch1-2.txt`, git-ignored)
+instead, at about 26k tokens and $4 a run. The section readings are 2-3k words, so a full run
+now costs cents. To make v5 the default, set `example_set_version: v5` in `config.yaml`.
 
 ## Layout
 
@@ -239,6 +248,7 @@ SENSEEI/
    ├─ data/
    │  ├─ example_set_vN.csv  labeled examples (matched to a rubric version)
    │  └─ readings/*.txt      the source texts the examples respond to
+   │     └─ sources/         the section PDFs the v4/v5 readings are converted from
    ├─ src/
    │  ├─ compare.py          expected-vs-actual + stats
    │  ├─ report.py           HTML rendering
