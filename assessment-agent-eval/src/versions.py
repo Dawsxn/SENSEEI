@@ -28,7 +28,7 @@ KINDS = {
     "rubric": ("rubrics", "rubric_v{n}.yaml", re.compile(r"^rubric_v(\d+)\.yaml$")),
 }
 STEPS = ("State", "Elaborate", "Exemplify", "Illustrate")
-CONFIGS = ("config.yaml",)
+CONFIGS = ("config.yaml", "config.deepseek.yaml")
 SLOT = "{{RUBRIC}}"
 LOG_HEADER = ["version", "based_on", "saved_at", "note"]
 

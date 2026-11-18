@@ -1,0 +1,33 @@
+# Same pinned inputs as config.yaml, but the model is DeepSeek V4.1 Flash through its
+# OpenAI-compatible API. Use it with:  python run_eval.py --config config.deepseek.yaml
+# Needs `pip install -e ".[openai]"` (repo root) and DEEPSEEK_API_KEY in .env.
+# This file is for comparing models in the eval only; the app's model is set in
+# backend/settings.py.
+
+# --- Versioned inputs (pinned) -------------------------------------------
+# Keep these identical to config.yaml, or a Gemini/DeepSeek comparison measures
+# different prompts, rubrics or example sets. Override per run with
+# --prompt / --rubric / --csv, as with config.yaml.
+prompt_version: v3
+rubric_version: v3
+example_set_version: v3
+
+provider: openai_compat
+base_url: https://api.deepseek.com
+model: deepseek-flash          # current name for DeepSeek-V4.1-Flash; legacy deepseek-v4-flash is redirected to it
+api_key_env: DEEPSEEK_API_KEY  # name of the env var (in .env) holding the key
+json_mode: true                # request response_format json_object (supported for deepseek-flash)
+temperature: 0
+max_output_tokens: 8192        # thinking mode (the default) spends this budget on reasoning too
+retries: 1                     # retries on JSON-parse / provider error
+
+# DeepSeek's limits are generous, so no client-side throttle. Calls still go one at a
+# time (this runner has no concurrency), so a full 69-response run takes a while.
+requests_per_minute: 0
+
+# Peak rates (USD per 1M tokens): cache-miss input 0.30, output 1.20. Off-peak is half.
+# The estimate counts every input token at the miss rate, so it slightly overstates the
+# bill when DeepSeek serves the reading from its cache. Reasoning tokens are billed as
+# output and are included in DeepSeek's output count.
+price_input_per_1m: 0.30
+price_output_per_1m: 1.20

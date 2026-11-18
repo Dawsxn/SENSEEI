@@ -1,6 +1,7 @@
 import csv
 import hashlib
 import re
+from pathlib import Path
 
 import pytest
 
@@ -154,6 +155,23 @@ def test_pinned_versions_come_from_the_eval_config(base):
     pins = versions.pinned(base)
     assert pins["prompt"][3] == ["config.yaml"]
     assert pins["rubric"][3] == ["config.yaml"]
+
+
+def test_the_deepseek_config_shows_its_own_pins(base):
+    (base / "config.deepseek.yaml").write_text("prompt_version: v3\nrubric_version: v2\n", encoding="utf-8")
+    pins = versions.pinned(base)
+    assert pins["prompt"][3] == ["config.yaml", "config.deepseek.yaml"]
+    assert pins["rubric"] == {3: ["config.yaml"], 2: ["config.deepseek.yaml"]}
+
+
+def test_the_shipped_configs_pin_the_same_versions():
+    """A Gemini/DeepSeek comparison only means something if both run the same inputs."""
+    import yaml
+    eval_dir = Path(__file__).resolve().parents[1]
+    load = lambda name: yaml.safe_load((eval_dir / name).read_text(encoding="utf-8"))
+    gemini, deepseek = load("config.yaml"), load("config.deepseek.yaml")
+    for key in ("prompt_version", "rubric_version", "example_set_version"):
+        assert deepseek[key] == gemini[key], key
 
 
 def test_preview_shows_what_the_model_sees_with_the_rubric_filled_in(base, restore_rubric):

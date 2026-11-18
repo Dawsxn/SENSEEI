@@ -41,6 +41,7 @@ All from `assessment-agent-eval/`. Explicit paths are relative to this folder.
 | Try a prompt without pinning it | `python run_eval.py --prompt ../agents/prompts/system_prompt_vN.md` |
 | Try a rubric without pinning it | `python run_eval.py --rubric ../agents/rubrics/rubric_v4.yaml` |
 | Another model | `python run_eval.py --model <model-id>` |
+| DeepSeek instead of Gemini (see [Using DeepSeek](#using-deepseek)) | `python run_eval.py --config config.deepseek.yaml` |
 | Rebuild a report, no API calls | `python run_eval.py --from-run runs/<dir>` |
 | Edit and compare prompts and rubrics | `python serve.py` (see [Prompt editor](#prompt-editor-local)) |
 
@@ -49,6 +50,24 @@ mock included, adds a folder under `runs/`, a report under `reports/` and a row 
 `results_log.csv`.
 Calls are spaced to `requests_per_minute` in `config.yaml` (15), so 69 responses take about
 5 minutes.
+
+### Using DeepSeek
+
+`config.deepseek.yaml` runs the same pinned prompt, rubric and example set on DeepSeek V4.1
+Flash (`deepseek-flash`) through its OpenAI-compatible API:
+
+```bash
+pip install -e ".[openai]"     # once, from the repo root
+# put DEEPSEEK_API_KEY in .env (see .env.example), then:
+python run_eval.py --config config.deepseek.yaml --csv data/example_set_v5.csv --limit 3
+python run_eval.py --config config.deepseek.yaml --csv data/example_set_v5.csv
+```
+
+It is for comparing models only; the app's model is set in `backend/settings.py`. Its pins must
+match `config.yaml` (a test checks this), so a Gemini run and a DeepSeek run differ only in the
+model. Each row of `results_log.csv` records the provider and model, and the editor shows the
+pins of both configs. There is no throttle, but calls still go one at a time and DeepSeek
+reasons before answering, so a full run is slower than its cost (cents) suggests.
 
 ## How it works
 
