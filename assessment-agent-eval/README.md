@@ -38,7 +38,7 @@ All from `assessment-agent-eval/`. Explicit paths are relative to this folder.
 | Real run with the versions pinned in `config.yaml` | `python run_eval.py` |
 | Quick check on the first few rows | `python run_eval.py --limit 3` |
 | Run the human-annotated set (see [Example sets v4 and v5](#example-sets-v4-and-v5-human-annotated)) | `python run_eval.py --csv data/example_set_v5.csv` |
-| Try a prompt without pinning it | `python run_eval.py --prompt ../agents/prompts/system_prompt_v5.md` |
+| Try a prompt without pinning it | `python run_eval.py --prompt ../agents/prompts/system_prompt_vN.md` |
 | Try a rubric without pinning it | `python run_eval.py --rubric ../agents/rubrics/rubric_v4.yaml` |
 | Another model | `python run_eval.py --model <model-id>` |
 | Rebuild a report, no API calls | `python run_eval.py --from-run runs/<dir>` |

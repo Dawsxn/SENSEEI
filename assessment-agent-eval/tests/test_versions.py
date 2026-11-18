@@ -139,9 +139,9 @@ def test_no_readable_example_set_means_no_warnings_not_an_error(base):
 
 
 def test_check_returns_a_readable_diff(base):
-    result = versions.check(base, "prompt", prompt_text(base).replace("Be strict but fair.", "Be fair."), 3)
-    assert result.changed and any(l.startswith("-") and "Be strict but fair." in l for l in result.diff)
-    assert any(l.startswith("+") and "Be fair." in l for l in result.diff)
+    result = versions.check(base, "prompt", prompt_text(base).replace("Be strict, but charge", "Be fair, but charge"), 3)
+    assert result.changed and any(l.startswith("-") and "Be strict, but charge" in l for l in result.diff)
+    assert any(l.startswith("+") and "Be fair, but charge" in l for l in result.diff)
 
 
 def test_only_known_kinds_and_integer_versions_are_accepted(base):
@@ -171,7 +171,7 @@ def test_preview_hash_is_computed_the_way_run_eval_computes_it(base, restore_rub
 
 # ---- comparing versions ---------------------------------------------------------------
 
-def make_v4(base, old="Be strict but fair.", new="Be fair."):
+def make_v4(base, old="Be strict, but charge", new="Be fair, but charge"):
     return versions.save_version(base, "prompt", prompt_text(base).replace(old, new), based_on=3,
                                  note="loosen")
 
@@ -180,10 +180,10 @@ def test_compare_diffs_one_version_against_another_in_that_direction(base):
     make_v4(base)
     c = versions.compare(base, "prompt", 3, 4)
     assert c.changed and c.added == 1 and c.removed == 1
-    assert any(l.startswith("-") and "Be strict but fair." in l for l in c.diff)
-    assert any(l.startswith("+") and "Be fair." in l for l in c.diff)
+    assert any(l.startswith("-") and "Be strict, but charge" in l for l in c.diff)
+    assert any(l.startswith("+") and "Be fair, but charge" in l for l in c.diff)
     flipped = versions.compare(base, "prompt", 4, 3)
-    assert any(l.startswith("+") and "Be strict but fair." in l for l in flipped.diff)
+    assert any(l.startswith("+") and "Be strict, but charge" in l for l in flipped.diff)
 
 
 def test_compare_a_version_with_itself_is_no_change(base):

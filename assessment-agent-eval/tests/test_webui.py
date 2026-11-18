@@ -67,9 +67,9 @@ def test_text_endpoint_returns_a_version_and_rejects_bad_input(server):
 def test_check_reports_errors_warnings_and_diff_without_writing(server):
     _, base = call(server, "/api/text?kind=prompt&n=3")
     status, res = call(server, "/api/check", {"kind": "prompt", "based_on": 3,
-                                              "text": base["text"].replace("Be strict but fair.", "Be fair.")})
+                                              "text": base["text"].replace("Be strict, but charge", "Be fair, but charge")})
     assert status == 200 and res["changed"] and res["errors"] == []
-    assert any(l.startswith("+") and "Be fair." in l for l in res["diff"])
+    assert any(l.startswith("+") and "Be fair, but charge" in l for l in res["diff"])
     status, res = call(server, "/api/check", {"kind": "prompt", "based_on": 3, "text": "no slot here"})
     assert res["errors"]
     assert not (prompts(server) / "system_prompt_v4.md").exists()
@@ -78,7 +78,7 @@ def test_check_reports_errors_warnings_and_diff_without_writing(server):
 def test_save_writes_the_next_version_into_agents_and_returns_the_run_command(server):
     _, base = call(server, "/api/text?kind=prompt&n=3")
     status, res = call(server, "/api/save", {"kind": "prompt", "based_on": 3, "note": "tighten",
-                                             "text": base["text"].replace("Be strict but fair.", "Be fair.")})
+                                             "text": base["text"].replace("Be strict, but charge", "Be fair, but charge")})
     assert status == 200 and res["version"] == 4
     assert res["path"] == "agents/prompts/system_prompt_v4.md"
     assert res["command"] == "python run_eval.py --prompt ../agents/prompts/system_prompt_v4.md"
@@ -139,7 +139,7 @@ def test_unknown_paths_404_and_malformed_json_400(server):
 def save_v4(server):
     _, base = call(server, "/api/text?kind=prompt&n=3")
     call(server, "/api/save", {"kind": "prompt", "based_on": 3, "note": "loosen",
-                               "text": base["text"].replace("Be strict but fair.", "Be fair.")})
+                               "text": base["text"].replace("Be strict, but charge", "Be fair, but charge")})
 
 
 def test_compare_returns_the_diff_both_versions_info_and_logged_runs(server):
@@ -149,7 +149,7 @@ def test_compare_returns_the_diff_both_versions_info_and_logged_runs(server):
         "20261101_100000,v3,v3,v3,gemini-3.1-pro-preview,71,0.883,r1.html\n", encoding="utf-8")
     status, res = call(server, "/api/compare?kind=prompt&a=3&b=4")
     assert status == 200 and res["changed"] and (res["added"], res["removed"]) == (1, 1)
-    assert any(l.startswith("+") and "Be fair." in l for l in res["diff"])
+    assert any(l.startswith("+") and "Be fair, but charge" in l for l in res["diff"])
     assert res["a"]["info"]["logged"] is False and res["b"]["info"]["note"] == "loosen"
     assert [r["report_file"] for r in res["a"]["runs"]] == ["r1.html"] and res["b"]["runs"] == []
     assert res["a"]["runs"][0]["total"] == "71"
