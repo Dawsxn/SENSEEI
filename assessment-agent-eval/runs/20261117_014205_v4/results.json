@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "timestamp": "20261117_014205",
+    "prompt_version": "v4",
+    "prompt_hash": "ea423ddbfd",
+    "prompt_file": "system_prompt_v4.md",
+    "rubric_version": "v4",
+    "rubric_file": "rubric_v4.yaml",
+    "example_set_version": "v3",
+    "provider": "gemini",
+    "model": "gemini-3.1-pro-preview",
+    "thinking_level": "low",
+    "csv": "example_set_v3.csv",
+    "cost": {
+      "input_tokens": 7202,
+      "output_tokens": 828,
+      "thinking_tokens": 978,
+      "est_cost_usd": 0.036076,
+      "price_input_per_1m": 2.0,
+      "price_output_per_1m": 12.0
+    }
+  },
+  "examples": [
+    {
+      "id": "ST-STR-P1",
+      "step": "State",
+      "core_components": "A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.",
+      "user_response": "A company's strategy is the set of coordinated moves its managers choose in order to outperform rivals and earn stronger-than-average profits.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "Clean control: covers the concept's core components accurately, clearly, and concisely in the student's own words - should not be flagged.",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Brevity": {
+            "passed": true,
+            "reason": "The statement is concise and free of filler words."
+          },
+          "Own Words": {
+            "passed": true,
+            "reason": "The response effectively paraphrases the text using synonyms like 'moves', 'rivals', and 'stronger-than-average profits'."
+          },
+          "Clarity": {
+            "passed": true,
+            "reason": "The definition is clear, precise, and easy to understand."
+          },
+          "Completeness": {
+            "passed": true,
+            "reason": "The statement captures all core components: coordinated actions, outperforming competitors, and achieving superior profitability."
+          },
+          "Accuracy": {
+            "passed": true,
+            "reason": "The response is entirely faithful to the reading and accurately represents the concept of a company's strategy."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": true,\n      \"reason\": \"The statement is concise and free of filler words.\"\n    },\n    \"Own Words\": {\n      \"pass\": true,\n      \"reason\": \"The response effectively paraphrases the text using synonyms like 'moves', 'rivals', and 'stronger-than-average profits'.\"\n    },\n    \"Clarity\": {\n      \"pass\": true,\n      \"reason\": \"The definition is clear, precise, and easy to understand.\"\n    },\n    \"Completeness\": {\n      \"pass\": true,\n      \"reason\": \"The statement captures all core components: coordinated actions, outperforming competitors, and achieving superior profitability.\"\n    },\n    \"Accuracy\": {\n      \"pass\": true,\n      \"reason\": \"The response is entirely faithful to the reading and accurately represents the concept of a company's strategy.\"\n    }\n  },\n  \"raw_response\": \"The response is a clear, concise, and accurate paraphrase that captures all the essential components of the concept.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 2388,
+          "output_tokens": 261,
+          "thinking_tokens": 364,
+          "total_tokens": 3013
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "ST-STR-P2",
+      "step": "State",
+      "core_components": "A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.",
+      "user_response": "A company's strategy is the coherent set of choices its managers make about how to compete so the firm can beat its rivals and earn better profits over the long run.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "Clean control: covers the concept's core components accurately, clearly, and concisely in the student's own words - should not be flagged.",
+      "result": {
+        "verdict": "PASS",
+        "model_verdict": "PASS",
+        "fail_criteria": [],
+        "criteria": {
+          "Brevity": {
+            "passed": true,
+            "reason": "The statement is concise and free of filler words or unnecessary repetition."
+          },
+          "Own Words": {
+            "passed": true,
+            "reason": "The student effectively paraphrases the text, using phrases like 'coherent set of choices' and 'beat its rivals' instead of copying directly."
+          },
+          "Clarity": {
+            "passed": true,
+            "reason": "The definition is clear, precise, and easy to understand."
+          },
+          "Completeness": {
+            "passed": true,
+            "reason": "The statement captures all core components of the concept: managerial choices, outperforming competitors, and achieving superior profitability."
+          },
+          "Accuracy": {
+            "passed": true,
+            "reason": "The response is entirely faithful to the reading and accurately represents the concept of a company's strategy."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"PASS\",\n  \"fail_criteria\": [],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": true,\n      \"reason\": \"The statement is concise and free of filler words or unnecessary repetition.\"\n    },\n    \"Own Words\": {\n      \"pass\": true,\n      \"reason\": \"The student effectively paraphrases the text, using phrases like 'coherent set of choices' and 'beat its rivals' instead of copying directly.\"\n    },\n    \"Clarity\": {\n      \"pass\": true,\n      \"reason\": \"The definition is clear, precise, and easy to understand.\"\n    },\n    \"Completeness\": {\n      \"pass\": true,\n      \"reason\": \"The statement captures all core components of the concept: managerial choices, outperforming competitors, and achieving superior profitability.\"\n    },\n    \"Accuracy\": {\n      \"pass\": true,\n      \"reason\": \"The response is entirely faithful to the reading and accurately represents the concept of a company's strategy.\"\n    }\n  },\n  \"raw_response\": \"The student provided a clear, concise, and accurate statement of the concept in their own words, capturing all essential components.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 2394,
+          "output_tokens": 271,
+          "thinking_tokens": 350,
+          "total_tokens": 3015
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "ST-STR-BC",
+      "step": "State",
+      "core_components": "A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.",
+      "user_response": "A company's strategy is, in a way, kind of the overall big-picture set of various different things and moves that the managers sort of decide to go with, all in the general effort to somehow end up doing better than the other competitors out there and make good money in the end.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Brevity",
+        "Clarity"
+      ],
+      "criterion_targeted": "Brevity + Clarity",
+      "notes": "Unsure students over-write to sound thorough, which makes the statement both long-winded (filler and repetition) and imprecise.",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Brevity",
+          "Clarity"
+        ],
+        "criteria": {
+          "Brevity": {
+            "passed": false,
+            "reason": "The statement is heavily padded with filler phrases like 'in a way', 'kind of', 'sort of', and 'somehow end up'."
+          },
+          "Own Words": {
+            "passed": true,
+            "reason": "The student uses their own phrasing rather than copying directly from the text."
+          },
+          "Clarity": {
+            "passed": false,
+            "reason": "The excessive use of filler words and vague terms like 'various different things and moves' makes the statement imprecise and unclear."
+          },
+          "Completeness": {
+            "passed": true,
+            "reason": "The statement captures the core components of managerial actions, outperforming competitors, and achieving profitability."
+          },
+          "Accuracy": {
+            "passed": true,
+            "reason": "The response accurately reflects the concept of strategy as defined in the reading."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Brevity\",\n    \"Clarity\"\n  ],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": false,\n      \"reason\": \"The statement is heavily padded with filler phrases like 'in a way', 'kind of', 'sort of', and 'somehow end up'.\"\n    },\n    \"Own Words\": {\n      \"pass\": true,\n      \"reason\": \"The student uses their own phrasing rather than copying directly from the text.\"\n    },\n    \"Clarity\": {\n      \"pass\": false,\n      \"reason\": \"The excessive use of filler words and vague terms like 'various different things and moves' makes the statement imprecise and unclear.\"\n    },\n    \"Completeness\": {\n      \"pass\": true,\n      \"reason\": \"The statement captures the core components of managerial actions, outperforming competitors, and achieving profitability.\"\n    },\n    \"Accuracy\": {\n      \"pass\": true,\n      \"reason\": \"The response accurately reflects the concept of strategy as defined in the reading.\"\n    }\n  },\n  \"raw_response\": \"The response captures the core components accurately and in the student's own words, but fails due to excessive filler words and a lack of clarity.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 2420,
+          "output_tokens": 296,
+          "thinking_tokens": 264,
+          "total_tokens": 2980
+        },
+        "finish_reason": "STOP"
+      }
+    }
+  ]
+}

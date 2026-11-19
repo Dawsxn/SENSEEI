@@ -118,6 +118,13 @@
     </div>
     
     <div class="card">
+      <div class="big">96.6%</div>
+      <div class="lbl tip" data-tip="Every rubric criterion of every response, judged one at a time: the share where the agent and the human label agree, both failing it or both passing it. A response the agent could not judge (error) counts as wrong on all its criteria.">Criteria matched <span class="info">i</span></div>
+      <div class="sub2">57/59 criteria correct</div>
+    </div>
+    
+    
+    <div class="card">
       <div class="big">$0.1817</div>
       <div class="lbl tip" data-tip="Estimated cost of this run in USD, from token usage at the configured prices (thinking + output are billed at the output rate).">Est. cost <span class="info">i</span></div>
       <div class="sub2">this run</div>
@@ -142,31 +149,40 @@
 
   <h2 class="tip" data-tip="Verdict accuracy split by SEE-I step, so you can see which step the agent judges best and worst.">Accuracy by SEE-I step <span class="info">i</span></h2>
   <table>
-    <thead><tr><th>Step</th><th>Examples</th><th>Correct</th><th>Accuracy</th></tr></thead>
+    <thead><tr><th>Step</th><th>Examples</th><th>Correct</th><th>Accuracy</th>
+      <th class="tip" data-tip="Of all the criteria judged in this step (each response's criteria counted one by one), how many the agent judged the same as the human label.">Criteria matched <span class="info">i</span></th></tr></thead>
     <tbody>
     
     <tr>
       <td>State</td><td>4</td><td>4/4</td>
       <td><span class="bar"><span style="width:100.0%"></span></span>
           100.0%</td>
+      <td>11/12
+          <span class="muted">(91.7%)</span></td>
     </tr>
     
     <tr>
       <td>Elaborate</td><td>4</td><td>4/4</td>
       <td><span class="bar"><span style="width:100.0%"></span></span>
           100.0%</td>
+      <td>12/12
+          <span class="muted">(100.0%)</span></td>
     </tr>
     
     <tr>
       <td>Exemplify</td><td>5</td><td>5/5</td>
       <td><span class="bar"><span style="width:100.0%"></span></span>
           100.0%</td>
+      <td>20/20
+          <span class="muted">(100.0%)</span></td>
     </tr>
     
     <tr>
       <td>Illustrate</td><td>5</td><td>4/5</td>
       <td><span class="bar"><span style="width:80.0%"></span></span>
           80.0%</td>
+      <td>14/15
+          <span class="muted">(93.3%)</span></td>
     </tr>
     
     </tbody>
@@ -178,6 +194,7 @@
       <th>Step</th><th>Criterion</th>
       <th class="tip" data-tip="Of the examples expected to fail this criterion, how many the agent flagged. (— means no example targets it.)">Caught <span class="info">i</span></th>
       <th class="tip" data-tip="Times the agent flagged this criterion on an example that was NOT expected to fail it (over-flagging).">False flags <span class="info">i</span></th>
+      <th class="tip" data-tip="Of the responses in this step, how many the agent judged the same as the label on this criterion, whether that is a pass or a fail.">Matched <span class="info">i</span></th>
     </tr></thead>
     <tbody>
     
@@ -186,6 +203,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>4/4
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -193,6 +212,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>4/4
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -200,6 +221,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="warn">1</span></td>
+      <td>3/4
+          <span class="muted">(75%)</span></td>
     </tr>
     
     <tr>
@@ -207,6 +230,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>4/4
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -214,6 +239,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>4/4
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -221,6 +248,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>4/4
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -228,6 +257,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>5/5
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -235,6 +266,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>5/5
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -242,6 +275,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>5/5
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -249,6 +284,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>5/5
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -256,6 +293,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>5/5
+          <span class="muted">(100%)</span></td>
     </tr>
     
     <tr>
@@ -263,6 +302,8 @@
       <td>0/1
           <span class="muted">(0%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>4/5
+          <span class="muted">(80%)</span></td>
     </tr>
     
     <tr>
@@ -270,6 +311,8 @@
       <td>1/1
           <span class="muted">(100%)</span></td>
       <td><span class="muted">0</span></td>
+      <td>5/5
+          <span class="muted">(100%)</span></td>
     </tr>
     
     </tbody>

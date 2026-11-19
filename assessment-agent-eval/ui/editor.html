@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt editor</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#d4d4d8; --bg:#fff; --panel:#f6f6f7; --accent:#1a5fb4;
+          --bad:#a4262c; --warn:#8a5a00; --add:#e6f4ea; --del:#fce8e6; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { margin: 0 0 18px; color: var(--muted); }
+  .tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:16px; }
+  .tabs button { border:1px solid transparent; border-bottom:none; background:none; padding:8px 14px; font:inherit;
+                 cursor:pointer; color:var(--muted); border-radius:4px 4px 0 0; }
+  .tabs button[aria-selected="true"] { color:var(--ink); border-color:var(--line); background:var(--bg);
+                                       margin-bottom:-1px; font-weight:600; }
+  .row { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin-bottom:10px; }
+  label { font-weight:600; }
+  select, input[type=text] { font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:4px; background:var(--bg); color:inherit; }
+  input[type=text] { width: min(520px, 100%); }
+  textarea { width:100%; min-height: 460px; padding:10px; font:13px/1.5 ui-monospace, Consolas, monospace;
+             border:1px solid var(--line); border-radius:4px; background:var(--bg); color:inherit; resize:vertical; tab-size:2; }
+  button.act { font:inherit; padding:6px 14px; border:1px solid var(--line); background:var(--panel); border-radius:4px; cursor:pointer; color:inherit; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .muted { color:var(--muted); }
+  .msg { margin:10px 0; padding:8px 12px; border-radius:4px; border:1px solid var(--line); background:var(--panel); }
+  .msg.err { border-color:var(--bad); color:var(--bad); }
+  .msg.warn { border-color:var(--warn); color:var(--warn); }
+  .msg.ok { border-color:#2e7d32; }
+  .msg ul { margin:4px 0 0; padding-left:20px; }
+  pre { margin:10px 0; padding:10px; background:var(--panel); border:1px solid var(--line); border-radius:4px;
+        font:12.5px/1.45 ui-monospace, Consolas, monospace; white-space:pre-wrap; word-break:break-word; overflow:auto; max-height:520px; }
+  pre .add { background:var(--add); display:block; } pre .del { background:var(--del); display:block; }
+  pre .hunk { color:var(--muted); display:block; }
+  code { font:13px ui-monospace, Consolas, monospace; background:var(--panel); padding:1px 5px; border-radius:3px; }
+  .cmd { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  mark { background: rgba(255, 190, 0, .5); color: inherit; padding: 0; }
+  .heads { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:10px 0; }
+  .card { border:1px solid var(--line); border-radius:4px; padding:8px 12px; background:var(--panel); }
+  .card b { font-size:16px; } .card div { color:var(--muted); font-size:13px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin:6px 0 14px; }
+  th, td { text-align:left; padding:4px 8px; border-bottom:1px solid var(--line); }
+  th { font-weight:600; color:var(--muted); }
+  h2 { font-size:15px; margin:18px 0 2px; }
+  @media (max-width: 640px) { .heads { grid-template-columns: 1fr; } }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Prompt editor</h1>
+  <p class="sub">Saving always creates the next version. Existing versions are never changed.</p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-prompt" aria-selected="true">System prompt</button>
+    <button role="tab" id="tab-rubric" aria-selected="false">Rubric</button>
+    <button role="tab" id="tab-compare" aria-selected="false">Compare versions</button>
+  </div>
+
+  <div id="editorPane">
+  <div class="row">
+    <label for="base">Start from</label>
+    <select id="base"></select>
+    <span id="pin" class="muted"></span>
+  </div>
+
+  <textarea id="text" spellcheck="false" aria-label="Text to edit"></textarea>
+
+  <div class="row" style="margin-top:10px">
+    <label for="note">What changed?</label>
+    <input type="text" id="note" placeholder="optional, saved with the version">
+  </div>
+
+  <div class="row">
+    <button class="act" id="check">Show changes</button>
+    <span id="previewControls" class="row" style="margin:0">
+      <button class="act" id="preview">Preview what the model sees</button>
+      <label for="rubricSel" class="muted" style="font-weight:400">with rubric</label>
+      <select id="rubricSel"></select>
+    </span>
+    <button class="act primary" id="save">Save</button>
+  </div>
+
+  <div id="messages"></div>
+  <div id="saved" class="msg ok" hidden>
+    <div id="savedText"></div>
+    <div class="cmd">Run it with <code id="cmd"></code> <button class="act" id="copy">Copy</button>
+      <button class="act" id="cmpFromSave"></button></div>
+  </div>
+  <pre id="diff" hidden></pre>
+  <div id="previewBox" hidden>
+    <div class="muted" id="previewInfo"></div>
+    <pre id="previewText"></pre>
+  </div>
+  </div>
+
+  <section id="comparePane" hidden>
+    <div class="row">
+      <label for="cmpKind">Compare</label>
+      <select id="cmpKind"><option value="prompt">system prompts</option><option value="rubric">rubrics</option></select>
+      <label for="cmpA">from</label><select id="cmpA"></select>
+      <label for="cmpB">to</label><select id="cmpB"></select>
+      <button class="act" id="cmpSwap">Swap</button>
+      <label class="muted" style="font-weight:400"><input type="checkbox" id="cmpWhole"> show whole file</label>
+    </div>
+    <div id="cmpMessages"></div>
+    <div class="heads" id="cmpHeads"></div>
+    <div class="muted" id="cmpSummary"></div>
+    <pre id="cmpDiff" hidden></pre>
+    <div id="cmpRuns"></div>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let state = null, kind = 'prompt', baseText = '';
+
+const norm = t => t.replace(/\r\n?/g, '\n').replace(/\n+$/, '') + '\n';
+const changed = () => norm($('text').value) !== norm(baseText);
+
+async function api(path, body) {
+  const opts = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+  const res = await fetch(path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+
+function say(items, cls) {
+  const box = $('messages');
+  box.replaceChildren();
+  if (!items.length) return;
+  const div = document.createElement('div');
+  div.className = 'msg ' + cls;
+  if (items.length === 1) div.textContent = items[0];
+  else { const ul = document.createElement('ul'); items.forEach(i => { const li = document.createElement('li'); li.textContent = i; ul.append(li); }); div.append(ul); }
+  box.append(div);
+}
+
+function clearOutputs() {
+  say([], ''); $('diff').hidden = true; $('saved').hidden = true; $('previewBox').hidden = true;
+}
+
+function words(t) { return t.split(/(\s+)/); }
+
+function marked(sign, w, from, to) {
+  const frag = document.createDocumentFragment();
+  frag.append(sign + w.slice(0, from).join(''));
+  if (to > from) { const m = document.createElement('mark'); m.textContent = w.slice(from, to).join(''); frag.append(m); }
+  frag.append(w.slice(to).join(''));
+  return frag;
+}
+
+// A removed line paired with the added line that replaced it: highlight only the words that differ.
+function inlinePair(del, add) {
+  const a = words(del.slice(1)), b = words(add.slice(1));
+  let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  let j = 0; while (j < a.length - i && j < b.length - i && a[a.length - 1 - j] === b[b.length - 1 - j]) j++;
+  return [marked('-', a, i, a.length - j), marked('+', b, i, b.length - j)];
+}
+
+function renderDiff(pre, lines) {
+  pre.replaceChildren();
+  const isDel = l => l.startsWith('-') && !l.startsWith('---'), isAdd = l => l.startsWith('+') && !l.startsWith('+++');
+  const line = (cls, content) => { const s = document.createElement('span'); s.className = cls; s.style.display = 'block'; s.append(content); pre.append(s); };
+  for (let i = 0; i < lines.length;) {
+    if (isDel(lines[i])) {
+      let d = i; while (d < lines.length && isDel(lines[d])) d++;
+      let a = d; while (a < lines.length && isAdd(lines[a])) a++;
+      const dels = lines.slice(i, d), adds = lines.slice(d, a);
+      if (dels.length === adds.length) {
+        const pairs = dels.map((x, k) => inlinePair(x, adds[k]));
+        pairs.forEach(p => line('del', p[0])); pairs.forEach(p => line('add', p[1]));
+      } else { dels.forEach(x => line('del', x)); adds.forEach(x => line('add', x)); }
+      i = a;
+    } else {
+      const l = lines[i++];
+      line(isAdd(l) ? 'add' : (l.startsWith('---') || l.startsWith('+++') || l.startsWith('@@')) ? 'hunk' : '', l || ' ');
+    }
+  }
+  pre.hidden = !lines.length;
+}
+
+function refreshSave() {
+  $('save').textContent = `Save as ${kind === 'prompt' ? 'prompt' : 'rubric'} v${state[kind].next}`;
+  $('save').disabled = !changed();
+}
+
+function fillBase(selected) {
+  const info = state[kind], sel = $('base');
+  sel.replaceChildren();
+  info.versions.forEach(n => {
+    const o = document.createElement('option');
+    const pins = info.pinned[String(n)];
+    o.value = n; o.textContent = `v${n}` + (pins ? ` (pinned by ${pins.join(', ')})` : '');
+    sel.append(o);
+  });
+  sel.value = String(selected ?? info.versions[info.versions.length - 1]);
+  showPin();
+}
+
+async function loadBase() {
+  const n = $('base').value;
+  const { text } = await api(`/api/text?kind=${kind}&n=${n}`);
+  baseText = text; $('text').value = text;
+  clearOutputs(); refreshSave();
+}
+
+function fillRubricChoices() {
+  const info = state.rubric, sel = $('rubricSel'), keep = sel.value;
+  sel.replaceChildren();
+  info.versions.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = `v${n}`; sel.append(o); });
+  const pinned = Object.keys(info.pinned)[0];
+  sel.value = keep || pinned || String(info.versions[info.versions.length - 1]);
+}
+
+let mode = 'prompt';   // which tab is showing: prompt | rubric | compare
+
+async function switchTab(next, compareArgs) {
+  if (next === mode && !compareArgs) return;
+  // unsaved text survives a trip to Compare, but not a switch between prompt and rubric
+  if (next !== 'compare' && next !== kind && changed() && !confirm('Discard your unsaved edits?')) return;
+  mode = next;
+  for (const k of ['prompt', 'rubric', 'compare']) $('tab-' + k).setAttribute('aria-selected', String(k === mode));
+  $('editorPane').hidden = mode === 'compare'; $('comparePane').hidden = mode !== 'compare';
+  if (mode === 'compare') { openCompare(compareArgs); return; }
+  if (mode !== kind) {
+    kind = mode; $('previewControls').hidden = kind !== 'prompt';
+    fillBase(); await loadBase();
+  }
+}
+
+// ---- compare
+function fillCompare(k, a, b) {
+  const versions = state[k].versions;
+  for (const [id, pick] of [['cmpA', a ?? versions[Math.max(0, versions.length - 2)]], ['cmpB', b ?? versions[versions.length - 1]]]) {
+    const sel = $(id); sel.replaceChildren();
+    versions.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = 'v' + n; sel.append(o); });
+    sel.value = String(pick);
+  }
+}
+
+function openCompare(args) {
+  const k = args ? args.kind : $('cmpKind').value || kind;
+  $('cmpKind').value = k;
+  fillCompare(k, args && args.a, args && args.b);
+  runCompare();
+}
+
+const pct = v => v === '' || v == null ? '–' : (Number(v) * 100).toFixed(1) + '%';
+
+function head(side, n, k) {
+  const card = document.createElement('div'); card.className = 'card';
+  const title = document.createElement('b'); title.textContent = 'v' + n; card.append(title);
+  const date = document.createElement('div'); date.textContent = (side.info.created || '').slice(0, 16);
+  card.append(date);
+  return card;
+}
+
+function runsTable(n, runs) {
+  const box = document.createElement('div');
+  const h = document.createElement('h2'); h.textContent = `Logged runs with v${n}`; box.append(h);
+  if (!runs.length) { const p = document.createElement('div'); p.className = 'muted'; p.textContent = 'None in results_log.csv.'; box.append(p); return box; }
+  const t = document.createElement('table');
+  const head = t.createTHead().insertRow();
+  ['When', 'Model', 'Example set', 'Responses', 'Verdict accuracy', 'Criteria exact', 'Cost'].forEach(c => { const th = document.createElement('th'); th.textContent = c; head.append(th); });
+  const body = t.createTBody();
+  runs.forEach(r => {
+    const row = body.insertRow();
+    const ts = r.timestamp.replace(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2}).*$/, '$1-$2-$3 $4:$5');
+    [ts, r.model, r.example_set_version, r.total, pct(r.verdict_accuracy), pct(r.criteria_exact_rate),
+     r.est_cost_usd ? '$' + Number(r.est_cost_usd).toFixed(2) : '–'].forEach(v => row.insertCell().textContent = v);
+  });
+  box.append(t); return box;
+}
+
+async function runCompare() {
+  const k = $('cmpKind').value, a = $('cmpA').value, b = $('cmpB').value;
+  const box = $('cmpMessages'); box.replaceChildren();
+  try {
+    const r = await api(`/api/compare?kind=${k}&a=${a}&b=${b}&context=${$('cmpWhole').checked ? 'all' : 3}`);
+    $('cmpHeads').replaceChildren(head(r.a, a, k), head(r.b, b, k));
+    $('cmpSummary').textContent = a === b ? 'Same version on both sides.'
+      : r.changed ? `+${r.added} added, −${r.removed} removed lines` : 'No differences between these two versions.';
+    renderDiff($('cmpDiff'), r.diff);
+    const runs = $('cmpRuns'); runs.replaceChildren(runsTable(a, r.a.runs), runsTable(b, r.b.runs));
+    const note = document.createElement('div'); note.className = 'muted';
+    note.textContent = 'Compare runs only when the model and example set match; the logged accuracy is for the whole example set of that run.';
+    runs.append(note);
+  } catch (e) {
+    const div = document.createElement('div'); div.className = 'msg err'; div.textContent = e.message; box.append(div);
+  }
+}
+
+async function boot() {
+  state = await api('/api/state');
+  fillBase(); fillRubricChoices(); await loadBase();
+}
+
+function showPin() {
+  const pins = state[kind].pinned[$('base').value];
+  $('pin').textContent = pins ? '' : 'not pinned by any config';
+}
+
+$('tab-prompt').onclick = () => switchTab('prompt');
+$('tab-rubric').onclick = () => switchTab('rubric');
+$('tab-compare').onclick = () => switchTab('compare');
+$('cmpKind').onchange = () => { fillCompare($('cmpKind').value); runCompare(); };
+for (const id of ['cmpA', 'cmpB', 'cmpWhole']) $(id).onchange = runCompare;
+$('cmpSwap').onclick = () => { const a = $('cmpA').value; $('cmpA').value = $('cmpB').value; $('cmpB').value = a; runCompare(); };
+$('base').onchange = async () => {
+  if (changed() && !confirm('Discard your unsaved edits?')) { fillBase(Number(baseVersion)); return; }
+  await loadBase(); showPin();
+};
+let baseVersion = null;
+$('base').addEventListener('focus', () => { baseVersion = $('base').value; });
+$('text').addEventListener('input', () => { refreshSave(); $('saved').hidden = true; });
+
+$('check').onclick = async () => {
+  try {
+    const r = await api('/api/check', { kind, based_on: Number($('base').value), text: $('text').value });
+    clearOutputs();
+    if (r.errors.length) say(r.errors, 'err');
+    else if (r.warnings.length) say(r.warnings, 'warn');
+    else say([r.changed ? 'No problems found.' : 'No changes from this version.'], '');
+    renderDiff($('diff'), r.diff);
+  } catch (e) { say([e.message], 'err'); }
+};
+
+$('save').onclick = async () => {
+  try {
+    const basedOn = Number($('base').value);
+    const r = await api('/api/save', { kind, based_on: basedOn, text: $('text').value, note: $('note').value });
+    state = await api('/api/state');
+    baseText = $('text').value; fillBase(r.version); fillRubricChoices();
+    clearOutputs(); refreshSave(); $('note').value = '';
+    $('savedText').textContent = `Saved ${r.path}. It is now the version you are editing from.`;
+    $('cmd').textContent = r.command; $('saved').hidden = false;
+    $('cmpFromSave').textContent = `Compare v${basedOn} → v${r.version}`;
+    $('cmpFromSave').onclick = () => switchTab('compare', { kind, a: basedOn, b: r.version });
+  } catch (e) { clearOutputs(); say([e.message], 'err'); }
+};
+
+$('preview').onclick = async () => {
+  try {
+    const r = await api('/api/preview', { text: $('text').value, rubric: Number($('rubricSel').value) });
+    clearOutputs();
+    $('previewInfo').textContent = `Prompt hash ${r.hash} (as logged in results_log.csv) · ${r.text.length.toLocaleString()} characters`;
+    $('previewText').textContent = r.text; $('previewBox').hidden = false;
+  } catch (e) { say([e.message], 'err'); }
+};
+
+$('copy').onclick = async () => {
+  try { await navigator.clipboard.writeText($('cmd').textContent); $('copy').textContent = 'Copied'; setTimeout(() => $('copy').textContent = 'Copy', 1500); } catch (e) {}
+};
+
+boot().catch(e => say([e.message], 'err'));
+</script>
+</body>
+</html>

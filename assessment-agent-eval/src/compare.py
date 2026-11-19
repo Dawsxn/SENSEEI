@@ -68,6 +68,21 @@ def compare(expected_verdict: str, expected_criteria, result) -> Comparison:
     )
 
 
+def criterion_cells(step: str, comp: Comparison) -> list[tuple[str, bool]]:
+    """Every criterion of the step as (name, judged the same as the label).
+
+    A criterion matches when the agent and the label agree on it: both fail it or both
+    pass it. A response with no usable verdict (status "error") matches on nothing,
+    since the agent made no judgment. Names outside the rubric that either side used
+    count too, as mismatches, so nothing silently drops out of the total.
+    """
+    exp, act = set(comp.expected_criteria), set(comp.actual_criteria)
+    names = list(criteria_for(step)) + sorted((exp | act) - set(criteria_for(step)))
+    if comp.status == "error":
+        return [(n, False) for n in names]
+    return [(n, (n in exp) == (n in act)) for n in names]
+
+
 def summarize(records: list[dict]) -> dict:
     """records: list of {id, step, expected_verdict, comparison: Comparison}."""
     total = len(records)
@@ -83,14 +98,21 @@ def summarize(records: list[dict]) -> dict:
         if not rs:
             continue
         c = sum(1 for r in rs if r["comparison"].verdict_match)
-        per_step.append({"step": s, "n": len(rs), "correct": c, "accuracy": c / len(rs)})
+        cells = [ok for r in rs for _, ok in criterion_cells(s, r["comparison"])]
+        per_step.append({"step": s, "n": len(rs), "correct": c, "accuracy": c / len(rs),
+                         "cells": len(cells), "cells_correct": sum(cells),
+                         "cell_accuracy": sum(cells) / len(cells) if cells else None})
 
     fail_records = [r for r in records if r["expected_verdict"].strip().upper() == "FAIL"]
     exact = sum(1 for r in fail_records if r["comparison"].criteria_exact)
 
     stat = defaultdict(lambda: {"expected": 0, "caught": 0, "false_flag": 0})
+    cell_stat = defaultdict(lambda: [0, 0])   # (step, criterion) -> [matched, judged]
     for r in records:
         s, comp = r["step"], r["comparison"]
+        for name, ok in criterion_cells(s, comp):
+            cell_stat[(s, name)][0] += ok
+            cell_stat[(s, name)][1] += 1
         for name in comp.expected_criteria:
             stat[(s, name)]["expected"] += 1
             if name in comp.matched:
@@ -103,11 +125,17 @@ def summarize(records: list[dict]) -> dict:
         for name in criteria_for(s):
             st = stat.get((s, name), {"expected": 0, "caught": 0, "false_flag": 0})
             recall = (st["caught"] / st["expected"]) if st["expected"] else None
+            matched, judged = cell_stat.get((s, name), [0, 0])
             per_criterion.append({
                 "step": s, "criterion": name,
                 "expected": st["expected"], "caught": st["caught"],
                 "false_flag": st["false_flag"], "recall": recall,
+                "cells": judged, "cells_correct": matched,
+                "cell_accuracy": matched / judged if judged else None,
             })
+
+    cells_total = sum(st["cells"] for st in per_step)
+    cells_correct = sum(st["cells_correct"] for st in per_step)
 
     return {
         "total": total,
@@ -119,4 +147,7 @@ def summarize(records: list[dict]) -> dict:
         "criteria_exact": exact,
         "criteria_exact_rate": exact / len(fail_records) if fail_records else 0.0,
         "per_criterion": per_criterion,
+        "criteria_cells": cells_total,
+        "criteria_cells_correct": cells_correct,
+        "criteria_cell_accuracy": cells_correct / cells_total if cells_total else 0.0,
     }
