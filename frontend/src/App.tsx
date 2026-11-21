@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import { RequireAuth } from "./features/auth/RequireAuth";
-import { HomeRoute, RequireInstructor } from "./features/auth/RoleRoutes";
+import { HomeRoute, RequireGrader, RequireInstructor } from "./features/auth/RoleRoutes";
 import { ClassDetailPage } from "./features/classes/ClassDetailPage";
 import { ClassReadingPage } from "./features/classes/ClassReadingPage";
 import { ClassListPage } from "./features/classes/ClassListPage";
@@ -15,10 +15,13 @@ import { ReadingStepScreen } from "./features/tutoring/ReadingStepScreen";
 import { TutoringScreen } from "./features/tutoring/TutoringScreen";
 import { BatchPage } from "./features/trial/BatchPage";
 import { ChatbotScreen, ReadingOnlyScreen } from "./features/trial/ControlGroupScreens";
+import { GradingPage } from "./features/trial/GradingPage";
 import { ParticipantsPage } from "./features/trial/ParticipantsPage";
+import { PostTestScreen, PreTestScreen, TestDoneScreen } from "./features/trial/TestScreens";
 
 const signedIn = (page: ReactNode) => <RequireAuth>{page}</RequireAuth>;
 const instructor = (page: ReactNode) => signedIn(<RequireInstructor>{page}</RequireInstructor>);
+const grader = (page: ReactNode) => signedIn(<RequireGrader>{page}</RequireGrader>);
 
 // A data router rather than <BrowserRouter>, because only a data router can hold
 // a navigation back: the upload page asks before discarding unsaved work.
@@ -50,6 +53,12 @@ const router = createBrowserRouter([
   // The trial's control groups. A participant lands on theirs from `/`.
   { path: "/chat/:readingId", element: signedIn(<ChatbotScreen />) },
   { path: "/reading/:readingId", element: signedIn(<ReadingOnlyScreen />) },
+  // The pre-test and post-test, for a class that has them, and the screen after.
+  { path: "/pretest", element: signedIn(<PreTestScreen />) },
+  { path: "/posttest", element: signedIn(<PostTestScreen />) },
+  { path: "/finished", element: signedIn(<TestDoneScreen />) },
+  // Grading the tests: the research team and the grader. `?id=` opens one ID.
+  { path: "/grading", element: grader(<GradingPage />) },
 ]);
 
 export default function App() {

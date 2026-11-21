@@ -12,7 +12,7 @@ statistics on one path. This module adds what makes them a participant:
 - **Sign-in by ID alone.** It works while the ID is not voided and its batch is
   open. Closing the batch signs everyone in it out.
 - **The clock.** It starts when the participant's reading first opens and runs
-  for `TRIAL_MINUTES`. A session still going when it runs out is ended as
+  for the session's minutes (35). A session still going when it runs out is ended as
   `timed_out` and kept, like any other ended session.
 - **One session per participant**, checked when one is started.
 - **Done**, for the two control groups, who have no session to finish.
@@ -106,6 +106,14 @@ class NotDoneable(Exception):
     """Done does not apply: a SEE-I participant, or one whose reading never opened."""
 
 
+class PretestFirst(Exception):
+    """The class has tests and this participant has not finished the pre-test."""
+
+
+class BatchOpen(Exception):
+    """A batch must be closed before it can be deleted."""
+
+
 def require_trial() -> None:
     if not get_settings().trial_mode:
         raise TrialOff
@@ -184,7 +192,7 @@ async def sign_in(db: AsyncSession, raw_code: str) -> User:
 def deadline(participant: Participant) -> datetime | None:
     if participant.clock_started_at is None:
         return None
-    return participant.clock_started_at + timedelta(minutes=get_settings().trial_minutes)
+    return participant.clock_started_at + timedelta(minutes=get_settings().trial_session_minutes)
 
 
 async def expire_if_due(
@@ -243,12 +251,16 @@ async def status(db: AsyncSession, user_id: uuid.UUID) -> dict:
         .limit(1)
     )
     end = deadline(participant)
+    from . import test_service  # it builds on this module
+
+    test = await test_service.class_test(db, participant.class_id)
     return {
+        "test_stage": await test_service.stage(db, participant, test),
         "code": participant.code,
         "done": participant.done_at is not None,
         "mode": ClassMode(mode).value,
         "reading_id": await _their_reading(db, participant.class_id),
-        "minutes": get_settings().trial_minutes,
+        "minutes": get_settings().trial_session_minutes,
         "seconds_left": (
             None if end is None else max(int((end - utcnow()).total_seconds()), 0)
         ),
@@ -267,6 +279,10 @@ async def start_clock(db: AsyncSession, user_id: uuid.UUID) -> dict:
     if participant is None:
         raise UnknownParticipant
     if participant.clock_started_at is None:
+        from . import test_service
+
+        if await test_service.pretest_pending(db, participant):
+            raise PretestFirst
         participant.clock_started_at = utcnow()
         db.add(_event(participant, "reading_opened", at=participant.clock_started_at))
         await db.commit()
@@ -351,6 +367,10 @@ async def refuse_chat(db: AsyncSession, user_id: uuid.UUID) -> str | None:
     mode = await db.scalar(select(Class.mode).where(Class.id == participant.class_id))
     if ClassMode(mode) is not ClassMode.CHATBOT:
         return "this class does not use the chatbot"
+    from . import test_service
+
+    if await test_service.pretest_pending(db, participant):
+        return "the pre-test comes first"
     if participant.clock_started_at is None:
         return "the reading has not opened"
     if await expire_if_due(db, participant):
@@ -387,6 +407,10 @@ async def refuse_start(db: AsyncSession, user_id: uuid.UUID) -> str | None:
     mode = await db.scalar(select(Class.mode).where(Class.id == participant.class_id))
     if ClassMode(mode) is not ClassMode.SEEI:
         return "this class does not use SEE-I"
+    from . import test_service
+
+    if await test_service.pretest_pending(db, participant):
+        return "the pre-test comes first"
     if participant.clock_started_at is None:
         participant.clock_started_at = utcnow()
         await db.commit()
@@ -499,6 +523,17 @@ async def get_batch(
         end = deadline(p)
         if p.done_at is not None or (end is not None and now >= end):
             finished.add(p.user_id)
+    # With tests, finished means the post-test has ended, not the session.
+    from . import test_service
+
+    for p, _, _ in rows:
+        test = await test_service.class_test(db, p.class_id)
+        if test is not None:
+            await test_service.expire(db, p, test, now)
+            if await test_service.finished(db, p, test):
+                finished.add(p.user_id)
+            else:
+                finished.discard(p.user_id)
     return {
         "id": batch.id,
         "name": batch.name,
@@ -583,16 +618,23 @@ async def create_batch(
 async def close_batch(
     db: AsyncSession, instructor_id: uuid.UUID, batch_id: uuid.UUID
 ) -> dict:
-    """End the sitting: the IDs stop working, and any session still going ends.
+    """End the sitting: the IDs stop working, and any session or test still going ends.
 
     A session still running when its batch closes is cut off the same way the
-    clock would cut it off, so it is recorded the same way.
+    clock would cut it off, so it is recorded the same way. A test still running
+    ends as `closed`.
     """
     require_trial()
     batch = await _owned_batch(db, instructor_id, batch_id)
     if batch.closed_at is None:
         now = utcnow()
         batch.closed_at = now
+        from . import test_service
+
+        members = list(
+            await db.scalars(select(Participant).where(Participant.batch_id == batch_id))
+        )
+        await test_service.close_for(db, members, now)
         users = select(Participant.user_id).where(Participant.batch_id == batch_id)
         await db.execute(
             update(Session)
@@ -647,3 +689,19 @@ async def withdraw(db: AsyncSession, raw_code: str) -> str:
     await db.execute(delete(User).where(User.id == participant.user_id))
     await db.commit()
     return code
+
+
+async def delete_batch(db: AsyncSession, instructor_id: uuid.UUID, batch_id: uuid.UUID) -> None:
+    """Delete a closed batch and everything recorded for every ID in it.
+
+    For clearing out the dry run, or any sitting that should not be in the
+    data. Like withdrawal, but for the whole batch; it cannot be undone.
+    """
+    require_trial()
+    batch = await _owned_batch(db, instructor_id, batch_id)
+    if batch.closed_at is None:
+        raise BatchOpen
+    users = select(Participant.user_id).where(Participant.batch_id == batch_id)
+    await db.execute(delete(User).where(User.id.in_(users)))
+    await db.execute(delete(ParticipantBatch).where(ParticipantBatch.id == batch_id))
+    await db.commit()

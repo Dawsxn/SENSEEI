@@ -137,6 +137,10 @@ def test_the_trial_blueprint_cannot_be_entered_without_an_id():
     assert env["ENVIRONMENT"] == "production"      # no dev picker, no QA switching
     assert env["AUTH_DEV_BYPASS"] == "false"
     assert "QA_EMAILS" not in env
+    # The study's times live in the code and the test file, not in settings a
+    # dashboard edit could change between sittings.
+    assert not {"TRIAL_MINUTES", "TRIAL_SESSION_MINUTES", "TRIAL_PRETEST_MINUTES",
+                "TRIAL_POSTTEST_MINUTES"} & set(env)
     assert env["SEED_IF_EMPTY"] == "false"         # no fake students in the study's data
     assert service["branch"] == "main"             # only a release reaches it
     assert service["plan"] != "free"               # the free plan sleeps mid-sitting

@@ -5,8 +5,9 @@
  * an instructor sees what their students will.
  *
  * On the trial instance a class is one of the study's groups, so it also has a
- * mode. Participants never see the class's name, so the preview line gives way
- * to that. The mode is fixed once a participant has signed in.
+ * mode, and can take the pre-test and post-test written for its reading.
+ * Participants never see the class's name, so the preview line gives way to
+ * that. The mode and the tests are fixed once a participant has signed in.
  */
 
 import { useEffect, useState } from "react";
@@ -22,8 +23,11 @@ const MODES: ClassMode[] = ["seei", "chatbot", "reading_only"];
 interface ClassFormDialogProps {
   mode: "new" | "edit";
   initial?: ClassFields;
-  /** The mode can no longer change: a participant has signed in. */
+  /** The mode and tests can no longer change: a participant has signed in. */
   modeLocked?: boolean;
+  /** Trial mode: the tests this class could take. A new class has none, since
+   *  it has no reading yet. */
+  tests?: { key: string; title: string }[];
   onSubmit: (fields: ClassFields) => Promise<void>;
   onCancel: () => void;
 }
@@ -35,6 +39,7 @@ export function ClassFormDialog({
   mode,
   initial,
   modeLocked = false,
+  tests = [],
   onSubmit,
   onCancel,
 }: ClassFormDialogProps) {
@@ -42,6 +47,7 @@ export function ClassFormDialog({
   const [name, setName] = useState(initial?.name ?? "");
   const [section, setSection] = useState(initial?.section ?? "");
   const [classMode, setClassMode] = useState<ClassMode>(initial?.mode ?? "seei");
+  const [testKey, setTestKey] = useState<string>(initial?.test_key ?? "");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -63,7 +69,7 @@ export function ClassFormDialog({
       await onSubmit({
         name: name.trim(),
         section: section.trim(),
-        ...(trial ? { mode: classMode } : {}),
+        ...(trial ? { mode: classMode, test_key: testKey || null } : {}),
       });
     } catch (err) {
       setError(
@@ -145,8 +151,26 @@ export function ClassFormDialog({
                 </button>
               ))}
             </div>
+            <label className="mt-4 block text-[13px] font-medium">
+              Pre-test and post-test
+              <select
+                value={testKey}
+                onChange={(e) => setTestKey(e.target.value)}
+                disabled={modeLocked || tests.length === 0}
+                className={`${INPUT} mt-1.5 disabled:cursor-not-allowed disabled:bg-muted/50 disabled:text-muted-foreground`}
+              >
+                <option value="">Off</option>
+                {tests.map((t) => (
+                  <option key={t.key} value={t.key}>
+                    {t.title}
+                  </option>
+                ))}
+              </select>
+            </label>
             <p className="mt-2 text-[12px] text-muted-foreground">
-              Can&rsquo;t be changed once a participant signs in.
+              {tests.length === 0 && !initial?.test_key
+                ? "Add a reading to this class first."
+                : "Mode and tests can’t be changed once a participant signs in."}
             </p>
           </>
         ) : (

@@ -15,7 +15,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Index, String
+from sqlalchemy import Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field
 
@@ -69,6 +69,17 @@ class Participant(Entity, table=True):
     #: reading-only group's exclusion rule is how soon after the reading opened.
     done_at: datetime | None = Field(default=None, sa_type=TS)
 
+    # The pre-test and post-test, when the class has them. Each has its own
+    # clock from when it starts, and ends by being submitted, by its time
+    # running out, or by the batch closing (`*_ended_by`: submitted | time_up |
+    # closed).
+    pretest_started_at: datetime | None = Field(default=None, sa_type=TS)
+    pretest_ended_at: datetime | None = Field(default=None, sa_type=TS)
+    pretest_ended_by: str | None = Field(default=None, sa_type=String(16))
+    posttest_started_at: datetime | None = Field(default=None, sa_type=TS)
+    posttest_ended_at: datetime | None = Field(default=None, sa_type=TS)
+    posttest_ended_by: str | None = Field(default=None, sa_type=String(16))
+
 
 class ChatMessage(Entity, table=True):
     """One message in the chatbot group's conversation, theirs or the model's.
@@ -106,3 +117,38 @@ class TrialEvent(Entity, table=True):
     data: dict | None = Field(default=None, sa_type=JSONB)
     at: datetime = Field(sa_type=TS)
     received_at: datetime = Field(default_factory=utcnow, sa_type=TS)
+
+
+class TrialAnswer(Entity, table=True):
+    """One answer on a participant's pre-test or post-test.
+
+    Saved as they type, so time running out loses nothing. A multiple-choice
+    answer is scored as it is saved; a written one waits for the grader. The
+    answer's own history is kept as three numbers, for how they worked through
+    the test: when it was first answered, when last changed, and how many saves
+    changed it.
+    """
+
+    __tablename__ = "test_answer"
+    __table_args__ = (
+        Index("uq_test_answer_item", "participant_id", "test", "item", unique=True),
+    )
+
+    participant_id: uuid.UUID = Field(
+        foreign_key="participant.id", ondelete="CASCADE", index=True
+    )
+    #: `pre` or `post`.
+    test: str = Field(sa_type=String(8))
+    #: The question's id in the test file, e.g. `q5`, or `pre`.
+    item: str = Field(sa_type=String(16))
+    choice: str | None = Field(default=None, sa_type=String(4))
+    text: str | None = Field(default=None, sa_type=Text)
+    #: The 12a grouping table: a list of {"name", "strategies", "why"}.
+    groups: list | None = Field(default=None, sa_type=JSONB)
+    #: "I'm sure" (True) or "I'm not sure" (False). None until ticked.
+    sure: bool | None = None
+    score: int | None = None
+    scored_at: datetime | None = Field(default=None, sa_type=TS)
+    first_answered_at: datetime | None = Field(default=None, sa_type=TS)
+    last_changed_at: datetime | None = Field(default=None, sa_type=TS)
+    edits: int = 0

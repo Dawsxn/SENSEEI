@@ -36,8 +36,6 @@ services:
           property: connectionString
       - key: TRIAL_MODE
         value: "true"
-      - key: TRIAL_MINUTES
-        value: "40"
       # Production rules: the dev sign-in picker and QA switching cannot exist
       # here, whatever else is set, so no one can act as a participant.
       - key: ENVIRONMENT
@@ -53,6 +51,8 @@ services:
         generateValue: true
       # Entered in the dashboard. Never in this file.
       - key: APP_BASE_URL          # https://senseei-trial.onrender.com, or whatever Render assigns
+        sync: false
+      - key: GRADER_EMAILS         # the grader, who sees only the grading page
         sync: false
       - key: GOOGLE_CLIENT_ID      # the research team signs in with Google
         sync: false

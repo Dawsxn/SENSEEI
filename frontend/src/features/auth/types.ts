@@ -1,4 +1,5 @@
-export type Role = "student" | "instructor";
+/** `grader` exists only on the trial instance: they see the grading page alone. */
+export type Role = "student" | "instructor" | "grader";
 
 export interface AuthUser {
   id: string;

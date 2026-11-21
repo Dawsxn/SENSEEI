@@ -12,7 +12,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..auth import is_instructor
+from ..auth import is_grader, is_instructor
 from ..models import Role, User
 
 
@@ -20,7 +20,12 @@ async def upsert_from_google(
     db: AsyncSession, *, sub: str, email: str, name: str
 ) -> User:
     """Create or update the user for a signed-in Google account."""
-    role = Role.INSTRUCTOR if is_instructor(email) else Role.STUDENT
+    if is_instructor(email):
+        role = Role.INSTRUCTOR
+    elif is_grader(email):
+        role = Role.GRADER
+    else:
+        role = Role.STUDENT
     user = await db.scalar(select(User).where(User.google_sub == sub))
     if user is None:
         user = User(role=role, name=name or email, email=email, google_sub=sub)

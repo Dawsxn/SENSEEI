@@ -22,6 +22,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .. import trial_tests
 from ..models import (
     Class,
     ClassMode,
@@ -55,7 +56,11 @@ class UnknownCode(Exception):
 
 
 class ModeLocked(Exception):
-    """A participant has signed in to this class, so its mode cannot change."""
+    """A participant has signed in to this class, so its mode and tests cannot change."""
+
+
+class TestNotAvailable(Exception):
+    """That test was not written for any of this class's readings."""
 
 
 @dataclass
@@ -63,6 +68,8 @@ class Fields:
     name: str
     section: str
     mode: ClassMode = ClassMode.SEEI
+    #: Trial mode: the pre-test and post-test the class takes, or None.
+    test_key: str | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -117,7 +124,26 @@ def _summary(klass: Class) -> dict:
         "label": f"{klass.name} {klass.section}".strip(),
         "join_code": klass.join_code,
         "mode": ClassMode(klass.mode).value,
+        "test_key": klass.test_key,
     }
+
+
+async def _available_tests(db: AsyncSession, class_id: uuid.UUID) -> list[dict]:
+    """The tests written for one of this class's readings, by exact title."""
+    titles = await db.scalars(
+        select(Reading.title)
+        .join(ReadingAssignment, ReadingAssignment.reading_id == Reading.id)
+        .where(
+            ReadingAssignment.class_id == class_id,
+            ReadingAssignment.deleted_at.is_(None),
+            Reading.deleted_at.is_(None),
+        )
+    )
+    seen: dict[str, dict] = {}
+    for title in titles:
+        for test in trial_tests.for_title(title):
+            seen[test.key] = {"key": test.key, "title": test.reading_title}
+    return list(seen.values())
 
 
 async def list_classes(db: AsyncSession, instructor_id: uuid.UUID) -> list[dict]:
@@ -178,6 +204,7 @@ async def get_class(
     return {
         **_summary(klass),
         "mode_locked": await _mode_locked(db, class_id),
+        "tests": await _available_tests(db, class_id),
         "students": [
             {
                 "id": u.id,
@@ -219,6 +246,9 @@ async def create_class(
     collision is retried with a new code, a duplicate name and section is the
     instructor's to fix.
     """
+    if fields.test_key is not None:
+        # A new class has no reading yet, so no test can be written for it.
+        raise TestNotAvailable
     for _ in range(CODE_ATTEMPTS):
         klass = Class(
             instructor_id=instructor_id,
@@ -245,9 +275,14 @@ async def update_class(
     db: AsyncSession, instructor_id: uuid.UUID, class_id: uuid.UUID, fields: Fields
 ) -> dict:
     klass = await _owned(db, instructor_id, class_id)
-    if ClassMode(klass.mode) is not fields.mode and await _mode_locked(db, class_id):
+    changing = ClassMode(klass.mode) is not fields.mode or klass.test_key != fields.test_key
+    if changing and await _mode_locked(db, class_id):
         raise ModeLocked
+    if fields.test_key is not None and fields.test_key != klass.test_key:
+        if fields.test_key not in {t["key"] for t in await _available_tests(db, class_id)}:
+            raise TestNotAvailable
     klass.name, klass.section, klass.mode = fields.name, fields.section, fields.mode
+    klass.test_key = fields.test_key
     try:
         await db.commit()
     except IntegrityError as e:
