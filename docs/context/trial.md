@@ -216,7 +216,7 @@ told more than another:
 | Group | Says |
 | --- | --- |
 | SEE-I | The session goes through SEE-I a step at a time; read the whole material first; press Done when finished |
-| Chatbot | Read the material; use the chatbot beside it however you like; press Done when finished |
+| Chatbot | Read the material; use the chatbot beside it however you like, though it doesn't have the reading; press Done when finished |
 | Reading only | Read the material in its entirety; press Done when finished |
 
 It shows once. A participant who reloads partway does not see it again.
