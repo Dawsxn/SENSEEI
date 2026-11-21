@@ -1,101 +1,147 @@
-Final PDF to printer
+significant way that renders the vision obsolete. Such occasions can be referred to as strategic inflection points. When a company reaches a strategic inflection point, management has tough decisions to make about the company’s direction because abandoning an established course carries considerable risk. However, responding to unfolding changes in the marketplace in a timely fashion lessens a company’s chances of becoming trapped in a stagnant or declining business or letting attractive new growth opportunities slip away.
 
-Chapter 2 Strategy Formulation, Execution, and Governance 17
-
-significant way that renders the vision obsolete. Such occasions can be referred to as strategic inflection points. When a company reaches a strategic inflection point, management has tough decisions to make about the company’s direction because abandoning an established course carries considerable risk. However, responding to unfolding changes in the marketplace in a timely fashion lessens a company’s chances of becoming trapped in a stagnant or declining business or letting attractive new growth opportunities slip away. The first three stages of the strategic management process make up a strategic plan. A strategic plan maps out where a company is headed, establishes strategic and financial targets, and outlines the competitive moves and approaches to be used in achieving
+The first three stages of the strategic management process make up a strategic plan. A strategic plan maps out where a company is headed, establishes strategic and financial targets, and outlines the competitive moves and approaches to be used in achieving the desired business results.1
 
 Stage 1: Developing a Strategic Vision, a Mission, and Core Values
 
+LO2-1
+
 Understand why it is critical for company managers to have a clear strategic vision of where a company needs to head and why.
 
-At the outset of the strategy formulation, strategy execution process, a company’s senior managers must wrestle with the issue of what directional path the company should take and whether its market positioning and future performance prospects could be improved by changing the company’s product offerings and/or the markets in which it participates and/or the customers it caters to and/or the technologies it employs. Top management’s views about the company’s direction and future product-customer- | A strategic vision describes “where we are going”— market-technology focus constitute a strategic vision for the course and direction management has charted the company. A clearly articulated strategic vision com- | and the company’s future product-customer-marketmunicates management’s aspirations to stakeholders about “where we are going” and helps steer the energies of company personnel in a common direction. For instance, the vision of Google’s cofounders Larry Page and Sergey Brin “to organize the world’s information and make it universally accessible and useful”2 captured the imagination of Google employees, served as the basis for crafting the company’s strategic actions, and aided internal efforts to mobilize and direct the company’s resources. Well-conceived visions are distinctive and specific to a particular organization; they avoid generic, feel-good statements such as “We will become a global leader and the first choice of customers in every market we choose to serve”3—which could apply to any of hundreds of organizations.4 And they are not the product of a committee charged with coming up with an innocuous but well-meaning one-sentence vision that wins consensus approval from various stakeholders. Nicely worded vision statements with no specifics about the company’s product-market-customer-technology focus fall well short of what it takes for a vision to measure up. For a strategic vision to function as a valuable managerial tool, it must provide understanding of what management wants its business to look like and provide managers with a reference point in making strategic decisions. It must say something definitive about how the company’s leaders intend to position the company beyond where it is today. Table 2.2 lists some characteristics of effective vision statements.
+At the outset of the strategy formulation, strategy execution process, a company’s senior managers must wrestle with the issue of what directional path the company should take and whether its market positioning and future performance prospects could be improved by changing the company’s product offerings and/or the markets in which it participates and/or the customers it caters to and/or the technologies it employs. Top management’s views about the company’s direction and future product-customer-market-technology focus constitute a strategic vision for the company. A clearly articulated strategic vision communicates management’s aspirations to stakeholders about “where we are going” and helps steer the energies of company personnel in a common direction. For instance, the vision of Google’s cofounders Larry Page and Sergey Brin “to organize the world’s information and make it universally accessible and useful”2 captured the imagination of Google employees, served as the basis for crafting the company’s strategic actions, and aided internal efforts to mobilize and direct the company’s resources.
 
-gam61549_ch02_014-036.indd 17 | 09/30/19 01:20 PM
+CORE CONCEPT A strategic vision describes “where we are going”—the course and direction management has charted and the company’s future product-customer-market-technology focus.
 
-Final PDF to printer
+Well-conceived visions are distinctive and specific to a particular organization; they avoid generic, feel-good statements such as “We will become a global leader and the first choice of customers in every market we choose to serve”3—which could apply to any of hundreds of organizations.4 And they are not the product of a committee charged with coming up with an innocuous but well-meaning one-sentence vision that wins consensus approval from various stakeholders. Nicely worded vision statements with no specifics about the company’s product-market-customer-technology focus fall well short of what it takes for a vision to measure up.
 
-18 Part 1 Section A: Introduction and Overview
+For a strategic vision to function as a valuable managerial tool, it must provide understanding of what management wants its business to look like and provide managers with a reference point in making strategic decisions. It must say something definitive about how the company’s leaders intend to position the company beyond where it is today. Table 2.2 lists some characteristics of effective vision statements.
 
 A surprising number of the vision statements found on company websites and in annual reports are vague and unrevealing, saying very little about the company’s future product-market-customer-technology focus. Some could apply to most any company in any industry. Many read like a public relations statement—lofty words that someone came up with because it is fashionable for companies to have an official vision statement.5 Table 2.3 provides a list of the most common shortcomings in company vision statements. Like any tool, vision statements can be used properly or improperly, either clearly conveying a company’s strategic course or not. Concepts & Connections 2.1 provides a critique of the strategic visions of several prominent companies.
 
+TABLE 2.2
+
 Characteristics of Effectively Worded Vision Statements
 
-Graphic—Paints a picture of the kind of company that management is trying to create and the market position(s) the company is striving to stake out. Directional—Is forward-looking; describes the strategic course that management has charted and the kinds of product-market-customer-technology changes that will help the company prepare for
+Graphic—Paints a picture of the kind of company that management is trying to create and the market position(s) the company is striving to stake out.
 
-Focused—Is specific enough to provide managers with guidance in making decisions and allocating
+Directional—Is forward-looking; describes the strategic course that management has charted and the kinds of product-market-customer-technology changes that will help the company prepare for the future.
 
-Flexible—Is not so focused that it makes it difficult for management to adjust to changing circumstances in markets, customer preferences, or technology. Feasible—Is within the realm of what the company can reasonably expect to achieve. Desirable—Indicates why the directional path makes good business sense. Easy to communicate—Is explainable in 5 to 10 minutes and, ideally, can be reduced to a simple, memorable “slogan” (like Henry Ford’s famous vision of “a car in every garage”).
+Focused—Is specific enough to provide managers with guidance in making decisions and allocating resources.
+
+Flexible—Is not so focused that it makes it difficult for management to adjust to changing circumstances in markets, customer preferences, or technology.
+
+Feasible—Is within the realm of what the company can reasonably expect to achieve.
+
+Desirable—Indicates why the directional path makes good business sense.
+
+Easy to communicate—Is explainable in 5 to 10 minutes and, ideally, can be reduced to a simple, memorable “slogan” (like Henry Ford’s famous vision of “a car in every garage”).
 
 Source: Based partly on John P. Kotter, Leading Change (Harvard Business School Press, 1996).
 
+TABLE 2.3
+
 Common Shortcomings in Company Vision Statements
 
-Vague or incomplete—Short on specifics about where the company is headed or what the company is doing to prepare for the future. Not forward-looking—Does not indicate whether or how management intends to alter the
+Vague or incomplete—Short on specifics about where the company is headed or what the company is doing to prepare for the future.
 
-Too broad—So all-inclusive that the company could head in most any direction, pursue most any opportunity, or enter most any business. Bland or uninspiring—Lacks the power to motivate company personnel or inspire shareholder confidence about the company’s direction. Not distinctive—Provides no unique company identity; could apply to companies in any of several industries (including rivals operating in the same market arena). Too reliant on superlatives—Does not say anything specific about the company’s strategic course beyond the pursuit of such distinctions as being a recognized leader, a global or worldwide leader, or the first choice of customers.
+Not forward-looking—Does not indicate whether or how management intends to alter the company’s current product-market-customer-technology focus.
+
+Too broad—So all-inclusive that the company could head in most any direction, pursue most any opportunity, or enter most any business.
+
+Bland or uninspiring—Lacks the power to motivate company personnel or inspire shareholder confidence about the company’s direction.
+
+Not distinctive—Provides no unique company identity; could apply to companies in any of several industries (including rivals operating in the same market arena).
+
+Too reliant on superlatives—Does not say anything specific about the company’s strategic course beyond the pursuit of such distinctions as being a recognized leader, a global or worldwide leader, or the first choice of customers.
 
 Source: Based on information in Hugh Davidson, The Committed Enterprise (Oxford: Butterworth Heinemann, 2002), chap. 2; and Michel Robert, Strategy Pure and Simple II (New York: McGraw-Hill, 1998), chaps. 2, 3, and 6.
 
-gam61549_ch02_014-036.indd 18 | 09/30/19 01:20 PM
-
-Final PDF to printer
-
-Chapter 2 Strategy Formulation, Execution, and Governance 19
+CONCEPTS & CONNECTIONS 2.1
 
 EXAMPLES OF STRATEGIC VISIONS—HOW WELL DO THEY MEASURE UP?
 
-Whole Foods Market is a dynamic leader in the quality food business. We are a mission-driven company that aims to set the standards of excellence for food retailers. We are building a business in which high standards permeate all aspects of our company. Quality is a state of mind at Whole Foods Market. Our motto—Whole Foods, Whole People, Whole Planet— emphasizes that our vision reaches far beyond just being a food retailer. Our success in fulfilling our vision is measured by customer satisfaction, team member happiness and excellence, return on capital investment, improvement in the state of the environment and local
+Whole Foods
 
-Our ability to instill a clear sense of interdependence among our various stakeholders (the people who are interested and benefit from the success of our company) is contingent upon our efforts to communicate more often, more openly, and more compassionately. Better communication equals better understanding and more trust.
+Whole Foods Market is a dynamic leader in the quality food business. We are a mission-driven company that aims to set the standards of excellence for food retailers. We are building a business in which high standards permeate all aspects of our company. Quality is a state of mind at Whole Foods Market. Our motto—Whole Foods, Whole People, Whole Planet—emphasizes that our vision reaches far beyond just being a food retailer. Our success in fulfilling our vision is measured by customer satisfaction, team member happiness and excellence, return on capital investment, improvement in the state of the environment and local and larger community support. Our ability to instill a clear sense of interdependence among our various stakeholders (the people who are interested and benefit from the success of our company) is contingent upon our efforts to communicate more often, more openly, and more compassionately. Better communication equals better understanding and more trust.
 
-A leading producer and distributor of hot and cold beverages to satisfy every consumer need, anytime
+Effective elements: Forward-looking; Graphic; Focused; Desirable. Shortcomings: Long; Not memorable.
 
-Our vision is a world in which all people’s basic needs— such as shelter, clean water, sanitation, food and reliable | • Too reliant on superlatives power—are fulfilled in an environmentally sustainable way and a company that improves the quality of the environment and the communities where we live and work.
+Keurig Dr Pepper
 
-NIKE, Inc., fosters a culture of invention. We create products, services and experiences for today’s athlete* while solving problems for the next generation. • Too reliant on superlatives * “If you have a body, you are an athlete.” Source: Company documents and websites.
+A leading producer and distributor of hot and cold beverages to satisfy every consumer need, anytime and anywhere.
+
+Effective elements: Focused; Desirable; Easy to communicate. Shortcomings: Not graphic; Not distinctive.
+
+Caterpillar
+
+Our vision is a world in which all people’s basic needs—such as shelter, clean water, sanitation, food and reliable power—are fulfilled in an environmentally sustainable way and a company that improves the quality of the environment and the communities where we live and work.
+
+Effective elements: Graphic; Desirable. Shortcomings: Too broad; Too reliant on superlatives; Not distinctive.
+
+Nike
+
+NIKE, Inc., fosters a culture of invention. We create products, services and experiences for today’s athlete* while solving problems for the next generation.
+
+Effective elements: Forward-looking; Flexible. Shortcomings: Vague; Not focused; Too reliant on superlatives.
+
+* “If you have a body, you are an athlete.”
+
+Source: Company documents and websites.
 
 The Importance of Communicating the Strategic Vision
 
-A strategic vision has little value to the organization unless it’s effectively communicated down the line to lower-level managers and employees. It would be difficult for a vision statement to provide direction to decision makers and energize employees toward achieving long-term strategic intent unless they know of the vision and observe
+A strategic vision has little value to the organization unless it’s effectively communicated down the line to lower-level managers and employees. It would be difficult for a vision statement to provide direction to decision makers and energize employees toward achieving long-term strategic intent unless they know of the vision and observe management’s commitment to that vision. Communicating the vision to organization members nearly always means putting “where we are going and why” in writing, distributing the statement organizationwide, and having executives personally explain the vision and its rationale to as many people as feasible. Ideally, executives should present their vision for the company in a manner that reaches out and grabs people’s attention. An engaging and convincing strategic vision has enormous motivational value—for the same reason that a stonemason is inspired by building a great cathedral for the ages. Therefore, an executive’s ability to paint a convincing and inspiring picture of a company’s journey to a future destination is an important element of effective strategic leadership.6
 
-gam61549_ch02_014-036.indd 19 | 09/30/19 01:20 PM
+Expressing the Essence of the Vision in a Slogan
 
-Final PDF to printer
+The task of effectively conveying the vision to company personnel is assisted when management can capture the vision of where to head in a catchy or easily remembered slogan. A number of organizations have summed up their vision in a brief phrase. Disney’s overarching vision for its five business groups—theme parks, movie studios, television channels, consumer products, and interactive media entertainment—is to “create happiness by providing the finest in entertainment for people of all ages, everywhere.”7 The Mayo Clinic’s vision is to provide “The best care to every patient every day,”8 while Greenpeace’s envisioned future is “To halt environmental abuse and promote environmental solutions.”9 Creating a short slogan to illuminate an organization’s direction and then using it repeatedly as a reminder of “where we are headed and why” helps rally organization members to hurdle whatever obstacles lie in the company’s path and maintain their focus.
 
-20 Part 1 Section A: Introduction and Overview
+An effectively communicated vision is a valuable management tool for enlisting the commitment of company personnel to engage in actions that move the company in the intended direction.
 
-management’s commitment to that vision. Communicating the vision to organization members nearly always means putting “where we are going and why” in writing, distributing the statement organizationwide, and having executives personally explain the vision and its rationale to as many people as feasible. Ideally, executives should present their vision for the company in a manner that reaches out and grabs people’s attention. An engaging and convincing strategic vision has enormous motivational value—for the same reason that a stonemason is inspired by building a great cathedral for the ages. Therefore, an executive’s ability to paint a convincing and inspiring picture of a company’s journey to a future destination is an important element of effective strategic
+Why a Sound, Well-Communicated Strategic Vision Matters
 
-Expressing the Essence of the Vision in a Slogan The task of effectively conveying the vision to company personnel is assisted when management can capture the vision of where to head in a catchy or easily remembered slogan. A number of organizations have summed up their vision in a brief phrase. Disney’s overarching vision for its five business groups—theme parks, movie studios, television channels, consumer products, and interactive media entertainment—is to “create happiness by providing the finest in entertainment for people of all ages, everywhere.”7 The Mayo Clinic’s vision is to pro- An effectively communicated vision is a valuable
+A well-thought-out, forcefully communicated strategic vision pays off in several respects: (1) it crystallizes senior executives’ own views about the firm’s long-term direction; (2) it reduces the risk of rudderless decision making by management at all levels; (3) it is a tool for winning the support of employees to help make the vision a reality; (4) it provides a beacon for lower-level managers in forming departmental missions; and (5) it helps an organization prepare for the future.
 
-management tool for enlisting the commitment of | vide “The best care to every patient every day,”8 while company personnel to engage in actions that move | Greenpeace’s envisioned future is “To halt environthe company in the intended direction. | mental abuse and promote environmental solutions.”9 Creating a short slogan to illuminate an organization’s direction and then using it repeatedly as a reminder of “where we are headed and why” helps rally organization members to hurdle whatever obstacles lie in the company’s path and maintain their focus.
+The distinction between a strategic vision and a mission statement is fairly clear-cut: A strategic vision portrays a company’s future business scope (“where we are going”), whereas a company’s mission statement typically describes its present business and purpose (“who we are, what we do, and why we are here”).
 
-Why a Sound, Well-Communicated Strategic Vision Matters A well-thoughtout, forcefully communicated strategic vision pays off in several respects: (1) it crystallizes senior executives’ own views about the firm’s long-term direction; (2) it reduces the risk of rudderless decision making by management at all levels; (3) it is a tool for winning the support of employees to help make the vision a reality; (4) it provides a beacon for lower-level managers in forming departmental missions; and (5) it helps an organization prepare for the future.
+CORE CONCEPT A well-conceived mission statement conveys a company’s purpose in language specific enough to give the company its own identity.
 
-The distinction between a strategic vision and a | Developing a Company Mission Statement mission statement is fairly clear-cut: A strategic vision | The defining characteristic of a well-conceived strategic portrays a company’s future business scope (“where we vision is what it says about the company’s future strateare going”), whereas a company’s mission statement | gic course—“where we are headed and what our future typically describes its present business and purpose | product-customer-market-technology focus will be.” In (“who we are, what we do, and why we are here”). | contrast, a mission statement describes the enterprise’s
+Developing a Company Mission Statement
 
-present business scope and purpose—“who we are, what we do, and why we are here.” It is purely descriptive. Ideally, a company mission statement (1) identifies the company’s A well-conceived mission statement conveys a products and/or services, (2) specifies the buyer needs that company’s purpose in language specific enough to
+The defining characteristic of a well-conceived strategic vision is what it says about the company’s future strategic course—“where we are headed and what our future product-customer-market-technology focus will be.” In contrast, a mission statement describes the enterprise’s present business scope and purpose—“who we are, what we do, and why we are here.” It is purely descriptive. Ideally, a company mission statement (1) identifies the company’s products and/or services, (2) specifies the buyer needs that the company seeks to satisfy and the customer groups or markets that it serves, and (3) gives the company its own identity. Consider, for example, the mission statement of
 
-give the company its own identity. | the company seeks to satisfy and the customer groups or
+(3) evaluate the strategic leadership skills of the CEO, and (4) institute a compensation plan for top executives that rewards them for actions and results that serve stakeholder interests, most especially those of shareholders.
 
-markets that it serves, and (3) gives the company its own identity. Consider, for example, the mission statement of
+ASSURANCE OF LEARNING EXERCISES
 
-gam61549_ch02_014-036.indd 20 | 09/30/19 01:20 PM
-
-34 Part 1 Section A: Introduction and Overview
-
-(3) evaluate the strategic leadership skills of the CEO, and (4) institute a compensation plan for top executives that rewards them for actions and results that serve stakeholder interests, most
+LO2-1
 
 1. Using the information in Tables 2.2 and 2.3, critique the adequacy and merit of the following vision statements, listing effective elements and shortcomings. Rank the vision statements from best to worst once you complete your evaluation.
 
-We work hard every day to make American Express the world’s
+VISION STATEMENT | Effective Elements | Shortcomings
 
-Our vision is to be the first choice of the world’s travelers. Hilton intends to build on the rich heritage and strength of our brands by: • Consistently delighting our customers Investing in our team members • Delivering innovative products and services
+American Express
 
-• Creating a culture of pride • Strengthening the loyalty of our constituents28
+We work hard every day to make American Express the world’s most respected service brand.27
+
+Hilton Hotels Corporation
+
+Our vision is to be the first choice of the world’s travelers. Hilton intends to build on the rich heritage and strength of our brands by: • Consistently delighting our customers • Investing in our team members • Delivering innovative products and services • Continuously improving performance • Increasing shareholder value • Creating a culture of pride • Strengthening the loyalty of our constituents28
+
+MasterCard
+
+A world beyond cash.29
+
+BASF
 
 We are “The Chemical Company” successfully operating in all major markets. • Our customers view BASF as their partner of choice. • Our innovative products, intelligent solutions and services make us the most competent worldwide supplier in the chemical industry. • We generate a high return on assets. • We strive for sustainable development. • We welcome change as an opportunity. • We, the employees of BASF, together ensure our success.30
 
 Source: Company websites and annual reports.
 
-2. Go to the company investor relations websites for Starbucks (investor.starbucks.com), Pfizer (www.pfizer.com/investors), and Salesforce (investor.salesforce.com) to find examples of strategic and financial objectives. List four objectives for each company, and indicate which of these are strategic and which are financial. 3. Boeing has been recognized by Forbes and other business publications as one of the world’s best managed companies. The company discusses how its people and organizational units bring to bear the “best of Boeing” to its customers in 150 countries at www.boeing.com/company. Prepare a one- to two-page report that suggests how design or software problems with the 737 MAX may have occurred despite Boeing’s commitment to excellence at various organizational levels and functional areas.
+LO2-2
+
+2. Go to the company investor relations websites for Starbucks (investor.starbucks.com), Pfizer (www.pfizer.com/investors), and Salesforce (investor.salesforce.com) to find examples of strategic and financial objectives. List four objectives for each company, and indicate which of these are strategic and which are financial.
+
+LO2-3
+
+3. Boeing has been recognized by Forbes and other business publications as one of the world’s best managed companies. The company discusses how its people and organizational units bring to bear the “best of Boeing” to its customers in 150 countries at www.boeing.com/company. Prepare a one- to two-page report that suggests how design or software problems with the 737 MAX may have occurred despite Boeing’s commitment to excellence at various organizational levels and functional areas.
