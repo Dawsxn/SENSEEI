@@ -56,8 +56,10 @@ the LLM, once per reading, to describe its figures; it is not an agent (see
   under async, lazy loads raise, so queries use explicit joins), `orchestrator.py`
   (the fixed-rule loop: pass/fail, retries, step advancement — pure, no LLM and no
   database), `services/` (the imperative shell that carries a decision out, over
-  Server-Sent Events), `routers/` (the HTTP endpoints), `auth.py` (Google OAuth,
-  the DLSU restriction and the instructor allowlist), and `deps.py` (the current
+  Server-Sent Events), `routers/` (the HTTP endpoints), `trial_tests/` (the
+  trial's pre-test and post-test, one YAML file per reading, with the answer key
+  and rubrics), `auth.py` (Google OAuth,
+  the DLSU restriction, the instructor allowlist and the trial's graders), and `deps.py` (the current
   user from the session cookie, and the agent pair). Imports the agents
   rather than reimplementing them. Run it with `uvicorn backend.main:app --reload`,
   after `docker compose up -d --wait`.

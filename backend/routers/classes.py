@@ -37,6 +37,7 @@ from ..services.class_service import (
     DuplicateClass,
     Fields,
     ModeLocked,
+    TestNotAvailable,
     UnknownCode,
 )
 from ..settings import get_settings
@@ -50,13 +51,18 @@ DUPLICATE = HTTPException(
 MODE_LOCKED = HTTPException(
     status_code=409, detail="a participant has signed in, so the mode cannot change"
 )
+NO_SUCH_TEST = HTTPException(
+    status_code=422, detail="that test is not for any of this class's readings"
+)
 
 
 def _fields(body: ClassIn) -> Fields:
     """The class as typed. The control groups' modes exist only in trial mode."""
     if body.mode is not ClassMode.SEEI and not get_settings().trial_mode:
         raise HTTPException(status_code=422, detail="only SEE-I classes outside the trial")
-    return Fields(body.name, body.section, body.mode)
+    if body.test_key is not None and not get_settings().trial_mode:
+        raise HTTPException(status_code=422, detail="tests exist only in the trial")
+    return Fields(body.name, body.section, body.mode, body.test_key)
 
 
 @router.get("/instructor/classes", response_model=list[ClassListItem])
@@ -78,6 +84,8 @@ async def create_class(
         row = await class_service.create_class(db, user.id, _fields(body))
     except DuplicateClass:
         raise DUPLICATE
+    except TestNotAvailable:
+        raise NO_SUCH_TEST
     return ClassListItem(**row)
 
 
@@ -108,6 +116,8 @@ async def update_class(
         raise DUPLICATE
     except ModeLocked:
         raise MODE_LOCKED
+    except TestNotAvailable:
+        raise NO_SUCH_TEST
     return ClassDetailOut(**row)
 
 

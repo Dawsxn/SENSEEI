@@ -6,18 +6,20 @@
  * top of the stack assigns the groups at random.
  *
  * Closing the batch ends the sitting; voiding one ID handles a spoiled slip or
- * someone who left. Both ask first, because neither can be undone. */
+ * someone who left. A closed batch can be deleted with everything recorded for
+ * its IDs, to clear out a dry run. All three ask first, because none can be
+ * undone. Each ID links to its answers on the grading page. */
 
 import { useState } from "react";
-import { Ban, ChevronLeft, Lock, Printer } from "lucide-react";
+import { Ban, ChevronLeft, Lock, Printer, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
-import { closeBatch, voidParticipant } from "../../lib/api";
+import { closeBatch, deleteBatch, voidParticipant } from "../../lib/api";
 import { MODE_LABEL } from "../classes/types";
 import type { Batch, BatchParticipant, ParticipantStatus } from "./types";
 import { useBatch } from "./useTrial";
@@ -29,7 +31,11 @@ const STATUS: Record<ParticipantStatus, { label: string; tone: string }> = {
   voided: { label: "Voided", tone: "text-fail-foreground" },
 };
 
-type Dialog = { kind: "close" } | { kind: "void"; participant: BatchParticipant } | null;
+type Dialog =
+  | { kind: "close" }
+  | { kind: "delete" }
+  | { kind: "void"; participant: BatchParticipant }
+  | null;
 
 export function BatchPage() {
   const { batchId } = useParams<{ batchId: string }>();
@@ -82,6 +88,18 @@ export function BatchPage() {
                         <Printer className="h-4 w-4" />
                       </Button>
                     </Tooltip>
+                    {batch.closed_at && (
+                      <Tooltip text="Delete batch" align="left">
+                        <Button
+                          variant="danger"
+                          size="icon"
+                          aria-label="Delete batch"
+                          onClick={() => setDialog({ kind: "delete" })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </Tooltip>
+                    )}
                     {!batch.closed_at && (
                       <Tooltip text="Close batch" align="left">
                         <Button
@@ -133,6 +151,23 @@ export function BatchPage() {
           Its IDs will stop working.
         </ConfirmDialog>
       )}
+      {batch && dialog?.kind === "delete" && (
+        <ConfirmDialog
+          title={`Delete ${batch.name}?`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          tone="danger"
+          onConfirm={async () => {
+            await deleteBatch(batch.id);
+            await queryClient.invalidateQueries({ queryKey: ["batches"] });
+            navigate("/participants", { replace: true });
+          }}
+          onCancel={() => setDialog(null)}
+        >
+          Every ID in this batch and everything recorded for them will be deleted, and this
+          can&rsquo;t be undone.
+        </ConfirmDialog>
+      )}
       {batch && dialog?.kind === "void" && (
         <ConfirmDialog
           title={`Void ${dialog.participant.code}?`}
@@ -163,13 +198,14 @@ function Row({
   return (
     <div className="grid grid-cols-[1fr_28px] items-center gap-4 border-b px-4 py-2.5 last:border-b-0 sm:grid-cols-[200px_1fr_140px_28px]">
       <span className="min-w-0">
-        <span
-          className={`block font-mono text-[13px] tracking-wider ${
+        <Link
+          to={`/grading?id=${encodeURIComponent(p.code)}`}
+          className={`block font-mono text-[13px] tracking-wider hover:underline ${
             p.status === "voided" ? "text-muted-foreground/70 line-through" : ""
           }`}
         >
           {p.code}
-        </span>
+        </Link>
         {/* On narrow screens the columns collapse into this line. */}
         <span className="mt-0.5 block text-[12px] text-muted-foreground sm:hidden">
           {p.class_label} · {MODE_LABEL[p.mode]} · {status.label}

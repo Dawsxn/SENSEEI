@@ -26,7 +26,7 @@ import { TrialClock, useTimeUp } from "./TrialClock";
 import { logTrial, useTrialLogging } from "./trialLog";
 import { useChatbot } from "./useChatbot";
 import { useIntro } from "./useIntro";
-import { useStartTrialClock, useTrialStatus } from "./useTrial";
+import { useStartTrialClock, useTestHandoff, useTrialStatus } from "./useTrial";
 
 const PdfPanel = lazy(() =>
   import("../tutoring/PdfPanel").then((m) => ({ default: m.PdfPanel })),
@@ -55,6 +55,7 @@ function useControlGroup() {
   useTrialLogging(true);
 
   const done = !!status?.done;
+  useTestHandoff(done || timeUp);
   async function finish() {
     setConfirming(false);
     queryClient.setQueryData(["trial"], await finishTrial());

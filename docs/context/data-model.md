@@ -73,9 +73,10 @@ erDiagram
     CLASS ||--o{ PARTICIPANT : "is the group of"
     PARTICIPANT ||--o{ CHAT_MESSAGE : "chats in"
     PARTICIPANT ||--o{ TRIAL_EVENT : "is logged by"
+    PARTICIPANT ||--o{ TEST_ANSWER : answers
 ```
 
-The participant tables and the two below them exist only for the trial
+The participant tables and the three below them exist only for the trial
 (`docs/context/trial.md`).
 
 ## Entities
@@ -83,12 +84,12 @@ The participant tables and the two below them exist only for the trial
 ### user
 
 One table for both roles. A user is either an instructor or a student, never
-both.
+both. The trial instance adds a third, the grader, who only grades the tests.
 
 | Field | Notes |
 | --- | --- |
 | id | |
-| role | student or instructor |
+| role | student, instructor, or grader (trial mode only) |
 | name | |
 | email | |
 | google_sub | Google account subject, the stable identifier from sign-in |
@@ -108,6 +109,7 @@ cannot sign in at all, so enrolment is not the only gate.
 | section | The section, e.g. `K31`. Unique with name per instructor, ignoring case |
 | join_code | Generated on creation. Students enrol with it (§4.3.4) |
 | mode | `seei`, `chatbot` or `reading_only`. Always `seei` outside trial mode |
+| test_key | Trial mode: the pre-test and post-test the class takes, by key in `backend/trial_tests`. Null for none |
 | created_at | |
 
 **Students see one label, `STRAMA K31`.** Name and section are stored apart
@@ -166,6 +168,8 @@ Trial mode only. One participant ID, and the student it signs in as.
 | clock_started_at | When their reading first opened. Their time runs from here |
 | voided_at | Set when the ID is voided. It stops signing in |
 | done_at | When they pressed Done (chatbot and reading-only groups) |
+| pretest_started_at, pretest_ended_at, pretest_ended_by | With tests: when the pre-test started and ended, and how (`submitted`, `time_up`, `closed`) |
+| posttest_started_at, posttest_ended_at, posttest_ended_by | The same for the post-test |
 
 **A participant is a student underneath.** The user row and the enrolment let the
 tutoring loop, the roster and the statistics treat them like anyone else. This
@@ -196,6 +200,24 @@ Trial mode only. One row per thing a participant did that the analysis uses
 | data | Small and specific to the kind: a panel, a page, a paste's length. Never typed or pasted text |
 | at | When it happened, by the participant's browser |
 | received_at | When the server got it |
+
+### test_answer
+
+Trial mode only. One answer on a participant's pre-test or post-test, saved as
+it is typed.
+
+| Field | Notes |
+| --- | --- |
+| participant_id | |
+| test | `pre` or `post` |
+| item | The question's id in the test file. Unique with participant and test |
+| choice, text, groups | The answer: a letter, written text, or the 12a grouping table (JSON) |
+| sure | "I'm sure" (true) or "I'm not sure" (false). Null until ticked |
+| score, scored_at | Multiple choice is scored as it is saved; written answers by the grader |
+| first_answered_at, last_changed_at, edits | The answer's history |
+
+The questions, answer key and rubrics are not in the database; they are in the
+test file, so a test changes only through a release.
 
 ### reading
 

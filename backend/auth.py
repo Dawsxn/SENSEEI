@@ -38,3 +38,9 @@ def is_dlsu_email(email: str) -> bool:
 
 def is_instructor(email: str) -> bool:
     return email.strip().lower() in get_settings().instructor_allowlist
+
+
+def is_grader(email: str) -> bool:
+    """A grader on the trial instance. Graders exist only in trial mode."""
+    s = get_settings()
+    return s.trial_mode and email.strip().lower() in s.grader_allowlist

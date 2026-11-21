@@ -90,6 +90,9 @@ class Class(Entity, SoftDelete, table=True):
         sa_type=String(16),
         sa_column_kwargs={"server_default": ClassMode.SEEI.value},
     )
+    #: Trial mode: the pre-test and post-test its participants take, by the
+    #: test's key in `backend/trial_tests`. None means no tests.
+    test_key: str | None = Field(default=None, sa_type=String(64))
     created_at: datetime = Field(default_factory=utcnow, sa_type=TS)
 
 

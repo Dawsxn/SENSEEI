@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from agents.providers.base import LLMProvider
 
 from ..db import get_session
-from ..deps import get_chatbot_dep, require_instructor, require_student
+from ..deps import get_chatbot_dep, require_grader, require_instructor, require_student
 from ..models import User, utcnow
 from ..schemas import (
     BatchIn,
@@ -27,15 +27,24 @@ from ..schemas import (
     BatchOut,
     ChatIn,
     ChatMessageOut,
+    GradingDetailOut,
+    GradingListItem,
+    SavedAnswer,
+    ScoreIn,
+    TestAnswerIn,
+    TestViewOut,
+    TestWhich,
     TrialEventsIn,
     TrialStatusOut,
 )
-from ..services import chat_service, export_service, trial_service
+from ..services import chat_service, export_service, test_service, trial_service
 from ..services.detach import detached
 from ..services.trial_service import (
     BatchNotFound,
     InvalidBatch,
+    BatchOpen,
     NotDoneable,
+    PretestFirst,
     TrialOff,
     UnknownParticipant,
 )
@@ -72,6 +81,8 @@ async def start_clock(
         return TrialStatusOut(**await trial_service.start_clock(db, user.id))
     except (TrialOff, UnknownParticipant):
         raise NOT_FOUND
+    except PretestFirst:
+        raise HTTPException(status_code=409, detail="the pre-test comes first")
 
 
 @router.post("/trial/done", response_model=TrialStatusOut)
@@ -103,6 +114,89 @@ async def record_events(
     except (TrialOff, UnknownParticipant):
         raise NOT_FOUND
     return Response(status_code=204)
+
+
+# --------------------------------------------------------------------------- #
+# a participant's pre-test and post-test
+
+
+def _test_errors(e: Exception) -> HTTPException:
+    if isinstance(e, (TrialOff, UnknownParticipant, test_service.UnknownItem)):
+        return NOT_FOUND
+    if isinstance(e, test_service.NotOpen):
+        return HTTPException(status_code=409, detail=str(e))
+    return HTTPException(status_code=422, detail=str(e))
+
+
+TEST_ERRORS = (
+    TrialOff,
+    UnknownParticipant,
+    test_service.UnknownItem,
+    test_service.NotOpen,
+    test_service.BadAnswer,
+)
+
+
+@router.get("/trial/tests/{which}", response_model=TestViewOut)
+async def view_test(
+    which: TestWhich,
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> TestViewOut:
+    """The test as its taker sees it, with their saved answers. No answer key."""
+    try:
+        return TestViewOut(**await test_service.view(db, user.id, which))
+    except TEST_ERRORS as e:
+        raise _test_errors(e)
+
+
+@router.post("/trial/tests/{which}/start", response_model=TestViewOut)
+async def start_test(
+    which: TestWhich,
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> TestViewOut:
+    """Start the test's clock. Only the first call starts it."""
+    try:
+        return TestViewOut(**await test_service.start(db, user.id, which))
+    except TEST_ERRORS as e:
+        raise _test_errors(e)
+
+
+@router.put("/trial/tests/{which}/answers/{item}", response_model=SavedAnswer)
+async def save_answer(
+    which: TestWhich,
+    item: str,
+    body: TestAnswerIn,
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> SavedAnswer:
+    """Save one answer as it is typed."""
+    try:
+        saved = await test_service.save(
+            db, user.id, which, item,
+            choice=body.choice,
+            text=body.text,
+            groups=None if body.groups is None else [g.model_dump() for g in body.groups],
+            sure=body.sure,
+        )
+    except TEST_ERRORS as e:
+        raise _test_errors(e)
+    return SavedAnswer(**saved)
+
+
+@router.post("/trial/tests/{which}/submit", response_model=TrialStatusOut)
+async def submit_test(
+    which: TestWhich,
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> TrialStatusOut:
+    """Submit the test. It cannot be changed afterwards."""
+    try:
+        await test_service.submit(db, user.id, which)
+        return TrialStatusOut(**await trial_service.status(db, user.id))
+    except TEST_ERRORS as e:
+        raise _test_errors(e)
 
 
 @router.get("/trial/chat", response_model=list[ChatMessageOut])
@@ -159,6 +253,51 @@ async def export(
             "Cache-Control": "no-store",
         },
     )
+
+
+@router.get("/instructor/grading", response_model=list[GradingListItem])
+async def grading_list(
+    user: User = Depends(require_grader),
+    db: AsyncSession = Depends(get_session),
+) -> list[GradingListItem]:
+    """Everyone with a test to grade, by ID only."""
+    try:
+        return [GradingListItem(**row) for row in await test_service.grading_list(db)]
+    except TrialOff:
+        raise NOT_FOUND
+
+
+@router.get("/instructor/grading/{code}", response_model=GradingDetailOut)
+async def grading_detail(
+    code: str,
+    user: User = Depends(require_grader),
+    db: AsyncSession = Depends(get_session),
+) -> GradingDetailOut:
+    """One participant's answers, scores and rubrics. Never their group."""
+    try:
+        return GradingDetailOut(**await test_service.grading_detail(db, code))
+    except (TrialOff, test_service.NotGradable):
+        raise NOT_FOUND
+
+
+@router.put("/instructor/grading/{code}/{which}/{item}", response_model=GradingDetailOut)
+async def set_score(
+    code: str,
+    which: TestWhich,
+    item: str,
+    body: ScoreIn,
+    user: User = Depends(require_grader),
+    db: AsyncSession = Depends(get_session),
+) -> GradingDetailOut:
+    """Score one written answer. A score can be changed any time."""
+    try:
+        return GradingDetailOut(
+            **await test_service.set_score(db, code, which, item, body.score)
+        )
+    except (TrialOff, test_service.NotGradable):
+        raise NOT_FOUND
+    except test_service.BadScore as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
 
 @router.delete("/instructor/participants/{code}", status_code=204)
@@ -227,6 +366,22 @@ async def close_batch(
         return BatchOut(**await trial_service.close_batch(db, user.id, batch_id))
     except (TrialOff, BatchNotFound):
         raise NOT_FOUND
+
+
+@router.delete("/instructor/batches/{batch_id}", status_code=204)
+async def delete_batch(
+    batch_id: uuid.UUID,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> Response:
+    """Delete a closed batch and everything recorded for every ID in it."""
+    try:
+        await trial_service.delete_batch(db, user.id, batch_id)
+    except (TrialOff, BatchNotFound):
+        raise NOT_FOUND
+    except BatchOpen:
+        raise HTTPException(status_code=409, detail="close the batch first")
+    return Response(status_code=204)
 
 
 @router.post(

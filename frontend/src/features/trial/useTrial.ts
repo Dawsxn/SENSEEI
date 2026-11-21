@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { getBatch, getBatches, getTrialStatus, startTrialClock } from "../../lib/api";
 import { useMe } from "../auth/useAuth";
@@ -61,6 +62,28 @@ export function useStartTrialClock(participant: boolean) {
   useEffect(() => {
     if (!participant || asked.current) return;
     asked.current = true;
-    void startTrialClock().then((status) => queryClient.setQueryData(["trial"], status));
+    void startTrialClock()
+      .then((status) => queryClient.setQueryData(["trial"], status))
+      // Refused only when the pre-test comes first; the status sends them there.
+      .catch(() => queryClient.invalidateQueries({ queryKey: ["trial"] }));
   }, [participant, queryClient]);
+}
+
+/** With tests, the session screens hand the participant on when it ends.
+ *
+ * `ended` is the screen's own word that the session is over (Done, time up, a
+ * SEE-I session finishing). The server is asked again then, and once it says the
+ * participant is past the session, `/` sends them to the post-test. A screen
+ * reached out of turn, during the pre-test, is left the same way. */
+export function useTestHandoff(ended: boolean) {
+  const { data } = useTrialStatus();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const stage = data?.test_stage;
+  useEffect(() => {
+    if (ended && stage === "session") void queryClient.invalidateQueries({ queryKey: ["trial"] });
+  }, [ended, stage, queryClient]);
+  useEffect(() => {
+    if (stage && stage !== "session") navigate("/", { replace: true });
+  }, [stage, navigate]);
 }

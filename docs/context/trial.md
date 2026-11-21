@@ -9,9 +9,10 @@ readings, the tests outside the app) is not final, so the app is built to fit
 whatever it settles on rather than one arrangement.
 
 **Built so far:** `TRIAL_MODE`, class modes, participant IDs in batches, sign-in
-by ID, one session per participant, the 40 minutes, the two control groups'
-screens, the event log, export, withdrawal by ID, the reliability fixes and the
-instance's Blueprint (steps 3 to 9 of the order of work below). What is left is
+by ID, one session per participant, the session's 35 minutes, the two control
+groups' screens, the event log, export, withdrawal by ID, the reliability fixes,
+the instance's Blueprint (steps 3 to 9 of the order of work below), and the
+pre-test and post-test taken in the app, with grading (below). What is left is
 standing it up, the dry run, and the trial itself. Proposed changes to the study's procedure and
 analysis, for the group to discuss, are in
 `docs/thesis/human-evaluation-revisions.md`.
@@ -40,7 +41,7 @@ longest item on the way to the trial.
 | Lives | Indefinitely | The trial, then two years, then deleted | Indefinitely |
 
 **Why a separate instance.** The trial has rules that ordinary use must not have:
-one session per participant, a hard 40 minutes, two control-group screens that
+one session per participant, a hard time limit, two control-group screens that
 make no sense outside a study. And its data has rules ordinary data does not: keyed
 to participant IDs, exported for analysis, deleted after two years. A database
 holding only trial participants makes the export "everything in it" and the
@@ -59,7 +60,10 @@ used for real beyond the thesis.
 ## `TRIAL_MODE`
 
 One setting, `TRIAL_MODE=true`, read at startup, on for the trial instance and
-off everywhere else. `TRIAL_MINUTES` (default 40) sets a participant's time.
+off everywhere else. A participant's session time is 35 minutes, set in the code
+(`trial_session_minutes`), and each test's time is in its test file, so none of
+them can change between sittings without a release. The overrides exist only to
+try the flow locally; the trial instance sets none of them.
 One flag rather than several, because its rules come as a set: there is no useful
 trial with one session per participant but no time limit, and every extra switch
 is another combination that could be set wrong on the day.
@@ -68,7 +72,7 @@ Two rules for building it:
 
 - **The server enforces it.** Hiding a button is not a rule. With trial mode on,
   the server refuses a second session, refuses sign-in outside an open batch, and
-  ends sessions at 40 minutes, whatever the browser sends.
+  ends sessions and tests at their time limits, whatever the browser sends.
 - **The frontend asks the server.** `/auth/config` reports whether trial mode is
   on, as it already reports the dev bypass, so the screens and the rules cannot
   disagree.
@@ -77,17 +81,17 @@ What it changes:
 
 | | Ordinary | Trial mode |
 | --- | --- | --- |
-| Who signs in | DLSU Google accounts | Participants by ID; the research team by Google, and no one else |
+| Who signs in | DLSU Google accounts | Participants by ID; the research team and the grader by Google, and no one else |
 | Sessions per reading | Unlimited | One per participant |
 | After a session ends | Start a new attempt | Nothing further |
-| Time | No limit | 40 minutes, with a countdown |
+| Time | No limit | 35 minutes, with a countdown (plus each test's own) |
 | A class | A SEE-I class | SEE-I, chatbot, or reading-only |
 | Interaction events | Not recorded | Recorded (see below) |
 
 ## Groups, sittings and readings
 
 A **sitting** is one block of participants in the lab at once. The manuscript fixes
-45 participants, 15 per group, one on-campus lab, a 40-minute intervention, and
+45 participants, 15 per group, one on-campus lab, a timed intervention, and
 the same reading for all three groups (§4.6.2–4.6.4). It does not fix how many
 sittings there are, or whether every sitting uses the same reading.
 
@@ -139,22 +143,25 @@ protect nothing the ID does not.
 
 The research team signs in with Google, as instructors (`INSTRUCTOR_EMAILS`). No
 course faculty gets an instructor account on the trial instance, so no instructor
-can learn who took part (§4.6.3).
+can learn who took part (§4.6.3). The grader (`GRADER_EMAILS`) signs in the same
+way but sees only the grading page: participant IDs and their answers, never a
+group or a class, so the grading stays blind.
 
 This also takes Google's sign-in settings out of the trial entirely: participants
 never meet Google's consent screen, so its publishing status and test-user list
-cannot block anyone on the day. In trial mode a Google account that is not on
-`INSTRUCTOR_EMAILS` is turned away, so the only way in for anyone else is an ID.
+cannot block anyone on the day. In trial mode a Google account on neither
+`INSTRUCTOR_EMAILS` nor `GRADER_EMAILS` is turned away, so the only way in for
+anyone else is an ID.
 
-## A participant's 40 minutes
+## A participant's session time
 
-- **The clock starts when the reading opens.** The 40 minutes cover reading as
+- **The clock starts when the reading opens.** The 35 minutes cover reading as
   well as the activity, as the manuscript's intervention phase does. The server
   holds the clock; the countdown only draws it, so a reload does not restart it
   and nothing the browser sends buys more time.
 - **A countdown is visible**, the same in all three groups, so no group is
   treated differently. It turns amber in the last five minutes.
-- **At 40:00 everything stops.** The screen says time is up, and whatever was in
+- **At 0:00 everything stops.** The screen says time is up, and whatever was in
   progress is recorded as ended by time (`timed_out`, at the deadline itself).
   An answer sent after the deadline is not graded. That ending is kept and counted: the
   analysis is intention-to-treat (§4.6.2), so a session cut off at Exemplify
@@ -262,7 +269,7 @@ transcript.
 | An AI turn failed (`turn_failed`, with where: assessment, tutor or chatbot) | Which participants had a rougher experience |
 
 Two things the table used to list are recorded elsewhere, so they are not events:
-**time running out** is the clock's start plus 40 minutes, and a SEE-I session
+**time running out** is the clock's start plus 35 minutes, and a SEE-I session
 cut off by it ends `timed_out` on the step it was on; **chatbot messages** are
 rows in `chat_message`, both sides of the conversation, with their times.
 
@@ -312,6 +319,60 @@ cover yet.
    and its database. A participant who withdraws earlier is deleted by ID, with
    everything under it.
 
+## The pre-test and post-test
+
+A class takes a test when its **Pre-test and post-test** setting names one. Tests
+live in the code, one YAML file per reading in `backend/trial_tests`, with the
+questions, the answer key, the rubrics and each test's time; the setting only
+offers a test whose `reading_title` matches the class's reading exactly. Like the
+mode, the setting is fixed once a participant signs in. A test changes only
+through a release, so the same rule that freezes the app between sittings
+freezes the test.
+
+A participant in such a class goes through five stages, and the server decides
+which one they are in (`test_stage` on `/trial/me`):
+
+| Stage | What they see | Ends when |
+| --- | --- | --- |
+| `pretest` | One written question. The reading is not shown | Submitted, or 5 minutes |
+| `session` | The reading, chatbot or SEE-I session, as without tests | Finished, Done, or 35 minutes |
+| `posttest_ready` | "Post-test" and Start. Its clock starts on Start | Start pressed |
+| `posttest` | 12 questions, with a question list and "I'm sure / I'm not sure" ticks | Submitted, 30 minutes, or the batch closing |
+| `done` | "You're done" | |
+
+- **The reading and the session clock do not start before the pre-test ends**,
+  and the post-test cannot start before the session ends. The server refuses
+  both, whatever the browser sends.
+- **Each test has its own countdown.** Finishing early moves straight on, so no
+  one waits for a slower group.
+- **Answers save as they are typed.** A test whose time runs out ends at its
+  deadline with whatever was saved. Submitting asks first, since it cannot be
+  undone.
+- **Closed book.** The reading is never on screen during a test. Leaving the tab
+  and pasting are logged as in the session, with `stage` set to `pretest` or
+  `posttest`.
+- **Each answer keeps its history:** when it was first answered, when last
+  changed, and how many saves changed it.
+- **Scoring.** Multiple choice is scored as it is saved. A written answer left
+  blank scores 0 when its test ends. Every other written answer waits for the
+  grader. The pre-test score, the post-test total (out of 20) and calibration
+  appear once everything they depend on is scored. Calibration is the share of
+  ticked answers whose tick matched the result: "sure" with full marks, or "not
+  sure" without.
+- **The batch page.** With tests, an ID shows Finished once its post-test has
+  ended, not when its session does. Closing a batch ends any test still running
+  as `closed`.
+
+### Grading
+
+The **Grading** tab lists every ID with test answers, by ID only, with how many
+written answers are left. Opening one shows its pre-test and post-test totals,
+calibration, the multiple choice with what was picked and whether it was right,
+and each written answer with its tick, 0 to its points to click, and the rubric
+(reference answer and criteria) beside it. A score saves when clicked and can be
+changed at any time. The research team sees the same page, reached from the tab
+or from an ID on a batch's page; the grader sees nothing else.
+
 ## Export
 
 **Download data** on the Participants tab gives one zip, `senseei-trial-<date>.zip`,
@@ -320,7 +381,8 @@ holds:
 
 | File | One row per |
 | --- | --- |
-| `participants.csv` | ID: batch, class, group, signed in, reading opened, Done, time ran out, voided |
+| `participants.csv` | ID: batch, class, group, signed in, reading opened, Done, time ran out, voided; with tests, each test's start and end, the scores and calibration |
+| `tests.csv` | pre-test or post-test answer: the answer, the tick, the score, and its history |
 | `sessions.csv` | SEE-I session: how it ended, the last step, and the versions that graded it |
 | `attempts.csv` | SEE-I answer, with its verdict |
 | `criteria.csv` | criterion judged on an answer, with the reason |
@@ -338,9 +400,13 @@ batch is included, whoever on the team made the batch.
 A participant who withdraws gives the team their ID (or their name, which the
 team looks up on the consent form). **Withdraw a participant** on the
 Participants tab takes the ID and, after asking, deletes everything recorded for
-it: the sessions and all they hold, the chat, the event log, and the ID itself.
-It cannot be undone. A withdrawal after an export means deleting their rows from
-that export by hand too.
+it: the sessions and all they hold, the chat, the event log, the test answers,
+and the ID itself. It cannot be undone. A withdrawal after an export means
+deleting their rows from that export by hand too.
+
+**Delete batch**, on a closed batch's page, does the same for every ID in it at
+once. It is for clearing out the dry run (download its data first), and asks
+first, since it cannot be undone.
 
 ## Reliability
 
@@ -364,7 +430,7 @@ cut off by time or by the batch closing ends `timed_out` and is kept.
    for the Assessment Agent, then re-run the eval until it reaches 80%.
 3. **Trial mode basics:** the setting; class modes; participant IDs, batches and
    ID sign-in; one session per participant, enforced by the server.
-4. **The 40 minutes:** the clock from the reading, the countdown, ending by time,
+4. **The session time:** the clock from the reading, the countdown, ending by time,
    and counting those sessions in the dashboard.
 5. **The control groups:** the chatbot screen and the reading-only screen.
 6. **The event log.**
