@@ -34,7 +34,7 @@ const PdfPanel = lazy(() =>
 
 const INTRO = {
   chatbot:
-    "Read the material. You can use the chatbot beside it however you like. Press Done when you're finished.",
+    "Read the material. You can use the chatbot beside it however you like, but it doesn't have the reading. Press Done when you're finished.",
   reading: "Read the material in its entirety. Press Done when you're finished.",
 };
 
