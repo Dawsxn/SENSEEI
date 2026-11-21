@@ -24,7 +24,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..auth import google_oauth, is_dlsu_email, is_instructor
+from ..auth import google_oauth, is_dlsu_email, is_grader, is_instructor
 from ..db import get_session
 from ..deps import get_current_user
 from ..models import Role, User
@@ -61,9 +61,9 @@ async def callback(request: Request, db: AsyncSession = Depends(get_session)):
     if not info.get("email_verified") or not is_dlsu_email(email):
         # A non-DLSU or unverified account may not sign in.
         return RedirectResponse(f"{home}/login?error=not_dlsu")
-    if settings.trial_mode and not is_instructor(email):
-        # On the trial instance Google is the research team's way in, and only
-        # theirs. Participants sign in with an ID.
+    if settings.trial_mode and not (is_instructor(email) or is_grader(email)):
+        # On the trial instance Google is the research team's and the grader's
+        # way in, and only theirs. Participants sign in with an ID.
         return RedirectResponse(f"{home}/login?error=not_team")
 
     user = await auth_service.upsert_from_google(

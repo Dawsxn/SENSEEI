@@ -30,7 +30,7 @@ pytestmark = pytest.mark.usefixtures("fresh_engine")
 
 FILES = {
     "README.txt", "participants.csv", "sessions.csv", "attempts.csv", "criteria.csv",
-    "tutor_messages.csv", "chat_messages.csv", "events.csv",
+    "tutor_messages.csv", "chat_messages.csv", "events.csv", "tests.csv",
 }
 
 

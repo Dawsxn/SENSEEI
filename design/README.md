@@ -78,6 +78,22 @@ design changes, so it always matches.
 | Trial: sign in, ID no longer active | [png/09-trial-sign-in-closed.png](png/09-trial-sign-in-closed.png) |
 | Trial: reading, with the countdown | [png/09b-trial-reading.png](png/09b-trial-reading.png) |
 | Trial: tutoring, with the countdown | [png/09b-trial-tutoring.png](png/09b-trial-tutoring.png) |
+| Trial: pre-test | [png/10-trial-pretest.png](png/10-trial-pretest.png) |
+| Trial: pre-test, submit | [png/10-trial-pretest-submit.png](png/10-trial-pretest-submit.png) |
+| Trial: pre-test, time up | [png/10-trial-pretest-time-up.png](png/10-trial-pretest-time-up.png) |
+| Trial: post-test, start | [png/10b-trial-posttest-start.png](png/10b-trial-posttest-start.png) |
+| Trial: post-test, Part A | [png/10b-trial-posttest.png](png/10b-trial-posttest.png) |
+| Trial: post-test, Part C | [png/10b-trial-posttest-written.png](png/10b-trial-posttest-written.png) |
+| Trial: post-test, Part D | [png/10b-trial-posttest-grouping.png](png/10b-trial-posttest-grouping.png) |
+| Trial: post-test, submit | [png/10b-trial-posttest-submit.png](png/10b-trial-posttest-submit.png) |
+| Trial: done | [png/10c-trial-done.png](png/10c-trial-done.png) |
+| Trial: done, time up | [png/10c-trial-done-time-up.png](png/10c-trial-done-time-up.png) |
+| Trial: grading | [png/11-trial-grading.png](png/11-trial-grading.png) |
+| Trial: grading, no answer | [png/11-trial-grading-no-answer.png](png/11-trial-grading-no-answer.png) |
+| Trial: grading, all graded | [png/11-trial-grading-graded.png](png/11-trial-grading-graded.png) |
+| Trial: the grader's view | [png/11-trial-grader.png](png/11-trial-grader.png) |
+| Trial: new class, tests off | [png/11b-trial-new-class-tests.png](png/11b-trial-new-class-tests.png) |
+| Trial: edit class, with tests | [png/11b-trial-edit-class-tests.png](png/11b-trial-edit-class-tests.png) |
 | Trial: the last five minutes | [png/09b-trial-last-minutes.png](png/09b-trial-last-minutes.png) |
 | Trial: done early | [png/09c-trial-done.png](png/09c-trial-done.png) |
 | Trial: time's up | [png/09c-trial-time-up.png](png/09c-trial-time-up.png) |

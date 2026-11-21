@@ -31,7 +31,7 @@ import { useReading } from "../readings/useReadings";
 import { TrialClock, useTimeUp } from "../trial/TrialClock";
 import { setTrialContext, useTrialLogging } from "../trial/trialLog";
 import { useIntro } from "../trial/useIntro";
-import { useIsParticipant, useStartTrialClock } from "../trial/useTrial";
+import { useIsParticipant, useStartTrialClock, useTestHandoff } from "../trial/useTrial";
 import { ReadingIntroDialog } from "./ReadingIntroDialog";
 import { ReadingPanel } from "./ReadingPanel";
 
@@ -47,6 +47,7 @@ export function ReadingStepScreen() {
   const [showIntro, closeIntro] = useIntro(participant);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
   const timeUp = useTimeUp();
+  useTestHandoff(participant && timeUp);
   useStartTrialClock(participant);
   useTrialLogging(participant);
   // Page changes here happen before the session: reading, not a SEE-I step.

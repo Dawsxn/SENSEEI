@@ -65,6 +65,13 @@ async def require_instructor(user: User = Depends(get_current_user)) -> User:
     return user
 
 
+async def require_grader(user: User = Depends(get_current_user)) -> User:
+    """Someone who may grade the trial's tests: a grader, or the research team."""
+    if user.role not in (Role.GRADER, Role.INSTRUCTOR):
+        raise HTTPException(status_code=403, detail="graders only")
+    return user
+
+
 async def require_student(user: User = Depends(get_current_user)) -> User:
     """The signed-in user, who must be a student. 403 for an instructor."""
     if user.role != Role.STUDENT:

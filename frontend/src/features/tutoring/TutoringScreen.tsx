@@ -22,7 +22,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useReading } from "../readings/useReadings";
 import { TrialClock, useTimeUp } from "../trial/TrialClock";
 import { logTrial, setTrialContext, useTrialLogging } from "../trial/trialLog";
-import { useIsParticipant, useTrialStatus } from "../trial/useTrial";
+import { useIsParticipant, useTestHandoff, useTrialStatus } from "../trial/useTrial";
 import { readingFileUrl } from "../../lib/api";
 import { cn } from "../../lib/utils";
 import { ChatPanel } from "./ChatPanel";
@@ -54,6 +54,7 @@ export function TutoringScreen() {
   const [panel, setPanel] = useState<"components" | "rubric" | null>(null);
   const navigate = useNavigate();
   useTrialLogging(participant);
+  useTestHandoff(participant && (timeUp || state.phase === "terminal"));
 
   // Every event from this screen says which step, and which attempt at it, the
   // participant was on. The attempt is the one they are making next.
