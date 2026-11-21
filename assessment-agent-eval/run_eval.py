@@ -141,6 +141,25 @@ def write_report(meta: dict, summary: dict, template_records: list[dict],
     return out
 
 
+def model_prices(config: dict, model: str) -> tuple[float, float]:
+    """(input, output) USD per 1M tokens for `model`.
+
+    A config with a `prices:` table (one entry per model) prices whichever model runs,
+    so `--model` can switch between them; a model missing from the table is refused
+    rather than estimated at another model's rate. A config without one uses its flat
+    price_input_per_1m / price_output_per_1m.
+    """
+    table = config.get("prices")
+    if not table:
+        return (float(config.get("price_input_per_1m", 2.0)),
+                float(config.get("price_output_per_1m", 12.0)))
+    if model not in table:
+        raise ValueError(f"no prices for model {model!r}; this config prices: "
+                         f"{', '.join(sorted(table))}")
+    p = table[model]
+    return float(p["input_per_1m"]), float(p["output_per_1m"])
+
+
 def compute_cost(examples: list[dict], price_in: float, price_out: float) -> dict:
     """Sum token usage across the run and estimate USD cost.
 
@@ -234,6 +253,10 @@ def run_live(args) -> tuple[dict, list[dict]]:
         config["provider"] = args.provider
     if args.model:
         config["model"] = args.model
+    try:  # before any API call, so a mistyped --model costs nothing
+        price_in, price_out = model_prices(config, config.get("model", ""))
+    except ValueError as e:
+        raise SystemExit(f"--model: {e}") from None
 
     # Resolve the versioned inputs. An explicit CLI path overrides the config pin.
     rubric_path = _resolve_input(args.rubric, AGENTS / "rubrics", "rubric_{}.yaml",
@@ -318,11 +341,7 @@ def run_live(args) -> tuple[dict, list[dict]]:
         "thinking_level": config.get("thinking_level") or "",
         "csv": csv_path.name,
     }
-    meta["cost"] = compute_cost(
-        examples,
-        float(config.get("price_input_per_1m", 2.0)),
-        float(config.get("price_output_per_1m", 12.0)),
-    )
+    meta["cost"] = compute_cost(examples, price_in, price_out)
 
     # persist raw run for reproducibility / offline re-reporting
     run_dir = BASE / "runs" / f"{meta['timestamp']}_{version}"
@@ -355,7 +374,9 @@ def main():
                     help="explicit rubric YAML path (overrides config rubric_version)")
     ap.add_argument("--limit", type=int, default=0, help="only run the first N rows")
     ap.add_argument("--provider", default=None, help="override config provider (e.g. mock)")
-    ap.add_argument("--model", default=None, help="override config model")
+    ap.add_argument("--model", default=None,
+                    help="override config model (with a `prices:` table, one of the models it lists, "
+                         "e.g. deepseek-flash or deepseek-v4-pro)")
     ap.add_argument("--from-run", default=None, help="rebuild report from a saved runs/ dir (no API calls)")
     args = ap.parse_args()
 
@@ -374,11 +395,11 @@ def main():
 
     if not meta.get("cost"):  # e.g. rebuilding from an old run that lacked usage
         cfg = load_config(BASE / args.config)
-        meta["cost"] = compute_cost(
-            examples,
-            float(cfg.get("price_input_per_1m", 2.0)),
-            float(cfg.get("price_output_per_1m", 12.0)),
-        )
+        try:  # price the model that run used, not the config's default
+            price_in, price_out = model_prices(cfg, meta.get("model", ""))
+        except ValueError as e:
+            raise SystemExit(f"--from-run: {e}") from None
+        meta["cost"] = compute_cost(examples, price_in, price_out)
 
     summary_records, template_records = build_records(examples)
     summary = summarize(summary_records)

@@ -53,14 +53,19 @@ Calls are spaced to `requests_per_minute` in `config.yaml` (15), so 69 responses
 
 ### Using DeepSeek
 
-`config.deepseek.yaml` runs the same pinned prompt, rubric and example set on DeepSeek V4.1
-Flash (`deepseek-flash`) through its OpenAI-compatible API:
+`config.deepseek.yaml` runs the same pinned prompt, rubric and example set on DeepSeek
+through its OpenAI-compatible API. It defaults to V4 Pro (`deepseek-v4-pro`); add
+`--model deepseek-flash` for V4.1 Flash. Its `prices:` table holds each model's rates, so
+the cost estimate follows the model that ran, and a model not in the table is refused
+before any call. Runs before 2026-11-22 04:47 used Flash; `results_log.csv` records which
+model each run used.
 
 ```bash
 pip install -e ".[openai]"     # once, from the repo root
 # put DEEPSEEK_API_KEY in .env (see .env.example), then:
 python run_eval.py --config config.deepseek.yaml --csv data/example_set_v5.csv --limit 3
 python run_eval.py --config config.deepseek.yaml --csv data/example_set_v5.csv
+python run_eval.py --config config.deepseek.yaml --csv data/example_set_v5.csv --model deepseek-flash
 ```
 
 It is for comparing models only; the app's model is set in `backend/settings.py`. Its pins must

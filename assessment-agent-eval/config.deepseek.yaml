@@ -1,4 +1,4 @@
-# Same pinned inputs as config.yaml, but the model is DeepSeek V4.1 Flash through its
+# Same pinned inputs as config.yaml, but the model is DeepSeek V4 Pro through its
 # OpenAI-compatible API. Use it with:  python run_eval.py --config config.deepseek.yaml
 # Needs `pip install -e ".[openai]"` (repo root) and DEEPSEEK_API_KEY in .env.
 # This file is for comparing models in the eval only; the app's model is set in
@@ -14,9 +14,9 @@ example_set_version: v3
 
 provider: openai_compat
 base_url: https://api.deepseek.com
-model: deepseek-flash          # current name for DeepSeek-V4.1-Flash; legacy deepseek-v4-flash is redirected to it
+model: deepseek-v4-pro         # the default; pick either model per run with --model (see prices below)
 api_key_env: DEEPSEEK_API_KEY  # name of the env var (in .env) holding the key
-json_mode: true                # request response_format json_object (supported for deepseek-flash)
+json_mode: true                # request response_format json_object
 temperature: 0
 max_output_tokens: 8192        # thinking mode (the default) spends this budget on reasoning too
 retries: 1                     # retries on JSON-parse / provider error
@@ -25,9 +25,20 @@ retries: 1                     # retries on JSON-parse / provider error
 # time (this runner has no concurrency), so a full 69-response run takes a while.
 requests_per_minute: 0
 
-# Peak rates (USD per 1M tokens): cache-miss input 0.30, output 1.20. Off-peak is half.
-# The estimate counts every input token at the miss rate, so it slightly overstates the
-# bill when DeepSeek serves the reading from its cache. Reasoning tokens are billed as
-# output and are included in DeepSeek's output count.
-price_input_per_1m: 0.30
-price_output_per_1m: 1.20
+# One entry per model this config can run; --model must name one of them, and the
+# cost estimate uses that model's prices. To add a model, add its entry here.
+#   python run_eval.py --config config.deepseek.yaml                          # Pro (default)
+#   python run_eval.py --config config.deepseek.yaml --model deepseek-flash   # Flash
+#
+# Peak rates (USD per 1M tokens, cache-miss input). Off-peak is half (peak is
+# 01:00-04:00 and 06:00-10:00 UTC, weekdays). The estimate counts every input token
+# at the miss rate, so it overstates the bill when DeepSeek serves the reading from
+# its cache. Reasoning tokens are billed as output and are included in DeepSeek's
+# output count.
+prices:
+  deepseek-v4-pro:             # DeepSeek-V4-Pro-0813
+    input_per_1m: 1.32
+    output_per_1m: 3.96
+  deepseek-flash:              # DeepSeek-V4.1-Flash; legacy deepseek-v4-flash is redirected to it
+    input_per_1m: 0.30
+    output_per_1m: 1.20
