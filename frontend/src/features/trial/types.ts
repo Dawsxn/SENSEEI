@@ -127,7 +127,7 @@ export interface Batch {
   name: string;
   created_at: string;
   closed_at: string | null;
-  /** In slip order: shuffled, so the classes are mixed. */
+  /** In the order drawn (shuffled); the batch page lists them by class. */
   participants: BatchParticipant[];
 }
 
