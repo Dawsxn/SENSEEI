@@ -64,6 +64,8 @@ function uploadError(err: unknown): string {
     if (err.detail === "not_pdf") return "Not a PDF.";
     if (err.detail === "too_large") return "Over 20 MB.";
     if (err.detail === "no_text") return "No text found. The PDF may be a scanned image.";
+    // Trial site only: a class there has one reading.
+    if (err.detail === "class_has_reading") return "A class you ticked already has a reading.";
   }
   return "That didn't work. Try again.";
 }

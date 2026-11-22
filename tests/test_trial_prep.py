@@ -153,3 +153,45 @@ def test_a_provider_error_is_logged_without_the_key(monkeypatch, caplog):
     line = caplog.records[-1].getMessage()
     assert "tutor" in line and "RuntimeError: 401" in line
     assert "dsk-secret-value-123" not in line and "AIzaSy" not in line
+
+
+# --------------------------------------------------------------------------- #
+# one reading per class on the trial site
+
+
+@pytest.mark.anyio
+@pytest.mark.usefixtures("fresh_engine")
+async def test_a_trial_class_takes_only_one_reading(team, trial_on):
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+    from backend.models import Reading
+
+    async with as_user(team["prof"]) as prof:
+        classes = await _three_groups(prof, team["reading"])  # gives each the reading
+
+        engine = create_async_engine(trial_on)
+        async with async_sessionmaker(engine)() as s:
+            second = Reading(uploaded_by=team["prof"], title="Another", content="body")
+            s.add(second)
+            second_id = str(second.id)  # set on creation; read it before the commit expires it
+            await s.commit()
+        await engine.dispose()
+
+        r = await prof.put(
+            f"/instructor/readings/{second_id}/classes",
+            json={"class_ids": [classes["seei"]]},
+        )
+        assert r.status_code == 409 and r.json()["detail"] == "class_has_reading"
+
+        # the reading a class already has can be saved again, and taken off
+        r = await prof.put(
+            f"/instructor/readings/{team['reading']}/classes",
+            json={"class_ids": [classes["seei"], classes["chatbot"]]},
+        )
+        assert r.status_code == 200, r.text
+        # with reading_only now free, the second reading may go there
+        r = await prof.put(
+            f"/instructor/readings/{second_id}/classes",
+            json={"class_ids": [classes["reading_only"]]},
+        )
+        assert r.status_code == 200, r.text

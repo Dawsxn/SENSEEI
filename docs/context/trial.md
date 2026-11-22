@@ -152,6 +152,12 @@ class, reading and batch on the trial instance, whoever made it, so anyone on th
 team can void a slip or close a batch on the day. Outside trial mode each
 instructor still sees only their own (`backend/services/ownership.py`).
 
+**A trial class has one reading.** A participant is given their class's oldest
+reading, so a second one would never be seen. The trial instance refuses to give
+a class a second reading, at upload or when changing a reading's classes ("A class
+you ticked already has a reading."). Replacing a reading means deleting the old
+one first.
+
 This also takes Google's sign-in settings out of the trial entirely: participants
 never meet Google's consent screen, so its publishing status and test-user list
 cannot block anyone on the day. In trial mode a Google account on neither
