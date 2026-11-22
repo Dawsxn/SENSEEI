@@ -11,6 +11,7 @@
  * group it is the measure their exclusion rule uses. */
 
 import { useQueryClient } from "@tanstack/react-query";
+import { BookOpen } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -34,8 +35,10 @@ const PdfPanel = lazy(() =>
 );
 
 const INTRO = {
-  chatbot:
-    "Read the material. You can use the chatbot beside it however you like, but it doesn't have the reading. Press Done when you're finished.",
+  chatbot: [
+    "Read the material until you understand the concept of strategic offensives. The chatbot beside it has the reading too, so you can ask it about anything in it.",
+    "You have 35 minutes. Press Done when you're confident you understand the concept.",
+  ],
   reading: "Read the material in its entirety. Press Done when you're finished.",
 };
 
@@ -209,6 +212,10 @@ export function ChatbotScreen() {
           <Reading state={g.reading} />
         </div>
         <div className={cn("flex h-full min-h-0 flex-col", pane === "chat" ? "flex" : "hidden", "lg:flex")}>
+          <p className="flex shrink-0 items-center justify-center gap-2 border-b border-accent-soft-border bg-accent-soft py-2.5 text-[13px] text-accent-soft-foreground">
+            <BookOpen className="h-[15px] w-[15px]" aria-hidden />
+            This chatbot has the reading.
+          </p>
           <Conversation lines={state.lines} />
           {state.phase === "error" && !g.ended && (
             <p className="shrink-0 border-t border-fail-border bg-fail px-6 py-3 text-[13px] text-fail-foreground">

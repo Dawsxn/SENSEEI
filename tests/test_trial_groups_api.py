@@ -38,17 +38,19 @@ class Recording(MockProvider):
     def __init__(self):
         super().__init__({})
         self.sent: list[list[tuple[str, str]]] = []
+        self.systems: list[str | None] = []
 
-    def chat_stream(self, turns):
+    def chat_stream(self, turns, system=None):
         self.sent.append(list(turns))
-        yield from super().chat_stream(turns)
+        self.systems.append(system)
+        yield from super().chat_stream(turns, system)
 
 
 class Broken(LLMProvider):
     def complete(self, system_prompt, user_prompt):
         raise RuntimeError("simulated outage")
 
-    def chat_stream(self, turns):
+    def chat_stream(self, turns, system=None):
         yield "Half a rep"
         raise RuntimeError("simulated outage mid-reply")
 
@@ -99,7 +101,7 @@ async def _say(client, text):
 
 
 @pytest.mark.anyio
-async def test_the_chatbot_is_a_conversation_with_no_reading_and_no_prompt(team, chatbot, trial_on):
+async def test_the_chatbot_is_a_conversation_given_the_reading_and_no_prompt(team, chatbot, trial_on):
     ids = await _ids(team)
     async with as_participant(ids["chatbot"]) as me:
         await me.post("/trial/clock")
@@ -110,7 +112,10 @@ async def test_the_chatbot_is_a_conversation_with_no_reading_and_no_prompt(team,
     kinds = [k for k, _ in first]
     assert kinds[0] == "message_start" and kinds[-1] == "message_end" and "delta" in kinds
     assert "message 2 of the conversation" in dict(second)["message_end"]["content"]
-    # The model saw the conversation and nothing else: no reading, no instructions.
+    # The model saw the conversation, with the reading as its only context:
+    # no teaching instructions.
+    system = chatbot.systems[-1]
+    assert "READING: Cognitive Offloading" in system and "\nbody\n" in system
     assert chatbot.sent[-1][0] == ("user", "What is offloading?")
     assert chatbot.sent[-1][-1] == ("user", "An example?")
     assert [r for r, _ in chatbot.sent[-1]] == ["user", "assistant", "user"]

@@ -41,13 +41,15 @@ class LLMProvider(ABC):
         if text:
             yield text
 
-    def chat_stream(self, turns: list[tuple[str, str]]) -> Iterator[str]:
+    def chat_stream(
+        self, turns: list[tuple[str, str]], system: str | None = None
+    ) -> Iterator[str]:
         """Yield the next reply in a conversation, as it is produced.
 
         `turns` is the whole conversation so far, oldest first, as `(role, text)`
-        with role `user` or `assistant`, ending on the user's message. There is
-        no system prompt: this is the trial's general-purpose chatbot, which is
-        the model as it comes (docs/context/trial.md).
+        with role `user` or `assistant`, ending on the user's message. This is
+        the trial's general-purpose chatbot: `system` carries only the reading
+        it is given, never any teaching instructions (docs/context/trial.md).
 
         The default writes the conversation out as one transcript and streams a
         reply to it, so a backend without a native chat format still works.
@@ -56,7 +58,7 @@ class LLMProvider(ABC):
         transcript = "\n\n".join(
             f"{'User' if role == 'user' else 'Assistant'}: {text}" for role, text in turns
         )
-        yield from self.stream("", transcript + "\n\nAssistant:")
+        yield from self.stream(system or "", transcript + "\n\nAssistant:")
 
     def complete_with_file(
         self, system_prompt: str, user_prompt: str, data: bytes, mime_type: str

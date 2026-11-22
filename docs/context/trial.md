@@ -212,15 +212,16 @@ A general-purpose chat with **no pedagogical prompt**, on **the same model** and
 settings as SENSEE-I's agents (§4.6.2), beside the same reading. Every message is
 recorded with its time, as a SEE-I session is.
 
-**The chatbot is not given the reading.** It knows only what the participant
-tells it; they may paste text from the reading in themselves. That is what
-unguided use looks like, which is what this group stands for. The cost is a
-second difference between the two AI groups, which the manuscript should state;
-the event log records how many chatbot participants pasted from the reading.
+**The chatbot is given the reading**, and the participant is told so, both
+in the "Before you start" popup and in a line above the chat. It is the reading
+and nothing more: `SYSTEM_PROMPT` in `backend/services/chat_service.py` hands it
+over and says only to use it as context, with no teaching instructions. So the
+two AI groups now differ only in guidance, since both have the reading. (Until
+the user acceptance test the chatbot was not given it; the adviser asked for it.)
 
 **What it is, exactly:** the same provider, model, temperature and thinking level
-as the agents, sent the whole conversation each turn with no system prompt at
-all. Its replies are shown the way a general-purpose chatbot shows them, with
+as the agents, sent the whole conversation each turn with the reading as its
+only system prompt. Its replies are shown the way a general-purpose chatbot shows them, with
 lists and bold, and the participant's messages sit in grey rather than SEE-I's
 green, so the screen does not read as SENSEE-I. A reload picks the conversation
 back up. A reply that fails is not stored; the message that asked for it is, and
@@ -244,7 +245,7 @@ told more than another:
 | Group | Says |
 | --- | --- |
 | SEE-I | The session goes through SEE-I a step at a time; read the whole material first; press Done when finished |
-| Chatbot | Read the material; use the chatbot beside it however you like, though it doesn't have the reading; press Done when finished |
+| Chatbot | Read the material until they understand the concept; the chatbot beside it has the reading too, so they can ask it about anything in it; press Done when confident they understand it |
 | Reading only | Read the material in its entirety; press Done when finished |
 
 It shows once. A participant who reloads partway does not see it again.

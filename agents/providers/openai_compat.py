@@ -98,10 +98,11 @@ class OpenAICompatProvider(LLMProvider):
             {"role": "user", "content": user_prompt},
         ])
 
-    def chat_stream(self, turns: list[tuple[str, str]]):
-        """A real multi-turn conversation with no system message: the trial's
-        chatbot is the model as it comes (docs/context/trial.md)."""
-        yield from self._stream([
+    def chat_stream(self, turns: list[tuple[str, str]], system: str | None = None):
+        """A real multi-turn conversation. `system`, when given, goes first as
+        the system message (for the trial's chatbot, just the reading)."""
+        head = [{"role": "system", "content": system}] if system else []
+        yield from self._stream(head + [
             {"role": "user" if role == "user" else "assistant", "content": text}
             for role, text in turns
         ])
