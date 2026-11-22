@@ -42,7 +42,11 @@ class LLMProvider(ABC):
             yield text
 
     def chat_stream(
-        self, turns: list[tuple[str, str]], system: str | None = None
+        self,
+        turns: list[tuple],
+        system: str | None = None,
+        web_search: bool = False,
+        found: dict | None = None,
     ) -> Iterator[str]:
         """Yield the next reply in a conversation, as it is produced.
 
@@ -53,10 +57,13 @@ class LLMProvider(ABC):
 
         The default writes the conversation out as one transcript and streams a
         reply to it, so a backend without a native chat format still works.
-        Providers that have one override this.
+        Providers that have one override this. `web_search` and `found` are only
+        honoured where the provider has a search tool (openai_compat on
+        DeepSeek); elsewhere they are ignored, and a turn's third item (an
+        earlier reply's search record) is dropped.
         """
         transcript = "\n\n".join(
-            f"{'User' if role == 'user' else 'Assistant'}: {text}" for role, text in turns
+            f"{'User' if t[0] == 'user' else 'Assistant'}: {t[1]}" for t in turns
         )
         yield from self.stream(system or "", transcript + "\n\nAssistant:")
 

@@ -102,6 +102,9 @@ One row per chatbot message, both sides. Chatbot group only.
 | role | `user` (the participant) or `assistant` (the chatbot) |
 | created_at | When it was sent or finished |
 | content | The message, word for word |
+| searched | For a chatbot reply: `True` if it searched the web. Empty for the participant's rows |
+| sources | The pages the reply cited, separated by spaces. Never shown to the participant |
+| search | The provider's full record of the reply's searches and citations, as JSON |
 
 A question with no `assistant` row after it is one whose reply failed (see
 `turn_failed` below).
