@@ -67,6 +67,10 @@ services:
         value: v7
       - key: RUBRIC_VERSION
         value: v3
+      # The chatbot group may search the web, as a typical chatbot can. Its
+      # citations are never shown; the searches are in the export.
+      - key: CHATBOT_WEB_SEARCH
+        value: "true"
       # DeepSeek cannot read a PDF, so the upload's figure step stays on Gemini.
       - key: FIGURE_PROVIDER
         value: gemini

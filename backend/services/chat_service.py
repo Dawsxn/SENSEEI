@@ -28,6 +28,7 @@ from starlette.concurrency import iterate_in_threadpool
 from agents.providers.base import LLMProvider
 
 from ..db import sessionmaker
+from ..settings import get_settings
 from ..models import ChatMessage, Reading
 from . import trial_service
 from .provider_errors import log_failure
@@ -50,6 +51,18 @@ async def _system_prompt(db, class_id: uuid.UUID) -> str | None:
     return SYSTEM_PROMPT.format(title=reading.title, content=reading.content)
 
 
+def sources(search: dict | None) -> list[str]:
+    """The pages a reply cited, in order, once each. For the export only."""
+    urls: list[str] = []
+    for a in (search or {}).get("annotations") or []:
+        if not isinstance(a, dict):
+            continue
+        url = (a.get("url_citation") or a).get("url")
+        if url and url not in urls:
+            urls.append(url)
+    return urls
+
+
 def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, default=str)}\n\n"
 
@@ -67,13 +80,17 @@ async def send(user_id: uuid.UUID, text: str, model: LLMProvider) -> AsyncIterat
         db.add(ChatMessage(participant_id=participant.id, role="user", content=text))
         await db.commit()
         history = await trial_service.chat_history(db, user_id)
-        turns = [(m.role, m.content) for m in history]
+        # An earlier reply's search record goes back with it, as the API requires.
+        turns = [(m.role, m.content, m.search) for m in history]
         system = await _system_prompt(db, participant.class_id)
+        web_search = get_settings().chatbot_web_search
+        found: dict = {}
 
         yield _sse("message_start", {})
         pieces: list[str] = []
         try:
-            async for chunk in iterate_in_threadpool(model.chat_stream(turns, system)):
+            stream = model.chat_stream(turns, system, web_search=web_search, found=found)
+            async for chunk in iterate_in_threadpool(stream):
                 pieces.append(chunk)
                 yield _sse("delta", {"text": chunk})
         except Exception as e:  # a provider failure mid-reply
@@ -83,7 +100,12 @@ async def send(user_id: uuid.UUID, text: str, model: LLMProvider) -> AsyncIterat
             return
 
         content = "".join(pieces).strip()
-        reply = ChatMessage(participant_id=participant.id, role="assistant", content=content)
+        reply = ChatMessage(
+            participant_id=participant.id,
+            role="assistant",
+            content=content,
+            search=found or None,
+        )
         db.add(reply)
         await db.commit()
         yield _sse("message_end", {"id": str(reply.id), "content": content})

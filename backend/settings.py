@@ -101,6 +101,10 @@ class Settings(BaseSettings):
     # whole set of rules: participants sign in by ID, one session each, a clock,
     # and classes in the control groups' modes. The server enforces every one.
     trial_mode: bool = False
+    #: The trial chatbot may search the web (DeepSeek's server-side search, so
+    #: only with openai_compat on DeepSeek; ignored elsewhere). Its citations are
+    #: never shown to the participant; the searches are kept for the export.
+    chatbot_web_search: bool = False
     #: A participant's time for the session, from Start in Before you start.
     #: The study's 35 minutes live here, in the code, and the pre-test's and
     #: post-test's in the test file, so none of them can change between sittings

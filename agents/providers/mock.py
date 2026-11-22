@@ -137,7 +137,13 @@ class MockProvider(LLMProvider):
         for i, word in enumerate(words):
             yield word if i == 0 else " " + word
 
-    def chat_stream(self, turns: list[tuple[str, str]], system: str | None = None):
+    def chat_stream(
+        self,
+        turns: list[tuple],
+        system: str | None = None,
+        web_search: bool = False,
+        found: dict | None = None,
+    ):
         """A canned chatbot reply, in word-sized pieces. It quotes the question
         and carries a list and bold text, so the chat screen's formatting can be
         seen offline."""
@@ -153,8 +159,16 @@ class MockProvider(LLMProvider):
             f'[MOCK chatbot] You asked: "{question}"\n\n'
             "Here is a **made-up** answer with a list:\n\n"
             "- the first point\n- the second point\n\n"
-            f"This is message {sum(1 for r, _ in turns if r == 'user')} of the conversation."
+            f"This is message {sum(1 for t in turns if t[0] == 'user')} of the conversation."
         )
+        # With web search on, a made-up search and citation, so the sources
+        # under a reply can be seen offline.
+        if web_search and found is not None:
+            found["server_tool_calls"] = [{"type": "deepseek_web_search", "query": question}]
+            found["annotations"] = [{
+                "type": "url_citation",
+                "url_citation": {"url": "https://example.com/mock-source", "title": "A made-up source"},
+            }]
         words = text.split(" ")
         for i, word in enumerate(words):
             yield word if i == 0 else " " + word

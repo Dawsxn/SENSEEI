@@ -560,6 +560,9 @@ class GradingListItem(BaseModel):
     #: Written answers still to grade.
     left: int
     posttest_ended: bool
+    #: The sitting the ID was made for. Never the group.
+    batch_id: uuid.UUID
+    batch_name: str
 
 
 class GradingChoice(BaseModel):

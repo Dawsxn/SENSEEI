@@ -95,6 +95,10 @@ class ChatMessage(Entity, table=True):
     #: `user` or `assistant`.
     role: str = Field(sa_type=String(16))
     content: str
+    #: A reply's web search, when it searched: the provider's record of the
+    #: searches (`server_tool_calls`, sent back on later turns as the API
+    #: requires) and its citations (`annotations`). Never shown to the participant.
+    search: dict | None = Field(default=None, sa_type=JSONB)
     created_at: datetime = Field(default_factory=utcnow, sa_type=TS)
 
 

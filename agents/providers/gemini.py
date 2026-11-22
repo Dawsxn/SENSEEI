@@ -141,7 +141,13 @@ class GeminiProvider(LLMProvider):
             if text:
                 yield text
 
-    def chat_stream(self, turns: list[tuple[str, str]], system: str | None = None):
+    def chat_stream(
+        self,
+        turns: list[tuple],
+        system: str | None = None,
+        web_search: bool = False,
+        found: dict | None = None,
+    ):
         """A real multi-turn conversation. `system`, when given, is the system
         instruction (for the trial's chatbot, just the reading).
 
@@ -165,7 +171,7 @@ class GeminiProvider(LLMProvider):
                 role="user" if role == "user" else "model",
                 parts=[types.Part(text=text)],
             )
-            for role, text in turns
+            for role, text, *_ in turns
         ]
         self.last_usage = None
         self.last_finish_reason = None

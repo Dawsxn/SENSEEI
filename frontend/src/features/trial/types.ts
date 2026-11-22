@@ -68,6 +68,9 @@ export interface GradingListItem {
   /** Written answers still to grade. */
   left: number;
   posttest_ended: boolean;
+  /** The sitting the ID was made for. Never the group. */
+  batch_id: string;
+  batch_name: string;
 }
 
 export interface GradingWritten {

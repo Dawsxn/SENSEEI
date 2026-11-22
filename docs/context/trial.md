@@ -228,6 +228,16 @@ over and says only to use it as context, with no teaching instructions. So the
 two AI groups now differ only in guidance, since both have the reading. (Until
 the user acceptance test the chatbot was not given it; the adviser asked for it.)
 
+**The chatbot can also search the web**, as a typical chatbot can
+(`CHATBOT_WEB_SEARCH`, on for the trial in `render-trial.yaml`). It uses
+DeepSeek's server-side search: the model decides when to search, and the search
+runs on DeepSeek's side, billed only as tokens. Its citations are **never shown**
+to the participant, on the adviser's advice; each reply's search record is kept
+(`chat_message.search`) and sent back with it on later turns, as the API
+requires, and its sources are in the export. SENSEE-I's agents cannot search,
+which is a difference between the AI groups the manuscript should state. On a
+provider without the tool (Gemini, the mock), the setting does nothing.
+
 **What it is, exactly:** the same provider, model, temperature and thinking level
 as the agents, sent the whole conversation each turn with the reading as its
 only system prompt. Its replies are shown the way a general-purpose chatbot shows them, with
@@ -432,7 +442,8 @@ which one they are in (`test_stage` on `/trial/me`):
 ### Grading
 
 The **Grading** tab lists every ID with test answers, by ID only, with how many
-written answers are left. Opening one shows its pre-test and post-test totals,
+written answers are left. A **Batch** menu shows one sitting at a time, so a dry
+run stays out of the way; each ID carries its batch's name, never its group. Opening one shows its pre-test and post-test totals,
 calibration, each true/false set with every statement, what was marked and the
 key, and each written answer with its tick, 0 to its points to click, and the
 rubric (reference answer and criteria) beside it. Part D shows its three parts

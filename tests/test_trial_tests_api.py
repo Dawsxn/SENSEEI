@@ -314,7 +314,10 @@ async def test_the_grader_sees_ids_scores_and_rubrics_but_never_the_group(setup,
         assert (await grader.get("/instructor/batches")).status_code == 403
         assert (await grader.get("/instructor/export")).status_code == 403
         listed = (await grader.get("/instructor/grading")).json()
-        assert listed == [{"code": code, "left": 6, "posttest_ended": True}]   # pre + 5 written
+        assert [{k: v for k, v in row.items() if k != "batch_id"} for row in listed] == [
+            {"code": code, "left": 6, "posttest_ended": True, "batch_name": "Sitting 1"}   # pre + 5 written
+        ]
+        assert "reading_only" not in str(listed)   # the batch, never the group
 
         detail = (await grader.get(f"/instructor/grading/{code}")).json()
         assert "reading_only" not in str(detail) and "group" not in detail
