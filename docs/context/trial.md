@@ -432,7 +432,8 @@ which one they are in (`test_stage` on `/trial/me`):
 ### Grading
 
 The **Grading** tab lists every ID with test answers, by ID only, with how many
-written answers are left. Opening one shows its pre-test and post-test totals,
+written answers are left. A **Batch** menu shows one sitting at a time, so a dry
+run stays out of the way; each ID carries its batch's name, never its group. Opening one shows its pre-test and post-test totals,
 calibration, each true/false set with every statement, what was marked and the
 key, and each written answer with its tick, 0 to its points to click, and the
 rubric (reference answer and criteria) beside it. Part D shows its three parts

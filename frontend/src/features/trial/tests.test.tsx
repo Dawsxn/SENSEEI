@@ -288,7 +288,9 @@ describe("grading", () => {
   };
 
   it("shows a participant by ID, with scores, ticks and the rubric, and saves a score", async () => {
-    api.getGradingList.mockResolvedValue([{ code: "P-7K3Q-9TXM", left: 1, posttest_ended: true }]);
+    api.getGradingList.mockResolvedValue([
+      { code: "P-7K3Q-9TXM", left: 1, posttest_ended: true, batch_id: "b1", batch_name: "Sitting 1" },
+    ]);
     api.getGrading.mockResolvedValue(detail);
     api.setScore.mockResolvedValue({ ...detail, left: 0 });
     renderAt("/grading", <GradingPage />);
@@ -306,5 +308,20 @@ describe("grading", () => {
     const q5 = screen.getByText("How does the rule help?").closest("div[class*='rounded-lg']") as HTMLElement;
     await userEvent.click(within(q5).getByRole("button", { name: "Score 0" }));
     expect(api.setScore).toHaveBeenCalledWith("P-7K3Q-9TXM", "post", "q5", 0);
+  });
+
+  it("shows one batch at a time, so a dry run can be left out", async () => {
+    api.getGradingList.mockResolvedValue([
+      { code: "P-DRYR-UN01", left: 6, posttest_ended: true, batch_id: "dry", batch_name: "Dry run" },
+      { code: "P-7K3Q-9TXM", left: 1, posttest_ended: true, batch_id: "s1", batch_name: "Sitting 1" },
+    ]);
+    api.getGrading.mockResolvedValue(detail);
+    renderAt("/grading", <GradingPage />);
+
+    expect(await screen.findByText("P-DRYR-UN01")).toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByLabelText("Batch"), "Sitting 1");
+    expect(screen.queryByText("P-DRYR-UN01")).not.toBeInTheDocument();
+    expect(screen.getAllByText("P-7K3Q-9TXM").length).toBeGreaterThan(0);
+    expect(screen.getByText("0 of 1 participants graded")).toBeInTheDocument();
   });
 });

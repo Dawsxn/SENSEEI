@@ -39,6 +39,7 @@ from ..models import (
     Class,
     ClassMode,
     Participant,
+    ParticipantBatch,
     Session,
     TrialAnswer,
     utcnow,
@@ -440,23 +441,30 @@ def left_to_grade(p: Participant, test: Test, answers: list[TrialAnswer]) -> int
 # grading
 
 
-async def _gradable(db: AsyncSession) -> list[tuple[Participant, Test]]:
+async def _gradable(db: AsyncSession) -> list[tuple[Participant, Test, ParticipantBatch]]:
     rows = (
         await db.execute(
-            select(Participant, Class.test_key)
+            select(Participant, Class.test_key, ParticipantBatch)
             .join(Class, Class.id == Participant.class_id)
+            .join(ParticipantBatch, ParticipantBatch.id == Participant.batch_id)
             .where(Class.test_key.is_not(None), Participant.pretest_ended_at.is_not(None))
             .order_by(Participant.code)
         )
     ).all()
-    return [(p, trial_tests.get(key)) for p, key in rows if trial_tests.get(key) is not None]
+    return [
+        (p, trial_tests.get(key), batch)
+        for p, key, batch in rows
+        if trial_tests.get(key) is not None
+    ]
 
 
 async def grading_list(db: AsyncSession) -> list[dict]:
-    """Everyone with a test to grade, by ID only. Never the group."""
+    """Everyone with a test to grade, by ID only. Never the group. Each ID
+    carries its batch (the sitting), so the grading page can show one sitting
+    at a time and leave a dry run out."""
     trial_service.require_trial()
     out = []
-    for p, test in await _gradable(db):
+    for p, test, batch in await _gradable(db):
         await expire(db, p, test)
         answers = await _answers(db, p.id)
         out.append(
@@ -464,6 +472,8 @@ async def grading_list(db: AsyncSession) -> list[dict]:
                 "code": p.code,
                 "left": left_to_grade(p, test, answers),
                 "posttest_ended": p.posttest_ended_at is not None,
+                "batch_id": batch.id,
+                "batch_name": batch.name,
             }
         )
     return out
