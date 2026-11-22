@@ -154,23 +154,42 @@
                   <span style="display: block; width: 6px; height: 6px; border-radius: 999px; background: #09090b;"></span>
                   <span style="display: block; width: 6px; height: 6px; border-radius: 999px; background: #e4e4e7;"></span>
                   <span style="display: block; width: 6px; height: 6px; border-radius: 999px; background: #e4e4e7;"></span>
+                  <span style="display: block; width: 6px; height: 6px; border-radius: 999px; background: #e4e4e7;"></span>
+                  <span style="display: block; width: 6px; height: 6px; border-radius: 999px; background: #e4e4e7;"></span>
                 </span>
               </sc-if>
             </div>
             <p class="tutor">Now, let's elaborate. Expand on your statement at greater length so that the reader gets more of the fullness of what is meant.</p>
+            <sc-if value="{{failed}}" hint-placeholder-val="{{false}}">
+              <div style="margin: 16px 0; display: flex; justify-content: flex-end;">
+                <div style="max-width: 85%; background: #f0fdf4; border-radius: 8px; padding: 10px 16px; font-size: 14px; line-height: 1.625; color: #3f3f46;">It means using tools so you don't have to remember things.</div>
+              </div>
+              <p class="tutor">This restates the definition without going further. Explain how offloading frees working memory, and what it costs when retrieval stops strengthening memory.</p>
+              <p class="tutor" style="color: #71717a;">You have used all your attempts for this step.</p>
+            </sc-if>
           </div>
 
+          <!-- The box grows with the answer up to about 8 lines, then scrolls.
+               Enter submits; Shift+Enter starts a new line. -->
           <sc-if value="{{composing}}" hint-placeholder-val="{{true}}">
             <div style="flex-shrink: 0; border-top: 1px solid #e4e4e7; padding: 16px;">
-              <div style="display: flex; align-items: flex-end; gap: 8px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 8px 12px;">
-                <span style="flex-grow: 1; padding: 4px 0; font-size: 14px; color: #71717a;">Write your elaboration&hellip;</span>
-                <span class="btn btn-sm btn-primary" style="opacity: 0.5;">Submit</span>
+              <div style="display: flex; align-items: flex-end; gap: 8px; border: 1px solid {{boxBorder}}; border-radius: 6px; padding: 8px 12px;">
+                <span style="flex-grow: 1; padding: 4px 0; font-size: 14px; line-height: 1.6; color: {{boxColor}}; white-space: pre-wrap;">{{boxText}}</span>
+                <span class="btn btn-sm btn-primary" style="opacity: {{submitOpacity}};">Submit</span>
               </div>
+              <div style="margin-top: 6px; font-size: 12px; color: #a1a1aa;">Shift+Enter for a new line</div>
             </div>
           </sc-if>
-          <!-- The same strip the app shows when a session ends, with trial wording. -->
+          <!-- When the session ends, the box gives way to this strip. It is not a
+               popup, so the tutor's last messages stay readable above it. -->
           <sc-if value="{{ended}}" hint-placeholder-val="{{false}}">
-            <div style="flex-shrink: 0; border-top: 1px solid #e4e4e7; padding: 16px 24px; text-align: center; font-size: 13px; color: #71717a;">{{endText}}</div>
+            <div style="flex-shrink: 0; border-top: 1px solid #e4e4e7; padding: 14px 16px 14px 24px; display: flex; align-items: center; gap: 16px;">
+              <div style="flex-grow: 1;">
+                <div style="font-size: 14px; font-weight: 600;">{{endTitle}}</div>
+                <div style="margin-top: 2px; font-size: 13px; color: #71717a;">{{endText}}</div>
+              </div>
+              <span class="btn btn-md btn-primary">Continue to post-test</span>
+            </div>
           </sc-if>
         </div>
       </div>
@@ -179,7 +198,7 @@
 
 </div>
 </x-dc>
-<script data-dc-script data-props='{"state":{"editor":"enum","options":["Sign in","Wrong ID","Closed ID","Reading","Tutoring","Last minutes","Done","Time up"],"default":"Sign in","section":"State"}}'>
+<script data-dc-script data-props='{"state":{"editor":"enum","options":["Sign in","Wrong ID","Closed ID","Reading","Tutoring","Typing","Last minutes","Done","Out of attempts","Time up"],"default":"Sign in","section":"State"}}'>
 class Component extends DCLogic {
   renderVals() {
     const state = this.props.state ?? 'Sign in';
@@ -188,11 +207,13 @@ class Component extends DCLogic {
     const typed = state === 'Sign in' ? 'P-XXXX-XXXX' : state === 'Wrong ID' ? 'P-7K3Q-9TXN' : 'P-6DFJ-5VNH';
 
     const onReading = state === 'Reading';
-    const onTutoring = ['Tutoring', 'Last minutes', 'Done', 'Time up'].includes(state);
+    const onTutoring = ['Tutoring', 'Typing', 'Last minutes', 'Done', 'Out of attempts', 'Time up'].includes(state);
     const late = state === 'Last minutes' || state === 'Time up';
-    const clock = { 'Reading': '37:42', 'Tutoring': '24:10', 'Last minutes': '4:58', 'Done': '11:35', 'Time up': '0:00' }[state] || '';
+    const clock = { 'Reading': '34:42', 'Tutoring': '24:10', 'Typing': '23:31', 'Last minutes': '4:58', 'Done': '11:35', 'Out of attempts': '9:02', 'Time up': '0:00' }[state] || '';
     const done = state === 'Done';
-    const ended = done || state === 'Time up';
+    const failed = state === 'Out of attempts';
+    const ended = done || failed || state === 'Time up';
+    const typing = state === 'Typing';
 
     return {
       onSignIn, hasError: !!error, error, typed,
@@ -207,8 +228,13 @@ class Component extends DCLogic {
       elabColor: done ? '#16a34a' : '#71717a',
       elabOpen: !done,
       composing: !ended,
-      ended,
-      endText: done ? "You're done. Please stay at your seat until time is up." : "Time's up. Please wait for the next instructions.",
+      ended, failed,
+      endTitle: done ? 'Session complete' : failed ? 'Session ended' : "Time's up",
+      endText: done ? 'You finished all four steps.' : failed ? "You've used all your attempts, so the session has ended." : 'Your session has ended.',
+      boxText: typing ? 'Cognitive offloading moves a mental task out of the head and into a tool, like a\nnote or an alarm. It frees working memory for the task that matters right now.\n\nThe catch is that remembering is what strengthens memory, so if you always\noffload, you never practise retrieving, and' : 'Write your elaboration\u2026',
+      boxColor: typing ? '#09090b' : '#71717a',
+      boxBorder: typing ? '#16a34a' : '#e4e4e7',
+      submitOpacity: typing ? '1' : '0.5',
     };
   }
 }

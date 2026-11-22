@@ -54,7 +54,12 @@ export function TutoringScreen() {
   const [panel, setPanel] = useState<"components" | "rubric" | null>(null);
   const navigate = useNavigate();
   useTrialLogging(participant);
-  useTestHandoff(participant && (timeUp || state.phase === "terminal"));
+  // The end strip's button moves them on, so they can read how it ended first.
+  const continueToPostTest = useTestHandoff(
+    participant && (timeUp || state.phase === "terminal"),
+    false,
+  );
+  const hasTests = trial.data?.test_stage != null;
 
   // Every event from this screen says which step, and which attempt at it, the
   // participant was on. The attempt is the one they are making next.
@@ -146,7 +151,11 @@ export function TutoringScreen() {
           <ChatPanel
             state={state}
             onSubmit={submit}
-            trial={participant ? { timeUp } : undefined}
+            trial={
+              participant
+                ? { timeUp, onContinue: hasTests ? continueToPostTest : undefined }
+                : undefined
+            }
           />
         </div>
       </div>

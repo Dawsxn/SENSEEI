@@ -71,11 +71,14 @@ export function useStartTrialClock(participant: boolean) {
 
 /** With tests, the session screens hand the participant on when it ends.
  *
+ * With `follow` false the screen moves them itself, from a button, so they can
+ * read how the session ended first (the SEE-I chat's end strip).
+ *
  * `ended` is the screen's own word that the session is over (Done, time up, a
  * SEE-I session finishing). The server is asked again then, and once it says the
  * participant is past the session, `/` sends them to the post-test. A screen
  * reached out of turn, during the pre-test, is left the same way. */
-export function useTestHandoff(ended: boolean) {
+export function useTestHandoff(ended: boolean, follow = true) {
   const { data } = useTrialStatus();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -84,6 +87,12 @@ export function useTestHandoff(ended: boolean) {
     if (ended && stage === "session") void queryClient.invalidateQueries({ queryKey: ["trial"] });
   }, [ended, stage, queryClient]);
   useEffect(() => {
-    if (stage && stage !== "session") navigate("/", { replace: true });
-  }, [stage, navigate]);
+    if (follow && stage && stage !== "session") navigate("/", { replace: true });
+  }, [follow, stage, navigate]);
+  // For `follow` false: the button's move, after a fresh status so `/` sees
+  // that the session is over.
+  return async () => {
+    await queryClient.invalidateQueries({ queryKey: ["trial"] });
+    navigate("/", { replace: true });
+  };
 }

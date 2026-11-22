@@ -11,7 +11,7 @@
  * undone. Each ID links to its answers on the grading page. */
 
 import { useState } from "react";
-import { Ban, ChevronLeft, Lock, Printer, Trash2 } from "lucide-react";
+import { Ban, ChevronLeft, Download, Lock, Printer, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -19,7 +19,7 @@ import { AppTopBar } from "../../components/AppTopBar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
-import { closeBatch, deleteBatch, voidParticipant } from "../../lib/api";
+import { batchExportUrl, closeBatch, deleteBatch, voidParticipant } from "../../lib/api";
 import { MODE_LABEL } from "../classes/types";
 import type { Batch, BatchParticipant, ParticipantStatus } from "./types";
 import { useBatch } from "./useTrial";
@@ -78,6 +78,17 @@ export function BatchPage() {
                     </span>
                   </div>
                   <div className="flex gap-2">
+                    {/* A plain link, like Download data: the browser saves the zip. */}
+                    <Tooltip text="Download this batch's data" align="right">
+                      <a
+                        href={batchExportUrl(batch.id)}
+                        download
+                        aria-label="Download this batch's data"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border bg-background transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Download className="h-4 w-4" />
+                      </a>
+                    </Tooltip>
                     <Tooltip text="Print slips" align={batch.closed_at ? "left" : "right"}>
                       <Button
                         variant="secondary"

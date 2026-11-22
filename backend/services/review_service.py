@@ -16,6 +16,7 @@ import uuid
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .ownership import owned_by
 from ..models import (
     FINISHED_STATUSES,
     STEP_ORDER,
@@ -122,7 +123,7 @@ async def _instructor_header(
             .join(
                 Class,
                 (Class.id == ReadingAssignment.class_id)
-                & (Class.instructor_id == instructor_id)
+                & owned_by(Class.instructor_id, instructor_id)
                 & (Class.deleted_at.is_(None)),
             )
             .join(

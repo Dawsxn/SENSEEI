@@ -109,3 +109,8 @@ export interface Rubric {
   version: string;
   steps: RubricStep[];
 }
+
+/** Attempts per SEE-I step. Mirrors `MAX_ATTEMPTS` in backend/orchestrator.py,
+ *  which is the authority: live `state` events carry the server's own count, and
+ *  this is only for drawing the dots and rebuilding a reloaded transcript. */
+export const MAX_ATTEMPTS = 5;

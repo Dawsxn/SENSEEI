@@ -30,6 +30,7 @@ from agents.providers.base import LLMProvider
 from ..db import sessionmaker
 from ..models import ChatMessage
 from . import trial_service
+from .provider_errors import log_failure
 
 
 def _sse(event: str, data: dict) -> str:
@@ -58,6 +59,7 @@ async def send(user_id: uuid.UUID, text: str, model: LLMProvider) -> AsyncIterat
                 pieces.append(chunk)
                 yield _sse("delta", {"text": chunk})
         except Exception as e:  # a provider failure mid-reply
+            log_failure("chatbot", e)
             await trial_service.note(db, user_id, "turn_failed", {"where": "chatbot"})
             yield _sse("error", {"detail": f"chatbot failed: {type(e).__name__}"})
             return

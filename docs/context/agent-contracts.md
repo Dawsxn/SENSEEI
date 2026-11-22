@@ -210,7 +210,7 @@ alignment describes software nobody used.
 4. **A provider failure never consumes an attempt.** When a call fails after
    retries are exhausted, show the student an error, leave the session at the
    same step with the same attempt count, and let them resubmit. A student losing
-   one of three attempts to a network timeout would be invisible in the data and
+   one of its attempts to a network timeout would be invisible in the data and
    would quietly corrupt the per-step attempt statistics.
 5. **The fallback message is not written by the Tutor.** When attempts run out
    the agent writes the feedback, and the "contact your instructor" message that
