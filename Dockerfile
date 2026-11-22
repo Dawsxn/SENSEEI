@@ -28,7 +28,8 @@ COPY agents ./agents
 COPY backend ./backend
 # Editable, so `backend` and `agents` resolve to /app rather than to a copy in
 # site-packages: the app finds frontend/dist and its prompts relative to itself.
-RUN pip install -e ".[backend,gemini]"
+# Both providers, so switching between Gemini and DeepSeek is a settings change.
+RUN pip install -e ".[backend,gemini,openai]"
 
 COPY alembic.ini ./
 COPY migrations ./migrations

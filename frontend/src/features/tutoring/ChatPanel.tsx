@@ -1,12 +1,16 @@
 import { Check } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 import { logTrial } from "../trial/trialLog";
 import type { ChatMessage, TutoringState } from "./useTutoringSession";
 import type { SeeiStep } from "./types";
+import { MAX_ATTEMPTS } from "./types";
 import { useSmoothText } from "./useSmoothText";
+
+/** The answer box's tallest: about 8 lines at 14px and 1.6 line height. */
+const MAX_BOX_PX = 188;
 
 const STEPS: SeeiStep[] = ["State", "Elaborate", "Exemplify", "Illustrate"];
 
@@ -21,8 +25,9 @@ interface ChatPanelProps {
   state: TutoringState;
   onSubmit: (text: string) => void;
   /** Trial mode. The session ends in the trial's words, and `timeUp` ends it
-   *  whatever it was doing. */
-  trial?: { timeUp: boolean };
+   *  whatever it was doing. With tests, `onContinue` is the end strip's
+   *  Continue to post-test. */
+  trial?: { timeUp: boolean; onContinue?: () => void };
 }
 
 /** Is a tutor reply expected but not yet producing text? Covers both the opening
@@ -123,16 +128,16 @@ function StepDivider({
   );
 }
 
-/** Three dots marking attempt progress within the current step; the filled dot
- *  is the attempt now being made (0-based `used`), matching the design mockup. */
+/** One dot per attempt in the current step; the filled dot is the attempt now
+ *  being made (0-based `used`), matching the design mockup. */
 function AttemptDots({ used }: { used: number }) {
-  const active = Math.min(used, 2);
+  const active = Math.min(used, MAX_ATTEMPTS - 1);
   return (
     <span
       className="flex items-center gap-1"
-      aria-label={`Attempt ${active + 1} of 3`}
+      aria-label={`Attempt ${active + 1} of ${MAX_ATTEMPTS}`}
     >
-      {[0, 1, 2].map((i) => (
+      {Array.from({ length: MAX_ATTEMPTS }, (_, i) => (
         <span
           key={i}
           className={cn(
@@ -210,7 +215,7 @@ function UnmetCriteria({ names }: { names: string[] }) {
 function TypingIndicator() {
   return (
     <div className="my-4 flex gap-1" aria-label="Tutor is thinking">
-      {[0, 1, 2].map((i) => (
+      {Array.from({ length: MAX_ATTEMPTS }, (_, i) => (
         <span
           key={i}
           className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60"
@@ -230,11 +235,42 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
     if (state.phase === "awaiting_input") typedThisTurn.current = false;
   }, [state.phase]);
   const canSubmit = state.phase === "awaiting_input" && text.trim().length > 0;
+  // The box grows with the answer up to MAX_BOX_PX (about 8 lines), then
+  // scrolls, the way chat apps do.
+  const box = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, MAX_BOX_PX)}px`;
+    el.style.overflowY = el.scrollHeight > MAX_BOX_PX ? "auto" : "hidden";
+  }, [text]);
 
   function send() {
     if (!canSubmit) return;
     onSubmit(text.trim());
     setText("");
+  }
+
+  // With a post-test next, the session's end is a strip in place of the box,
+  // not a popup, so how it ended stays readable above it. They move on when
+  // they are ready.
+  if (trial?.onContinue && (trial.timeUp || state.phase === "terminal")) {
+    const [title, line] =
+      state.status === "complete"
+        ? ["Session complete", "You finished all four steps."]
+        : state.status === "fallback"
+          ? ["Session ended", "You've used all your attempts, so the session has ended."]
+          : ["Time's up", "Your session has ended."];
+    return (
+      <div className="flex shrink-0 items-center gap-4 border-t py-3.5 pl-6 pr-4">
+        <div className="min-w-0 flex-1">
+          <div className="text-[14px] font-semibold">{title}</div>
+          <div className="mt-0.5 text-[13px] text-muted-foreground">{line}</div>
+        </div>
+        <Button onClick={trial.onContinue}>Continue to post-test</Button>
+      </div>
+    );
   }
 
   // A participant whose time is up, or whose session has ended either way, is
@@ -277,6 +313,7 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
     <div className="shrink-0 border-t p-4">
       <div className="flex items-end gap-2 rounded-md border px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
         <textarea
+          ref={box}
           value={text}
           disabled={disabled}
           rows={1}
@@ -295,12 +332,13 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
             }
           }}
           placeholder={placeholder}
-          className="max-h-40 flex-1 resize-none bg-transparent py-1 text-[14px] outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+          className="flex-1 resize-none bg-transparent py-1 text-[14px] leading-[1.6] outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
         />
         <Button size="sm" onClick={send} disabled={!canSubmit}>
           Submit
         </Button>
       </div>
+      <div className="mt-1.5 text-[12px] text-muted-foreground/70">Shift+Enter for a new line</div>
     </div>
   );
 }

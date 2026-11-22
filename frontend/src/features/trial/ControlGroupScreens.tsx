@@ -25,6 +25,7 @@ import { ChatText } from "./ChatText";
 import { TrialClock, useTimeUp } from "./TrialClock";
 import { logTrial, useTrialLogging } from "./trialLog";
 import { useChatbot } from "./useChatbot";
+import { TimeUpDialog } from "./TimeUpDialog";
 import { useIntro } from "./useIntro";
 import { useStartTrialClock, useTestHandoff, useTrialStatus } from "./useTrial";
 
@@ -51,11 +52,14 @@ function useControlGroup() {
   const [intro, closeIntro] = useIntro(true);
   const [confirming, setConfirming] = useState(false);
   const queryClient = useQueryClient();
-  useStartTrialClock(true);
+  // Their time starts when they press Start in Before you start.
+  useStartTrialClock(!intro);
   useTrialLogging(true);
 
   const done = !!status?.done;
-  useTestHandoff(done || timeUp);
+  const moveOn = useTestHandoff(done || timeUp, done);
+  // With a post-test next, running out of time says so and waits for a button.
+  const timeUpPopup = timeUp && !done && status?.test_stage != null;
   async function finish() {
     setConfirming(false);
     queryClient.setQueryData(["trial"], await finishTrial());
@@ -63,13 +67,16 @@ function useControlGroup() {
   return {
     reading,
     ended: done || timeUp,
-    endText: timeUp && !done ? TIME_UP_TEXT : DONE_TEXT,
+    // Behind the popup, the bar must not say to wait: the popup moves them on.
+    endText: timeUp && !done ? (timeUpPopup ? "Time's up." : TIME_UP_TEXT) : DONE_TEXT,
     intro,
     closeIntro,
     confirming,
     askToFinish: () => setConfirming(true),
     cancelFinish: () => setConfirming(false),
     finish,
+    timeUpPopup,
+    moveOn,
   };
 }
 
@@ -150,6 +157,7 @@ export function ReadingOnlyScreen() {
         </footer>
       )}
       {g.intro && <ReadingIntroDialog body={INTRO.reading} onStart={g.closeIntro} />}
+      {g.timeUpPopup && <TimeUpDialog onContinue={() => void g.moveOn()} />}
       {g.confirming && (
         <FinishDialog body="You can't undo this." onConfirm={g.finish} onCancel={g.cancelFinish} />
       )}
@@ -219,6 +227,7 @@ export function ChatbotScreen() {
       </div>
 
       {g.intro && <ReadingIntroDialog body={INTRO.chatbot} onStart={g.closeIntro} />}
+      {g.timeUpPopup && <TimeUpDialog onContinue={() => void g.moveOn()} />}
       {g.confirming && (
         <FinishDialog
           body="You won't be able to send more messages."

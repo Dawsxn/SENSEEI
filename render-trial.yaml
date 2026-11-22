@@ -62,3 +62,5 @@ services:
         sync: false
       - key: GEMINI_API_KEY        # a paid-tier key, so answers are not used for training
         sync: false
+      - key: DEEPSEEK_API_KEY      # for LLM_PROVIDER openai_compat at https://api.deepseek.com
+        sync: false

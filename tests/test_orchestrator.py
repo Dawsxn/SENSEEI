@@ -45,10 +45,10 @@ def test_step_advances_in_order_and_stops_at_the_last(step, expected):
 
 
 def test_attempts_left_counts_down_and_never_goes_negative():
-    assert attempts_left(1) == 2
-    assert attempts_left(2) == 1
-    assert attempts_left(3) == 0
-    assert attempts_left(4) == 0  # defensive: never below zero
+    assert attempts_left(1) == MAX_ATTEMPTS - 1
+    assert attempts_left(MAX_ATTEMPTS - 1) == 1
+    assert attempts_left(MAX_ATTEMPTS) == 0
+    assert attempts_left(MAX_ATTEMPTS + 1) == 0  # defensive: never below zero
 
 
 def test_pass_on_a_middle_step_advances_and_opens_the_next():
@@ -77,7 +77,7 @@ def test_a_late_pass_still_advances():
     assert d.new_current_step == EXEMPLIFY
 
 
-@pytest.mark.parametrize("attempt", [1, 2])
+@pytest.mark.parametrize("attempt", range(1, MAX_ATTEMPTS))
 def test_fail_with_attempts_left_re_prompts_the_same_step(attempt):
     d = resolve(ELABORATE, attempt_number=attempt, verdict=FAIL)
     assert d.situation == RETRY

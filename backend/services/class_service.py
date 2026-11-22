@@ -22,6 +22,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .ownership import owned_by
 from .. import trial_tests
 from ..models import (
     Class,
@@ -107,7 +108,7 @@ async def _owned(db: AsyncSession, instructor_id: uuid.UUID, class_id: uuid.UUID
     klass = await db.scalar(
         select(Class).where(
             Class.id == class_id,
-            Class.instructor_id == instructor_id,
+            owned_by(Class.instructor_id, instructor_id),
             Class.deleted_at.is_(None),
         )
     )
@@ -167,7 +168,7 @@ async def list_classes(db: AsyncSession, instructor_id: uuid.UUID) -> list[dict]
     )
     rows = await db.execute(
         select(Class, students, readings)
-        .where(Class.instructor_id == instructor_id, Class.deleted_at.is_(None))
+        .where(owned_by(Class.instructor_id, instructor_id), Class.deleted_at.is_(None))
         .order_by(func.lower(Class.name), func.lower(Class.section))
     )
     return [

@@ -27,6 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.figures import Figure, FigureDescriber
 
+from .ownership import owned_by
 from ..models import (
     FINISHED_STATUSES,
     Class,
@@ -39,6 +40,7 @@ from ..models import (
     utcnow,
 )
 from .pdf_text import NotAPdf, extract_pages_text, to_text
+from .provider_errors import log_failure
 
 MAX_BYTES = 20 * 1024 * 1024
 
@@ -102,6 +104,7 @@ async def extract(data: bytes, describer: FigureDescriber) -> dict:
 
     result = await asyncio.to_thread(describer.describe, data, text)
     if not result.ok:
+        log_failure("figures", result.error)
         return {"text": text, "figures_described": 0, "figures_failed": True}
     return {
         "text": to_text(place_figures(pages, result.figures)),
@@ -167,7 +170,7 @@ async def _live_classes(
         await db.scalars(
             select(Class.id).where(
                 Class.id.in_(wanted),
-                Class.instructor_id == instructor_id,
+                owned_by(Class.instructor_id, instructor_id),
                 Class.deleted_at.is_(None),
             )
         )
@@ -220,7 +223,7 @@ async def _owned(db: AsyncSession, instructor_id: uuid.UUID, reading_id: uuid.UU
     reading = await db.scalar(
         select(Reading).where(
             Reading.id == reading_id,
-            Reading.uploaded_by == instructor_id,
+            owned_by(Reading.uploaded_by, instructor_id),
             Reading.deleted_at.is_(None),
         )
     )
@@ -265,7 +268,7 @@ async def list_readings(db: AsyncSession, instructor_id: uuid.UUID) -> list[dict
     rows = (
         await db.execute(
             select(Reading, sessions)
-            .where(Reading.uploaded_by == instructor_id, Reading.deleted_at.is_(None))
+            .where(owned_by(Reading.uploaded_by, instructor_id), Reading.deleted_at.is_(None))
             .order_by(Reading.created_at.desc())
         )
     ).all()

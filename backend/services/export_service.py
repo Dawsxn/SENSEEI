@@ -14,6 +14,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import uuid
 import zipfile
 from datetime import datetime
 
@@ -73,19 +74,21 @@ def _csv(header: list[str], rows) -> str:
     return out.getvalue()
 
 
-async def export(db: AsyncSession) -> bytes:
+async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
     """The zip, as bytes. Small enough to build in memory: a trial is tens of
-    participants, not thousands."""
+    participants, not thousands. With `batch_id`, only that batch's IDs, and so
+    only what was recorded for them: every other file is keyed to these IDs."""
     require_trial()
 
-    people = (
-        await db.execute(
-            select(Participant, ParticipantBatch.name, class_label(), Class.mode)
-            .join(ParticipantBatch, ParticipantBatch.id == Participant.batch_id)
-            .join(Class, Class.id == Participant.class_id)
-            .order_by(ParticipantBatch.created_at, Participant.position)
-        )
-    ).all()
+    query = (
+        select(Participant, ParticipantBatch.name, class_label(), Class.mode)
+        .join(ParticipantBatch, ParticipantBatch.id == Participant.batch_id)
+        .join(Class, Class.id == Participant.class_id)
+        .order_by(ParticipantBatch.created_at, Participant.position)
+    )
+    if batch_id is not None:
+        query = query.where(Participant.batch_id == batch_id)
+    people = (await db.execute(query)).all()
     by_user = {p.user_id: p.code for p, _, _, _ in people}
     by_participant = {p.id: p.code for p, _, _, _ in people}
     users = list(by_user)
