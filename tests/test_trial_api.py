@@ -26,7 +26,6 @@ from backend.models import (
     SessionStatus,
     User,
 )
-from backend.orchestrator import MAX_ATTEMPTS
 from backend.settings import get_settings
 from test_session_api import StubProvider, _stub_agents, parse_sse
 
@@ -360,7 +359,7 @@ async def test_an_answer_after_time_is_up_ends_the_session_ungraded(team, trial_
 
     assert events == [("state", {
         "status": "timed_out", "current_step": "State", "terminal": True,
-        "attempts_used": 0, "attempts_left": MAX_ATTEMPTS,
+        "attempts_used": 0, "attempts_left": None,  # no attempt limit on the trial
     })]
     sess = await _session_of(trial_on, code)
     assert SessionStatus(sess.status) is SessionStatus.TIMED_OUT

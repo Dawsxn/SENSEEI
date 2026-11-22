@@ -26,15 +26,24 @@ from .models import STEP_ORDER, SeeiStep, SessionStatus, Verdict
 MAX_ATTEMPTS = 5
 
 
+def attempt_limit(trial_mode: bool) -> int | None:
+    """The attempts per step, or None for no limit.
+
+    The trial has none: a participant keeps trying until they pass or their time
+    runs out, so the session never ends in fallback there.
+    """
+    return None if trial_mode else MAX_ATTEMPTS
+
+
 def next_step(step: SeeiStep) -> SeeiStep | None:
     """The step after this one, or None if this is the last (Illustrate)."""
     i = STEP_ORDER.index(step)
     return STEP_ORDER[i + 1] if i + 1 < len(STEP_ORDER) else None
 
 
-def attempts_left(attempt_number: int) -> int:
-    """How many attempts remain after the given (1-based) attempt."""
-    return max(MAX_ATTEMPTS - attempt_number, 0)
+def attempts_left(attempt_number: int, limit: int | None = MAX_ATTEMPTS) -> int | None:
+    """How many attempts remain after the given (1-based) attempt; None with no limit."""
+    return None if limit is None else max(limit - attempt_number, 0)
 
 
 @dataclass(frozen=True)
@@ -77,10 +86,13 @@ def opening_situation() -> str:
     return FIRST_ATTEMPT
 
 
-def resolve(step: SeeiStep, attempt_number: int, verdict: Verdict) -> Decision:
+def resolve(
+    step: SeeiStep, attempt_number: int, verdict: Verdict, limit: int | None = MAX_ATTEMPTS
+) -> Decision:
     """Decide what follows an attempt graded `verdict` on `step`.
 
     `attempt_number` is 1-based: the first response to a step is attempt 1.
+    `limit` is the attempts per step, None for no limit (the trial).
     """
     if verdict is Verdict.PASS:
         nxt = next_step(step)
@@ -91,7 +103,7 @@ def resolve(step: SeeiStep, attempt_number: int, verdict: Verdict) -> Decision:
         return Decision(PASSED, SessionStatus.IN_PROGRESS, nxt, open_next=nxt)
 
     # FAIL.
-    if attempt_number < MAX_ATTEMPTS:
+    if limit is None or attempt_number < limit:
         # Attempts remain: feedback and ask again, same step.
         return Decision(RETRY, SessionStatus.IN_PROGRESS, step)
 

@@ -20,7 +20,7 @@ describe("the end of a trial session", () => {
   it.each([
     ["complete", "Session complete", "You finished all four steps."],
     ["fallback", "Session ended", "You've used all your attempts, so the session has ended."],
-    ["timed_out", "Time's up", "Your session has ended."],
+    ["timed_out", "Time's up", "Your session has ended, and anything you typed was sent."],
   ] as const)("says how it ended (%s) and waits for Continue", async (status, title, line) => {
     const onContinue = vi.fn();
     render(<ChatPanel state={ended(status)} onSubmit={vi.fn()} trial={{ timeUp: false, onContinue }} />);
@@ -35,6 +35,39 @@ describe("the end of a trial session", () => {
     const running: TutoringState = { ...initialState, phase: "awaiting_input", status: "in_progress" };
     render(<ChatPanel state={running} onSubmit={vi.fn()} trial={{ timeUp: true, onContinue: vi.fn() }} />);
     expect(screen.getByText("Time's up")).toBeInTheDocument();
+  });
+
+  it("sends what was typed when time runs out, flagged as time up", async () => {
+    const running: TutoringState = {
+      ...initialState, phase: "awaiting_input", status: "in_progress", currentStep: "Elaborate",
+    };
+    const onSubmit = vi.fn();
+    const { rerender } = render(
+      <ChatPanel state={running} onSubmit={onSubmit} trial={{ timeUp: false, onContinue: vi.fn() }} />,
+    );
+    await userEvent.type(screen.getByRole("textbox"), "  half an answer ");
+    expect(onSubmit).not.toHaveBeenCalled();
+    rerender(<ChatPanel state={running} onSubmit={onSubmit} trial={{ timeUp: true, onContinue: vi.fn() }} />);
+    expect(onSubmit).toHaveBeenCalledOnce();
+    expect(onSubmit).toHaveBeenCalledWith("half an answer", true);
+  });
+
+  it("sends nothing at time up when the box is empty", () => {
+    const running: TutoringState = { ...initialState, phase: "awaiting_input", status: "in_progress" };
+    const onSubmit = vi.fn();
+    render(<ChatPanel state={running} onSubmit={onSubmit} trial={{ timeUp: true, onContinue: vi.fn() }} />);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("shows no attempt dots on the trial, where there is no limit", () => {
+    const running: TutoringState = {
+      ...initialState, phase: "awaiting_input", status: "in_progress", currentStep: "State",
+      messages: [{ key: "m", role: "tutor", step: "State", content: "State it.", unmet: [], streaming: false }],
+    };
+    const { rerender } = render(<ChatPanel state={running} onSubmit={vi.fn()} />);
+    expect(screen.getByLabelText(/Attempt 1 of/)).toBeInTheDocument();
+    rerender(<ChatPanel state={running} onSubmit={vi.fn()} trial={{ timeUp: false }} />);
+    expect(screen.queryByLabelText(/Attempt 1 of/)).not.toBeInTheDocument();
   });
 
   it("keeps the old wording when the class has no post-test", () => {

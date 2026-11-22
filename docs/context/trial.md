@@ -175,11 +175,13 @@ anyone else is an ID.
   treated differently. It turns amber in the last five minutes.
 - **At 0:00 everything stops.** The screen says time is up, and whatever was in
   progress is recorded as ended by time (`timed_out`, at the deadline itself).
-  An answer sent after the deadline is not graded. That ending is kept and counted: the
+  An answer sent after the deadline is not graded, with one exception: in the
+  SEE-I group, an answer typed but not yet sent when time runs out is sent for
+  them, graded and stored as their last attempt, and replied to (see below). That ending is kept and counted: the
   analysis is intention-to-treat (§4.6.2), so a session cut off at Exemplify
   counts exactly as one that reached Illustrate.
 - **Finishing early ends the activity, not the sitting.** A SEE-I participant who
-  completes all four steps, or reaches the fallback, sees that they are done and
+  completes all four steps sees that they are done and
   is given nothing further, and remains at their station until the period ends
   (§4.6.4).
 
@@ -187,8 +189,22 @@ anyone else is an ID.
 
 The ordinary tutoring loop, once. No "Start a new attempt" after it ends, no way
 out of the session, and no class label on screen, since a class name could name
-the group. A reload picks the session back up. Running out of attempts ends it
-like finishing does, without the usual "your instructor has been notified".
+the group. A reload picks the session back up.
+
+**No attempt limit.** On the trial instance a participant keeps trying a step
+until they pass or their time runs out (`attempt_limit()` in
+`backend/orchestrator.py`), so a trial session never ends in fallback and the
+attempt dots are not shown. Elsewhere the limit is `MAX_ATTEMPTS`.
+
+**An answer left in the box at time-up is sent for them.** The screen sends it
+the moment it sees time is up, flagged `time_up`. The server takes it once and
+only within `TIME_UP_GRACE` of the deadline, ends the session first, then grades
+and stores it as an ordinary attempt. The reply says how it did without moving
+on: a pass is acknowledged with no next question, a fail gets its feedback with
+no request to try again. A pass on Illustrate marks the session complete. Grading
+finishes even if they move on to the post-test meanwhile. It is logged as `time_up_submit`, with the
+text itself if grading failed, since an attempt row is only written with its
+judgment.
 
 ### The chatbot group (active control)
 
@@ -249,8 +265,8 @@ Everything is keyed to the participant ID.
 From these alone, without new code: time per step and per attempt, attempts per
 step, where each participant stopped, which criteria failed on each attempt and
 **which were fixed on the next** (direct evidence of whether the feedback worked),
-answer length, how much an answer changed between attempts, and the fallback rate
-per step.
+answer length, and how much an answer changed between attempts. (The fallback
+rate is always zero on the trial: there is no attempt limit there.)
 
 ### Added in trial mode: the event log
 
@@ -347,7 +363,7 @@ which one they are in (`test_stage` on `/trial/me`):
 | Stage | What they see | Ends when |
 | --- | --- | --- |
 | `pretest` | "Pre-test", "You have 5 minutes." and Start, then one written question. Its clock starts on Start. The reading is not shown | Submitted, or 5 minutes |
-| `session` | The reading, chatbot or SEE-I session, as without tests. A SEE-I session's end replaces the answer box with a strip saying how it ended (complete, out of attempts, or time up) and Continue to post-test, so the last feedback stays readable. Time running out anywhere else (on the reading, or in a control group) shows a "Time's up" popup with the same button | Finished, Done, or 35 minutes |
+| `session` | The reading, chatbot or SEE-I session, as without tests. A SEE-I session's end replaces the answer box with a strip saying how it ended (complete, or time up) and Continue to post-test, so the last feedback stays readable. Time running out anywhere else (on the reading, or in a control group) shows a "Time's up" popup with the same button | Finished, Done, or 35 minutes |
 | `posttest_ready` | "Post-test" and Start. Its clock starts on Start | Start pressed |
 | `posttest` | 12 questions, with a question list and "I'm sure / I'm not sure" ticks | Submitted, 30 minutes, or the batch closing |
 | `done` | "You're done" | |

@@ -136,6 +136,7 @@ and the attempt they were about to make (`{"panel": "rubric", "step":
 | tab_left | Left the page: another tab or window, or a reload | |
 | tab_returned | Came back | |
 | turn_failed | An AI reply failed. Nothing was graded or lost; they sent it again | `where`: `assessment`, `tutor` or `chatbot` |
+| time_up_submit | SEE-I group: time ran out with an answer typed but not sent, so it was sent for them, graded and stored as their last attempt, with a reply but no next question | `attempt_id` and `verdict`, or `graded`: false and the `text` if grading failed |
 
 ## tests.csv
 

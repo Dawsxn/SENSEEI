@@ -258,12 +258,12 @@ export function useTutoringSession(readingId: string, options: Options = {}) {
   }, [readingId, resumeId, consume]);
 
   const submit = useCallback(
-    async (text: string) => {
+    async (text: string, timeUp = false) => {
       if (!state.sessionId) return;
       dispatch({ type: "student", text });
       abortRef.current = new AbortController();
       await consume(
-        submitResponse(state.sessionId, text, abortRef.current.signal),
+        submitResponse(state.sessionId, text, abortRef.current.signal, timeUp),
       );
     },
     [state.sessionId, consume],

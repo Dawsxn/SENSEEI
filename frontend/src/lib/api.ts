@@ -116,8 +116,11 @@ export function submitResponse(
   sessionId: string,
   text: string,
   signal?: AbortSignal,
+  timeUp = false,
 ): AsyncGenerator<StreamEvent> {
-  return streamPost(`/sessions/${sessionId}/responses`, { text }, signal);
+  // `time_up`: the trial's answer left in the box when time ran out.
+  const body = timeUp ? { text, time_up: true } : { text };
+  return streamPost(`/sessions/${sessionId}/responses`, body, signal);
 }
 
 // --- auth --------------------------------------------------------------------

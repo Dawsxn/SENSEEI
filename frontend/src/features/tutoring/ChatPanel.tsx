@@ -23,10 +23,12 @@ const PLACEHOLDER: Record<SeeiStep, string> = {
 
 interface ChatPanelProps {
   state: TutoringState;
-  onSubmit: (text: string) => void;
+  /** `timeUp` marks the trial's answer left in the box when time ran out. */
+  onSubmit: (text: string, timeUp?: boolean) => void;
   /** Trial mode. The session ends in the trial's words, and `timeUp` ends it
-   *  whatever it was doing. With tests, `onContinue` is the end strip's
-   *  Continue to post-test. */
+   *  whatever it was doing, sending any answer still in the box. There is no
+   *  attempt limit, so no attempt dots. With tests, `onContinue` is the end
+   *  strip's Continue to post-test. */
   trial?: { timeUp: boolean; onContinue?: () => void };
 }
 
@@ -76,7 +78,7 @@ export function ChatPanel({ state, onSubmit, trial }: ChatPanelProps) {
                 key={`d-${m.key}`}
                 step={m.step}
                 passed={passed}
-                current={isCurrent}
+                current={isCurrent && !trial}
                 attemptsUsed={state.attemptsUsed}
               />
             ) : null;
@@ -215,7 +217,7 @@ function UnmetCriteria({ names }: { names: string[] }) {
 function TypingIndicator() {
   return (
     <div className="my-4 flex gap-1" aria-label="Tutor is thinking">
-      {Array.from({ length: MAX_ATTEMPTS }, (_, i) => (
+      {Array.from({ length: 3 }, (_, i) => (
         <span
           key={i}
           className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60"
@@ -252,6 +254,16 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
     setText("");
   }
 
+  // Time up with an answer typed but not sent: send it for them, once. The
+  // server grades and keeps it but writes no reply.
+  const timeUp = !!trial?.timeUp;
+  useEffect(() => {
+    if (!timeUp || state.phase !== "awaiting_input" || !text.trim()) return;
+    onSubmit(text.trim(), true);
+    setText("");
+    // Only the moment time runs out matters, not later edits or phases.
+  }, [timeUp]);
+
   // With a post-test next, the session's end is a strip in place of the box,
   // not a popup, so how it ended stays readable above it. They move on when
   // they are ready.
@@ -261,7 +273,7 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
         ? ["Session complete", "You finished all four steps."]
         : state.status === "fallback"
           ? ["Session ended", "You've used all your attempts, so the session has ended."]
-          : ["Time's up", "Your session has ended."];
+          : ["Time's up", "Your session has ended, and anything you typed was sent."];
     return (
       <div className="flex shrink-0 items-center gap-4 border-t py-3.5 pl-6 pr-4">
         <div className="min-w-0 flex-1">

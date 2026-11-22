@@ -76,7 +76,7 @@ CLIENT_EVENTS = frozenset(
     }
 )
 #: What the server records itself, because only it knows.
-SERVER_EVENTS = frozenset({"reading_opened", "done", "turn_failed"})
+SERVER_EVENTS = frozenset({"reading_opened", "done", "turn_failed", "time_up_submit"})
 
 #: A browser clock this far from the server's is not believed; the event is
 #: stamped with the server's time instead.

@@ -78,6 +78,8 @@ class StartSessionIn(BaseModel):
 
 class SubmitResponseIn(BaseModel):
     text: str
+    #: Trial mode: the answer left in the box when time ran out, sent for them.
+    time_up: bool = False
 
 
 class SessionOut(BaseModel):

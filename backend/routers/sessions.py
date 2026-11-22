@@ -62,7 +62,9 @@ async def submit_response(
 ) -> StreamingResponse:
     """Submit one attempt; stream the assessment result and the Tutor's reply."""
     return StreamingResponse(
-        detached(session_service.submit_response(user.id, session_id, body.text, agents)),
+        detached(session_service.submit_response(
+            user.id, session_id, body.text, agents, time_up=body.time_up
+        )),
         media_type="text/event-stream",
         headers=_SSE_HEADERS,
     )

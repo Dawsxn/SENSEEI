@@ -32,6 +32,7 @@ The event types a stream can emit:
 
 from __future__ import annotations
 
+from datetime import timedelta
 import json
 import uuid
 from collections.abc import AsyncIterator
@@ -40,7 +41,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import iterate_in_threadpool, run_in_threadpool
 
-from agents.tutor import FIRST_ATTEMPT
+from agents.tutor import FINAL_FAIL, FIRST_ATTEMPT, PASSED
 
 from ..agent_runtime import Agents
 from ..db import sessionmaker
@@ -60,16 +61,27 @@ from ..models import (
 )
 from ..orchestrator import (
     FALLBACK_MESSAGE,
-    MAX_ATTEMPTS,
     TRIAL_FALLBACK_MESSAGE,
     MOVES,
     Decision,
+    attempt_limit,
     attempts_left,
+    next_step,
     opening_situation,
     resolve,
 )
 from ..settings import get_settings
 from . import trial_service
+
+
+#: How long after a participant's time runs out the answer left in their box is
+#: still taken. It is sent the moment their screen sees time is up, so this only
+#: has to cover a slow network and a clock that is a little off.
+TIME_UP_GRACE = timedelta(minutes=3)
+
+
+def _limit() -> int | None:
+    return attempt_limit(get_settings().trial_mode)
 
 
 def _sse(event: str, data: dict) -> str:
@@ -255,14 +267,27 @@ async def start_session(
         yield _sse(
             "state",
             {"status": sess.status.value, "current_step": sess.current_step.value,
-             "terminal": False, "attempts_used": 0, "attempts_left": MAX_ATTEMPTS},
+             "terminal": False, "attempts_used": 0, "attempts_left": attempts_left(0, _limit())},
         )
 
 
 async def submit_response(
-    user_id: uuid.UUID, session_id: uuid.UUID, text: str, agents: Agents
+    user_id: uuid.UUID,
+    session_id: uuid.UUID,
+    text: str,
+    agents: Agents,
+    *,
+    time_up: bool = False,
 ) -> AsyncIterator[str]:
-    """Grade one response, stream the reply, and advance the session."""
+    """Grade one response, stream the reply, and advance the session.
+
+    `time_up` is the trial's answer left in the box when time ran out: see
+    `_submit_at_time_up`.
+    """
+    if time_up:
+        async for ev in _submit_at_time_up(user_id, session_id, text, agents):
+            yield ev
+        return
     async with sessionmaker()() as db:
         sess = await db.scalar(
             select(Session).where(
@@ -302,7 +327,7 @@ async def submit_response(
                     "current_step": step.value,
                     "terminal": True,
                     "attempts_used": prior or 0,
-                    "attempts_left": attempts_left(prior or 0),
+                    "attempts_left": attempts_left(prior or 0, _limit()),
                 },
             )
             return
@@ -359,7 +384,7 @@ async def submit_response(
             )
         await db.commit()
 
-        decision: Decision = resolve(step, attempt_number, verdict)
+        decision: Decision = resolve(step, attempt_number, verdict, _limit())
 
         # Where the session goes next is settled before any of the reply is
         # written. A reply that breaks off partway, or a provider that fails,
@@ -371,7 +396,7 @@ async def submit_response(
             sess.ended_at = utcnow()
         await db.commit()
 
-        left = attempts_left(attempt_number)
+        left = attempts_left(attempt_number, _limit())
         async for ev in _stream_tutor_message(
             db, agents, sess.id, reading.content, components, step,
             decision.situation,
@@ -409,7 +434,148 @@ async def submit_response(
                 "current_step": sess.current_step.value,
                 "terminal": decision.terminal,
                 "attempts_used": used,
-                "attempts_left": attempts_left(used),
+                "attempts_left": attempts_left(used, _limit()),
+            },
+        )
+
+
+async def _grade_and_store(
+    db: AsyncSession,
+    agents: Agents,
+    sess: Session,
+    reading: Reading,
+    step: SeeiStep,
+    attempt_number: int,
+    text: str,
+) -> tuple[Attempt, Verdict, list[tuple[str, str]]] | None:
+    """Grade a response and store it with its judgment. None if grading failed,
+    in which case nothing is stored: a provider failure never costs an attempt."""
+    result = await run_in_threadpool(agents.assessor.assess, reading.content, step.value, text)
+    if not result.parse_ok or result.verdict not in ("PASS", "FAIL"):
+        log_failure("assessment", result.error or "no verdict")
+        return None
+    verdict = Verdict(result.verdict)
+    attempt = Attempt(
+        session_id=sess.id, step=step, attempt_number=attempt_number, response_text=text
+    )
+    db.add(attempt)
+    await db.flush()
+    assessment = Assessment(
+        attempt_id=attempt.id,
+        verdict=verdict,
+        model_verdict=result.model_verdict,
+        raw_response=result.raw_text,
+        warnings=result.warnings or [],
+        usage=result.usage,
+    )
+    db.add(assessment)
+    await db.flush()
+    for name, judgment in result.criteria.items():
+        db.add(
+            CriterionJudgment(
+                assessment_id=assessment.id,
+                criterion=name,
+                passed=judgment.passed,
+                reason=judgment.reason or None,
+            )
+        )
+    await db.commit()
+    unmet = [
+        (name, result.criteria[name].reason if name in result.criteria else "")
+        for name in result.fail_criteria
+    ]
+    return attempt, verdict, unmet
+
+
+async def _submit_at_time_up(
+    user_id: uuid.UUID, session_id: uuid.UUID, text: str, agents: Agents
+) -> AsyncIterator[str]:
+    """Trial mode: take the answer a participant had typed when time ran out.
+
+    It is graded and stored like any attempt, so the data shows how far they
+    got, and the reply says how it did, but the session ends here: nothing
+    advances and they are not asked again.
+    It is taken once, and only shortly after the deadline (`TIME_UP_GRACE`).
+    Grading runs to the end even if they leave for the post-test meanwhile,
+    since the stream is detached from the request.
+
+    If grading fails the text is still kept, in the trial's event log, because
+    an attempt row is only ever written with its judgment.
+    """
+    async with sessionmaker()() as db:
+        sess = await db.scalar(
+            select(Session).where(Session.id == session_id, Session.student_id == user_id)
+        )
+        if sess is None or not get_settings().trial_mode:
+            yield _sse("error", {"detail": "session not found"})
+            return
+        participant = await trial_service.participant_for(db, user_id)
+        end = trial_service.deadline(participant) if participant else None
+        now = utcnow()
+        status = SessionStatus(sess.status)
+        late = end is not None and now > end + TIME_UP_GRACE
+        taken = status is SessionStatus.TIMED_OUT and await db.scalar(
+            select(func.count())
+            .select_from(Attempt)
+            .where(Attempt.session_id == sess.id, Attempt.submitted_at >= sess.ended_at)
+        )
+        if status not in (SessionStatus.IN_PROGRESS, SessionStatus.TIMED_OUT) or late or taken:
+            yield _sse("error", {"detail": "session has already ended"})
+            return
+
+        # End it now, before grading, so nothing else is taken meanwhile.
+        if status is SessionStatus.IN_PROGRESS:
+            sess.status = SessionStatus.TIMED_OUT
+            sess.ended_at = min(now, end) if end else now
+            await db.commit()
+
+        step = SeeiStep(sess.current_step)
+        prior = await db.scalar(
+            select(func.count())
+            .select_from(Attempt)
+            .where(Attempt.session_id == sess.id, Attempt.step == step)
+        )
+        reading = await _load_reading(db, sess.reading_id)
+        stored = (
+            await _grade_and_store(db, agents, sess, reading, step, (prior or 0) + 1, text)
+            if reading is not None
+            else None
+        )
+        await trial_service.note(
+            db,
+            user_id,
+            "time_up_submit",
+            {"attempt_id": str(stored[0].id), "verdict": stored[1].value}
+            if stored
+            else {"graded": False, "text": text},
+        )
+
+        if stored:
+            attempt, verdict, unmet = stored
+            # Passing the last step means they did finish, just at the bell.
+            if verdict is Verdict.PASS and next_step(step) is None:
+                sess.status = SessionStatus.COMPLETE
+                await db.commit()
+            # The reply says how the answer did, and nothing more: a pass is
+            # acknowledged without opening the next step, a fail gets its
+            # feedback without being asked again.
+            async for ev in _stream_tutor_message(
+                db, agents, sess.id, reading.content, await _components(db, sess.reading_id),
+                step, PASSED if verdict is Verdict.PASS else FINAL_FAIL,
+                user_response=text, unmet=unmet, attempt_id=attempt.id,
+            ):
+                yield ev
+            await db.commit()
+
+        used = (prior or 0) + (1 if stored else 0)
+        yield _sse(
+            "state",
+            {
+                "status": SessionStatus(sess.status).value,
+                "current_step": step.value,
+                "terminal": True,
+                "attempts_used": used,
+                "attempts_left": attempts_left(used, _limit()),
             },
         )
 
