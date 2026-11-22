@@ -5,10 +5,23 @@
 # that setting is only offered for a class whose reading is titled exactly
 # `reading_title`. Times are per participant, from when each test starts.
 #
-# Kinds: `choice` is multiple choice, scored by `answer` (1 point). `text` is a
-# written answer, scored by the grader against `criteria` (the highest key is its
-# points). `groups` is the 12a grouping table, not scored. Parts A to C end each
-# question with an "I'm sure / I'm not sure" tick, which calibration uses.
+# Every question is about the general concept, the reading's two core
+# components: what a strategic offensive is (an aggressive move to gain
+# profitable market share at rivals' expense, or to whittle away at a strong
+# rival's advantage) and how to choose one (grounded in the company's own
+# strengths, aimed at rivals' weaknesses). The full answer key, with why each
+# question is built the way it is, is kept with the thesis documents.
+#
+# Kinds:
+# - `truefalse`: a set of statements, each answered True or False and scored
+#   1 point when right. A statement left blank scores 0.
+# - `text`: a written answer, scored by the grader against `criteria` (the
+#   highest key is its points).
+# - `steps`: a written answer in parts, one score for the whole, graded like
+#   `text`. With `lock_first`, the first part becomes read-only once a later
+#   part has text.
+# Parts A to C end with "Is this answer fully correct?", which calibration uses:
+# "Yes, I'm sure" matches only full marks.
 #
 # Editing this file changes the test, so it only changes before the first
 # sitting: nothing is released between sittings.
@@ -17,17 +30,9 @@ key: strategic_offensives
 reading_title: Strategic Offensives
 pretest_minutes: 5
 posttest_minutes: 30
-strategies:
-- Offering an equally good or better product at a lower price
-- Leapfrogging competitors with next-generation technology or products
-- Pursuing continuous product innovation
-- Pursuing disruptive product innovation to create new markets
-- Adopting and improving on the good ideas of other companies
-- Using hit-and-run or guerrilla tactics
-- Launching a preemptive strike
-# The parts whose screen opens with the list of the seven strategies, since the
-# test is taken without the reading.
-strategy_list_parts: [C, D]
+# A line shown at the start of a part, under its heading.
+part_intros:
+  A: For each statement, choose True or False.
 pretest:
   question: Define what a strategic offensive is, to the best of your ability.
   reference: An aggressive move to gain market share or an advantage at rivals' expense, built on the
@@ -38,192 +43,211 @@ pretest:
     1: Partly correct but vague or missing most of the idea.
     0: No answer, or the definition is wrong.
 posttest:
+# --------------------------------------------------------------------------- #
+# Part A: facts and procedures
 - id: q1
   part: A
   dimension: facts
-  kind: choice
-  question: Which of these best describes a guerrilla offensive?
-  options:
-    a: A long-term price cut to take market share from the industry leader
-    b: Sudden, short attacks, like occasional price cuts or bursts of promotions, used by small challengers
-    c: Being the first to sell a new generation of a product
-    d: Securing the best suppliers or locations before rivals do
-  answer: b
-  why: Guerrilla offensives are hit-and-run attacks, such as occasional lowballing or sporadic promotions.
-    They suit small challengers that cannot afford a full attack on the leaders.
+  kind: truefalse
+  question: Which of these are true of a strategic offensive?
+  statements:
+    a:
+      text: An offensive must take something from rivals, either market share or part of their advantage.
+      answer: true
+    b:
+      text: A company that grows only by selling to people who have never bought from any rival is carrying
+        out an offensive.
+      answer: false
+      why: Any growth is an offensive. No rival loses anything.
+    c:
+      text: An offensive can be a series of small attacks rather than one big one.
+      answer: true
+      why: Offensives must be big. Small, repeated attacks can wear a rival down.
+    d:
+      text: Lowering prices to stop a company's own customers from leaving for a rival is an offensive move.
+      answer: false
+      why: Defending is an offensive. This holds ground; it takes nothing from the rival.
+    e:
+      text: An offensive is meant to gain ground rather than to hold it.
+      answer: true
 - id: q2
   part: A
   dimension: facts
-  kind: choice
-  question: What is a preemptive strike?
-  options:
-    a: Copying a rival's idea and improving on it
-    b: Cutting prices before rivals can respond
-    c: Moving first to secure something scarce, like the best distributors, sites, or suppliers, that
-      rivals cannot easily match
-    d: Launching a new product that creates a new market
-  answer: c
-  why: A preemptive move secures competitive assets that rivals cannot readily match. The reading's examples
-    are distributors, sites, and suppliers.
+  kind: truefalse
+  question: Which statements about the goal of a strategic offensive are correct?
+  statements:
+    a:
+      text: Market share won by selling at a loss does not meet the goal of an offensive.
+      answer: true
+      why: The share must be profitable. A student who holds only "market share" marks this false.
+    b:
+      text: The goal of an offensive is to win as much market share as possible.
+      answer: false
+      why: Share at any cost. It drops "profitable".
+    c:
+      text: An offensive can aim to wear down a strong rival's advantage rather than win share right away.
+      answer: true
+    d:
+      text: The goal of an offensive is to protect the company's current market share from rivals.
+      answer: false
+      why: Defending is an offensive. Protecting share keeps the company where it is.
+    e:
+      text: An offensive that brings in more customers than before has met its goal.
+      answer: false
+      why: More customers means success. It ignores where they came from and whether they are profitable.
 - id: q3
   part: A
-  dimension: facts
-  kind: choice
-  question: According to the reading, when does a price-cutting offensive work best?
-  options:
-    a: When the company already has lower costs than its rivals
-    b: When the company is new to the market
-    c: When rivals have better products
-    d: When the company is strong in research and development
-  answer: a
-  why: The reading says price-cutting offensives are best started by companies that have first achieved
-    a cost advantage.
+  dimension: procedures
+  kind: truefalse
+  question: A company is deciding what to base an offensive on. Which of these are sound ways to decide?
+  statements:
+    a:
+      text: An offensive should target the area where the rival is strongest.
+      answer: false
+      why: Attack the rival's strength. The rule says to aim at its weaknesses.
+    b:
+      text: Copying what the market leader does well is a good basis for an offensive.
+      answer: false
+      why: Copy the leader. That builds on the leader's strength, not the company's.
+    c:
+      text: The company should use one of its strong points against one of its rival's weak points.
+      answer: true
+    d:
+      text: Knowing where the rival is weak is sufficient to choose an offensive's target.
+      answer: false
+      why: Half the rule. The rival's weakness without the company's strength.
+    e:
+      text: A company whose costs are higher than its rivals' should try to win customers by charging less
+        than its rivals.
+      answer: false
+      why: Attacking with a weakness. Low prices need low costs; the reading calls this foolish.
+# --------------------------------------------------------------------------- #
+# Part B: connections
 - id: q4
-  part: A
-  dimension: facts
-  kind: choice
-  question: How should a company choose the basis for a strategic offensive?
-  options:
-    a: Attack in the areas where the rival is strongest
-    b: Use its strongest resources against the rival's weakest areas
-    c: Copy the strategy of the market leader
-    d: Pick whichever strategy costs the least
-  answer: b
-  why: Offensives should be grounded in the company's own strengths and aimed at its rivals' weaknesses.
-    This is the procedure for choosing an offensive.
+  part: B
+  dimension: connections
+  kind: text
+  question: A company is deciding whether to base its offensive on something it does well or something
+    it does not do well. How could this choice affect the result of the offensive? Explain why.
+  goal: Connect what an offensive is based on to whether it reaches its goal. The student has to supply
+    the goal (profitable share won from rivals) themselves.
+  reference: Basing it on something the company does well lets it win customers at a cost it can sustain,
+    with an edge rivals can't easily match, so the market share it takes from rivals is profitable and
+    lasts. Basing it on something it does not do well means spending more to win less. Rivals can answer
+    easily, so any share it wins is costly, hard to keep, or not profitable, and the offensive falls short
+    of its goal. A full answer judges the result against the goal (profitable share won from rivals, or
+    wearing down a rival's advantage), not just "more customers".
+  criteria:
+    3: Gets the direction right and judges the result against the goal (profitable share won from rivals,
+      or wearing down a rival's advantage), explaining why one choice reaches it and the other doesn't.
+    2: Gets the direction right with a reason, but the result is only "more customers", "more share" or
+      "success", with profitability or rivals missing. Or names the goal but explains only one side.
+    1: Gets the direction right with no reason ("doing what it's good at works better").
+    0: Wrong direction, no answer, or says the choice doesn't matter.
 - id: q5
   part: B
   dimension: connections
   kind: text
-  question: The reading says strategic offensives should be based on a company's strengths and aimed at
-    its rivals' weaknesses. How does this rule help a company choose which offensive strategy to use?
-    Give one example using a strategy from the reading.
-  goal: Connect the rule for choosing an offensive (strengths against weaknesses) to the choice of a specific
-    strategy.
-  reference: The company should pick the offensive where its own strength meets a rival's weakness. For
-    example, a company that is good at product development should use continuous innovation against rivals
-    that are slow at it, and only a company with a cost advantage should cut prices.
+  question: Continuous product innovation means regularly bringing out new or improved products to draw
+    customers away from rivals. For what kind of company, facing what kind of rivals, would this offensive
+    work well? Explain why.
+  goal: Connect one of the reading's strategies to the rule for choosing an offensive (own strengths
+    against rivals' weaknesses).
+  reference: A company that is good at developing new products quickly, facing rivals that are slow or
+    weak at it. The company attacks with its strength, and the rivals can't keep up because that is their
+    weakness, so it draws customers away from them. Against rivals that innovate just as well, each new
+    product is matched and the offensive gains little. (The reading says this strategy works "especially
+    when rivals' new product development capabilities are weak".)
   criteria:
-    2: Explains that the rule points the company to the offensive that matches its strength to a rival's
-      weakness, and gives a fitting example.
-    1: States the rule or gives an example, but does not connect the two, or the example shows only one
-      side.
-    0: No link between the rule and the choice of strategy, or a wrong one.
+    3: Names both (the company is strong at product development and the rivals are weak or slow at it)
+      and explains why that pairing makes the offensive work.
+    2: Names both but doesn't explain why the pairing matters, or explains one side well and the other
+      vaguely.
+    1: Names only one side (the company or the rivals), or describes the strategy again.
+    0: No answer, or a wrong pairing (for example, rivals that are strong at innovation).
+# --------------------------------------------------------------------------- #
+# Part C: transfer
 - id: q6
-  part: B
-  dimension: connections
+  part: C
+  dimension: transfer
   kind: text
-  question: How is continuous product innovation different from disruptive product innovation? When would
-    a company choose one over the other?
-  goal: Compare two kinds of innovation and link each one to the situation where it fits.
-  reference: Continuous innovation keeps improving current products to pressure rivals, which works best
-    when rivals are weak at making new products. Disruptive innovation creates new markets with an altogether
-    new value proposition. It is riskier and costs more but can change the whole market.
+  question: |-
+    A small milk tea shop near a university competes with a large chain that has most of the students as customers. Both sell a cup of milk tea for ₱100. It costs the shop ₱40 to make a cup, while it costs the chain ₱60. Two of the shop's managers each propose cutting prices by 20%.
+
+    Paolo wants to cut prices so that students who usually buy from the chain start buying from the shop instead.
+
+    Tony wants to cut prices because he wants to make sure none of the shop's regular customers move to the chain.
+
+    Paolo and Tony each call their proposal a strategic offensive. Who is right: Paolo, Tony, both, or neither? Explain your answer.
+  goal: Apply what an offensive is (gaining ground at rivals' expense) to two identical actions with
+    different purposes.
+  reference: Only Paolo. His price cut aims to take the chain's customers, which is gaining ground at a
+    rival's expense. Tony's only keeps customers the shop already has, which is defending, not attacking,
+    and takes nothing from the chain. The action is the same, so only the purpose tells them apart.
   criteria:
-    2: Explains the difference and when a company would choose each one.
-    1: Explains the difference but not when to choose, or the other way around.
-    0: No clear difference, or a wrong one.
+    3: Paolo only, because his cut takes customers from the rival, and Tony's is defending what the shop
+      already has.
+    2: Paolo only, with half of that (for example, "Paolo is attacking") without saying why Tony's isn't
+      an offensive.
+    1: Paolo with no clear reason, or "both" while noticing their purposes differ.
+    0: Tony, both, or neither.
 - id: q7
-  part: B
-  dimension: connections
+  part: C
+  dimension: transfer
   kind: text
-  question: Leapfrogging and a preemptive strike both involve moving before rivals. How are they different?
-  goal: Tell apart two strategies that both involve moving first, by what each one secures.
-  reference: Leapfrogging means being first to market with a next-generation product or technology, which
-    builds market share and a reputation for innovation. A preemptive strike means being first to secure
-    something scarce, like the best distributors, sites, or suppliers, which rivals cannot easily match.
+  question: |-
+    A regional bus company is planning a strategic offensive against its main rival, a national bus line. The regional company's buses are newer and more comfortable, and its drivers are known for being on time. On the other hand, the national line has many more routes and the lowest fares in the country, but its buses are old and often late. The national line's fares are lower than what a trip costs the regional company to run.
+
+    Mariel, a manager at the regional company, wants to add more routes and lower fares to match the national line, because that is what has made the national line so popular.
+
+    Dawson, another manager, wants to spend the budget on advertising the company's comfortable buses and on-time trips.
+
+    Whose plan is a sound strategic offensive: Dawson's, Mariel's, both, or neither? Explain your answer for each plan.
+  goal: Apply the rule for choosing an offensive (own strengths against rivals' weaknesses) and the need
+    for profitable share to two competing plans.
+  reference: Dawson's. His plan attacks with the company's strengths (comfort, punctuality) where the
+    national line is weak (old buses, delays). Mariel's plan attacks where the national line is strongest
+    (routes and fares), and since the national line's fares are below the regional company's cost per
+    trip, matching them means losing money on every trip, and more routes means more losses. The share it
+    wins isn't profitable.
   criteria:
-    2: Explains what each one is first at and what the company gains from each.
-    1: Describes only one correctly, or gives a vague difference.
-    0: Says they are the same, or describes them wrongly.
+    3: Dawson, explaining that his plan uses the company's strengths against the rival's weaknesses, and
+      what is wrong with Mariel's (it attacks the rival's strengths, or the share wouldn't be profitable).
+    2: Dawson, with one of those two explanations.
+    1: Dawson with a vague reason ("better marketing", "it's cheaper"), or "combine both plans" without
+      saying the fare-matching half is the weak one.
+    0: Mariel, both, or neither, or no reason.
+# --------------------------------------------------------------------------- #
+# Part D: metacognition
 - id: q8
-  part: C
-  dimension: transfer
-  kind: text
-  question: A small milk tea shop opens near a university where a large chain has most of the customers.
-    The shop has little money for advertising but can change its menu quickly. Which offensive strategy
-    would you recommend? Explain why it fits the shop.
-  goal: Apply the strategies to a small challenger with few resources.
-  reference: Guerrilla tactics, like surprise promos, suit a small challenger that cannot afford a full
-    attack. Continuous innovation through quick menu changes also works if the chain is slow to change.
-    Both use what the shop has against what the chain lacks.
-  criteria:
-    2: A fitting strategy, explained with both the shop's situation (small, low budget, quick menu changes)
-      and the ideas in the reading.
-    1: A fitting strategy with a weak or partial explanation.
-    0: No recommendation, or one that does not fit, such as a long price war the shop cannot afford.
-- id: q9
-  part: C
-  dimension: transfer
-  kind: text
-  question: A local company makes e-bike batteries. Its research team has built a new battery that lasts
-    twice as long as anything on the market. Rival companies are at least a year away from anything similar.
-    Which offensive strategy would you recommend? Explain why it fits.
-  goal: Apply the strategies to a company with a clear lead in technology.
-  reference: Leapfrogging. The company can be first to market with next-generation technology and build
-    market share and a reputation before rivals catch up, like Eero did with mesh Wi-Fi.
-  criteria:
-    2: A fitting strategy, explained with the company's lead in technology and what being first gives
-      it.
-    1: A fitting strategy with a weak or partial explanation.
-    0: No recommendation, or one that ignores the company's lead.
-- id: q10
-  part: C
-  dimension: transfer
-  kind: text
-  question: A grocery chain plans to enter a fast-growing city. Only a few prime locations near the new
-    transport terminals are still available, and two rival chains also plan to enter the city. Which offensive
-    strategy would you recommend? Explain why it fits.
-  goal: Apply the strategies to a race for scarce locations.
-  reference: A preemptive strike. Securing the best sites first gives the chain a prime position that
-    rivals cannot easily match. It does not have to block rivals completely to work.
-  criteria:
-    2: A fitting strategy, explained with the limited prime locations and why moving first matters.
-    1: A fitting strategy with a weak or partial explanation.
-    0: No recommendation, or one that ignores the limited locations.
-- id: q11
-  part: C
-  dimension: transfer
-  kind: text
-  question: A mid-sized laptop brand has higher costs than the market leader, but it is known for excellent
-    design and fast product updates. Its CEO wants to start a price war against the leader. Do you agree?
-    If not, what would you suggest instead? Explain why.
-  goal: Judge a proposed offensive using the rule for choosing one, then suggest a better fit.
-  reference: Disagree. Price-cutting offensives work for companies with a cost advantage, so the brand
-    would be attacking with its weakness. It should use its strengths instead, such as continuous product
-    innovation through design and fast updates.
-  criteria:
-    2: Disagrees with a correct reason and suggests an offensive based on the brand's strengths.
-    1: Disagrees with a correct reason but suggests nothing fitting, or suggests a fitting offensive without
-      explaining why the price war is a bad idea.
-    0: Agrees with the price war, or gives no reason.
-- id: q12a
   part: D
   dimension: metacognition
-  kind: groups
-  question: Group the seven offensive strategies listed above into two or three groups of your own. Give
-    each group a name and briefly explain why the strategies in it belong together. Use every strategy
-    once. If you only need two groups, leave the third row empty.
-  scored: false
-- id: q12b
-  part: D
-  dimension: metacognition
-  kind: text
-  question: A company copies a rival's best-selling product and sells its version for less. Where would
-    this go in your groups? Do your groups still work? If not, how would you change them?
-  goal: Organize the strategies into a structure of their own, then check if that structure still works
-    for a new case.
-  reference: 'One reasonable grouping: Competing on price: lower price, guerrilla tactics; Competing on
-    the product: continuous innovation, disruptive innovation, leapfrogging, adopting others'' ideas;
-    Competing on timing or position: preemptive strike.'
+  kind: steps
+  lock_first: true
+  question: Build your own checklist, use it on a case, and check how it did.
+  steps:
+    a: Write your own checklist of 2 to 4 questions that someone could ask to decide whether a move is a
+      well-chosen strategic offensive. Part (a) is not scored on its own. Once you start part (b), you
+      can't change part (a), so make sure your checklist is final first. If it needs fixing, say so in
+      part (c).
+    b: 'Use your checklist on this case: A coffee chain opens 30 branches in a province where no other
+      coffee company operates or plans to. Its customers there are people who never bought coffee from
+      anyone before. Its CEO calls it "our biggest strategic offensive ever." Is the CEO right?'
+    c: Did your checklist lead you to the right answer? If not, or if it was hard to apply, how would you
+      change it?
+  goal: Build a structure of their own (a checklist), test it on a case chosen to break a weak one, and
+    revise it. One score for the whole, decided mostly by (c), with (a) and (b) as the evidence.
+  reference: 'The CEO is wrong. It is not an offensive: no rival loses customers or an advantage, since no
+    other coffee company operates there, so it is expansion. A good checklist asks "Does a rival lose
+    customers or an advantage?", "Is it based on our strengths?", "Is it aimed at a rival''s weakness?" and
+    "Will the share be profitable?" A checklist without the first question accepts the case, and the
+    student should notice and add it. Score the final verdict: a weak checklist that gets (b) wrong, caught
+    and fixed in (c), earns full marks.'
   criteria:
-    2: Checks the case against their own groups, and either revises them or explains clearly why it still
-      fits.
-    1: Notices a problem with the fit but does not follow through.
-    0: Places the case with no reasoning.
-  examples:
-    2: It fits both my price and product groups, so my groups overlap. I would change them to "competing
-      on cost" and "competing on the product." This case goes under cost because the lower price is the
-      main attack.
-    1: It fits both my price group and my product group, so it is hard to place.
-    0: It goes in my price group.
+    3: Ends with the right verdict for the right reason (no rival loses anything), and either their
+      checklist caught it and they say how, or it didn't and they find and fix the gap. A wrong (b)
+      corrected in (c) belongs here.
+    2: Ends with the right verdict for the right reason, but doesn't connect it to their checklist, or
+      notices a gap without fixing it.
+    1: Right verdict with no reason, or a wrong verdict while sensing their checklist is missing something.
+    0: Ends with "it is an offensive" and no reflection.

@@ -17,9 +17,12 @@ screen, decides which one they are in:
 
 Each test has its own clock, from when it starts. Answers are saved as they are
 typed, so a test that runs out of time keeps everything saved; it simply ends.
-A multiple-choice answer is scored as it is saved. A written answer is scored by
-the grader, except one left blank, which scores 0 when its test ends, so the
-grader is not asked to grade nothing (they can still change it).
+A multiple-choice answer, and a true/false set (1 point per statement marked
+right), are scored as they are saved. A written answer is scored by the grader,
+except one left blank, which scores 0 when its test ends, so the grader is not
+asked to grade nothing (they can still change it). A question answered in steps
+can lock its first part once a later part has text, so it can't be rewritten
+after the rest is seen.
 """
 
 from __future__ import annotations
@@ -47,8 +50,6 @@ from . import trial_service
 STAGES = ("pretest", "session", "posttest_ready", "posttest", "done")
 
 MAX_TEXT = 5000
-MAX_GROUPS = 3
-MAX_CELL = 500
 
 
 class NotOpen(Exception):
@@ -121,9 +122,7 @@ async def _zero_blanks(db: AsyncSession, p: Participant, test: Test, which: str,
         if not item.scored:
             continue
         row = have.get((which, item.id))
-        blank = row is None or (
-            (row.choice is None) if item.kind == "choice" else not (row.text or "").strip()
-        )
+        blank = row is None or not _answered(item, row)
         if not blank or (row is not None and row.score is not None):
             continue
         if row is None:
@@ -219,6 +218,16 @@ def _open_stages(which: str) -> tuple[str, ...]:
     return ("pretest",) if which == PRE else ("posttest_ready", "posttest")
 
 
+def _answered(item: Item, a: TrialAnswer) -> bool:
+    if item.kind == "choice":
+        return a.choice is not None
+    if item.kind == "truefalse":
+        return bool(a.parts)
+    if item.kind == "steps":
+        return any(str(v).strip() for v in (a.parts or {}).values())
+    return bool((a.text or "").strip())
+
+
 def _public_item(item: Item) -> dict:
     """A question as the participant sees it: no answer key, no rubric."""
     return {
@@ -227,13 +236,16 @@ def _public_item(item: Item) -> dict:
         "part": item.part,
         "question": item.question,
         "options": [{"key": k, "text": v} for k, v in item.options.items()],
+        "statements": [{"key": k, "text": st.text} for k, st in item.statements.items()],
+        "steps": [{"key": k, "prompt": v} for k, v in item.steps.items()],
+        "lock_first": item.lock_first,
         "points": item.points,
         "ticked": item.ticked,
     }
 
 
 def _saved(a: TrialAnswer) -> dict:
-    return {"item": a.item, "choice": a.choice, "text": a.text, "groups": a.groups, "sure": a.sure}
+    return {"item": a.item, "choice": a.choice, "text": a.text, "parts": a.parts, "sure": a.sure}
 
 
 async def view(db: AsyncSession, user_id: uuid.UUID, which: str) -> dict:
@@ -250,8 +262,7 @@ async def view(db: AsyncSession, user_id: uuid.UUID, which: str) -> dict:
         "seconds_left": (
             None if end is None else max(int((end - utcnow()).total_seconds()), 0)
         ),
-        "strategies": list(test.strategies),
-        "strategy_list_parts": list(test.strategy_list_parts),
+        "part_intros": test.part_intros,
         "items": [_public_item(i) for i in test.items(which)],
         "answers": [_saved(a) for a in await _answers(db, p.id) if a.test == which],
     }
@@ -269,16 +280,28 @@ async def start(db: AsyncSession, user_id: uuid.UUID, which: str) -> dict:
     return await view(db, user_id, which)
 
 
-def _clean_groups(groups: list) -> list[dict]:
-    if not isinstance(groups, list) or len(groups) > MAX_GROUPS:
-        raise BadAnswer(f"at most {MAX_GROUPS} groups")
-    out = []
-    for g in groups:
-        if not isinstance(g, dict):
-            raise BadAnswer("each group is a name, its strategies and why")
-        row = {k: str(g.get(k) or "")[:MAX_CELL] for k in ("name", "strategies", "why")}
-        out.append(row)
-    return out
+def _tf_score(item: Item, marks: dict) -> int:
+    """1 point per statement marked right; a blank statement scores 0."""
+    return sum(1 for k, st in item.statements.items() if marks.get(k) is st.answer)
+
+
+def _clean_parts(item: Item, parts: dict, before: dict | None) -> dict:
+    """Check an answer in parts against its question, and apply the lock."""
+    if not isinstance(parts, dict):
+        raise BadAnswer("an answer in parts is a set of named parts")
+    if item.kind == "truefalse":
+        if set(parts) - set(item.statements) or not all(isinstance(v, bool) for v in parts.values()):
+            raise BadAnswer("mark each statement true or false")
+        return dict(parts)
+    if set(parts) - set(item.steps):
+        raise BadAnswer("not one of the question's parts")
+    clean = {k: str(v)[:MAX_TEXT] for k, v in parts.items()}
+    if item.lock_first and before:
+        first, *later = list(item.steps)
+        started = any(str(before.get(k) or "").strip() for k in later)
+        if started and clean.get(first, before.get(first)) != before.get(first):
+            raise BadAnswer(f"part ({first}) can't change once a later part is started")
+    return clean
 
 
 async def save(
@@ -289,7 +312,7 @@ async def save(
     *,
     choice: str | None = None,
     text: str | None = None,
-    groups: list | None = None,
+    parts: dict | None = None,
     sure: bool | None = None,
 ) -> dict:
     """Save one answer as it is typed. Only while the test is running.
@@ -316,7 +339,7 @@ async def save(
         row = TrialAnswer(participant_id=p.id, test=which, item=item_id)
         db.add(row)
 
-    before = (row.choice, row.text, row.groups)
+    before = (row.choice, row.text, row.parts)
     if item.kind == "choice" and choice is not None:
         if choice not in item.options:
             raise BadAnswer("not one of the options")
@@ -325,13 +348,16 @@ async def save(
         row.scored_at = utcnow()
     elif item.kind == "text" and text is not None:
         row.text = text[:MAX_TEXT]
-    elif item.kind == "groups" and groups is not None:
-        row.groups = _clean_groups(groups)
+    elif item.kind in ("truefalse", "steps") and parts is not None:
+        merged = {**(row.parts or {}), **_clean_parts(item, parts, row.parts)}
+        row.parts = merged
+        if item.kind == "truefalse":
+            row.score, row.scored_at = _tf_score(item, merged), utcnow()
     if sure is not None and item.ticked:
         row.sure = sure
 
     now = utcnow()
-    if (row.choice, row.text, row.groups) != before:
+    if (row.choice, row.text, row.parts) != before:
         row.edits = (row.edits or 0) + 1
         row.last_changed_at = now
         if row.first_answered_at is None:
@@ -470,6 +496,11 @@ async def grading_detail(db: AsyncSession, code: str) -> dict:
             "item": item.id,
             "question": item.question,
             "text": a.text if a else None,
+            "parts": (
+                [{"key": k, "prompt": v, "text": ((a.parts or {}).get(k) if a else None)}
+                 for k, v in item.steps.items()]
+                if item.kind == "steps" else None
+            ),
             "sure": a.sure if a else None,
             "score": a.score if a else None,
             "points": item.points,
@@ -480,7 +511,7 @@ async def grading_detail(db: AsyncSession, code: str) -> dict:
     out_written = []
     if ended_at(p, PRE) is not None:
         out_written.append(written(PRE, test.pretest))
-    choices, groups = [], None
+    choices, sets = [], []
     if ended_at(p, POST) is not None:
         for item in test.posttest:
             a = got.get((POST, item.id))
@@ -494,8 +525,21 @@ async def grading_detail(db: AsyncSession, code: str) -> dict:
                         "sure": a.sure if a else None,
                     }
                 )
-            elif item.kind == "groups":
-                groups = a.groups if a else None
+            elif item.kind == "truefalse":
+                marks = (a.parts if a else None) or {}
+                sets.append(
+                    {
+                        "item": item.id,
+                        "question": item.question,
+                        "sure": a.sure if a else None,
+                        "score": _tf_score(item, marks),
+                        "points": item.points,
+                        "statements": [
+                            {"key": k, "text": st.text, "answer": st.answer, "picked": marks.get(k)}
+                            for k, st in item.statements.items()
+                        ],
+                    }
+                )
             elif item.graded_by_hand:
                 out_written.append(written(POST, item))
     return {
@@ -504,7 +548,7 @@ async def grading_detail(db: AsyncSession, code: str) -> dict:
         "left": left_to_grade(p, test, answers),
         **scores(test, answers),
         "choices": choices,
-        "groups": groups,
+        "sets": sets,
         "written": out_written,
     }
 

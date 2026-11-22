@@ -395,7 +395,7 @@ which one they are in (`test_stage` on `/trial/me`):
 | `pretest` | The welcome, then "Pre-test", what it checks, "You have 5 minutes." and Start, then one written question. Its clock starts on Start. The reading is not shown | Submitted, or 5 minutes |
 | `session` | The reading, chatbot or SEE-I session, as without tests. A SEE-I session's end replaces the answer box with a strip saying how it ended (complete, or time up) and Continue to post-test, so the last feedback stays readable. Time running out anywhere else (on the reading, or in a control group) shows a "Time's up" popup with the same button | Finished, Done, or 35 minutes |
 | `posttest_ready` | "Post-test" and Start. Its clock starts on Start | Start pressed |
-| `posttest` | 12 questions, with a question list and "I'm sure / I'm not sure" ticks. A tick is required on every answered question (Submit asks for any missing; a blank question needs none), but time running out submits everything as it is | Submitted, 30 minutes, or the batch closing |
+| `posttest` | 8 questions on the general concept, with a question list: three true/false sets (Part A, facts and procedures), two written questions on connections (B), two short cases on transfer (C), and a checklist to build, use and check (D, metacognition). Parts A to C end with "Is this answer fully correct? Yes, I'm sure / No, I'm not sure". That choice is required on every answered question (Submit asks for any missing; a blank question needs none), but time running out submits everything as it is | Submitted, 30 minutes, or the batch closing |
 | `done` | "You're done" | |
 
 - **The reading and the session clock do not start before the pre-test ends**,
@@ -411,12 +411,20 @@ which one they are in (`test_stage` on `/trial/me`):
   `posttest`.
 - **Each answer keeps its history:** when it was first answered, when last
   changed, and how many saves changed it.
-- **Scoring.** Multiple choice is scored as it is saved. A written answer left
-  blank scores 0 when its test ends. Every other written answer waits for the
-  grader. The pre-test score, the post-test total (out of 20) and calibration
-  appear once everything they depend on is scored. Calibration is the share of
-  ticked answers whose tick matched the result: "sure" with full marks, or "not
-  sure" without.
+- **Scoring.** A true/false set is scored as it is saved, 1 point per statement
+  marked right; a statement left blank scores 0. A written answer left blank
+  scores 0 when its test ends. Every other written answer waits for the grader,
+  0 to 3 against its rubric. Part D is one question in three parts, scored once
+  for the whole; its first part (the checklist) locks once the second is
+  started, on the screen and on the server. The pre-test score, the post-test
+  total (out of 30) and calibration appear once everything they depend on is
+  scored. Calibration is the share of ticked answers whose tick matched the
+  result: "sure" with full marks (all five statements right, for a set), or
+  "not sure" without.
+- **The test file.** `backend/trial_tests/strategic_offensives.yaml` holds the
+  questions, answer key, reference answers and rubrics. Every question is about
+  the reading's two core components; the full answer key, with why each
+  question is built the way it is, is kept with the thesis documents.
 - **The batch page.** With tests, an ID shows Finished once its post-test has
   ended, not when its session does. Closing a batch ends any test still running
   as `closed`.
@@ -425,9 +433,10 @@ which one they are in (`test_stage` on `/trial/me`):
 
 The **Grading** tab lists every ID with test answers, by ID only, with how many
 written answers are left. Opening one shows its pre-test and post-test totals,
-calibration, the multiple choice with what was picked and whether it was right,
-and each written answer with its tick, 0 to its points to click, and the rubric
-(reference answer and criteria) beside it. A score saves when clicked and can be
+calibration, each true/false set with every statement, what was marked and the
+key, and each written answer with its tick, 0 to its points to click, and the
+rubric (reference answer and criteria) beside it. Part D shows its three parts
+with their prompts. A score saves when clicked and can be
 changed at any time. The research team sees the same page, reached from the tab
 or from an ID on a batch's page; the grader sees nothing else.
 
