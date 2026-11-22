@@ -95,7 +95,9 @@ DeepSeek for the agents: `FIGURE_PROVIDER=gemini`,
 
 The trial must run the model, `ASSESSMENT_PROMPT_VERSION` and `RUBRIC_VERSION`
 the eval measured. On the trial instance these belong in `render-trial.yaml`,
-not the dashboard, so they change only through a release.
+not the dashboard, so they change only through a release. It runs deepseek-flash
+with assessment prompt v7 and rubric v3, and `tests/test_deploy.py` fails if that
+combination is not a row of `assessment-agent-eval/results_log.csv`.
 
 A provider failure shows the user only its type. The provider's own message goes
 to the server log (`senseei.provider`), with every API key scrubbed from it.

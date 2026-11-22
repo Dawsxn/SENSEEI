@@ -158,7 +158,9 @@ PLANS: dict[str, list[list[str]]] = {
     # struggled in the middle
     "two_retries": [["PASS"], ["FAIL", "PASS"], ["FAIL", "FAIL", "PASS"], ["PASS"]],
     # attempts exhausted on State: ends in fallback, flags the instructor
-    "fallback": [["FAIL", "FAIL", "FAIL"]],
+    "fallback": [["FAIL"] * ATTEMPT_LIMIT],
+    # three steps passed, then attempts exhausted on Illustrate
+    "late_fallback": [["PASS"], ["PASS"], ["PASS"], ["FAIL"] * ATTEMPT_LIMIT],
     # stopped partway, still open
     "in_progress": [["PASS"], ["FAIL"]],
 }
@@ -173,9 +175,9 @@ PLANS: dict[str, list[list[str]]] = {
 #: eval dataset, which does not cover it, and leaving it unattempted is also what
 #: makes it the clean one to test a fresh session against.
 SESSIONS = [
-    (0, "business_model", "clean", 11),
-    (1, "business_model", "one_retry", 10),
-    (2, "business_model", "two_retries", 8),
+    (0, "business_model", "late_fallback", 11),
+    (1, "business_model", "fallback", 10),
+    (2, "business_model", "in_progress", 8),
     (2, "strategy", "fallback", 9),
     (3, "strategy", "clean", 7),
     (4, "strategy", "one_retry", 6),
@@ -197,6 +199,14 @@ MOVES = {
 # the dataset
 
 
+def _slug(filename: str) -> str:
+    """The reading a CSV row names. Example sets from v4 on grade against the
+    concept's section of the chapter (`business_model_section.txt`), earlier ones
+    against the whole reading (`business_model.txt`); both are the same reading
+    here."""
+    return filename.replace(".txt", "").removesuffix("_section")
+
+
 def load_readings() -> dict[str, dict]:
     """The four readings: text, core components and the original PDF.
 
@@ -212,7 +222,7 @@ def load_readings() -> dict[str, dict]:
 
     out: dict[str, dict] = {}
     for filename, comps in components.items():
-        slug = filename.replace(".txt", "")
+        slug = _slug(filename)
         if slug not in TITLES:
             continue  # a reading with no core components is not seeded
         text = (DATA / "readings" / filename).read_text(encoding="utf-8").strip()
@@ -246,7 +256,7 @@ def load_responses() -> dict[tuple[str, str, str], list[dict]]:
     with open(csv_path, encoding="utf-8-sig", newline="") as f:
         for row in csv.DictReader(f):
             key = (
-                row["reading_filename"].replace(".txt", ""),
+                _slug(row["reading_filename"]),
                 row["seei_step"],
                 row["expected_verdict"],
             )

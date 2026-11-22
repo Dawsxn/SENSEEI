@@ -45,8 +45,35 @@ services:
       # An empty database stays empty. The trial holds participants only.
       - key: SEED_IF_EMPTY
         value: "false"
+      # The model the trial runs, exactly as the Assessment Agent eval measured
+      # it (assessment-agent-eval/results_log.csv: prompt v7, rubric v3,
+      # deepseek-flash, temperature 0, 8192 output tokens). In this file, not
+      # the dashboard, so it changes only through a release. To switch back to
+      # Gemini: LLM_PROVIDER gemini, LLM_MODEL gemini-3.1-pro-preview, LLM_BASE_URL
+      # blank, LLM_API_KEY_ENV GEMINI_API_KEY (docs/context/tech-stack.md).
       - key: LLM_PROVIDER
+        value: openai_compat
+      - key: LLM_MODEL
+        value: deepseek-flash
+      - key: LLM_BASE_URL
+        value: https://api.deepseek.com
+      - key: LLM_API_KEY_ENV
+        value: DEEPSEEK_API_KEY
+      - key: LLM_TEMPERATURE
+        value: "0"
+      - key: LLM_MAX_OUTPUT_TOKENS
+        value: "8192"
+      - key: ASSESSMENT_PROMPT_VERSION
+        value: v7
+      - key: RUBRIC_VERSION
+        value: v3
+      # DeepSeek cannot read a PDF, so the upload's figure step stays on Gemini.
+      - key: FIGURE_PROVIDER
         value: gemini
+      - key: FIGURE_MODEL
+        value: gemini-3.1-pro-preview
+      - key: FIGURE_API_KEY_ENV
+        value: GEMINI_API_KEY
       - key: SESSION_SECRET
         generateValue: true
       # Entered in the dashboard. Never in this file.
