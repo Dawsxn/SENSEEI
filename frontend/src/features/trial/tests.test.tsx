@@ -138,8 +138,35 @@ describe("the post-test", () => {
     await waitFor(() =>
       expect(api.saveTestAnswer).toHaveBeenCalledWith("post", "q1", { choice: "a" }),
     );
+    // Answered but not yet ticked: the tick is required.
+    expect(screen.getByRole("button", { name: "Question 1, needs how sure" })).toBeInTheDocument();
+    expect(screen.getByText("Required")).toBeInTheDocument();
+    await userEvent.click(screen.getByLabelText(/I.m not sure/, { selector: "input[name='q1-sure']" }));
     expect(screen.getByRole("button", { name: "Question 1, answered" })).toBeInTheDocument();
+    expect(screen.queryByText("Required")).not.toBeInTheDocument();
     expect(screen.getByLabelText(/I.m sure/, { selector: "input[name='q5-sure']" })).toBeChecked();
+  });
+
+  it("asks for the ticks on answered questions before submitting, not on blank ones", async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    api.getTest.mockResolvedValue({
+      ...post,
+      answers: [{ item: "q5", text: "Typed, no tick" }],
+    });
+    api.submitTest.mockResolvedValue({ test_stage: "done" });
+    renderAt("/posttest", <PostTestScreen />);
+
+    await userEvent.click((await screen.findAllByRole("button", { name: "Submit" }))[0]);
+    const ask = screen.getByRole("alertdialog");
+    expect(ask).toHaveTextContent("Tick how sure you are for every question you answered.");
+    await userEvent.click(within(ask).getByRole("button", { name: "Show me" }));
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    expect(api.submitTest).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByLabelText(/I.m sure/, { selector: "input[name='q5-sure']" }));
+    await userEvent.click(screen.getAllByRole("button", { name: "Submit" })[0]);
+    // q1 and q12 are blank, so they need no tick: straight to the usual confirmation.
+    expect(screen.getByRole("alertdialog")).toHaveTextContent("2 questions have no answer");
   });
 
   it("says how many questions are blank before submitting", async () => {
