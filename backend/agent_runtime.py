@@ -80,12 +80,13 @@ def get_agents() -> Agents:
 @lru_cache
 def get_figure_describer() -> FigureDescriber:
     """The upload tool that describes a reading's figures. Not an agent: it runs
-    once per upload and the instructor edits everything it writes. Same provider
-    and model as the agents, so there is one key and one bill."""
+    once per upload and the instructor edits everything it writes. The agents'
+    provider unless the FIGURE_ settings name another, since it has to read the
+    PDF and not every provider can."""
     settings = get_settings()
     load_dotenv(AGENTS_DIR.parent / ".env")
     prompt = _prompt(f"figure_prompt_{settings.figure_prompt_version}.md")
-    provider = get_provider({**settings.provider_config(), "json_mode": True})
+    provider = get_provider({**settings.figure_provider_config(), "json_mode": True})
     return FigureDescriber(provider, prompt)
 
 

@@ -114,7 +114,7 @@ a one-line edit, not a search.
 
 | Value | Setting |
 | --- | --- |
-| Maximum attempts per step | 3, uniform across all four steps |
+| Maximum attempts per step | 5, uniform across all four steps (`MAX_ATTEMPTS` in `backend/orchestrator.py`; raised from 3 for the trial) |
 
 ## Dialogue moves
 

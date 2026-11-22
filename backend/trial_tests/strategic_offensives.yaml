@@ -202,7 +202,8 @@ posttest:
   dimension: metacognition
   kind: groups
   question: Group the seven offensive strategies listed above into two or three groups of your own. Give
-    each group a name and briefly explain why the strategies in it belong together.
+    each group a name and briefly explain why the strategies in it belong together. Use every strategy
+    once. If you only need two groups, leave the third row empty.
   scored: false
 - id: q12b
   part: D

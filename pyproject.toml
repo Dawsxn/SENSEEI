@@ -18,7 +18,8 @@ dependencies = [
 [project.optional-dependencies]
 # Below 3: 3.x changed defaults (the API version) under a working deploy.
 gemini = ["google-genai>=2.9.0,<3"]
-openai = ["openai>=1.40.0"]
+# Below 4, for the same reason as google-genai: no major version under a deploy.
+openai = ["openai>=1.40.0,<4"]
 # The web app. Not needed to run the eval or the session harness.
 backend = [
   "fastapi>=0.115",

@@ -31,7 +31,13 @@ import { useReading } from "../readings/useReadings";
 import { TrialClock, useTimeUp } from "../trial/TrialClock";
 import { setTrialContext, useTrialLogging } from "../trial/trialLog";
 import { useIntro } from "../trial/useIntro";
-import { useIsParticipant, useStartTrialClock, useTestHandoff } from "../trial/useTrial";
+import { TimeUpDialog } from "../trial/TimeUpDialog";
+import {
+  useIsParticipant,
+  useStartTrialClock,
+  useTestHandoff,
+  useTrialStatus,
+} from "../trial/useTrial";
 import { ReadingIntroDialog } from "./ReadingIntroDialog";
 import { ReadingPanel } from "./ReadingPanel";
 
@@ -47,8 +53,11 @@ export function ReadingStepScreen() {
   const [showIntro, closeIntro] = useIntro(participant);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
   const timeUp = useTimeUp();
-  useTestHandoff(participant && timeUp);
-  useStartTrialClock(participant);
+  const moveOn = useTestHandoff(participant && timeUp, false);
+  const { data: status } = useTrialStatus();
+  const timeUpPopup = participant && timeUp && status?.test_stage != null;
+  // Their time starts when they press Start in Before you start.
+  useStartTrialClock(participant && !showIntro);
   useTrialLogging(participant);
   // Page changes here happen before the session: reading, not a SEE-I step.
   useEffect(() => {
@@ -107,7 +116,7 @@ export function ReadingStepScreen() {
       {/* Pinned, so finishing does not require scrolling back to anywhere. */}
       {participant && timeUp ? (
         <footer className="shrink-0 border-t px-6 py-4 text-center text-[13px] text-muted-foreground">
-          Time&rsquo;s up. Please wait for the next instructions.
+          {timeUpPopup ? "Time's up." : "Time's up. Please wait for the next instructions."}
         </footer>
       ) : (
         <footer className="flex shrink-0 items-center justify-end border-t px-4 py-3 sm:px-6">
@@ -116,6 +125,7 @@ export function ReadingStepScreen() {
       )}
 
       {showIntro && <ReadingIntroDialog onStart={closeIntro} />}
+      {timeUpPopup && <TimeUpDialog onContinue={() => void moveOn()} />}
 
       {confirmingLeave && (
         <ConfirmDialog

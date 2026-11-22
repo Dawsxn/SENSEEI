@@ -44,6 +44,7 @@ from agents.tutor import FIRST_ATTEMPT
 
 from ..agent_runtime import Agents
 from ..db import sessionmaker
+from .provider_errors import log_failure
 from ..models import (
     Assessment,
     Attempt,
@@ -154,6 +155,7 @@ async def _stream_tutor_message(
             pieces.append(chunk)
             yield _sse("delta", {"text": chunk})
     except Exception as e:  # a provider failure mid-generation
+        log_failure("tutor", e)
         student_id = await db.scalar(select(Session.student_id).where(Session.id == session_id))
         await trial_service.note(db, student_id, "turn_failed", {"where": "tutor"})
         yield _sse("error", {"detail": f"tutor failed: {type(e).__name__}"})
@@ -311,6 +313,7 @@ async def submit_response(
             agents.assessor.assess, reading.content, step.value, text
         )
         if not result.parse_ok or result.verdict not in ("PASS", "FAIL"):
+            log_failure("assessment", result.error or "no verdict")
             await trial_service.note(db, user_id, "turn_failed", {"where": "assessment"})
             yield _sse(
                 "error",

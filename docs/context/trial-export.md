@@ -1,7 +1,8 @@
 # The trial export
 
 What **Download data** on the Participants tab gives you: one zip,
-`senseei-trial-<date>.zip`, of spreadsheet files. This lists every file and every
+`senseei-trial-<date>.zip`, of spreadsheet files. A batch page's download gives
+the same files holding only that batch's IDs. This lists every file and every
 column. How the data is collected is in `docs/context/trial.md`.
 
 **Read this first**
@@ -26,7 +27,7 @@ One row per participant ID. Every group.
 | class | The class it was in, e.g. `TRIAL S1-A` |
 | group | `seei`, `chatbot` or `reading_only` |
 | signed_in_at | First sign-in. Empty if never used |
-| reading_opened_at | When the reading opened. Their session time starts here |
+| reading_opened_at | When they pressed Start in Before you start over the reading. Their session time starts here |
 | done_at | When they pressed Done. Chatbot and reading-only groups only |
 | time_ran_out_at | When their session time ended. Empty if the reading never opened |
 | voided_at | When the ID was voided. Empty if it was not |

@@ -20,6 +20,7 @@ import type {
   SessionStatus,
   StreamEvent,
 } from "./types";
+import { MAX_ATTEMPTS } from "./types";
 
 export type ChatRole = "tutor" | "student" | "fallback";
 
@@ -157,7 +158,7 @@ export function resume(
     status,
     currentStep,
     attemptsUsed: used,
-    attemptsLeft: Math.max(3 - used, 0),
+    attemptsLeft: Math.max(MAX_ATTEMPTS - used, 0),
     messages,
     phase: status === "in_progress" ? "awaiting_input" : "terminal",
     seq: messages.length,

@@ -23,7 +23,7 @@ from .models import STEP_ORDER, SeeiStep, SessionStatus, Verdict
 #: is the single home for the number: scripts/session.py and scripts/seed.py
 #: both import it from here rather than keeping their own copy, so the loop and
 #: the seeded data can never disagree about it.
-MAX_ATTEMPTS = 3
+MAX_ATTEMPTS = 5
 
 
 def next_step(step: SeeiStep) -> SeeiStep | None:

@@ -216,12 +216,13 @@ export function PreTestScreen() {
   const [timeUp, setTimeUp] = useState(false);
   useTestLogging("pretest");
 
-  // The clock starts when the screen first opens.
-  useEffect(() => {
-    if (view && !view.started) {
-      void startTest("pre").then((v) => queryClient.setQueryData(["test", "pre"], v));
-    }
-  }, [view, queryClient]);
+  // The clock starts on Start, like the post-test's, not when the screen opens.
+  const [starting, setStarting] = useState(false);
+  async function start() {
+    setStarting(true);
+    queryClient.setQueryData(["test", "pre"], await startTest("pre"));
+    setStarting(false);
+  }
 
   const left = useCountdown(view?.seconds_left, dataUpdatedAt);
   useEffect(() => {
@@ -239,6 +240,24 @@ export function PreTestScreen() {
   const onward = () => moveOn("/");
 
   if (isError || !view) return <Notice>Loading&hellip;</Notice>;
+  if (!view.started) {
+    return (
+      <div className="flex h-full flex-col">
+        <TestTopBar />
+        <main className="flex flex-1 items-center justify-center px-6">
+          <div className="-mt-16 max-w-[420px] text-center">
+            <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Pre-test</h1>
+            <p className="mt-1.5 text-[14px] text-muted-foreground">
+              You have {view.minutes} minutes.
+            </p>
+            <Button className="mt-6" onClick={() => void start()} disabled={starting}>
+              Start
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
   const item = view.items[0];
 
   return (

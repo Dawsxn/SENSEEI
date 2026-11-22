@@ -35,6 +35,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .ownership import owned_by
 from ..models import (
     FINISHED_STATUSES,
     ChatMessage,
@@ -452,7 +453,7 @@ async def _owned_batch(
     batch = await db.scalar(
         select(ParticipantBatch).where(
             ParticipantBatch.id == batch_id,
-            ParticipantBatch.instructor_id == instructor_id,
+            owned_by(ParticipantBatch.instructor_id, instructor_id),
         )
     )
     if batch is None:
@@ -479,7 +480,7 @@ async def list_batches(db: AsyncSession, instructor_id: uuid.UUID) -> list[dict]
     )
     rows = await db.execute(
         select(ParticipantBatch, total, used)
-        .where(ParticipantBatch.instructor_id == instructor_id)
+        .where(owned_by(ParticipantBatch.instructor_id, instructor_id))
         .order_by(ParticipantBatch.created_at.desc())
     )
     return [
@@ -576,7 +577,7 @@ async def create_batch(
         await db.scalars(
             select(Class.id).where(
                 Class.id.in_(list(counts)),
-                Class.instructor_id == instructor_id,
+                owned_by(Class.instructor_id, instructor_id),
                 Class.deleted_at.is_(None),
             )
         )

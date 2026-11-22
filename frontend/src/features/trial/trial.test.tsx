@@ -10,6 +10,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ApiError } from "../../lib/api";
 import type { SessionTranscript } from "../review/types";
 import { ChatPanel } from "../tutoring/ChatPanel";
+import { MAX_ATTEMPTS } from "../tutoring/types";
 import { initialState, resume } from "../tutoring/useTutoringSession";
 import { ParticipantSignIn } from "./ParticipantSignIn";
 import { formatClock } from "./TrialClock";
@@ -102,7 +103,7 @@ describe("a session picked back up", () => {
       ["student", "Try one."],
       ["tutor", "Again."],
     ]);
-    expect([state.attemptsUsed, state.attemptsLeft, state.phase]).toEqual([1, 2, "awaiting_input"]);
+    expect([state.attemptsUsed, state.attemptsLeft, state.phase]).toEqual([1, MAX_ATTEMPTS - 1, "awaiting_input"]);
   });
 
   it("is over if the session already ended", () => {

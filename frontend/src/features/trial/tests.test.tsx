@@ -103,11 +103,14 @@ describe("the pre-test", () => {
     expect(await screen.findByText("Home")).toBeInTheDocument();
   });
 
-  it("starts its clock when it first opens", async () => {
+  it("waits for Start before its clock runs", async () => {
     api.getTest.mockResolvedValue({ ...pre, started: false, seconds_left: null });
     api.startTest.mockResolvedValue(pre);
     renderAt("/pretest", <PreTestScreen />);
-    await waitFor(() => expect(api.startTest).toHaveBeenCalledWith("pre"));
+    expect(await screen.findByText("You have 5 minutes.")).toBeInTheDocument();
+    expect(api.startTest).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Start" }));
+    expect(api.startTest).toHaveBeenCalledWith("pre");
   });
 });
 

@@ -26,6 +26,7 @@ from backend.models import (
     SessionStatus,
     User,
 )
+from backend.orchestrator import MAX_ATTEMPTS
 from backend.settings import get_settings
 from test_session_api import StubProvider, _stub_agents, parse_sse
 
@@ -200,7 +201,10 @@ async def test_a_batch_gives_each_class_its_count_in_a_mixed_order(team):
 
 
 @pytest.mark.anyio
-async def test_a_batch_only_takes_your_own_classes(team):
+async def test_a_batch_takes_any_team_class_but_not_an_unknown_one(team):
+    """The team shares the trial's classes (test_trial_prep.py), so a teammate
+    can make a batch for a class someone else created. A class id that is not a
+    live class is still refused."""
     async with as_user(team["prof"]) as prof:
         classes = await _three_groups(prof, team["reading"])
     async with as_user(team["other"]) as other:
@@ -208,8 +212,14 @@ async def test_a_batch_only_takes_your_own_classes(team):
             "/instructor/batches",
             json={"name": "X", "classes": [{"class_id": classes["seei"], "count": 1}]},
         )
+        assert r.status_code == 201, r.text
+        r = await other.post(
+            "/instructor/batches",
+            json={"name": "Y", "classes": [
+                {"class_id": "00000000-0000-0000-0000-000000000000", "count": 1}
+            ]},
+        )
         assert r.status_code == 422
-        assert (await other.get("/instructor/batches")).json() == []
 
 
 @pytest.mark.anyio
@@ -350,7 +360,7 @@ async def test_an_answer_after_time_is_up_ends_the_session_ungraded(team, trial_
 
     assert events == [("state", {
         "status": "timed_out", "current_step": "State", "terminal": True,
-        "attempts_used": 0, "attempts_left": 3,
+        "attempts_used": 0, "attempts_left": MAX_ATTEMPTS,
     })]
     sess = await _session_of(trial_on, code)
     assert SessionStatus(sess.status) is SessionStatus.TIMED_OUT
