@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    /* The instructor's session review, with the Assessment Agent's judgment
+       under each answer: the failed criteria with the agent's reason, and the
+       passed ones in one line. Students never see this. */
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .label { display: flex; align-items: center; gap: 12px; margin: 28px 0 14px; font-size: 12px; letter-spacing: 0.04em; }
+    .label::after { content: ""; flex-grow: 1; height: 1px; background: #e4e4e7; }
+    .tutor { font-size: 14px; line-height: 1.65; margin: 0 0 14px; }
+    .student { margin: 0 0 8px 116px; background: #f0fdf4; border-radius: 8px; padding: 12px 16px; font-size: 14px; line-height: 1.65; color: #3f3f46; }
+    .judge { margin: 0 0 16px 116px; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 13px; }
+    .judge .head { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #e4e4e7; background: #fafafa; border-radius: 8px 8px 0 0; }
+    .judge .row { display: flex; gap: 10px; padding: 8px 12px; line-height: 1.55; }
+    .judge .row + .row { border-top: 1px solid #f4f4f5; }
+    .judge .name { width: 120px; flex-shrink: 0; font-weight: 500; }
+    .pill { font-size: 12px; font-weight: 500; padding: 1px 8px; border-radius: 999px; }
+  </style>
+</helmet>
+<div style="width: 1280px; height: 900px; background: #ffffff; color: #09090b; overflow: hidden;">
+  <div style="display: flex; align-items: center; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">&lsaquo;&nbsp; P-7K3Q-9TXM</div>
+  <div style="width: 772px; margin: 0 auto; padding-top: 8px;">
+
+    <div class="label" style="color: #71717a;">ELABORATE</div>
+    <p class="tutor">Now, let&rsquo;s elaborate. Expand on your statement at greater length so the reader gets more of the fullness of what is meant.</p>
+
+    <div class="student">A strategic offensive is when a company attacks its rivals to win more customers, for example by lowering its prices or launching new products before them.</div>
+    <div class="judge">
+      <div class="head"><span style="font-weight: 500;">Attempt 1</span><span class="pill" style="background: #fef2f2; color: #b91c1c;">Not passed</span></div>
+      <div class="row"><span class="name" style="color: #b91c1c;">&#10005;&nbsp; Completeness</span><span style="color: #3f3f46;">Explains the aggressive move to gain advantage, but says nothing about building on the company&rsquo;s own strengths or aiming at rivals&rsquo; weaknesses.</span></div>
+      <div class="row"><span class="name" style="color: #b91c1c;">&#10005;&nbsp; Coherence</span><span style="color: #3f3f46;">Moves on to examples (lower prices, new products) instead of explaining the concept.</span></div>
+      <div class="row" style="color: #71717a;"><span class="name" style="color: #15803d;">&#10003;&nbsp; Passed</span><span>Own Words, Accuracy</span></div>
+    </div>
+    <p class="tutor">You&rsquo;ve captured the aggressive side of it. What does the reading say a company should build its offensive on, and where should it aim?</p>
+
+    <div class="student">It is an aggressive move to gain market share at rivals&rsquo; expense, and it works best when the company uses what it is strongest at against the areas where its rivals are weakest&hellip;</div>
+    <div class="judge">
+      <div class="head"><span style="font-weight: 500;">Attempt 2</span><span class="pill" style="background: #f0fdf4; color: #15803d;">Passed</span></div>
+      <div class="row" style="color: #71717a;"><span class="name" style="color: #15803d;">&#10003;&nbsp; Passed</span><span>Completeness, Own Words, Coherence, Accuracy</span></div>
+    </div>
+    <p class="tutor">That covers it well. That completes Elaborate.</p>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

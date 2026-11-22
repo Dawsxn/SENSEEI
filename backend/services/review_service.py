@@ -21,6 +21,7 @@ from ..models import (
     FINISHED_STATUSES,
     STEP_ORDER,
     Assessment,
+    CriterionJudgment,
     Attempt,
     Class,
     Enrolment,
@@ -139,6 +140,39 @@ async def _instructor_header(
     return None if hit is None else (hit[0], hit[1])
 
 
+async def _judgments(db: AsyncSession, session_id: uuid.UUID) -> dict[uuid.UUID, list[dict]]:
+    """Each attempt's criteria, failed first, then in the rubric's order."""
+    rows = (
+        await db.execute(
+            select(Attempt.id, Attempt.step, CriterionJudgment)
+            .join(Assessment, Assessment.attempt_id == Attempt.id)
+            .join(CriterionJudgment, CriterionJudgment.assessment_id == Assessment.id)
+            .where(Attempt.session_id == session_id)
+        )
+    ).all()
+    out: dict[uuid.UUID, list[dict]] = {}
+    for attempt_id, step, j in rows:
+        out.setdefault(attempt_id, []).append(
+            {"criterion": j.criterion, "passed": j.passed, "reason": j.reason, "step": step}
+        )
+    for attempt_id, items in out.items():
+        order = _rubric_order(SeeiStep(items[0]["step"]).value)
+        items.sort(key=lambda c: (c["passed"], order.get(c["criterion"], len(order))))
+        for c in items:
+            del c["step"]
+    return out
+
+
+def _rubric_order(step: str) -> dict[str, int]:
+    """The rubric's criterion order for a step, or none if no rubric is loaded."""
+    try:
+        from agents.rubric import criteria_for
+
+        return {name: i for i, name in enumerate(criteria_for(step))}
+    except Exception:  # noqa: BLE001  (order is cosmetic; never fail a review over it)
+        return {}
+
+
 async def get_transcript(
     db: AsyncSession, viewer: User, session_id: uuid.UUID
 ) -> dict | None:
@@ -196,6 +230,8 @@ async def get_transcript(
             .order_by(Attempt.submitted_at)
         )
     ).all()
+    # The instructor also sees how each answer was judged; the student does not.
+    judgments = await _judgments(db, session_id) if instructor else {}
 
     # per-step summary, in SEE-I order, for the steps the session actually reached
     steps = []
@@ -229,7 +265,7 @@ async def get_transcript(
                 "at": m.created_at,
             }
         )
-    for attempt, _verdict in attempts:
+    for attempt, verdict in attempts:
         timeline.append(
             {
                 "role": "student",
@@ -237,6 +273,11 @@ async def get_transcript(
                 "content": attempt.response_text,
                 "attempt_number": attempt.attempt_number,
                 "at": attempt.submitted_at,
+                "judgment": (
+                    {"verdict": verdict, "criteria": judgments.get(attempt.id, [])}
+                    if instructor and verdict is not None
+                    else None
+                ),
             }
         )
     timeline.sort(key=lambda e: e["at"])

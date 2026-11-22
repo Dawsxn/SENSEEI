@@ -119,12 +119,26 @@ class StepSummary(BaseModel):
     passed: bool
 
 
+class CriterionResult(BaseModel):
+    criterion: str
+    passed: bool
+    reason: str | None
+
+
+class Judgment(BaseModel):
+    """How the Assessment Agent judged one answer. Instructors only."""
+
+    verdict: str
+    criteria: list[CriterionResult]
+
+
 class TranscriptEntry(BaseModel):
     role: Literal["tutor", "student", "fallback"]
     step: SeeiStep
     content: str
     attempt_number: int | None
     at: datetime
+    judgment: Judgment | None = None
 
 
 class SessionTranscript(BaseModel):
