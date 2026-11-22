@@ -29,7 +29,7 @@ strategies:
 # test is taken without the reading.
 strategy_list_parts: [C, D]
 pretest:
-  question: Define a strategic offensive.
+  question: Define what a strategic offensive is, to the best of your ability.
   reference: An aggressive move to gain market share or an advantage at rivals' expense, built on the
     company's own strengths and aimed at rivals' weaknesses.
   criteria:

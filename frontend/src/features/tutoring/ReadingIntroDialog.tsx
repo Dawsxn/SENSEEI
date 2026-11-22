@@ -18,13 +18,16 @@ const SEEI_INTRO =
   "of it. Press Done when you are finished.";
 
 /** `body` replaces the SEE-I wording, for the trial's control groups. Each
- *  string in a list is its own paragraph. */
+ *  string in a list is its own paragraph. `children`, when given, replaces it
+ *  all (the trial's SEE-I wording, which has a list). */
 export function ReadingIntroDialog({
   onStart,
   body = SEEI_INTRO,
+  children,
 }: {
   onStart: () => void;
   body?: string | string[];
+  children?: React.ReactNode;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onStart();
@@ -41,17 +44,18 @@ export function ReadingIntroDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="reading-intro-title"
-        className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[460px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="reading-intro-title" className="text-[16px] font-semibold">
           Before you start
         </h2>
-        {(Array.isArray(body) ? body : [body]).map((p) => (
-          <p key={p} className="mt-2 text-[14px] leading-[1.6] text-muted-foreground">
-            {p}
-          </p>
-        ))}
+        {children ??
+          (Array.isArray(body) ? body : [body]).map((p) => (
+            <p key={p} className="mt-2 text-[14px] leading-[1.6] text-muted-foreground">
+              {p}
+            </p>
+          ))}
 
         <div className="mt-5 flex justify-end">
           <Button size="sm" onClick={onStart} autoFocus>

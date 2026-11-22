@@ -166,7 +166,8 @@ System Usability Scale composite, 0–100: average and spread, against the commo
 
 - **The pre-test is one written question,** taken in the app before the session, with 5 minutes. The reading does not open until it is in.
 - **The post-test is 12 items** covering facts and procedures, connections, transfer and metacognition, with a confidence tick after each of the first 11, taken in the app after the session with 30 minutes and without the reading.
-- **The session is 35 minutes, not 40,** enforced by the system from the moment the reading opens, with a countdown visible to all three groups. At the limit the session ends and is recorded as ended by time.
+- **The session is 35 minutes, not 40,** enforced by the system from the moment the participant presses Start on the reading's instructions. No countdown is shown (it confused people in the user acceptance test); all three groups get the same pop-ups at 15, 5 and 1 minute left, and the SEE-I group a reminder after 10 minutes of reading. At the limit the session ends and is recorded as ended by time.
+- **A briefing comes first, outside the clocks.** Every group sees a welcome screen with the study's aim and its own steps and times. The SEE-I group also reads what SEE-I is and how the session screen works, after the pre-test so the pre-test is not shaped by it. Each stage's instructions name the goal (understanding the concept) and Done asks for confirmation.
 - **Each person moves on as soon as they finish a stage.** Every stage's start and end is recorded, and how it ended.
 - **Finishing early:** a SENSEE-I participant who completes all four steps, or reaches the fallback, goes straight on to the post-test. One session per participant.
 - **The slip is drawn first, then consent**, since the consent form asks for the ID.

@@ -34,12 +34,27 @@ const PdfPanel = lazy(() =>
   import("../tutoring/PdfPanel").then((m) => ({ default: m.PdfPanel })),
 );
 
+/** "Before you start", for `concept` (the reading's, in a sentence). */
 const INTRO = {
-  chatbot: [
-    "Read the material until you understand the concept of strategic offensives. The chatbot beside it has the reading too, so you can ask it about anything in it.",
-    "You have 35 minutes. Press Done when you're confident you understand the concept.",
+  chatbot: (concept: string, minutes: number) => [
+    `Read the material until you understand the concept of ${concept}. The chatbot beside it has the reading too, so you can ask it about anything in it.`,
+    `You have ${minutes} minutes. Press Done when you're confident you understand the concept.`,
   ],
-  reading: "Read the material in its entirety. Press Done when you're finished.",
+  reading: (concept: string, minutes: number) =>
+    `Read the material until you understand the concept of ${concept}. You have ${minutes} minutes. Press Done when you're confident you understand it.`,
+};
+
+/** Done's confirmation. With a post-test next it says so, and that what they
+ *  have now (the reading, and the chatbot) goes. */
+const FINISH = {
+  chatbot: (concept: string, tests: boolean) =>
+    tests
+      ? `Press Finish when you're confident you understand the concept of ${concept}. You'll go to the post-test and won't see the reading or the chatbot again.`
+      : "You won't be able to send more messages.",
+  reading: (concept: string, tests: boolean) =>
+    tests
+      ? `Press Finish when you're confident you understand the concept of ${concept}. You'll go to the post-test and won't see the reading again.`
+      : "You can't undo this.",
 };
 
 const DONE_TEXT = "You're done. Please stay at your seat until time is up.";
@@ -69,6 +84,9 @@ function useControlGroup() {
   }
   return {
     reading,
+    concept: reading.data?.title.toLowerCase() ?? "the reading",
+    minutes: status?.minutes ?? 0,
+    tests: status?.test_stage != null,
     ended: done || timeUp,
     // Behind the popup, the bar must not say to wait: the popup moves them on.
     endText: timeUp && !done ? (timeUpPopup ? "Time's up." : TIME_UP_TEXT) : DONE_TEXT,
@@ -159,10 +177,14 @@ export function ReadingOnlyScreen() {
           <Button onClick={g.askToFinish}>Done</Button>
         </footer>
       )}
-      {g.intro && <ReadingIntroDialog body={INTRO.reading} onStart={g.closeIntro} />}
+      {g.intro && <ReadingIntroDialog body={INTRO.reading(g.concept, g.minutes)} onStart={g.closeIntro} />}
       {g.timeUpPopup && <TimeUpDialog onContinue={() => void g.moveOn()} />}
       {g.confirming && (
-        <FinishDialog body="You can't undo this." onConfirm={g.finish} onCancel={g.cancelFinish} />
+        <FinishDialog
+          body={FINISH.reading(g.concept, g.tests)}
+          onConfirm={g.finish}
+          onCancel={g.cancelFinish}
+        />
       )}
     </div>
   );
@@ -233,11 +255,11 @@ export function ChatbotScreen() {
         </div>
       </div>
 
-      {g.intro && <ReadingIntroDialog body={INTRO.chatbot} onStart={g.closeIntro} />}
+      {g.intro && <ReadingIntroDialog body={INTRO.chatbot(g.concept, g.minutes)} onStart={g.closeIntro} />}
       {g.timeUpPopup && <TimeUpDialog onContinue={() => void g.moveOn()} />}
       {g.confirming && (
         <FinishDialog
-          body="You won't be able to send more messages."
+          body={FINISH.chatbot(g.concept, g.tests)}
           onConfirm={g.finish}
           onCancel={g.cancelFinish}
         />

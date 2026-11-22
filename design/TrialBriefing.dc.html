@@ -1,0 +1,298 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    /* The trial's briefing: the welcome screen, the SENSEE-I guide, clearer
+       stage instructions, and the hidden clock's time pop-ups. Screens that
+       only change an overlay sit on the existing PNGs (09b, 11, 10b). */
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .btn { border-radius: 6px; font-family: inherit; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; }
+    .btn-md { height: 36px; padding: 0 16px; font-size: 14px; }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+    .btn-primary { border: none; background: #16a34a; color: #ffffff; }
+    .btn-secondary { border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; }
+    .h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .p { margin: 12px 0 0; font-size: 15px; line-height: 1.65; color: #3f3f46; }
+    .dialog { width: 460px; box-sizing: border-box; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
+    .dialog h2 { margin: 0; font-size: 16px; font-weight: 600; }
+    .dialog p, .dialog li { font-size: 14px; line-height: 1.6; color: #71717a; }
+    .dialog p { margin: 8px 0 0; }
+    .dialog ol { margin: 8px 0 0; padding-left: 20px; }
+    .dialog li { margin-top: 6px; }
+    .dialog b { color: #09090b; font-weight: 500; }
+    .toast { position: absolute; top: 72px; left: 50%; transform: translateX(-50%); width: 420px; box-sizing: border-box; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 8px; padding: 14px 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; gap: 12px; align-items: flex-start; }
+    .mark { width: 26px; height: 26px; border-radius: 999px; background: #16a34a; color: #fff; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #ffffff; }
+    .step { width: 168px; text-align: center; }
+    .step .dot { width: 36px; height: 36px; margin: 0 auto; border-radius: 999px; border: 1.5px solid #16a34a; color: #16a34a; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+    .step .name { margin-top: 10px; font-size: 14px; font-weight: 500; line-height: 1.4; }
+    .step .min { margin-top: 2px; font-size: 13px; color: #71717a; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 900px; background: #ffffff; color: #09090b; overflow: hidden;">
+
+  <!-- An existing screen behind an overlay, with its clock covered (the clock is no longer shown). -->
+  <sc-if value="{{hasBg}}" hint-placeholder-val="{{false}}">
+    <img src="{{bg}}" style="position: absolute; inset: 0; width: 1440px; height: 900px;">
+    <div style="position: absolute; left: {{coverX}}px; top: 12px; width: {{coverW}}px; height: 32px; background: #ffffff;"></div>
+  </sc-if>
+  <sc-if value="{{dim}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3);"></div>
+  </sc-if>
+
+  <!-- Plain page: wordmark top bar, no clock. -->
+  <sc-if value="{{page}}" hint-placeholder-val="{{true}}">
+    <div style="display: flex; align-items: center; height: 56px; padding: 0 20px; border-bottom: 1px solid #e4e4e7; box-sizing: border-box;">
+      <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: #16a34a;">SEE-I</span></span>
+    </div>
+  </sc-if>
+
+  <!-- ───── Welcome (every group; the flowchart follows the group) ───── -->
+  <sc-if value="{{welcome}}" hint-placeholder-val="{{true}}">
+    <div style="width: 760px; margin: 64px auto 0;">
+      <h1 class="h1">Good day!</h1>
+      <p class="p">Thank you for agreeing to take part today. This study examines which way of studying an expository text best improves your understanding of the concept it explains.</p>
+      <p class="p">You will complete the steps below. They depend on the group you were randomly assigned to through the ID slip you drew.</p>
+      <div style="margin-top: 36px; padding: 28px 0 24px; border: 1px solid #e4e4e7; border-radius: 8px; display: flex; justify-content: center; align-items: flex-start;">
+        <sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+          <div style="display: {{s.arrow}}; align-items: center; height: 36px; color: #a1a1aa;">
+            <svg width="28" height="14" viewBox="0 0 28 14" fill="none" stroke="#a1a1aa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 7h24M20 2l5 5-5 5"></path></svg>
+          </div>
+          <div class="step">
+            <div class="dot">{{s.n}}</div>
+            <div class="name">{{s.name}}</div>
+            <div class="min">{{s.min}}</div>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 10px 0 0; font-size: 13px; color: #71717a; text-align: center;">{{total}}</p>
+      <p class="p" style="margin-top: 28px;">Each step has its own time limit. You won&rsquo;t see a timer, but we&rsquo;ll let you know when time is running low. If you finish a step early, you go on to the next one.</p>
+      <div style="display: flex; justify-content: flex-end; margin-top: 28px;"><span class="btn btn-md btn-primary">Continue</span></div>
+    </div>
+  </sc-if>
+
+  <!-- ───── Pre-test start ───── -->
+  <sc-if value="{{preStart}}" hint-placeholder-val="{{false}}">
+    <div style="width: 520px; margin: 200px auto 0; text-align: center;">
+      <h1 class="h1">Pre-test</h1>
+      <p class="p" style="color: #71717a;">This checks what you already know about strategic offensives before you read anything. Describe the concept in your own words as best you can, even if it is new to you.</p>
+      <p class="p" style="color: #09090b; font-weight: 500;">You have 5 minutes.</p>
+      <span class="btn btn-md btn-primary" style="margin-top: 20px;">Start</span>
+    </div>
+  </sc-if>
+
+  <!-- ───── Post-test start ───── -->
+  <sc-if value="{{postStart}}" hint-placeholder-val="{{false}}">
+    <div style="width: 520px; margin: 200px auto 0; text-align: center;">
+      <h1 class="h1">Post-test</h1>
+      <p class="p" style="color: #71717a;">This checks what you understand about strategic offensives now. The reading won&rsquo;t be shown. For each question you answer, tick how sure you are.</p>
+      <p class="p" style="color: #09090b; font-weight: 500;">You have 30 minutes.</p>
+      <span class="btn btn-md btn-primary" style="margin-top: 20px;">Start</span>
+    </div>
+  </sc-if>
+
+  <!-- ───── Pre-test question (new wording; no clock) ───── -->
+  <sc-if value="{{pre}}" hint-placeholder-val="{{false}}">
+    <div style="width: 960px; margin: 64px auto 0;">
+      <h1 class="h1">Pre-test</h1>
+      <p style="margin: 6px 0 0; font-size: 14px; color: #71717a;">Answer this in your own words before you read.</p>
+      <p style="margin: 28px 0 10px; font-size: 15px; font-weight: 500;">Define what a strategic offensive is, to the best of your ability.</p>
+      <div style="height: 320px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 14px 16px; font-size: 15px; color: #a1a1aa; box-sizing: border-box;">Type your answer</div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 16px;"><span class="btn btn-md btn-primary">Submit</span></div>
+    </div>
+  </sc-if>
+
+  <!-- ───── About SENSEE-I (SEE-I group, after the pre-test) ───── -->
+  <sc-if value="{{about}}" hint-placeholder-val="{{false}}">
+    <div style="width: 720px; margin: 56px auto 0;">
+      <h1 class="h1">About SENSEE-I</h1>
+      <p class="p">SENSEE-I is a learning tool that helps you understand a concept from a reading. It uses SEE-I, four steps that show how well you understand something:</p>
+      <div style="margin-top: 20px; border: 1px solid #e4e4e7; border-radius: 8px;">
+        <sc-for list="{{seei}}" as="r" hint-placeholder-count="4">
+          <div style="display: flex; gap: 20px; padding: 16px 20px; border-top: {{r.line}};">
+            <span style="width: 96px; flex-shrink: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #16a34a; padding-top: 2px;">{{r.name}}</span>
+            <span style="font-size: 15px; line-height: 1.6;">{{r.text}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <p class="p" style="margin-top: 20px;">The learning tool checks each answer. If something is missing, it tells you what, and you try again. Once your answer passes, you move to the next step.</p>
+      <div style="display: flex; justify-content: flex-end; margin-top: 28px;"><span class="btn btn-md btn-primary">Continue</span></div>
+    </div>
+  </sc-if>
+
+  <!-- ───── How the session works: the session screen, labelled ───── -->
+  <sc-if value="{{how}}" hint-placeholder-val="{{false}}">
+    <div style="padding: 40px 48px 0;">
+      <h1 class="h1">How the session works</h1>
+    </div>
+    <div style="position: absolute; left: 48px; top: 140px; width: 880px; height: 550px; border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
+      <img src="png/09b-trial-tutoring.png" style="width: 880px; height: 550px; display: block;">
+      <div style="position: absolute; left: 666px; top: 6px; width: 60px; height: 22px; background: #ffffff;"></div>
+      <div style="position: absolute; left: 0; top: 0; width: 404px; height: 550px; outline: 2px solid #16a34a; outline-offset: -2px;"></div>
+      <div class="mark" style="position: absolute; left: 190px; top: 260px;">1</div>
+      <div class="mark" style="position: absolute; left: 196px; top: 30px;">2</div>
+      <div class="mark" style="position: absolute; left: 760px; top: 36px;">3</div>
+      <div class="mark" style="position: absolute; left: 832px; top: 36px;">4</div>
+      <div class="mark" style="position: absolute; left: 640px; top: 490px;">5</div>
+    </div>
+    <div style="position: absolute; left: 968px; top: 140px; width: 424px;">
+      <sc-for list="{{legend}}" as="l" hint-placeholder-count="5">
+        <div style="display: flex; gap: 14px; margin-bottom: 22px;">
+          <div class="mark" style="flex-shrink: 0;">{{l.n}}</div>
+          <div style="font-size: 15px; line-height: 1.6;"><span style="font-weight: 600;">{{l.name}}.</span> <span style="color: #3f3f46;">{{l.text}}</span></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="position: absolute; right: 48px; bottom: 48px;"><span class="btn btn-md btn-primary">Continue</span></div>
+  </sc-if>
+
+  <!-- ───── Dialogs over the reading, chatbot and post-test screens ───── -->
+  <sc-if value="{{dialog}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+      <div class="dialog">
+        <h2>{{dTitle}}</h2>
+        <sc-if value="{{dSeei}}" hint-placeholder-val="{{false}}">
+          <p>You have 35 minutes for two parts:</p>
+          <ol>
+            <li><b>Reading.</b> Read the material on this screen until you understand the concept of strategic offensives. We suggest about 10 minutes.</li>
+            <li><b>Tutoring session.</b> When you press Done, the screen splits: the reading stays on one side, and the learning tool opens on the other. There you explain the concept through the four SEE-I steps.</li>
+          </ol>
+          <p>You can still look at the reading during the session, but press Done only once you&rsquo;re confident you understand the concept.</p>
+        </sc-if>
+        <sc-if value="{{dPlain}}" hint-placeholder-val="{{false}}">
+          <p>{{dBody}}</p>
+          <sc-if value="{{dBody2}}" hint-placeholder-val="{{false}}"><p>{{dBody2}}</p></sc-if>
+        </sc-if>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <sc-if value="{{dCancel}}" hint-placeholder-val="{{false}}"><span class="btn btn-sm btn-secondary">Cancel</span></sc-if>
+          <span class="btn btn-sm btn-primary">{{dOk}}</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ───── Time pop-up: a card at the top, closed by its X; it never takes the cursor ───── -->
+  <sc-if value="{{toast}}" hint-placeholder-val="{{false}}">
+    <div class="toast">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+      <div style="flex-grow: 1;">
+        <div style="font-size: 14px; font-weight: 600;">{{tTitle}}</div>
+        <sc-if value="{{tBody}}" hint-placeholder-val="{{false}}"><div style="margin-top: 4px; font-size: 13px; line-height: 1.55; color: #71717a;">{{tBody}}</div></sc-if>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0;"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+    </div>
+  </sc-if>
+
+  <!-- ───── Chatbot: one line telling them it has the reading ───── -->
+  <sc-if value="{{chatLine}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 664px; top: 57px; right: 0; height: 40px; background: #f0fdf4; border-bottom: 1px solid #bbf7d0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: #15803d;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"></path></svg>
+      This chatbot has the reading.
+    </div>
+  </sc-if>
+
+  <!-- ───── Session time-up strip (new line) ───── -->
+  <sc-if value="{{strip}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 663px; right: 0; bottom: 0; height: 74px; background: #ffffff; border-top: 1px solid #e4e4e7; display: flex; align-items: center; padding: 0 24px; box-sizing: border-box;">
+      <div style="flex-grow: 1;">
+        <div style="font-size: 14px; font-weight: 600;">Time&rsquo;s up</div>
+        <div style="font-size: 13px; color: #71717a; margin-top: 2px;">Your session has ended, and anything you typed was sent.</div>
+      </div>
+      <span class="btn btn-sm btn-primary">Continue to post-test</span>
+    </div>
+  </sc-if>
+
+  <div style="position: absolute; left: 16px; bottom: 12px; font-size: 12px; color: #a1a1aa;">{{caption}}</div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"state":{"editor":"enum","options":["Welcome, SEE-I","Welcome, chatbot","Pre-test, start","Pre-test","About SENSEE-I","How the session works","Reading, before you start","Reading, 10 minutes","Reading, Done","Session, time left","Session, time up","Chatbot, before you start","Chatbot","Reading only, before you start","Control, Done","Post-test, start","Post-test, missing tick"],"default":"Welcome, SEE-I","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'Welcome, SEE-I';
+    const v = { page: false, welcome: false, preStart: false, pre: false, about: false, how: false,
+      hasBg: false, bg: '', coverX: 0, coverW: 0, dim: false, dialog: false, dSeei: false, dPlain: false,
+      dTitle: '', dBody: '', dBody2: '', dCancel: false, dOk: 'OK', toast: false, tTitle: '', tBody: '',
+      chatLine: false, strip: false, caption: state, steps: [], total: '', seei: [], legend: [] };
+    const step = (list) => list.map((s, i) => ({ n: i + 1, name: s[0], min: s[1], arrow: i ? 'flex' : 'none' }));
+    const READING = ['png/09b-trial-reading.png', 1300, 120];
+    const TUTOR = ['png/09b-trial-tutoring.png', 1090, 100];
+    const CHAT = ['png/11-chatbot.png', 1260, 110];
+    const POST = ['png/10b-trial-posttest.png', 1320, 100];
+    const bg = (b, dim) => Object.assign(v, { hasBg: true, bg: b[0], coverX: b[1], coverW: b[2], dim: !!dim });
+    const dialog = (o) => Object.assign(v, { dialog: true, dPlain: true }, o);
+
+    if (state.startsWith('Welcome')) {
+      Object.assign(v, { page: true, welcome: true, total: '70 minutes in total' });
+      v.steps = state.endsWith('SEE-I')
+        ? step([['Pre-test', '5 min'], ['About SENSEE-I', 'A short guide'], ['Reading and tutoring session', '35 min'], ['Post-test', '30 min']])
+        : step([['Pre-test', '5 min'], ['Reading with a chatbot', '35 min'], ['Post-test', '30 min']]);
+      if (!state.endsWith('SEE-I')) v.caption = 'Welcome, chatbot group (the reading-only group reads "Reading" in step 2)';
+    } else if (state === 'Pre-test, start') {
+      Object.assign(v, { page: true, preStart: true });
+    } else if (state === 'Pre-test') {
+      Object.assign(v, { page: true, pre: true, toast: true, tTitle: '1 minute left', tBody: 'Your answer saves as you type.' });
+    } else if (state === 'About SENSEE-I') {
+      Object.assign(v, { page: true, about: true });
+      v.seei = [
+        ['STATE', 'Say what the concept is, briefly and clearly.'],
+        ['ELABORATE', 'Explain it in more detail, in your own words.'],
+        ['EXEMPLIFY', 'Give your own example of it, plus one thing that is not an example.'],
+        ['ILLUSTRATE', 'Compare it to something outside the reading, like an analogy or metaphor, that is easy to picture.'],
+      ].map((r, i) => ({ name: r[0], text: r[1], line: i ? '1px solid #e4e4e7' : 'none' }));
+    } else if (state === 'How the session works') {
+      Object.assign(v, { page: true, how: true });
+      v.legend = [
+        ['Reading', 'Stays open the whole session.'],
+        ['Steps', 'Shows which SEE-I step you are on.'],
+        ['Components', 'The key ideas of the reading. Your State and Elaborate answers need to cover all of them.'],
+        ['Rubric', 'What your answer is graded on. It changes with each step.'],
+        ['Chat box', 'Type your answer here. Enter sends, Shift+Enter starts a new line.'],
+      ].map((l, i) => ({ n: i + 1, name: l[0], text: l[1] }));
+    } else if (state === 'Reading, before you start') {
+      bg(READING, true); dialog({ dPlain: false, dSeei: true, dTitle: 'Before you start', dOk: 'Start' });
+    } else if (state === 'Reading, 10 minutes') {
+      bg(READING); Object.assign(v, { toast: true, tTitle: "You've been reading for 10 minutes",
+        tBody: "When you're confident you understand the concept, press Done to start the tutoring session. The reading stays open beside it." });
+    } else if (state === 'Reading, Done') {
+      bg(READING, true); dialog({ dTitle: 'Start the tutoring session?', dCancel: true, dOk: 'Start session',
+        dBody: "Only continue if you're confident you understand the concept of strategic offensives. The reading stays open beside the session." });
+    } else if (state === 'Session, time left') {
+      bg(TUTOR); Object.assign(v, { toast: true, tTitle: '5 minutes left', caption: 'Session, time left (also at 15 and 1 minute)' });
+    } else if (state === 'Session, time up') {
+      bg(TUTOR); Object.assign(v, { strip: true, caption: 'Session, time up: the chat stays open; they press Continue when ready' });
+    } else if (state === 'Chatbot, before you start') {
+      bg(CHAT, true); dialog({ dTitle: 'Before you start', dOk: 'Start',
+        dBody: 'Read the material until you understand the concept of strategic offensives. The chatbot beside it has the reading too, so you can ask it about anything in it.',
+        dBody2: "You have 35 minutes. Press Done when you're confident you understand the concept." });
+    } else if (state === 'Chatbot') {
+      bg(CHAT); Object.assign(v, { chatLine: true });
+    } else if (state === 'Reading only, before you start') {
+      bg(READING, true); dialog({ dTitle: 'Before you start', dOk: 'Start',
+        dBody: "Read the material until you understand the concept of strategic offensives. You have 35 minutes. Press Done when you're confident you understand it." });
+    } else if (state === 'Control, Done') {
+      bg(CHAT, true); dialog({ dTitle: 'Finish now?', dCancel: true, dOk: 'Finish',
+        dBody: "Press Finish when you're confident you understand the concept of strategic offensives. You'll go to the post-test and won't see the reading or the chatbot again.",
+        caption: 'Control groups, Done (reading only ends "won\'t see the reading again.")' });
+    } else if (state === 'Post-test, start') {
+      Object.assign(v, { page: true, preStart: false });
+      dialog({ dialog: false });
+      Object.assign(v, { dialog: false, postStart: true });
+    } else if (state === 'Post-test, missing tick') {
+      bg(POST, true); dialog({ dTitle: 'Tick how sure you are', dOk: 'Show me',
+        dBody: 'Tick how sure you are for every question you answered. Questions you left blank need no tick.',
+        caption: 'Post-test, Submit with a missing tick: Show me jumps to the first one' });
+    }
+    v.postStart = state === 'Post-test, start';
+    return v;
+  }
+}
+</script>
+</body>
+</html>

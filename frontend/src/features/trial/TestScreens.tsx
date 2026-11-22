@@ -12,21 +12,19 @@
  * in. */
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Clock } from "lucide-react";
+import { Check } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "../../components/ui/button";
 import { getTest, getTrialStatus, saveTestAnswer, startTest, submitTest } from "../../lib/api";
 import { cn } from "../../lib/utils";
-import { formatClock } from "./TrialClock";
+import { useConcept, Welcome } from "./Briefing";
+import { POSTTEST_NOTICES, PRETEST_NOTICES, TimeNotices } from "./TimeNotices";
 import { logTrial, setTrialContext, useTrialLogging } from "./trialLog";
 import type { SavedAnswer, TestGroup, TestItem, TestView, TestWhich } from "./types";
 import { useCountdown, useTrialStatus } from "./useTrial";
 
-/** When the countdown turns amber: the post-test's last five minutes, like the
- *  session's, and the five-minute pre-test's last minute. */
-const LATE_SECONDS = { pre: 60, post: 5 * 60 } as const;
 /** How long typing pauses before an answer saves. */
 const SAVE_AFTER_MS = 700;
 const EMPTY_GROUPS: TestGroup[] = [0, 1, 2].map(() => ({ name: "", strategies: "", why: "" }));
@@ -91,24 +89,9 @@ function TestTopBar({ saved, clock }: { saved?: boolean; clock?: React.ReactNode
   );
 }
 
-/** The test's countdown. At zero it says so once, and the screen asks the server. */
+/** The test's time pop-ups. No countdown is shown (see TimeNotices). */
 function TestClock({ left, which }: { left: number | null; which: TestWhich }) {
-  if (left === null) return null;
-  const late = left <= LATE_SECONDS[which];
-  return (
-    <div
-      role="timer"
-      aria-label="Time left"
-      className={cn("flex h-8 items-center gap-1.5 rounded-md px-2.5", late && "bg-[#fffbeb]")}
-    >
-      <Clock className={cn("h-[15px] w-[15px]", late ? "text-[#92400e]" : "text-muted-foreground")} />
-      <span
-        className={cn("text-[13px] font-medium tabular-nums", late ? "text-[#92400e]" : "text-[#3f3f46]")}
-      >
-        {formatClock(left)} left
-      </span>
-    </div>
-  );
+  return <TimeNotices left={left} notices={which === "pre" ? PRETEST_NOTICES : POSTTEST_NOTICES} />;
 }
 
 /** A small modal: one sentence and its buttons. */
@@ -230,6 +213,9 @@ export function PreTestScreen() {
   const { answers, change, flush } = useAnswers(view);
   const [confirming, setConfirming] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
+  // Every group's welcome comes first, before the pre-test's clock starts.
+  const [welcomed, setWelcomed] = useState(false);
+  const concept = useConcept();
   useTestLogging("pretest");
 
   // The clock starts on Start, like the post-test's, not when the screen opens.
@@ -256,16 +242,19 @@ export function PreTestScreen() {
   const onward = () => moveOn("/");
 
   if (isError || !view) return <Notice>Loading&hellip;</Notice>;
+  if (!view.started && !welcomed) return <Welcome onContinue={() => setWelcomed(true)} />;
   if (!view.started) {
     return (
       <div className="flex h-full flex-col">
         <TestTopBar />
         <main className="flex flex-1 items-center justify-center px-6">
-          <div className="-mt-16 max-w-[420px] text-center">
+          <div className="-mt-16 max-w-[520px] text-center">
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Pre-test</h1>
-            <p className="mt-1.5 text-[14px] text-muted-foreground">
-              You have {view.minutes} minutes.
+            <p className="mt-3 text-[15px] leading-[1.65] text-muted-foreground">
+              This checks what you already know about {concept} before you read anything. Describe
+              the concept in your own words as best you can, even if it is new to you.
             </p>
+            <p className="mt-3 text-[15px] font-medium">You have {view.minutes} minutes.</p>
             <Button className="mt-6" onClick={() => void start()} disabled={starting}>
               Start
             </Button>
@@ -338,6 +327,7 @@ export function PostTestScreen() {
   const [confirming, setConfirming] = useState(false);
   const [starting, setStarting] = useState(false);
   useTestLogging("posttest");
+  const concept = useConcept();
 
   const left = useCountdown(view?.seconds_left, dataUpdatedAt);
   const ended = useRef(false);
@@ -398,11 +388,13 @@ export function PostTestScreen() {
       <div className="flex h-full flex-col">
         <TestTopBar />
         <main className="flex flex-1 items-center justify-center px-6">
-          <div className="-mt-16 max-w-[420px] text-center">
+          <div className="-mt-16 max-w-[520px] text-center">
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Post-test</h1>
-            <p className="mt-1.5 text-[14px] text-muted-foreground">
-              You have {view.minutes} minutes, and the reading won&rsquo;t be shown.
+            <p className="mt-3 text-[15px] leading-[1.65] text-muted-foreground">
+              This checks what you understand about {concept} now. The reading won&rsquo;t be
+              shown. For each question you answer, tick how sure you are.
             </p>
+            <p className="mt-3 text-[15px] font-medium">You have {view.minutes} minutes.</p>
             <Button className="mt-6" onClick={() => void start()} disabled={starting}>
               Start
             </Button>

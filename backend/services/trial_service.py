@@ -257,6 +257,12 @@ async def status(db: AsyncSession, user_id: uuid.UUID) -> dict:
     test = await test_service.class_test(db, participant.class_id)
     return {
         "test_stage": await test_service.stage(db, participant, test),
+        # For the welcome screen's steps; None without tests.
+        "test_minutes": (
+            None if test is None
+            else {"pre": test_service.minutes(test, test_service.PRE),
+                  "post": test_service.minutes(test, test_service.POST)}
+        ),
         "code": participant.code,
         "done": participant.done_at is not None,
         "mode": ClassMode(mode).value,
