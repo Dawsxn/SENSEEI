@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 
 import { Button } from "../../components/ui/button";
+import { ApiError } from "../../lib/api";
 import { ClassPicker } from "./ClassPicker";
 
 const INPUT =
@@ -130,16 +131,21 @@ export function ReadingClassesDialog({
 }) {
   const [selected, setSelected] = useState(initial);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function submit() {
     if (saving) return;
     setSaving(true);
-    setError(false);
+    setError(null);
     try {
       await onSubmit(selected);
-    } catch {
-      setError(true);
+    } catch (err) {
+      // Trial site only: a class there has one reading.
+      setError(
+        err instanceof ApiError && err.detail === "class_has_reading"
+          ? "A class you ticked already has a reading."
+          : "That didn\u2019t save. Try again.",
+      );
       setSaving(false);
     }
   }
@@ -149,7 +155,7 @@ export function ReadingClassesDialog({
       <div className="mt-4">
         <ClassPicker selected={selected} onChange={setSelected} />
       </div>
-      {error && <p className="mt-3 text-[13px] text-fail-foreground">That didn&rsquo;t save. Try again.</p>}
+      {error && <p className="mt-3 text-[13px] text-fail-foreground">{error}</p>}
       <Actions onCancel={onCancel} disabled={saving} />
     </Shell>
   );

@@ -39,6 +39,7 @@ from ..models import (
     class_label,
     utcnow,
 )
+from ..settings import get_settings
 from .pdf_text import NotAPdf, extract_pages_text, to_text
 from .provider_errors import log_failure
 
@@ -63,6 +64,11 @@ class ReadingNotFound(Exception):
 
 class UnknownClass(Exception):
     """A class id that is not one of this instructor's live classes."""
+
+
+class ClassHasReading(Exception):
+    """Trial mode: a class would get a second reading. A participant only ever
+    gets one (the oldest), so a second would be silently ignored."""
 
 
 @dataclass
@@ -180,12 +186,37 @@ async def _live_classes(
     return wanted
 
 
+async def _refuse_second_reading(
+    db: AsyncSession, class_ids: list[uuid.UUID], reading_id: uuid.UUID | None = None
+) -> None:
+    """On the trial instance a class has one reading: a participant is given the
+    class's oldest, so a second one would never be seen and nothing would say
+    so. Elsewhere a class has as many as its instructor likes."""
+    if not get_settings().trial_mode or not class_ids:
+        return
+    query = (
+        select(ReadingAssignment.id)
+        .join(Reading, Reading.id == ReadingAssignment.reading_id)
+        .where(
+            ReadingAssignment.class_id.in_(class_ids),
+            ReadingAssignment.deleted_at.is_(None),
+            Reading.deleted_at.is_(None),
+        )
+        .limit(1)
+    )
+    if reading_id is not None:
+        query = query.where(ReadingAssignment.reading_id != reading_id)
+    if await db.scalar(query) is not None:
+        raise ClassHasReading
+
+
 async def create_reading(
     db: AsyncSession, instructor_id: uuid.UUID, new: NewReading
 ) -> uuid.UUID:
     """Save a reading with its file, core components and classes, in one commit."""
     check_pdf(new.pdf)
     class_ids = await _live_classes(db, instructor_id, new.class_ids)
+    await _refuse_second_reading(db, class_ids)
 
     reading = Reading(
         uploaded_by=instructor_id,
@@ -364,6 +395,7 @@ async def set_classes(
         if row.class_id not in wanted:
             row.deleted_at = now
     have = {row.class_id for row in current}
+    await _refuse_second_reading(db, list(wanted - have), reading_id)
     db.add_all(
         ReadingAssignment(reading_id=reading_id, class_id=cid)
         for cid in wanted - have

@@ -38,6 +38,7 @@ from ..services.library_service import (
     ReadingNotFound,
     TooLarge,
     UnknownClass,
+    ClassHasReading,
 )
 
 router = APIRouter(prefix="/instructor/readings", tags=["library"])
@@ -48,6 +49,7 @@ NOT_PDF = HTTPException(status_code=415, detail="not_pdf")
 TOO_LARGE = HTTPException(status_code=413, detail="too_large")
 NO_TEXT = HTTPException(status_code=422, detail="no_text")
 UNKNOWN_CLASS = HTTPException(status_code=422, detail="unknown_class")
+CLASS_HAS_READING = HTTPException(status_code=409, detail="class_has_reading")
 
 
 async def _read(file: UploadFile) -> bytes:
@@ -118,6 +120,8 @@ async def create_reading(
         raise TOO_LARGE
     except UnknownClass:
         raise UNKNOWN_CLASS
+    except ClassHasReading:
+        raise CLASS_HAS_READING
     return ReadingCreatedOut(id=reading_id)
 
 
@@ -183,6 +187,8 @@ async def set_classes(
         raise NOT_FOUND
     except UnknownClass:
         raise UNKNOWN_CLASS
+    except ClassHasReading:
+        raise CLASS_HAS_READING
     return LibraryReading(**row)
 
 
