@@ -8,3 +8,11 @@ venv/
 # Keep runs/ and reports/ tracked (they are the iteration trail), but ignore noise
 .DS_Store
 Thumbs.db
+
+# Full textbook text (two chapters of Gamble) that the first v4 runs used. This repo is public,
+# so it stays local; v4 and v5 now read the section readings beside it.
+data/readings/gamble-ch1-2.txt
+
+# Stray local PDFs of the readings. The eval reads the .txt files; the section PDFs they come
+# from are in data/readings/sources/.
+data/readings/*.pdf

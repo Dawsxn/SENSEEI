@@ -36,11 +36,12 @@ class GeminiProvider(LLMProvider):
             raise RuntimeError(
                 f"Missing API key: set {key_env} in your .env (see .env.example)."
             )
-        # Preview models such as gemini-3.1-pro-preview exist only on v1beta.
-        # google-genai 3.x defaults to v1, where they return 404, so the
-        # version is named here rather than left to the library's default.
+        # Pin the API version rather than take the SDK's default: preview models
+        # (gemini-3.1-pro-preview) are served only on v1beta, and google-genai 3.x
+        # defaults to v1, where they return 404 NOT_FOUND.
         self.client = genai.Client(
-            api_key=api_key, http_options=types.HttpOptions(api_version="v1beta")
+            api_key=api_key,
+            http_options=types.HttpOptions(api_version=config.get("api_version", "v1beta")),
         )
 
         self.model_name = config.get("model", "gemini-3.1-pro-preview")

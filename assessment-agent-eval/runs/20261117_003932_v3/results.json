@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "timestamp": "20261117_003932",
+    "prompt_version": "v3",
+    "prompt_hash": "166fb68182",
+    "prompt_file": "system_prompt_v3.md",
+    "rubric_version": "v3",
+    "rubric_file": "rubric_v3.yaml",
+    "example_set_version": "v4",
+    "provider": "gemini",
+    "model": "gemini-3.1-pro-preview",
+    "thinking_level": "low",
+    "csv": "example_set_v4.csv",
+    "cost": {
+      "input_tokens": null,
+      "output_tokens": null,
+      "thinking_tokens": null,
+      "est_cost_usd": null,
+      "price_input_per_1m": 2.0,
+      "price_output_per_1m": 12.0
+    }
+  },
+  "examples": [
+    {
+      "id": "ST-STR-P1",
+      "step": "State",
+      "core_components": "A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.",
+      "user_response": "A company's strategy is the set of coordinated moves its managers choose in order to outperform rivals and earn stronger-than-average profits.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "",
+      "result": {
+        "verdict": null,
+        "model_verdict": null,
+        "fail_criteria": [],
+        "criteria": {},
+        "raw_text": "",
+        "parse_ok": false,
+        "error": "Provider error: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-3.1-pro-preview is not found for API version v1, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}",
+        "warnings": [],
+        "usage": null,
+        "finish_reason": null
+      }
+    },
+    {
+      "id": "ST-STR-BC",
+      "step": "State",
+      "core_components": "A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.",
+      "user_response": "A company's strategy is, in a way, kind of the overall big-picture set of various different things and moves that the managers sort of decide to go with, all in the general effort to somehow end up doing better than the other competitors out there and make good money in the end.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Brevity",
+        "Clarity"
+      ],
+      "criterion_targeted": "Brevity + Clarity",
+      "notes": "Brevity: Fillers such as sort of, somehow, etc.; Clarity: Words like somehow, big picture, various different things, good money are vague",
+      "result": {
+        "verdict": null,
+        "model_verdict": null,
+        "fail_criteria": [],
+        "criteria": {},
+        "raw_text": "",
+        "parse_ok": false,
+        "error": "Provider error: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-3.1-pro-preview is not found for API version v1, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}",
+        "warnings": [],
+        "usage": null,
+        "finish_reason": null
+      }
+    },
+    {
+      "id": "ST-STR-CC",
+      "step": "State",
+      "core_components": "A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.",
+      "user_response": "A company's strategy is basically just about the company trying to do well and be successful in its industry.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Clarity",
+        "Completeness",
+        "Accuracy"
+      ],
+      "criterion_targeted": "Clarity + Completeness + Accuracy",
+      "notes": "Clarity: trying to do well, successful are vague; Completeness: \"trying\" is too broad and does not capture the coordinated actions.; Accuracy",
+      "result": {
+        "verdict": null,
+        "model_verdict": null,
+        "fail_criteria": [],
+        "criteria": {},
+        "raw_text": "",
+        "parse_ok": false,
+        "error": "Provider error: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-3.1-pro-preview is not found for API version v1, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}",
+        "warnings": [],
+        "usage": null,
+        "finish_reason": null
+      }
+    }
+  ]
+}
