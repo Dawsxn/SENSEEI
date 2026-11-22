@@ -23,22 +23,53 @@ const key = (w: Pick<GradingWritten, "test" | "item">) => `${w.test}/${w.item}`;
 export function GradingPage() {
   const [params, setParams] = useSearchParams();
   const list = useQuery({ queryKey: ["grading"], queryFn: getGradingList });
-  const people = list.data ?? [];
+  const everyone = list.data ?? [];
+  // One sitting at a time, so a dry run stays out of the way. Kept in the URL.
+  const batches = [...new Map(everyone.map((p) => [p.batch_id, p.batch_name])).entries()];
+  const batch = params.get("batch");
+  const people = batch ? everyone.filter((p) => p.batch_id === batch) : everyone;
   const selected = params.get("id") ?? people[0]?.code ?? null;
   const graded = people.filter((p) => p.posttest_ended && p.left === 0).length;
+  const show = (next: { batch?: string | null; id?: string | null }) => {
+    const out = new URLSearchParams();
+    const b = next.batch === undefined ? batch : next.batch;
+    const id = next.id === undefined ? params.get("id") : next.id;
+    if (b) out.set("batch", b);
+    if (id) out.set("id", id);
+    setParams(out);
+  };
 
   return (
     <div className="flex h-full flex-col">
       <AppTopBar />
       <main className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 sm:py-8">
-          <div className="mb-5 flex items-baseline justify-between">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Grading</h1>
-            {people.length > 0 && (
-              <span className="text-[13px] text-muted-foreground">
-                {graded} of {people.length} participants graded
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {batches.length > 1 && (
+                <label className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                  Batch
+                  <select
+                    value={batch ?? ""}
+                    onChange={(e) => show({ batch: e.target.value || null, id: null })}
+                    className="h-8 rounded-md border bg-background px-2 text-[13px] text-foreground"
+                  >
+                    <option value="">All batches</option>
+                    {batches.map(([id, name]) => (
+                      <option key={id} value={id}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              {people.length > 0 && (
+                <span className="text-[13px] text-muted-foreground">
+                  {graded} of {people.length} participants graded
+                </span>
+              )}
+            </div>
           </div>
 
           {list.isLoading && <Muted>Loading&hellip;</Muted>}
@@ -53,7 +84,7 @@ export function GradingPage() {
                   return (
                     <button
                       key={p.code}
-                      onClick={() => setParams({ id: p.code })}
+                      onClick={() => show({ id: p.code })}
                       className={cn(
                         "flex w-full items-center justify-between border-b border-l-[3px] px-3.5 py-2.5 text-left last:border-b-0",
                         p.code === selected
