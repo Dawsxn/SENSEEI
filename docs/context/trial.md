@@ -366,7 +366,7 @@ which one they are in (`test_stage` on `/trial/me`):
 | `pretest` | "Pre-test", "You have 5 minutes." and Start, then one written question. Its clock starts on Start. The reading is not shown | Submitted, or 5 minutes |
 | `session` | The reading, chatbot or SEE-I session, as without tests. A SEE-I session's end replaces the answer box with a strip saying how it ended (complete, or time up) and Continue to post-test, so the last feedback stays readable. Time running out anywhere else (on the reading, or in a control group) shows a "Time's up" popup with the same button | Finished, Done, or 35 minutes |
 | `posttest_ready` | "Post-test" and Start. Its clock starts on Start | Start pressed |
-| `posttest` | 12 questions, with a question list and "I'm sure / I'm not sure" ticks | Submitted, 30 minutes, or the batch closing |
+| `posttest` | 12 questions, with a question list and "I'm sure / I'm not sure" ticks. A tick is required on every answered question (Submit asks for any missing; a blank question needs none), but time running out submits everything as it is | Submitted, 30 minutes, or the batch closing |
 | `done` | "You're done" | |
 
 - **The reading and the session clock do not start before the pre-test ends**,

@@ -112,7 +112,15 @@ function TestClock({ left, which }: { left: number | null; which: TestWhich }) {
 }
 
 /** A small modal: one sentence and its buttons. */
-function Dialog({ body, children }: { body: string; children: React.ReactNode }) {
+function Dialog({
+  title,
+  body,
+  children,
+}: {
+  title?: string;
+  body: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 sm:items-center sm:p-4">
       <div
@@ -120,7 +128,8 @@ function Dialog({ body, children }: { body: string; children: React.ReactNode })
         aria-modal="true"
         className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
       >
-        <p className="text-[14px] leading-[1.6]">{body}</p>
+        {title && <h2 className="mb-2 text-[16px] font-semibold">{title}</h2>}
+        <p className={cn("text-[14px] leading-[1.6]", title && "text-muted-foreground")}>{body}</p>
         <div className="mt-5 flex justify-end gap-2">{children}</div>
       </div>
     </div>
@@ -195,6 +204,13 @@ function isAnswered(item: TestItem, a: SavedAnswer | undefined): boolean {
   if (item.kind === "choice") return !!a.choice;
   if (item.kind === "text") return !!a.text?.trim();
   return !!a.groups?.some((g) => g.name.trim() || g.strategies.trim() || g.why.trim());
+}
+
+/** An answered question still missing its "How sure are you?" tick. The tick
+ *  is required on every answered question that has one; a blank question needs
+ *  none, so time running out mid-test submits whatever is there. */
+function missingTick(item: TestItem, a: SavedAnswer | undefined): boolean {
+  return item.ticked && isAnswered(item, a) && a?.sure == null;
 }
 
 /** `q5` reads as 5, `q12a` as 12a. */
@@ -357,6 +373,10 @@ export function PostTestScreen() {
     its.some((i) => isAnswered(i, answers[i.id])),
   ).length;
   const blanks = numbered.size - answeredNumbers;
+  const unticked = items.filter((i) => missingTick(i, answers[i.id]));
+  const [askingForTicks, setAskingForTicks] = useState(false);
+  // Submit asks for the missing ticks first, then for the usual confirmation.
+  const askToSubmit = () => (unticked.length ? setAskingForTicks(true) : setConfirming(true));
 
   async function start() {
     setStarting(true);
@@ -407,17 +427,22 @@ export function PostTestScreen() {
                 <div className="mb-2 text-[13px] font-semibold text-muted-foreground">Part {p.part}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {[...new Set(p.items.map((i) => number(i.id)))].map((n) => {
-                    const done = numbered.get(n)!.some((i) => isAnswered(i, answers[i.id]));
+                    const its = numbered.get(n)!;
+                    const answered = its.some((i) => isAnswered(i, answers[i.id]));
+                    const needsTick = its.some((i) => missingTick(i, answers[i.id]));
+                    const done = answered && !needsTick;
                     return (
                       <button
                         key={n}
                         onClick={() => jump(n)}
-                        aria-label={`Question ${n}${done ? ", answered" : ""}`}
+                        aria-label={`Question ${n}${needsTick ? ", needs how sure" : done ? ", answered" : ""}`}
                         className={cn(
                           "flex h-8 w-8 items-center justify-center rounded-md border text-[13px] font-medium",
                           done
                             ? "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]"
-                            : "border-border bg-background text-muted-foreground hover:text-foreground",
+                            : needsTick
+                              ? "border-fail-border bg-fail text-fail-foreground"
+                              : "border-border bg-background text-muted-foreground hover:text-foreground",
                         )}
                       >
                         {n}
@@ -431,7 +456,7 @@ export function PostTestScreen() {
               <div className="mb-3 text-[13px] text-muted-foreground">
                 {answeredNumbers} of {numbered.size} answered
               </div>
-              <Button className="w-full" onClick={() => setConfirming(true)}>
+              <Button className="w-full" onClick={askToSubmit}>
                 Submit
               </Button>
             </div>
@@ -461,11 +486,28 @@ export function PostTestScreen() {
               </section>
             ))}
             <div className="mt-9 flex justify-end border-t pt-5">
-              <Button onClick={() => setConfirming(true)}>Submit</Button>
+              <Button onClick={askToSubmit}>Submit</Button>
             </div>
           </div>
         </div>
       </main>
+      {askingForTicks && (
+        <Dialog
+          title="Tick how sure you are"
+          body="Tick how sure you are for every question you answered. Questions you left blank need no tick."
+        >
+          <Button
+            size="sm"
+            autoFocus
+            onClick={() => {
+              setAskingForTicks(false);
+              jump(number(unticked[0].id));
+            }}
+          >
+            Show me
+          </Button>
+        </Dialog>
+      )}
       {confirming && (
         <Dialog
           body={
@@ -608,6 +650,10 @@ function Question({
         {item.ticked && (
           <div className="mt-3 flex items-center gap-5 text-[13px]">
             <span className="italic text-muted-foreground">How sure are you?</span>
+            {/* Required once the question is answered; a blank one needs no tick. */}
+            {missingTick(item, answer) && (
+              <span className="text-[12px] font-medium text-fail-foreground">Required</span>
+            )}
             <Radio name={`${item.id}-sure`} checked={answer?.sure === true} onChange={() => onChange({ sure: true }, true)}>
               I&rsquo;m sure
             </Radio>
