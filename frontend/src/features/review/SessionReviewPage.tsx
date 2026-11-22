@@ -80,7 +80,7 @@ export function SessionReviewPage() {
                   <select
                     value={t.id}
                     onChange={(e) => navigate(`/review/${e.target.value}`)}
-                    className="h-9 rounded-md border bg-background px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-9 rounded-md border bg-card px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {sessions.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -105,7 +105,7 @@ function SummaryCard({ t }: { t: SessionTranscript }) {
   const totalAttempts = t.steps.reduce((n, s) => n + s.attempts, 0);
   const duration = formatDuration(t.started_at, t.ended_at);
   return (
-    <div className="mb-8 overflow-hidden rounded-lg border">
+    <div className="mb-8 overflow-hidden rounded-lg border bg-card">
       <div className="flex items-center justify-between gap-3 bg-muted px-4 py-3">
         <SessionStatusBadge status={t.status} />
         <span className="text-[13px] text-muted-foreground">
@@ -179,7 +179,7 @@ function Entry({ entry }: { entry: TranscriptEntry }) {
   if (entry.role === "student") {
     return (
       <div className="my-4 flex flex-col items-end gap-2">
-        <div className="max-w-[85%] rounded-lg bg-[#f0fdf4] px-4 py-2.5 text-[14px] leading-relaxed text-[#3f3f46]">
+        <div className="max-w-[85%] rounded-lg bg-accent-soft px-4 py-2.5 text-[14px] leading-relaxed text-body">
           {entry.content}
         </div>
         {entry.judgment && <JudgmentCard judgment={entry.judgment} attempt={entry.attempt_number} />}
@@ -221,7 +221,7 @@ function JudgmentCard({ judgment, attempt }: { judgment: Judgment; attempt: numb
             <X className="mt-[3px] h-3.5 w-3.5 shrink-0" aria-hidden />
             {c.criterion}
           </span>
-          <span className="text-[#3f3f46]">{c.reason || "No reason given."}</span>
+          <span className="text-body">{c.reason || "No reason given."}</span>
         </div>
       ))}
       {passed.length > 0 && (

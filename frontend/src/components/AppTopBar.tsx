@@ -7,6 +7,7 @@ import { SwitchUserDialog } from "../features/auth/SwitchUserDialog";
 import { useMe, useTrialMode } from "../features/auth/useAuth";
 import { JoinClassDialog } from "../features/readings/JoinClassDialog";
 import { logout } from "../lib/api";
+import { Logo } from "./Logo";
 import { Button } from "./ui/button";
 
 /** The app shell's top bar: the wordmark, the instructor's two sections, Join a
@@ -25,11 +26,7 @@ export function AppTopBar() {
     <header className="shrink-0 border-b">
       <div className="flex h-14 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-8">
-          {/* SEE-I is set in the accent colour: the framework name sits inside
-              the product name (design/README.md). */}
-          <span className="text-[15px] font-semibold tracking-[-0.01em]">
-            SEN<span className="text-primary">SEE-I</span>
-          </span>
+          <Logo />
           {sections && <Sections className="hidden h-14 sm:flex" />}
         </div>
 
@@ -118,7 +115,7 @@ function AccountMenu() {
         <User className="h-4 w-4" />
       </button>
       {open && (
-        <div className="absolute right-0 top-10 z-50 w-56 overflow-hidden rounded-md border bg-background shadow-raised">
+        <div className="absolute right-0 top-10 z-50 w-56 overflow-hidden rounded-md border bg-card shadow-raised">
           {user && (
             <div className="border-b px-3 py-2.5">
               <div className="truncate text-[14px] font-medium">{user.name}</div>

@@ -122,7 +122,7 @@ function StepDivider({
       </span>
       <span className="h-px flex-1 bg-border" />
       {passed ? (
-        <Check className="h-4 w-4 text-primary" />
+        <Check className="h-4 w-4 text-brand-mint" />
       ) : current ? (
         <AttemptDots used={attemptsUsed} />
       ) : null}
@@ -156,9 +156,9 @@ function Message({ message }: { message: ChatMessage }) {
   if (message.role === "student") {
     return (
       <div className="my-4 flex justify-end">
-        {/* Student bubble uses the success-tint green (#f0fdf4), per the
-            Tutoring chat pattern in design-system.md. */}
-        <div className="max-w-[85%] rounded-lg bg-[#f0fdf4] px-4 py-2.5 text-[14px] leading-relaxed text-[#3f3f46]">
+        {/* Student bubble uses the accent tint, per the Tutoring chat
+            pattern in design-system.md. */}
+        <div className="max-w-[85%] rounded-lg bg-accent-soft px-4 py-2.5 text-[14px] leading-relaxed text-body">
           {message.content}
         </div>
       </div>
@@ -323,7 +323,7 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
 
   return (
     <div className="shrink-0 border-t p-4">
-      <div className="flex items-end gap-2 rounded-md border px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
+      <div className="flex items-end gap-2 rounded-md border bg-card px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
         <textarea
           ref={box}
           value={text}

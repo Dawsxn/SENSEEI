@@ -54,7 +54,7 @@ export function LibraryListPage() {
           )}
 
           {readings.length > 0 && (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-lg border bg-card">
               <div className="hidden h-10 grid-cols-[1fr_200px_100px_100px_24px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
                 <span>Title</span>
                 <span>Classes</span>
@@ -64,7 +64,7 @@ export function LibraryListPage() {
               </div>
               {readings.map((r) => {
                 const classes = r.classes.length ? r.classes.join(", ") : "Not assigned";
-                const tone = r.classes.length ? "text-[#3f3f46]" : "text-muted-foreground/70";
+                const tone = r.classes.length ? "text-body" : "text-muted-foreground/70";
                 return (
                   <button
                     key={r.id}

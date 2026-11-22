@@ -3,36 +3,51 @@
 @tailwind utilities;
 
 /* The SENSEE-I foundations from docs/context/design-system.md, as the CSS
-   variables shadcn/ui reads. The neutrals are shadcn's zinc scale and the
-   primary is green-600, which is what the design system is built on, so these
-   HSL values are the exact hex tokens in that doc expressed as HSL channels. */
+   variables shadcn/ui reads. The palette is the "Pastel playful" brand: a pale
+   mint page, a fresh green for anything that acts, and the sensei's yellow kept
+   for decoration. These HSL values are the exact hex tokens in that doc
+   expressed as HSL channels. */
 :root {
-  --background: 0 0% 100%; /* #ffffff */
-  --foreground: 240 10% 3.9%; /* #09090b */
+  --background: 145.7 47% 97.1%; /* #f4fbf7, pale mint */
+  --foreground: 147.7 13% 20.2%; /* #2d3a33, deep green-grey */
 
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
+  /* Cards, dialogs, popovers and inputs are white, so they lift off the page. */
+  --card: 0 0% 100%; /* #ffffff */
+  --card-foreground: 147.7 13% 20.2%;
 
-  --primary: 142 76% 36%; /* #16a34a */
+  --primary: 146.7 63% 30.8%; /* #1d8049 */
+  --primary-hover: 145.9 64% 27.1%; /* #19713f */
   --primary-foreground: 0 0% 100%;
 
-  --muted: 240 4.8% 95.9%; /* #f4f4f5 */
-  --muted-foreground: 240 3.8% 46.1%; /* #71717a */
+  --muted: 143.3 47% 92.5%; /* #e3f5ea, the mint tint for quiet fills */
+  --muted-foreground: 146.2 8.5% 37%; /* #56665d */
+  --placeholder: 146.2 7% 54.5%; /* #83938a, the faintest legible tier */
+  --body: 147.7 10% 25.3%; /* #3a4740, body text on tinted fills */
 
-  --border: 240 5.9% 90%; /* #e4e4e7 */
-  --input: 240 5.9% 90%;
-  --ring: 240 5% 64.9%; /* #a1a1aa, a quiet neutral focus ring */
+  --border: 143.5 37% 87.6%; /* #d4ebdd, mint hairlines */
+  --input: 143.5 37% 87.6%;
+  --ring: 147.3 58.4% 44.3%; /* #2fb36b, the focus ring in the logo's green */
+
+  /* The logo's green, and the sensei's hat. Decorative only: never text under
+     24px, never a fill behind text. */
+  --brand-mint: 147.3 58.4% 44.3%; /* #2fb36b */
+  --brand-hat: 43.3 96.4% 56.3%; /* #fbbf24 */
 
   /* Soft, non-punitive failure treatment: #fef2f2 / #fecaca / #b91c1c */
   --fail: 0 86% 97%;
   --fail-border: 0 96% 89%;
   --fail-foreground: 0 74% 42%;
 
-  /* Its counterpart in the accent colour: #f0fdf4 / #bbf7d0 / #15803d. For a
+  /* Its counterpart in the accent colour: #e6f7ed / #b6e5c8 / #19713f. For a
      quiet green control that sits beside a soft-red one without shouting. */
-  --accent-soft: 138 76% 97%;
-  --accent-soft-border: 141 79% 85%;
-  --accent-soft-foreground: 142 72% 29%;
+  --accent-soft: 144.7 52% 93.5%;
+  --accent-soft-border: 143 47% 80.6%;
+  --accent-soft-foreground: 145.9 64% 27%;
+
+  /* A caution tint in the hat's yellow family: #fff6d1 / #fde68a / #8a5a00. */
+  --warn: 48.3 100% 91%;
+  --warn-border: 48 97% 76.7%;
+  --warn-foreground: 39 100% 27%;
 
   --radius: 8px;
 }
@@ -51,7 +66,7 @@ body {
   margin: 0;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+  font-family: Nunito, ui-sans-serif, system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;

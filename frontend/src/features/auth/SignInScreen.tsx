@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+import { Logo } from "../../components/Logo";
 import { Button } from "../../components/ui/button";
 import { devLogin, getDevUsers } from "../../lib/api";
 import { ParticipantSignIn } from "../trial/ParticipantSignIn";
@@ -20,10 +21,8 @@ export function SignInScreen() {
   if (config?.trial_mode) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-4">
-        <div className="mb-6 text-[22px] font-semibold tracking-[-0.01em]">
-          SEN<span className="text-primary">SEE-I</span>
-        </div>
-        <div className="w-full max-w-[380px] rounded-lg border p-6 shadow-raised">
+        <Logo className="mb-6 h-9 w-auto" />
+        <div className="w-full max-w-[380px] rounded-lg border bg-card p-6 shadow-raised">
           <ParticipantSignIn
             notice={
               error === "not_team"
@@ -49,11 +48,9 @@ export function SignInScreen() {
 
   return (
     <div className="flex h-full flex-col items-center justify-center px-4">
-      <div className="mb-6 text-[22px] font-semibold tracking-[-0.01em]">
-        SEN<span className="text-primary">SEE-I</span>
-      </div>
+      <Logo className="mb-6 h-9 w-auto" />
 
-      <div className="w-full max-w-[380px] rounded-lg border p-6 shadow-raised">
+      <div className="w-full max-w-[380px] rounded-lg border bg-card p-6 shadow-raised">
         <h1 className="text-[16px] font-semibold">Sign in</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
           Use your DLSU Google account.

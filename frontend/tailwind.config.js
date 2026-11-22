@@ -16,12 +16,17 @@ export default {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
+          hover: "hsl(var(--primary-hover))",
           foreground: "hsl(var(--primary-foreground))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
         },
+        // The faintest legible tier: placeholder text and decorative chevrons.
+        placeholder: "hsl(var(--placeholder))",
+        // Body text sitting on a muted or tinted fill.
+        body: "hsl(var(--body))",
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -38,6 +43,16 @@ export default {
           border: "hsl(var(--accent-soft-border))",
           foreground: "hsl(var(--accent-soft-foreground))",
         },
+        // The caution treatment, in the hat's yellow family.
+        warn: {
+          DEFAULT: "hsl(var(--warn))",
+          border: "hsl(var(--warn-border))",
+          foreground: "hsl(var(--warn-foreground))",
+        },
+        // The brand marks. Decorative only: never text under 24px, and never
+        // a fill behind text. `primary` is what carries fills and green text.
+        "brand-mint": "hsl(var(--brand-mint))",
+        "brand-hat": "hsl(var(--brand-hat))",
       },
       borderRadius: {
         lg: "8px", // card radius
@@ -45,7 +60,15 @@ export default {
         sm: "4px",
       },
       fontFamily: {
-        sans: ["Geist", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["Nunito", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
+      // Nunito runs lighter than Geist at the same weight, so the two weight
+      // classes the design system uses are mapped up one step here rather
+      // than at ~120 call sites. `font-medium` is 600 and `font-semibold`
+      // is 700, which is why index.html loads 400, 600 and 700.
+      fontWeight: {
+        medium: "600",
+        semibold: "700",
       },
       boxShadow: {
         raised: "0 1px 2px 0 rgba(0,0,0,0.05)",

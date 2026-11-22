@@ -34,7 +34,7 @@ export function ReadingDetailDialog({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-t-lg bg-background shadow-lg sm:rounded-lg"
+        className="flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-t-lg bg-card shadow-lg sm:rounded-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between px-6 pt-5">
@@ -63,7 +63,7 @@ export function ReadingDetailDialog({
               </h3>
               <ul className="space-y-1.5">
                 {reading.core_components.map((c, i) => (
-                  <li key={i} className="flex gap-2 text-[14px] text-[#3f3f46]">
+                  <li key={i} className="flex gap-2 text-[14px] text-body">
                     <span className="text-muted-foreground">•</span>
                     <span>{c}</span>
                   </li>
@@ -96,7 +96,7 @@ export function ReadingDetailDialog({
                     <span className="ml-auto text-[13px] text-muted-foreground">
                       {formatDate(s.started_at)}
                     </span>
-                    <ChevronRight className="h-4 w-4 text-[#a1a1aa]" />
+                    <ChevronRight className="h-4 w-4 text-placeholder" />
                   </button>
                 ))}
               </div>

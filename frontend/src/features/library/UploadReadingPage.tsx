@@ -40,7 +40,7 @@ const STEPS = ["PDF", "Text", "Details"] as const;
 type Step = "pdf" | "loading" | "text" | "details";
 
 const INPUT =
-  "h-9 w-full rounded-md border bg-background px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
+  "h-9 w-full rounded-md border bg-card px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
 
 /** Words a title leaves lower case unless they start it. */
 const MINOR = new Set(["a", "an", "and", "as", "at", "by", "for", "in", "of", "on", "or", "the", "to"]);
@@ -314,7 +314,7 @@ function PdfStep(props: PdfStepProps) {
       }}
     >
       {file ? (
-        <div className="flex items-center gap-3 rounded-lg border px-3.5 py-3">
+        <div className="flex items-center gap-3 rounded-lg border bg-card px-3.5 py-3">
           <span className="flex h-9 w-8 shrink-0 items-center justify-center rounded bg-fail text-[9px] font-semibold text-fail-foreground">
             PDF
           </span>
@@ -344,7 +344,7 @@ function PdfStep(props: PdfStepProps) {
               onFile(e.dataTransfer.files[0]);
             }}
             className={`flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-12 text-center ${
-              over ? "border-primary bg-primary/5" : error ? "border-fail-border bg-muted/40" : "border-[#d4d4d8] bg-muted/40"
+              over ? "border-primary bg-primary/5" : error ? "border-fail-border bg-muted/40" : "border-border bg-muted/40"
             }`}
           >
             <Upload className="h-7 w-7 text-muted-foreground/70" strokeWidth={1.6} />
@@ -454,8 +454,8 @@ function TextStep({ file, extracted, text, onText, onBack, onNext }: TextStepPro
           <p
             className={`flex items-center gap-2 rounded-md border px-3 py-2 text-[13px] ${
               note.tone === "warn"
-                ? "border-[#fde68a] bg-[#fffbeb] text-[#92400e]"
-                : "border-[#bbf7d0] bg-[#f0fdf4] text-[#166534]"
+                ? "border-warn-border bg-warn text-warn-foreground"
+                : "border-accent-soft-border bg-accent-soft text-accent-soft-foreground"
             }`}
           >
             <Info className="h-3.5 w-3.5 shrink-0" />
@@ -470,7 +470,7 @@ function TextStep({ file, extracted, text, onText, onBack, onNext }: TextStepPro
             key={p}
             onClick={() => setPane(p)}
             className={`h-[30px] flex-1 rounded text-[13px] font-medium ${
-              pane === p ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+              pane === p ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
             }`}
           >
             {p === "pdf" ? "PDF" : "Text"}
@@ -480,7 +480,7 @@ function TextStep({ file, extracted, text, onText, onBack, onNext }: TextStepPro
 
       <div className="grid h-[calc(100vh-300px)] min-h-[420px] gap-4 lg:grid-cols-2">
         <div
-          className={`min-h-0 overflow-hidden rounded-lg border ${pane === "pdf" ? "block" : "hidden"} lg:block`}
+          className={`min-h-0 overflow-hidden rounded-lg border bg-card ${pane === "pdf" ? "block" : "hidden"} lg:block`}
         >
           <Suspense fallback={<p className="p-6 text-[13px] text-muted-foreground">Loading the PDF…</p>}>
             {url && <PdfPanel fileUrl={url} fallback={null} />}
@@ -491,7 +491,7 @@ function TextStep({ file, extracted, text, onText, onBack, onNext }: TextStepPro
           value={text}
           onChange={(e) => onText(e.target.value)}
           spellCheck
-          className={`${pane === "text" ? "block" : "hidden"} min-h-0 w-full resize-none rounded-lg border bg-background px-4 py-3.5 text-[14px] leading-[1.65] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 lg:block`}
+          className={`${pane === "text" ? "block" : "hidden"} min-h-0 w-full resize-none rounded-lg border bg-card px-4 py-3.5 text-[14px] leading-[1.65] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 lg:block`}
         />
       </div>
 

@@ -63,7 +63,7 @@ export function ClassReadingPage() {
 
               <StatisticsSection statistics={data.statistics} scope="For this reading only." />
 
-              <section className="overflow-hidden rounded-lg border">
+              <section className="overflow-hidden rounded-lg border bg-card">
                 <div className="hidden h-10 grid-cols-[1fr_160px_200px_120px_24px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
                   <span>{trial ? "Participant" : "Student"}</span>
                   <span>Progress</span>

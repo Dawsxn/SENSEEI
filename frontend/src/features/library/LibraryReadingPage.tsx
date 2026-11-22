@@ -131,7 +131,7 @@ export function LibraryReadingPage() {
 
               <div className="grid items-start gap-5 lg:grid-cols-[1fr_380px]">
                 {/* On narrow screens the short cards come first, above the long reading. */}
-                <section className="order-2 flex h-[calc(100vh-230px)] min-h-[480px] flex-col overflow-hidden rounded-lg border lg:order-1">
+                <section className="order-2 flex h-[calc(100vh-230px)] min-h-[480px] flex-col overflow-hidden rounded-lg border bg-card lg:order-1">
                   <div className="shrink-0 border-b px-3 py-2">
                     <div className="inline-flex gap-0.5 rounded-md bg-muted p-[3px]">
                       {(["pdf", "text"] as const).map((f) => (
@@ -141,7 +141,7 @@ export function LibraryReadingPage() {
                           disabled={f === "pdf" && !reading.has_file}
                           className={`h-7 rounded px-3 text-[13px] font-medium disabled:opacity-50 ${
                             (f === "pdf" ? showPdf : !showPdf)
-                              ? "bg-background text-foreground shadow-sm"
+                              ? "bg-card text-foreground shadow-sm"
                               : "text-muted-foreground"
                           }`}
                         >
@@ -165,7 +165,7 @@ export function LibraryReadingPage() {
                 </section>
 
                 <div className="order-1 flex flex-col gap-5 lg:order-2">
-                  <section className="overflow-hidden rounded-lg border">
+                  <section className="overflow-hidden rounded-lg border bg-card">
                     <div className="flex items-center justify-between border-b px-4 py-3">
                       <span className="text-[14px] font-semibold">Classes</span>
                       <Button variant="secondary" size="sm" onClick={() => setDialog("classes")}>
@@ -183,7 +183,7 @@ export function LibraryReadingPage() {
                     </p>
                   </section>
 
-                  <section className="overflow-hidden rounded-lg border">
+                  <section className="overflow-hidden rounded-lg border bg-card">
                     <div className="flex items-center justify-between border-b px-4 py-3.5">
                       <span className="text-[14px] font-semibold">Core components</span>
                       <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">

@@ -36,7 +36,7 @@ export function WithdrawCard() {
   }
 
   return (
-    <section className="mt-5 rounded-lg border">
+    <section className="mt-5 rounded-lg border bg-card">
       <div className="border-b px-4 py-3.5 text-[14px] font-semibold">Withdraw a participant</div>
       <form
         className="flex flex-col gap-3 p-4"
@@ -60,7 +60,7 @@ export function WithdrawCard() {
             autoComplete="off"
             spellCheck={false}
             maxLength={40}
-            className="h-9 min-w-0 flex-1 rounded-md border bg-background px-3 font-mono text-[14px] tracking-wider outline-none placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+            className="h-9 min-w-0 flex-1 rounded-md border bg-card px-3 font-mono text-[14px] tracking-wider outline-none placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
           />
           <Button type="submit" variant="danger" disabled={!typed}>
             Delete
