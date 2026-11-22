@@ -1,0 +1,184 @@
+{
+  "meta": {
+    "timestamp": "20261117_005827",
+    "prompt_version": "v3",
+    "prompt_hash": "166fb68182",
+    "prompt_file": "system_prompt_v3.md",
+    "rubric_version": "v3",
+    "rubric_file": "rubric_v3.yaml",
+    "example_set_version": "v4",
+    "provider": "gemini",
+    "model": "gemini-3.1-pro-preview",
+    "thinking_level": "low",
+    "csv": "example_set_v4.csv",
+    "cost": {
+      "input_tokens": 70334,
+      "output_tokens": 864,
+      "thinking_tokens": 1194,
+      "est_cost_usd": 0.16536399999999998,
+      "price_input_per_1m": 2.0,
+      "price_output_per_1m": 12.0
+    }
+  },
+  "examples": [
+    {
+      "id": "ST-STR-P1",
+      "step": "State",
+      "core_components": "A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.",
+      "user_response": "A company's strategy is the set of coordinated moves its managers choose in order to outperform rivals and earn stronger-than-average profits.",
+      "expected_verdict": "PASS",
+      "expected_criteria": [],
+      "criterion_targeted": "",
+      "notes": "",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Own Words"
+        ],
+        "criteria": {
+          "Brevity": {
+            "passed": true,
+            "reason": "The statement is concise and directly addresses the concept without unnecessary filler."
+          },
+          "Own Words": {
+            "passed": false,
+            "reason": "The response closely paraphrases the reading's definition, changing only a few words like 'moves' for 'actions' and 'earn stronger-than-average profits' for 'achieve superior profitability'."
+          },
+          "Clarity": {
+            "passed": true,
+            "reason": "The statement is clear, precise, and easy to understand."
+          },
+          "Completeness": {
+            "passed": true,
+            "reason": "The statement captures the core components of the concept: coordinated actions, outperforming competitors, and achieving superior profitability."
+          },
+          "Accuracy": {
+            "passed": true,
+            "reason": "The statement accurately reflects the reading's definition of a company's strategy."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Own Words\"\n  ],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": true,\n      \"reason\": \"The statement is concise and directly addresses the concept without unnecessary filler.\"\n    },\n    \"Own Words\": {\n      \"pass\": false,\n      \"reason\": \"The response closely paraphrases the reading's definition, changing only a few words like 'moves' for 'actions' and 'earn stronger-than-average profits' for 'achieve superior profitability'.\"\n    },\n    \"Clarity\": {\n      \"pass\": true,\n      \"reason\": \"The statement is clear, precise, and easy to understand.\"\n    },\n    \"Completeness\": {\n      \"pass\": true,\n      \"reason\": \"The statement captures the core components of the concept: coordinated actions, outperforming competitors, and achieving superior profitability.\"\n    },\n    \"Accuracy\": {\n      \"pass\": true,\n      \"reason\": \"The statement accurately reflects the reading's definition of a company's strategy.\"\n    }\n  },\n  \"raw_response\": \"The response fails because it is too close to the original text, violating the 'Own Words' criterion.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 23436,
+          "output_tokens": 286,
+          "thinking_tokens": 0,
+          "total_tokens": 23722
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "ST-STR-BC",
+      "step": "State",
+      "core_components": "A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.",
+      "user_response": "A company's strategy is, in a way, kind of the overall big-picture set of various different things and moves that the managers sort of decide to go with, all in the general effort to somehow end up doing better than the other competitors out there and make good money in the end.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Brevity",
+        "Clarity"
+      ],
+      "criterion_targeted": "Brevity + Clarity",
+      "notes": "Brevity: Fillers such as sort of, somehow, etc.; Clarity: Words like somehow, big picture, various different things, good money are vague",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Brevity",
+          "Clarity"
+        ],
+        "criteria": {
+          "Brevity": {
+            "passed": false,
+            "reason": "The response contains excessive filler words and phrases such as 'in a way, kind of', 'sort of', and 'somehow'."
+          },
+          "Own Words": {
+            "passed": true,
+            "reason": "The student expresses the definition using their own phrasing rather than copying the text."
+          },
+          "Clarity": {
+            "passed": false,
+            "reason": "The statement is vague and imprecise, relying on unclear phrasing like 'various different things' and 'somehow end up'."
+          },
+          "Completeness": {
+            "passed": true,
+            "reason": "The response successfully captures the core components: managerial actions, outperforming competitors, and achieving profitability."
+          },
+          "Accuracy": {
+            "passed": true,
+            "reason": "The definition aligns correctly with the reading's concept of a company's strategy."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Brevity\",\n    \"Clarity\"\n  ],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": false,\n      \"reason\": \"The response contains excessive filler words and phrases such as 'in a way, kind of', 'sort of', and 'somehow'.\"\n    },\n    \"Own Words\": {\n      \"pass\": true,\n      \"reason\": \"The student expresses the definition using their own phrasing rather than copying the text.\"\n    },\n    \"Clarity\": {\n      \"pass\": false,\n      \"reason\": \"The statement is vague and imprecise, relying on unclear phrasing like 'various different things' and 'somehow end up'.\"\n    },\n    \"Completeness\": {\n      \"pass\": true,\n      \"reason\": \"The response successfully captures the core components: managerial actions, outperforming competitors, and achieving profitability.\"\n    },\n    \"Accuracy\": {\n      \"pass\": true,\n      \"reason\": \"The definition aligns correctly with the reading's concept of a company's strategy.\"\n    }\n  },\n  \"raw_response\": \"The response captures the correct meaning in the student's own words, but it fails to be concise and clear due to excessive filler and vague language.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 23468,
+          "output_tokens": 300,
+          "thinking_tokens": 709,
+          "total_tokens": 24477
+        },
+        "finish_reason": "STOP"
+      }
+    },
+    {
+      "id": "ST-STR-CC",
+      "step": "State",
+      "core_components": "A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.",
+      "user_response": "A company's strategy is basically just about the company trying to do well and be successful in its industry.",
+      "expected_verdict": "FAIL",
+      "expected_criteria": [
+        "Clarity",
+        "Completeness",
+        "Accuracy"
+      ],
+      "criterion_targeted": "Clarity + Completeness + Accuracy",
+      "notes": "Clarity: trying to do well, successful are vague; Completeness: \"trying\" is too broad and does not capture the coordinated actions.; Accuracy",
+      "result": {
+        "verdict": "FAIL",
+        "model_verdict": "FAIL",
+        "fail_criteria": [
+          "Clarity",
+          "Completeness"
+        ],
+        "criteria": {
+          "Brevity": {
+            "passed": true,
+            "reason": "The response is a single, concise sentence without unnecessary filler."
+          },
+          "Own Words": {
+            "passed": true,
+            "reason": "The student uses their own phrasing rather than copying the text."
+          },
+          "Clarity": {
+            "passed": false,
+            "reason": "The phrase 'trying to do well and be successful' is vague and lacks precision."
+          },
+          "Completeness": {
+            "passed": false,
+            "reason": "The statement fails to mention that strategy involves a coordinated set of actions aimed at outperforming competitors."
+          },
+          "Accuracy": {
+            "passed": true,
+            "reason": "While vague, the assertion that strategy relates to a company's success does not contradict the reading."
+          }
+        },
+        "raw_text": "{\n  \"verdict\": \"FAIL\",\n  \"fail_criteria\": [\n    \"Clarity\",\n    \"Completeness\"\n  ],\n  \"criteria\": {\n    \"Brevity\": {\n      \"pass\": true,\n      \"reason\": \"The response is a single, concise sentence without unnecessary filler.\"\n    },\n    \"Own Words\": {\n      \"pass\": true,\n      \"reason\": \"The student uses their own phrasing rather than copying the text.\"\n    },\n    \"Clarity\": {\n      \"pass\": false,\n      \"reason\": \"The phrase 'trying to do well and be successful' is vague and lacks precision.\"\n    },\n    \"Completeness\": {\n      \"pass\": false,\n      \"reason\": \"The statement fails to mention that strategy involves a coordinated set of actions aimed at outperforming competitors.\"\n    },\n    \"Accuracy\": {\n      \"pass\": true,\n      \"reason\": \"While vague, the assertion that strategy relates to a company's success does not contradict the reading.\"\n    }\n  },\n  \"raw_response\": \"The response is concise and in the student's own words, but it is too vague and misses the core components of coordinated actions and outperforming competitors.\"\n}",
+        "parse_ok": true,
+        "error": "",
+        "warnings": [],
+        "usage": {
+          "input_tokens": 23430,
+          "output_tokens": 278,
+          "thinking_tokens": 485,
+          "total_tokens": 24193
+        },
+        "finish_reason": "STOP"
+      }
+    }
+  ]
+}

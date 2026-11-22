@@ -55,3 +55,8 @@ Template to copy for each new entry:
     - **S-BC-1 (the lone criteria-differ):** verdict correct (FAIL), but the agent **also flagged Accuracy** on top of Brevity + Clarity — the deliberate "should Accuracy stay unflagged on a vague-but-not-false statement?" edge case.
   - Every other probe was exact, including the isolated/coverage ones: Concreteness (EX-C-1), Imagery (I-IM-1), Comparison-only (I-C-1), Fit (EX-F-1), and both multi-criteria FAILs (E-EO-1, EX-OE-1).
 - **Next:** Illustrate's **Match** is the only soft spot. Decide with Dr. Teehankee whether I-M-1 and S-BC-1 are agent errors or labels worth revisiting, then make **one** targeted change (Match wording in the prompt, or the label) and re-run to attribute the effect.
+
+## v3 (replaced) — 2026-11-18
+- **Changed:** the prompt saved as `system_prompt_v5.md` became `system_prompt_v3.md`. The previous v3 and v4 were removed from this repo; identical copies are kept in the standalone eval repo (`prompts/system_prompt_v3.md`, `prompts/system_prompt_v4.md`).
+- **Why:** the team chose the new prompt as the one the app and the eval run, both of which pin `v3`.
+- **Traceability:** runs and sessions stamped `v3` before this date used the old prompt. Tell them apart by `prompt_hash` in `results_log.csv`: `166fb68182` is the old v3 (with rubric v3) and `ea423ddbfd` the removed v4 (with rubric v4); the new v3 with rubric v3 is `4ebe653830`.
