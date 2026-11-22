@@ -16,7 +16,7 @@ accept, adjust, or reject it, then update the manuscript to match.
 
 | # | Decision | Why |
 | --- | --- | --- |
-| 1 | **The chatbot group is not given the reading.** It is a plain chat on the same model; participants may copy text in themselves | It is what unguided use looks like (§2.1). The cost is a second difference between the AI groups, handled in the wording (§4.6.2) |
+| 1 | **The chatbot group is given the reading.** It is a plain chat on the same model, with the reading as its only context and no teaching instructions; participants are told it has the reading | Changed after the user acceptance test, on the adviser's advice: the two AI groups then differ only in guidance (§4.6.2) |
 | 2 | **Keep three groups**, including reading-only | Without it, a SENSEE-I win cannot be told apart from the chatbot doing harm. It also tests the cognitive-offloading motivation directly |
 | 3 | **Block randomization, prepared before each sitting.** Groups are drawn as shuffled ID slips, equal numbers per group | Random, equal group sizes, no extra time on the day, no names linked to IDs before consent |
 | 4 | **The group is not shown on the slip or the consent form** | Participants should take the pre-test not knowing their group, and the consent forms should not double as a list of who was in which group |
@@ -152,7 +152,7 @@ System Usability Scale composite, 0–100: average and spread, against the commo
 ### §4.6.2 Experiment Design
 
 - **Narrow the claim.** "The variable distinguishing the two AI-assisted groups is the SEE-I scaffolding" claims more than the design can show: SENSEE-I also makes students write explanations, gives rubric feedback with retries, and knows the reading. Change to "the SEE-I-based design of SENSEE-I", which matches objective 5, and name what is bundled in the limitations.
-- **The chatbot is not given the reading.** State it, and either justify it as part of unguided use or note it as a limitation. The app records how many chatbot participants pasted text from the reading.
+- **The chatbot is given the reading** as its only context, with no teaching instructions, and participants are told so. State it in §4.6.2: the AI groups differ only in guidance.
 - **The measures change:** a one-question pre-test, and a 12-item post-test on the four dimensions of conceptual understanding with confidence ticks.
 - **"Qualitatively"**: see analysis item 7.
 

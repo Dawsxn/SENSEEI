@@ -141,8 +141,9 @@ class GeminiProvider(LLMProvider):
             if text:
                 yield text
 
-    def chat_stream(self, turns: list[tuple[str, str]]):
-        """A real multi-turn conversation, with no system instruction.
+    def chat_stream(self, turns: list[tuple[str, str]], system: str | None = None):
+        """A real multi-turn conversation. `system`, when given, is the system
+        instruction (for the trial's chatbot, just the reading).
 
         Same model, temperature and thinking level as the agents, so the only
         difference from SENSEE-I is what the trial's design intends: no
@@ -153,6 +154,8 @@ class GeminiProvider(LLMProvider):
             temperature=self.temperature,
             max_output_tokens=self.max_output_tokens,
         )
+        if system:
+            cfg_kwargs["system_instruction"] = system
         if self.thinking_level:
             cfg_kwargs["thinking_config"] = types.ThinkingConfig(
                 thinking_level=self.thinking_level
