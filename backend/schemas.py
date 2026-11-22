@@ -150,6 +150,9 @@ class ClassIn(BaseModel):
     section: str = Field(min_length=1, max_length=20)
     #: Anything but SEE-I is refused outside trial mode.
     mode: ClassMode = ClassMode.SEEI
+    #: Trial mode: the pre-test and post-test the class takes, by key. None for
+    #: none. Only a test written for the class's reading is accepted.
+    test_key: str | None = Field(default=None, max_length=64)
 
     @field_validator("name", "section", mode="before")
     @classmethod
@@ -166,6 +169,7 @@ class ClassListItem(BaseModel):
     label: str
     join_code: str
     mode: ClassMode
+    test_key: str | None = None
     student_count: int
     reading_count: int
 
@@ -187,6 +191,11 @@ class ClassReading(BaseModel):
     description: str | None
 
 
+class TestChoice(BaseModel):
+    key: str
+    title: str
+
+
 class ClassDetailOut(BaseModel):
     id: uuid.UUID
     name: str
@@ -195,7 +204,11 @@ class ClassDetailOut(BaseModel):
     join_code: str
     mode: ClassMode
     #: Whether the mode can still change: not once a participant has signed in.
+    #: The test setting follows the same rule.
     mode_locked: bool = False
+    test_key: str | None = None
+    #: The tests this class could take: those written for one of its readings.
+    tests: list[TestChoice] = []
     students: list[ClassStudent]
     readings: list[ClassReading]
 
@@ -375,6 +388,9 @@ class TrialStatusOut(BaseModel):
     seconds_left: int | None
     time_up: bool
     session: TrialSessionRef | None
+    #: With tests: pretest | session | posttest_ready | posttest | done. None for
+    #: a class without them, whose participants only have the session.
+    test_stage: Literal["pretest", "session", "posttest_ready", "posttest", "done"] | None = None
 
 
 class BatchClassCount(BaseModel):
@@ -450,3 +466,113 @@ class ChatMessageOut(BaseModel):
     role: Literal["user", "assistant"]
     content: str
     created_at: datetime
+
+
+# --- the trial's pre-test and post-test ------------------------------------------
+
+TestWhich = Literal["pre", "post"]
+
+
+class TestOption(BaseModel):
+    key: str
+    text: str
+
+
+class TestItemOut(BaseModel):
+    id: str
+    kind: Literal["choice", "text", "groups"]
+    part: str
+    question: str
+    options: list[TestOption]
+    points: int
+    #: Ends with "I'm sure / I'm not sure".
+    ticked: bool
+
+
+class TestGroup(BaseModel):
+    name: str = Field(default="", max_length=500)
+    strategies: str = Field(default="", max_length=500)
+    why: str = Field(default="", max_length=500)
+
+
+class SavedAnswer(BaseModel):
+    item: str
+    choice: str | None = None
+    text: str | None = None
+    groups: list[TestGroup] | None = None
+    sure: bool | None = None
+
+
+class TestViewOut(BaseModel):
+    """A test as its taker sees it: no answer key and no rubric."""
+
+    which: TestWhich
+    minutes: int
+    started: bool
+    #: None until it starts.
+    seconds_left: int | None
+    strategies: list[str]
+    strategy_list_parts: list[str]
+    items: list[TestItemOut]
+    answers: list[SavedAnswer]
+
+
+class TestAnswerIn(BaseModel):
+    """One answer, saved as it is typed. Send only what changed."""
+
+    choice: str | None = Field(default=None, max_length=4)
+    text: str | None = Field(default=None, max_length=5000)
+    groups: list[TestGroup] | None = Field(default=None, max_length=3)
+    sure: bool | None = None
+
+
+class GradingListItem(BaseModel):
+    code: str
+    #: Written answers still to grade.
+    left: int
+    posttest_ended: bool
+
+
+class GradingChoice(BaseModel):
+    item: str
+    choice: str | None
+    answer: str
+    correct: bool
+    sure: bool | None
+
+
+class GradingCriterion(BaseModel):
+    points: int
+    text: str
+
+
+class GradingWritten(BaseModel):
+    test: TestWhich
+    item: str
+    question: str
+    text: str | None
+    sure: bool | None
+    score: int | None
+    points: int
+    reference: str
+    criteria: list[GradingCriterion]
+
+
+class GradingDetailOut(BaseModel):
+    """One participant's tests for the grader, by ID. Never the group."""
+
+    code: str
+    posttest_ended: bool
+    left: int
+    pretest_score: int | None
+    posttest_total: int | None
+    calibration: float | None
+    sure_but_wrong: int | None
+    choices: list[GradingChoice]
+    #: Their 12a grouping table, shown with 12b.
+    groups: list[TestGroup] | None
+    written: list[GradingWritten]
+
+
+class ScoreIn(BaseModel):
+    score: int = Field(ge=0, le=10)

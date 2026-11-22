@@ -313,8 +313,14 @@ export function ClassDetailPage() {
       {klass && dialog?.kind === "edit" && (
         <ClassFormDialog
           mode="edit"
-          initial={{ name: klass.name, section: klass.section, mode: klass.mode }}
+          initial={{
+            name: klass.name,
+            section: klass.section,
+            mode: klass.mode,
+            test_key: klass.test_key ?? null,
+          }}
           modeLocked={klass.mode_locked}
+          tests={klass.tests ?? []}
           onSubmit={edit}
           onCancel={close}
         />

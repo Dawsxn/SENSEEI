@@ -19,6 +19,8 @@ export interface ClassListItem {
   label: string;
   join_code: string;
   mode: ClassMode;
+  /** Trial mode: the pre-test and post-test the class takes, or null. */
+  test_key?: string | null;
   student_count: number;
   reading_count: number;
 }
@@ -46,8 +48,11 @@ export interface ClassDetail {
   label: string;
   join_code: string;
   mode: ClassMode;
-  /** The mode is fixed once a participant has signed in. */
+  /** The mode, and the tests, are fixed once a participant has signed in. */
   mode_locked?: boolean;
+  test_key?: string | null;
+  /** The tests this class could take: those written for one of its readings. */
+  tests?: { key: string; title: string }[];
   students: ClassStudent[];
   readings: ClassReading[];
 }
@@ -56,6 +61,7 @@ export interface ClassFields {
   name: string;
   section: string;
   mode?: ClassMode;
+  test_key?: string | null;
 }
 
 export interface JoinResult {

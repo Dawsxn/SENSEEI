@@ -26,7 +26,7 @@ import { TrialClock, useTimeUp } from "./TrialClock";
 import { logTrial, useTrialLogging } from "./trialLog";
 import { useChatbot } from "./useChatbot";
 import { useIntro } from "./useIntro";
-import { useStartTrialClock, useTrialStatus } from "./useTrial";
+import { useStartTrialClock, useTestHandoff, useTrialStatus } from "./useTrial";
 
 const PdfPanel = lazy(() =>
   import("../tutoring/PdfPanel").then((m) => ({ default: m.PdfPanel })),
@@ -34,7 +34,7 @@ const PdfPanel = lazy(() =>
 
 const INTRO = {
   chatbot:
-    "Read the material. You can use the chatbot beside it however you like. Press Done when you're finished.",
+    "Read the material. You can use the chatbot beside it however you like, but it doesn't have the reading. Press Done when you're finished.",
   reading: "Read the material in its entirety. Press Done when you're finished.",
 };
 
@@ -55,6 +55,7 @@ function useControlGroup() {
   useTrialLogging(true);
 
   const done = !!status?.done;
+  useTestHandoff(done || timeUp);
   async function finish() {
     setConfirming(false);
     queryClient.setQueryData(["trial"], await finishTrial());

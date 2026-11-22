@@ -36,7 +36,12 @@ import type {
   BatchListItem,
   ChatEvent,
   ChatMessageRow,
+  GradingDetail,
+  GradingListItem,
   NewBatch,
+  SavedAnswer,
+  TestView,
+  TestWhich,
   TrialStatus,
 } from "../features/trial/types";
 import type { Rubric } from "../features/tutoring/types";
@@ -330,3 +335,27 @@ export const withdrawParticipant = (code: string) =>
   send<void>(`/instructor/participants/${encodeURIComponent(code.trim())}`, "DELETE");
 export const voidParticipant = (batchId: string, participantId: string) =>
   send<Batch>(`/instructor/batches/${batchId}/participants/${participantId}/void`, "POST");
+/** Delete a closed batch and everything recorded for its IDs. */
+export const deleteBatch = (id: string) => send<void>(`/instructor/batches/${id}`, "DELETE");
+
+// The pre-test and post-test, taken by a participant.
+export const getTest = (which: TestWhich) => send<TestView>(`/trial/tests/${which}`, "GET");
+/** Start the test's clock. Only the first call starts it. */
+export const startTest = (which: TestWhich) =>
+  send<TestView>(`/trial/tests/${which}/start`, "POST");
+/** Save one answer as it is typed. Send only what changed. */
+export const saveTestAnswer = (which: TestWhich, item: string, answer: Omit<SavedAnswer, "item">) =>
+  send<SavedAnswer>(`/trial/tests/${which}/answers/${item}`, "PUT", answer);
+export const submitTest = (which: TestWhich) =>
+  send<TrialStatus>(`/trial/tests/${which}/submit`, "POST");
+
+// Grading, for the grader and the research team.
+export const getGradingList = () => send<GradingListItem[]>("/instructor/grading", "GET");
+export const getGrading = (code: string) =>
+  send<GradingDetail>(`/instructor/grading/${encodeURIComponent(code)}`, "GET");
+export const setScore = (code: string, which: TestWhich, item: string, score: number) =>
+  send<GradingDetail>(
+    `/instructor/grading/${encodeURIComponent(code)}/${which}/${item}`,
+    "PUT",
+    { score },
+  );

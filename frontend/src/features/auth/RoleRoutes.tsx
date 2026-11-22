@@ -17,8 +17,18 @@ export function HomeRoute() {
   const { data: user } = useMe();
   const participant = useIsParticipant();
   if (user?.role === "instructor") return <Navigate to="/classes" replace />;
+  if (user?.role === "grader") return <Navigate to="/grading" replace />;
   if (participant) return <TrialHome />;
   return <ReadingListPage />;
+}
+
+/** The grading page: the grader, and the research team. */
+export function RequireGrader({ children }: { children: ReactNode }) {
+  const { data: user } = useMe();
+  if (user && user.role !== "grader" && user.role !== "instructor") {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
 }
 
 export function RequireInstructor({ children }: { children: ReactNode }) {

@@ -20,6 +20,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .. import trial_tests
 from ..models import (
     Assessment,
     Attempt,
@@ -30,10 +31,12 @@ from ..models import (
     ParticipantBatch,
     Reading,
     Session,
+    TrialAnswer,
     TrialEvent,
     TutorMessage,
     class_label,
 )
+from .test_service import scores
 from .trial_service import deadline, require_trial
 
 README = """SENSEE-I trial export
@@ -42,7 +45,12 @@ Every file is keyed by participant_id, the ID on the participant's slip.
 Times are UTC (ISO 8601).
 
 participants.csv    one row per ID: batch, class, group, and when they signed in,
-                    opened the reading, pressed Done, and when their time ran out
+                    opened the reading, pressed Done, and when their time ran out;
+                    with tests, when each test started and how it ended, the
+                    pre-test score, the post-test total and calibration
+tests.csv           every pre-test and post-test answer: the answer, the
+                    "sure" tick, the score, and when it was first answered,
+                    last changed, and how many times
 sessions.csv        the SEE-I group's sessions: how each ended and on which step
 attempts.csv        every SEE-I answer, with its verdict
 criteria.csv        every criterion judged on every answer, with the reason
@@ -82,15 +90,65 @@ async def export(db: AsyncSession) -> bytes:
     by_participant = {p.id: p.code for p, _, _, _ in people}
     users = list(by_user)
 
+    test_keys = dict(
+        (await db.execute(select(Class.id, Class.test_key).where(Class.test_key.is_not(None)))).all()
+    )
+    answers: dict = {}
+    for a in await db.scalars(
+        select(TrialAnswer).where(TrialAnswer.participant_id.in_(list(by_participant)))
+    ):
+        answers.setdefault(a.participant_id, []).append(a)
+
+    def score_cells(p) -> list:
+        test = trial_tests.get(test_keys.get(p.class_id))
+        if test is None:
+            return ["", "", "", ""]
+        got = scores(test, answers.get(p.id, []))
+        return ["" if got[k] is None else got[k]
+                for k in ("pretest_score", "posttest_total", "calibration", "sure_but_wrong")]
+
     files: dict[str, str] = {"README.txt": README}
     files["participants.csv"] = _csv(
         ["participant_id", "batch", "class", "group", "signed_in_at", "reading_opened_at",
-         "done_at", "time_ran_out_at", "voided_at"],
+         "done_at", "time_ran_out_at", "voided_at", "test",
+         "pretest_started_at", "pretest_ended_at", "pretest_ended_by",
+         "posttest_started_at", "posttest_ended_at", "posttest_ended_by",
+         "pretest_score", "posttest_total", "calibration", "sure_but_wrong"],
         [
             [p.code, batch, label, mode, _iso(p.signed_in_at), _iso(p.clock_started_at),
-             _iso(p.done_at), _iso(deadline(p)), _iso(p.voided_at)]
+             _iso(p.done_at), _iso(deadline(p)), _iso(p.voided_at),
+             test_keys.get(p.class_id) or "",
+             _iso(p.pretest_started_at), _iso(p.pretest_ended_at), p.pretest_ended_by or "",
+             _iso(p.posttest_started_at), _iso(p.posttest_ended_at), p.posttest_ended_by or "",
+             *score_cells(p)]
             for p, batch, label, mode in people
         ],
+    )
+
+    test_rows = []
+    for p, _, _, _ in people:
+        test = trial_tests.get(test_keys.get(p.class_id))
+        if test is None:
+            continue
+        for a in sorted(answers.get(p.id, []), key=lambda a: (a.test != "pre", a.item)):
+            item = test.item(a.test, a.item)
+            if item is None:
+                continue
+            answer = (
+                a.choice if item.kind == "choice"
+                else json.dumps(a.groups) if item.kind == "groups" and a.groups
+                else a.text or ""
+            )
+            test_rows.append(
+                [p.code, a.test, a.item, item.part, item.dimension, item.kind, answer or "",
+                 "" if a.sure is None else a.sure, "" if a.score is None else a.score,
+                 item.points if item.scored else "", _iso(a.first_answered_at),
+                 _iso(a.last_changed_at), a.edits, _iso(a.scored_at)]
+            )
+    files["tests.csv"] = _csv(
+        ["participant_id", "test", "question", "part", "dimension", "kind", "answer", "sure",
+         "score", "max_score", "first_answered_at", "last_changed_at", "edits", "scored_at"],
+        test_rows,
     )
 
     sessions = (

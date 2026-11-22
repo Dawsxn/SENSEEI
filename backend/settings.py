@@ -89,8 +89,15 @@ class Settings(BaseSettings):
     # whole set of rules: participants sign in by ID, one session each, a clock,
     # and classes in the control groups' modes. The server enforces every one.
     trial_mode: bool = False
-    #: A participant's time, from the moment their reading opens.
-    trial_minutes: int = 40
+    #: A participant's time for the session, from the moment their reading opens.
+    #: The study's 35 minutes live here, in the code, and the pre-test's and
+    #: post-test's in the test file, so none of them can change between sittings
+    #: without a release. The overrides exist only to try the flow locally
+    #: without waiting; the trial instance sets none of them. (The name is new so
+    #: that an old `TRIAL_MINUTES` left on a deployed service is ignored.)
+    trial_session_minutes: int = 35
+    trial_pretest_minutes: int | None = None
+    trial_posttest_minutes: int | None = None
 
     # --- auth --------------------------------------------------------------
     # Google OAuth client, from the Google Cloud console. Sign-in is disabled
@@ -106,6 +113,9 @@ class Settings(BaseSettings):
     # Comma-separated emails that sign in as instructors. Everyone else is a
     # student. The list is the source of truth; the role is written per login.
     instructor_emails: str = ""
+    # Trial mode only: comma-separated emails that sign in as graders, who see the
+    # grading page and nothing else, so grading stays blind to the groups.
+    grader_emails: str = ""
     # Sign in as a seeded user without Google. Forced off in production.
     auth_dev_bypass: bool = True
     # Comma-separated emails that may switch to any seeded user after signing in
@@ -121,6 +131,10 @@ class Settings(BaseSettings):
     @property
     def instructor_allowlist(self) -> set[str]:
         return {e.strip().lower() for e in self.instructor_emails.split(",") if e.strip()}
+
+    @property
+    def grader_allowlist(self) -> set[str]:
+        return {e.strip().lower() for e in self.grader_emails.split(",") if e.strip()}
 
     @property
     def dev_bypass_enabled(self) -> bool:

@@ -16,6 +16,8 @@ from enum import Enum
 class Role(str, Enum):
     STUDENT = "student"
     INSTRUCTOR = "instructor"
+    #: Trial mode only: scores the pre-tests and post-tests and sees nothing else.
+    GRADER = "grader"
 
 
 class SeeiStep(str, Enum):
@@ -29,7 +31,7 @@ class SessionStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETE = "complete"
     FALLBACK = "fallback"
-    #: Trial mode only: the participant's 40 minutes ran out mid-session.
+    #: Trial mode only: the participant's session time ran out mid-session.
     TIMED_OUT = "timed_out"
 
 
