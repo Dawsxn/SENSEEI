@@ -147,3 +147,28 @@ def test_the_trial_blueprint_cannot_be_entered_without_an_id():
     assert blueprint["databases"][0]["plan"] != "free"
     settings = Settings(environment=env["ENVIRONMENT"], auth_dev_bypass=False, qa_emails="a@dlsu.edu.ph")
     assert settings.dev_bypass_enabled is False and settings.qa_allowlist == set()
+
+
+def test_the_trial_runs_a_combination_the_eval_measured():
+    """The trial's model, assessment prompt and rubric are one row of the
+    Assessment Agent eval's results log, so the agent the trial uses is the agent
+    the eval measured, not a neighbour of it."""
+    import csv
+    from pathlib import Path
+
+    import yaml
+
+    blueprint = yaml.safe_load(Path("render-trial.yaml").read_text(encoding="utf-8"))
+    (service,) = blueprint["services"]
+    env = {e["key"]: e.get("value") for e in service["envVars"]}
+    ran = (env["LLM_PROVIDER"], env["LLM_MODEL"], env["ASSESSMENT_PROMPT_VERSION"],
+           env["RUBRIC_VERSION"])
+
+    log = Path("assessment-agent-eval/results_log.csv").read_text(encoding="utf-8-sig")
+    measured = {
+        (r["provider"], r["model"], r["prompt_version"], r["rubric_version"])
+        for r in csv.DictReader(log.splitlines())
+    }
+    assert ran in measured
+    assert Path(f"agents/prompts/system_prompt_{ran[2]}.md").exists()
+    assert Path(f"agents/rubrics/rubric_{ran[3]}.yaml").exists()
