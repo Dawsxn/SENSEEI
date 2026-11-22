@@ -47,7 +47,7 @@ function Page({ children, wide = false }: { children: React.ReactNode; wide?: bo
 }
 
 const P = ({ children }: { children: React.ReactNode }) => (
-  <p className="mt-3 text-[15px] leading-[1.65] text-[#3f3f46]">{children}</p>
+  <p className="mt-3 text-[15px] leading-[1.65] text-body">{children}</p>
 );
 
 function Continue({ onClick }: { onClick: () => void }) {
@@ -99,7 +99,7 @@ export function Welcome({ onContinue }: { onContinue: () => void }) {
       </P>
       <ol
         aria-label="Your steps"
-        className="mt-8 flex flex-col items-stretch gap-3 rounded-lg border px-5 py-6 sm:flex-row sm:items-start sm:justify-center sm:gap-0"
+        className="mt-8 flex flex-col items-stretch gap-3 rounded-lg border bg-card px-5 py-6 sm:flex-row sm:items-start sm:justify-center sm:gap-0"
       >
         {steps.map(([name, time], i) => (
           <li key={name} className="flex items-center gap-3 sm:contents">
@@ -148,7 +148,7 @@ export function AboutSeei({ onContinue }: { onContinue: () => void }) {
         SENSEE-I is a learning tool that helps you understand a concept from a reading. It uses
         SEE-I, four steps that show how well you understand something:
       </P>
-      <dl className="mt-5 rounded-lg border">
+      <dl className="mt-5 rounded-lg border bg-card">
         {SEEI.map(([step, text], i) => (
           <div key={step} className={i ? "flex flex-col gap-1 border-t px-5 py-4 sm:flex-row sm:gap-5" : "flex flex-col gap-1 px-5 py-4 sm:flex-row sm:gap-5"}>
             <dt className="w-[96px] shrink-0 pt-0.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-primary">
@@ -193,7 +193,7 @@ export function SessionGuide({ onContinue }: { onContinue: () => void }) {
     <Page wide>
       <h1 className="text-[24px] font-semibold tracking-[-0.02em]">How the session works</h1>
       <div className="mt-6 flex flex-col gap-8 lg:flex-row lg:items-start">
-        <div className="relative w-full overflow-hidden rounded-lg border lg:w-[880px] lg:shrink-0">
+        <div className="relative w-full overflow-hidden rounded-lg border bg-card lg:w-[880px] lg:shrink-0">
           <img
             src="/guide/session-guide.png"
             alt="The tutoring session: the reading on the left, the chat on the right"
@@ -216,7 +216,7 @@ export function SessionGuide({ onContinue }: { onContinue: () => void }) {
               <Mark n={i + 1} />
               <p className="text-[15px] leading-[1.6]">
                 <span className="font-semibold">{g.name}.</span>{" "}
-                <span className="text-[#3f3f46]">{g.text}</span>
+                <span className="text-body">{g.text}</span>
               </p>
             </li>
           ))}

@@ -121,7 +121,7 @@ export function PdfPanel({ fileUrl, fallback }: PdfPanelProps) {
   if (failed) {
     return (
       <div className="flex h-full flex-col">
-        <p className="shrink-0 border-b bg-[#fffbeb] px-4 py-2 text-[13px] text-[#92400e]">
+        <p className="shrink-0 border-b bg-warn px-4 py-2 text-[13px] text-warn-foreground">
           Couldn&rsquo;t display the PDF. Showing the reading&rsquo;s text instead.
         </p>
         <div className="min-h-0 flex-1">{fallback}</div>
@@ -147,7 +147,7 @@ export function PdfPanel({ fileUrl, fallback }: PdfPanelProps) {
       <div
         ref={scrollRef}
         onScroll={onScroll}
-        className="relative min-h-0 flex-1 overflow-y-auto bg-[#e9e9ec]"
+        className="relative min-h-0 flex-1 overflow-y-auto bg-border"
       >
         <div
           className="flex flex-col items-center pb-7"
@@ -172,7 +172,7 @@ export function PdfPanel({ fileUrl, fallback }: PdfPanelProps) {
                 ref={(node) => {
                   pageRefs.current[i] = node;
                 }}
-                className="bg-white shadow-[0_1px_3px_rgba(0,0,0,0.14)]"
+                className="bg-card shadow-[0_1px_3px_rgba(0,0,0,0.14)]"
               >
                 <Page
                   pageNumber={i + 1}
@@ -204,7 +204,7 @@ interface ToolbarProps {
 
 function Toolbar({ current, numPages, zoom, fileUrl, onPrev, onNext }: ToolbarProps) {
   return (
-    <div className="flex h-10 shrink-0 items-center justify-between border-b bg-white px-3">
+    <div className="flex h-10 shrink-0 items-center justify-between border-b bg-card px-3">
       <div className="flex items-center gap-1.5">
         <IconButton label="Previous page" onClick={onPrev} disabled={current <= 1}>
           <ChevronLeft className="h-3.5 w-3.5" />

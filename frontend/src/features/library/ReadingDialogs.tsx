@@ -9,7 +9,7 @@ import { ApiError } from "../../lib/api";
 import { ClassPicker } from "./ClassPicker";
 
 const INPUT =
-  "h-9 w-full rounded-md border bg-background px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
+  "h-9 w-full rounded-md border bg-card px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
 
 function useEscape(onCancel: () => void) {
   useEffect(() => {
@@ -45,7 +45,7 @@ function Shell({
           e.preventDefault();
           onSubmit();
         }}
-        className="w-full max-w-[440px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[440px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         <h2 className="text-[16px] font-semibold">{title}</h2>
         {children}

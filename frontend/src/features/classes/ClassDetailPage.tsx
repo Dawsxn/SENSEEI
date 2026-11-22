@@ -153,7 +153,7 @@ export function ClassDetailPage() {
               <div className="grid items-start gap-5 lg:grid-cols-[1fr_380px]">
                 {/* On narrow screens the join code comes first: it is what an
                     instructor opens this page for on a phone in front of a class. */}
-                <section className="order-2 rounded-lg border lg:order-1">
+                <section className="order-2 rounded-lg border bg-card lg:order-1">
                   <CardHead
                     title={trial ? "Participants" : "Students"}
                     count={klass.students.length}
@@ -228,7 +228,7 @@ export function ClassDetailPage() {
 
                 <div className="order-1 flex flex-col gap-5 lg:order-2">
                   {!trial && (
-                  <section className="rounded-lg border">
+                  <section className="rounded-lg border bg-card">
                     <CardHead
                       title="Join code"
                       tip="The code students use to join this class."
@@ -251,7 +251,7 @@ export function ClassDetailPage() {
                   )}
 
                   {/* Each reading leads to how that reading went in this class. */}
-                  <section className="rounded-lg border">
+                  <section className="rounded-lg border bg-card">
                     <div className="flex items-center justify-between border-b px-4 py-2.5">
                       <span className="flex items-center gap-2 text-[14px] font-semibold">
                         Readings

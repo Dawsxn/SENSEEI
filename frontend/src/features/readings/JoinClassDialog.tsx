@@ -56,7 +56,7 @@ export function JoinClassDialog({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-labelledby="join-title"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[420px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         {joined ? (
           <>
@@ -96,7 +96,7 @@ export function JoinClassDialog({ onClose }: { onClose: () => void }) {
               autoComplete="off"
               spellCheck={false}
               className={
-                "mt-4 h-10 w-full rounded-md border bg-background px-3 font-mono text-[16px] tracking-[0.08em] outline-none focus-visible:ring-2 " +
+                "mt-4 h-10 w-full rounded-md border bg-card px-3 font-mono text-[16px] tracking-[0.08em] outline-none focus-visible:ring-2 " +
                 (error
                   ? "border-fail-border focus-visible:ring-fail-border/60"
                   : "focus-visible:border-ring focus-visible:ring-ring/30")

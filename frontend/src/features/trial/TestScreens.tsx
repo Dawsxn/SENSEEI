@@ -16,6 +16,7 @@ import { Check } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { Logo } from "../../components/Logo";
 import { Button } from "../../components/ui/button";
 import { getTest, getTrialStatus, saveTestAnswer, startTest, submitTest } from "../../lib/api";
 import { cn } from "../../lib/utils";
@@ -73,9 +74,7 @@ const logPaste = (e: React.ClipboardEvent) =>
 function TestTopBar({ saved, clock }: { saved?: boolean; clock?: React.ReactNode }) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4 sm:px-5">
-      <span className="text-[15px] font-semibold tracking-[-0.01em]">
-        SEN<span className="text-primary">SEE-I</span>
-      </span>
+      <Logo />
       <div className="ml-auto flex shrink-0 items-center gap-3">
         {saved && (
           <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
@@ -109,7 +108,7 @@ function Dialog({
       <div
         role="alertdialog"
         aria-modal="true"
-        className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[420px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         {title && <h2 className="mb-2 text-[16px] font-semibold">{title}</h2>}
         <p className={cn("text-[14px] leading-[1.6]", title && "text-muted-foreground")}>{body}</p>
@@ -431,7 +430,7 @@ export function PostTestScreen() {
                         className={cn(
                           "flex h-8 w-8 items-center justify-center rounded-md border text-[13px] font-medium",
                           done
-                            ? "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]"
+                            ? "border-accent-soft-border bg-accent-soft text-accent-soft-foreground"
                             : needsTick
                               ? "border-fail-border bg-fail text-fail-foreground"
                               : "border-border bg-background text-muted-foreground hover:text-foreground",
@@ -522,9 +521,9 @@ export function PostTestScreen() {
 
 function StrategyList({ strategies }: { strategies: string[] }) {
   return (
-    <div className="mt-4 rounded-lg border bg-[#fafafa] px-4 py-3.5">
+    <div className="mt-4 rounded-lg border bg-muted px-4 py-3.5">
       <div className="mb-1 text-[13px] font-semibold">The seven offensive strategies from the reading</div>
-      <ol className="space-y-0.5 text-[13px] leading-[1.55] text-[#3f3f46]">
+      <ol className="space-y-0.5 text-[13px] leading-[1.55] text-body">
         {strategies.map((s, i) => (
           <li key={s}>
             {i + 1}.&nbsp; {s}
@@ -554,7 +553,7 @@ function Radio({
       <span
         className={cn(
           "mt-[3px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] peer-focus-visible:ring-2 peer-focus-visible:ring-ring",
-          checked ? "border-primary" : "border-[#a1a1aa]",
+          checked ? "border-primary" : "border-placeholder",
         )}
       >
         {checked && <span className="h-2 w-2 rounded-full bg-primary" />}
@@ -615,7 +614,7 @@ function Question({
         )}
         {item.kind === "groups" && (
           <div className="mt-3 overflow-hidden rounded-md border">
-            <div className="grid grid-cols-[150px_1fr_1fr] border-b bg-[#fafafa] text-[12px] font-medium text-muted-foreground">
+            <div className="grid grid-cols-[150px_1fr_1fr] border-b bg-muted text-[12px] font-medium text-muted-foreground">
               <span className="px-2.5 py-2">Group name</span>
               <span className="border-l px-2.5 py-2">Strategies in this group</span>
               <span className="border-l px-2.5 py-2">Why they belong together</span>
@@ -627,7 +626,7 @@ function Question({
                     key={key}
                     aria-label={`Group ${row + 1}, ${key === "name" ? "name" : key === "strategies" ? "strategies" : "why they belong together"}`}
                     className={cn(
-                      "h-[64px] resize-none px-2.5 py-2 text-[13px] leading-[1.5] outline-none focus:bg-[#f0fdf4]",
+                      "h-[64px] resize-none px-2.5 py-2 text-[13px] leading-[1.5] outline-none focus:bg-accent-soft",
                       col > 0 && "border-l",
                     )}
                     value={groups[row]?.[key] ?? ""}

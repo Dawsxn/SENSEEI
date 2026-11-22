@@ -71,7 +71,7 @@ export function ClassListPage() {
           )}
 
           {classes.length > 0 && (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-lg border bg-card">
               {/* Column headings only where there is room for the columns. */}
               <div className="hidden h-10 grid-cols-[1fr_120px_160px_100px_100px_24px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
                 <span>Class</span>
@@ -96,13 +96,13 @@ export function ClassListPage() {
                         : `${c.section} · ${c.student_count} students · ${c.join_code}`}
                     </span>
                   </span>
-                  <span className="hidden text-[13px] text-[#3f3f46] sm:block">{c.section}</span>
+                  <span className="hidden text-[13px] text-body sm:block">{c.section}</span>
                   {trial ? (
-                    <span className="hidden text-[13px] text-[#3f3f46] sm:block">
+                    <span className="hidden text-[13px] text-body sm:block">
                       {MODE_LABEL[c.mode]}
                     </span>
                   ) : (
-                    <span className="hidden font-mono text-[13px] tracking-wider text-[#3f3f46] sm:block">
+                    <span className="hidden font-mono text-[13px] tracking-wider text-body sm:block">
                       {c.join_code}
                     </span>
                   )}

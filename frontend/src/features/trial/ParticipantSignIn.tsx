@@ -62,7 +62,7 @@ export function ParticipantSignIn({ notice }: { notice?: React.ReactNode }) {
         autoCapitalize="characters"
         spellCheck={false}
         maxLength={40}
-        className="mt-4 h-9 w-full rounded-md border bg-background px-3 font-mono text-[14px] tracking-wider outline-none placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+        className="mt-4 h-9 w-full rounded-md border bg-card px-3 font-mono text-[14px] tracking-wider outline-none placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
       />
       <Button type="submit" className="mt-3 w-full" disabled={!code.trim() || busy}>
         Start

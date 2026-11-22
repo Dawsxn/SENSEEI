@@ -11,44 +11,100 @@ deliberate and it should not be changed without a reason.
 
 ### Colour
 
+The palette is the SENSEE-I brand, **Pastel playful**. The page is a pale mint
+rather than white, text is a deep green-grey rather than near-black, and the
+quiet fills are a slightly deeper mint. It is the same interface as before with
+the clinical white-and-zinc taken out of it: students sit with this screen for a
+long reading, and the softness is there to make that sitting easier, not to
+decorate it.
+
 | Token | Value | Used for |
 | --- | --- | --- |
-| Background | `#ffffff` | Page and card surfaces |
-| Foreground | `#09090b` | Primary text |
-| Muted foreground | `#71717a` | Secondary text, metadata, labels |
-| Placeholder | `#a1a1aa` | Empty input text, the faintest legible tier |
-| Border | `#e4e4e7` | All hairlines, card edges, dividers |
-| Muted surface | `#f4f4f5` | Filled areas: tab strips, inactive fills |
-| Body text on fills | `#3f3f46` | Text inside muted surfaces |
-| Primary | `#16a34a` | Primary buttons, success states, passed steps |
-| Primary hover | `#15803d` | |
+| Background | `#f4fbf7` | The page. Pale mint |
+| Card | `#ffffff` | Cards, dialogs, popovers, inputs, tables, the reading pane |
+| Foreground | `#2d3a33` | Primary text. Deep green-grey, 11.3:1 on the page |
+| Muted foreground | `#56665d` | Secondary text, metadata, labels. 5.8:1 |
+| Placeholder | `#83938a` | Empty input text and decorative chevrons, the faintest legible tier |
+| Border / Input | `#d4ebdd` | All hairlines, card edges, dividers |
+| Muted surface | `#e3f5ea` | Mint tint: tab strips, inactive fills, the avatar circle |
+| Body on fills | `#3a4740` | Text inside a muted or tinted surface |
+| Primary | `#1d8049` | Primary buttons, green text, passed steps. White on it is 5.0:1 |
+| Primary hover | `#19713f` | |
+| Ring | `#2fb36b` | Focus ring, in the logo's green |
+| Brand mint | `#2fb36b` | The logo's green. Decorative only |
+| Brand hat | `#fbbf24` | The sensei's hat yellow. Decorative only |
 
-Failure states use a soft treatment rather than shadcn's solid destructive:
+Everything structural is one family. Colour arrives only on primary actions and
+success, which is what keeps the interface quiet. The mint page and its tint
+carry the softness; nothing else is added for decoration.
+
+#### Two greens, and only one of them is for text
+
+`primary` (`#1d8049`) is the green that fills a button and sets a word of text.
+White on it is 5.0:1.
+
+`brand-mint` (`#2fb36b`) is the logo's green and is **decorative only**, at
+2.6:1. It draws the passed segments of the progress bar and the check on a
+passed step, where nothing has to be read. It is never used for text under 24px,
+and never as a fill behind text. The hat's yellow (`#fbbf24`) follows the same
+rule and is rarer still. Reaching for either on a label is the one way to make
+this palette fail a contrast check, so the rule is absolute rather than a
+judgement call.
+
+#### The soft treatments
+
+Failure uses a soft treatment rather than shadcn's solid destructive:
 `#fef2f2` background, `#fecaca` border, `#b91c1c` text. Solid red reads as
-punitive on a screen where a student has just been told they fell short.
+punitive on a screen where a student has just been told they fell short. These
+three are unchanged by the brand; the soft palette around them already softens
+how they read.
 
-Success badges mirror it: `#f0fdf4`, `#bbf7d0`, `#15803d`.
+Success badges mirror it: `#e6f7ed`, `#b6e5c8`, `#19713f`.
 
-Those same three are also a **button** treatment, the accent's version of the
+Caution is the same shape again, in the hat's yellow family: `#fff6d1`,
+`#fde68a`, `#8a5a00`. It carries the upload warning, the late clock and the PDF
+notice.
+
+The success three are also a **button** treatment, the accent's version of the
 soft-red one. An icon button that creates something (new class, upload a
 reading) uses it, so it sits beside the pencil and the bin as one set of quiet
 controls rather than a solid green block among outlines. Solid green stays for
 the button that finishes a form: Create class, Save reading, Next.
 
-Everything structural is neutral. Green appears only on primary actions and
-success, which is what keeps the interface quiet.
+#### Surfaces
+
+White is a surface, not the page. Anything that should lift off the mint says so
+with `bg-card`: cards, dialogs, popovers and dropdowns, inputs and textareas,
+tables, the tutoring chat's composer, and the reading pane. The reading pane
+stays white deliberately — it is a long read, and the colour belongs around it
+rather than under it. A dashed empty state is left on the page's own colour,
+since it is a placeholder for a surface rather than one itself.
+
+#### The logo
+
+The logo files are in `frontend/public/brand/`, and `components/Logo.tsx`
+renders them. `sensee-i-logo.svg` is the default; `sensee-i-logo-white.svg` is
+for a dark or coloured ground, with `-on-light` and `-on-green` lock-ups beside
+them. All carry their own outlined type, so the logo's font (Fredoka) is never
+loaded — interface text stays in Nunito. The same folder holds the favicon, the
+app icons and the sensei on his own.
 
 ### Type
 
-Geist, weights 400, 500 and 600.
+Nunito, weights 400, 600 and 700. Its rounded terminals answer the Fredoka in
+the logo, which a grotesque did not. Nunito also runs lighter than Geist did at
+the same number, so each weight in the ramp moved up one step: what the design
+system calls medium is 600 and semibold is 700. That mapping lives once in
+`tailwind.config.js` under `fontWeight`, so `font-medium` and `font-semibold`
+mean the new numbers everywhere without a single class changing.
 
 | Role | Size | Weight | Tracking |
 | --- | --- | --- | --- |
-| Page title | 24px | 600 | -0.02em |
-| Section or card title | 14px | 500 | |
+| Page title | 24px | 700 | -0.02em |
+| Section or card title | 14px | 600 | |
 | Body and UI | 14px | 400 | |
 | Secondary and metadata | 13px | 400 | |
-| Smallest label | 12px | 400 or 500 | |
+| Smallest label | 12px | 400 or 600 | |
 
 The ramp is deliberately moderate, roughly 1.8x from largest to smallest.
 Hierarchy comes from weight and colour rather than size. An earlier draft ran 62px
@@ -56,6 +112,10 @@ against 11px and read as a marketing page.
 
 Reading content sits at 15px with 1.75 line height, the only place body type goes
 above 14px.
+
+`font-mono` is untouched by this and stays the system monospace stack. Join
+codes, participant IDs and the chatbot's code blocks are read character by
+character, where 0 against O and 1 against l have to stay apart.
 
 ### Space and shape
 
@@ -80,12 +140,12 @@ Inline SVG only, stroke-based, 24px viewBox, `stroke-width` 2, round caps and
 joins. Rendered at 13px to 15px inline. Never emoji, never text glyphs like an
 arrow or a multiplication sign standing in for an icon.
 
-Stroke colour is `#71717a` for icons beside muted text and `#a1a1aa` for
+Stroke colour is `#56665d` for icons beside muted text and `#83938a` for
 decorative chevrons.
 
 ### Shell
 
-A single top bar, 56px, with a `#e4e4e7` bottom border. No sidebar. There are few
+A single top bar, 56px, with a `#d4ebdd` bottom border. No sidebar. There are few
 destinations and the tutoring screen needs the horizontal room.
 
 ## Using shadcn
@@ -154,8 +214,8 @@ Established by the tutoring screen (`feat/chat-ui`), from
   view. They are not an answer key — the core components are drawn from the
   reading the student is looking at, and the Own Words criterion fails a verbatim
   copy.
-- **Student messages** are a right-aligned bubble in the success tint `#f0fdf4`
-  with `#3f3f46` text. This is the one place the success green carries a meaning
+- **Student messages** are a right-aligned bubble in the success tint `#e6f7ed`
+  with `#3a4740` text. This is the one place the success green carries a meaning
   other than success; it reads as "your voice", and the mockup is deliberate
   about it. The Tutor never sits in a bubble — its prose is the screen's default
   voice, left-aligned foreground text.

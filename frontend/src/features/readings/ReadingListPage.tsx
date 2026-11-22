@@ -33,7 +33,7 @@ export function ReadingListPage() {
               <select
                 value={classFilter}
                 onChange={(e) => setClassFilter(e.target.value)}
-                className="h-9 rounded-md border bg-background px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-9 rounded-md border bg-card px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <option>{ALL}</option>
                 {classes.map((c) => (
@@ -50,7 +50,7 @@ export function ReadingListPage() {
           )}
 
           {rows.length > 0 && (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-lg border bg-card">
               <div className="hidden items-center gap-4 border-b px-4 py-2.5 text-[12px] font-medium uppercase tracking-wide text-muted-foreground sm:flex">
                 <span className="flex-1">Reading</span>
                 <span className="w-40">Class</span>
@@ -131,7 +131,7 @@ function ReadingRow({
 function StatusBadge({ status }: { status: ReadingStatus }) {
   const styles: Record<ReadingStatus, string> = {
     not_started: "border-border text-muted-foreground",
-    complete: "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]",
+    complete: "border-accent-soft-border bg-accent-soft text-accent-soft-foreground",
     failed: "border-fail-border bg-fail text-fail-foreground",
   };
   const label = { not_started: "Not started", complete: "Complete", failed: "Failed" };
