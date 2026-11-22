@@ -407,6 +407,8 @@ class TrialStatusOut(BaseModel):
     #: With tests: pretest | session | posttest_ready | posttest | done. None for
     #: a class without them, whose participants only have the session.
     test_stage: Literal["pretest", "session", "posttest_ready", "posttest", "done"] | None = None
+    #: With tests: each test's length in minutes, {"pre": 5, "post": 30}.
+    test_minutes: dict[str, int] | None = None
 
 
 class BatchClassCount(BaseModel):

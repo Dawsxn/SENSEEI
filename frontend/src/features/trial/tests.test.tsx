@@ -18,6 +18,9 @@ const api = vi.hoisted(() => ({
   getGradingList: vi.fn(),
   getGrading: vi.fn(),
   setScore: vi.fn(),
+  getTrialStatus: vi.fn(),
+  getReading: vi.fn(),
+  getMe: vi.fn(),
 }));
 
 vi.mock("../../lib/api", async () => {
@@ -81,6 +84,13 @@ const post: TestView = {
 beforeEach(() => {
   vi.clearAllMocks();
   api.saveTestAnswer.mockResolvedValue({});
+  api.getTrialStatus.mockResolvedValue({
+    code: "P-7K3Q-9TXM", mode: "seei", done: false, reading_id: "r1", minutes: 35,
+    seconds_left: null, time_up: false, session: null, test_stage: "pretest",
+    test_minutes: { pre: 5, post: 30 },
+  });
+  api.getReading.mockResolvedValue({ id: "r1", title: "Strategic Offensives" });
+  api.getMe.mockRejectedValue(new Error("not signed in"));
 });
 
 describe("the pre-test", () => {
@@ -93,7 +103,8 @@ describe("the pre-test", () => {
     await waitFor(() =>
       expect(api.saveTestAnswer).toHaveBeenLastCalledWith("pre", "pre", { text: "A move" }),
     );
-    expect(screen.getByRole("timer")).toHaveTextContent(/[34]:\d\d left/);
+    // No countdown is shown, only pop-ups as time runs low.
+    expect(screen.queryByRole("timer")).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
     const dialog = screen.getByRole("alertdialog");
@@ -106,8 +117,17 @@ describe("the pre-test", () => {
   it("waits for Start before its clock runs", async () => {
     api.getTest.mockResolvedValue({ ...pre, started: false, seconds_left: null });
     api.startTest.mockResolvedValue(pre);
+    api.getMe.mockResolvedValue({ id: "u1", name: "P-7K3Q-9TXM", role: "student", participant: true });
     renderAt("/pretest", <PreTestScreen />);
+    // Every group's welcome first, with their steps and times.
+    expect(await screen.findByText("Good day!")).toBeInTheDocument();
+    const steps = screen.getByRole("list", { name: "Your steps" });
+    expect(steps).toHaveTextContent("About SENSEE-I");
+    expect(steps).toHaveTextContent("Reading and tutoring session35 min");
+    expect(screen.getByText("70 minutes in total")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
     expect(await screen.findByText("You have 5 minutes.")).toBeInTheDocument();
+    expect(await screen.findByText(/already know about strategic offensives/)).toBeInTheDocument();
     expect(api.startTest).not.toHaveBeenCalled();
     await userEvent.click(screen.getByRole("button", { name: "Start" }));
     expect(api.startTest).toHaveBeenCalledWith("pre");
@@ -118,8 +138,10 @@ describe("the post-test", () => {
   it("waits for Start before its clock runs", async () => {
     api.getTest.mockResolvedValue({ ...post, started: false, seconds_left: null });
     api.startTest.mockResolvedValue(post);
+    api.getMe.mockResolvedValue({ id: "u1", name: "P-7K3Q-9TXM", role: "student", participant: true });
     renderAt("/posttest", <PostTestScreen />);
-    expect(await screen.findByText(/You have 30 minutes, and the reading won.t be shown\./)).toBeInTheDocument();
+    expect(await screen.findByText("You have 30 minutes.")).toBeInTheDocument();
+    expect(screen.getByText(/The reading won.t be shown\. For each question you answer, tick/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Start" }));
     expect(api.startTest).toHaveBeenCalledWith("post");
     expect(await screen.findByText("Question q1")).toBeInTheDocument();

@@ -194,6 +194,8 @@ async def test_the_stages_run_in_order_and_the_server_holds_them(setup):
 
         status = await _through_pretest(me)
         assert status["test_stage"] == "session"
+        # The welcome screen's step times come from the test file.
+        assert status["test_minutes"] == {"pre": 5, "post": 30}
         assert (await me.put("/trial/tests/pre/answers/pre", json={"text": "late"})).status_code == 409
 
         assert (await me.post("/trial/clock")).status_code == 200

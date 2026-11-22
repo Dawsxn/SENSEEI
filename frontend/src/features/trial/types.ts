@@ -18,6 +18,8 @@ export interface TrialStatus {
   session: { id: string; status: SessionStatus } | null;
   /** With tests, where the participant is. Null for a class without them. */
   test_stage?: TestStage | null;
+  /** With tests, each test's length in minutes. */
+  test_minutes?: { pre: number; post: number } | null;
 }
 
 export type TestStage = "pretest" | "session" | "posttest_ready" | "posttest" | "done";

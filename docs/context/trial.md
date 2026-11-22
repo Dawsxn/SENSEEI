@@ -84,7 +84,7 @@ What it changes:
 | Who signs in | DLSU Google accounts | Participants by ID; the research team and the grader by Google, and no one else |
 | Sessions per reading | Unlimited | One per participant |
 | After a session ends | Start a new attempt | Nothing further |
-| Time | No limit | 35 minutes, with a countdown (plus each test's own) |
+| Time | No limit | 35 minutes, with time pop-ups but no visible countdown (plus each test's own) |
 | A class | A SEE-I class | SEE-I, chatbot, or reading-only |
 | Interaction events | Not recorded | Recorded (see below) |
 
@@ -169,10 +169,15 @@ anyone else is an ID.
 - **The clock starts on Start in "Before you start"**, the one-line
   instructions every group sees over its reading, so nobody loses time before
   they are ready. The 35 minutes cover reading as well as the activity, as the manuscript's intervention phase does. The server
-  holds the clock; the countdown only draws it, so a reload does not restart it
+  holds the clock; the screen only follows it, so a reload does not restart it
   and nothing the browser sends buys more time.
-- **A countdown is visible**, the same in all three groups, so no group is
-  treated differently. It turns amber in the last five minutes.
+- **No countdown is shown.** A running clock confused people in the user
+  acceptance test. Instead a small card says "15 minutes left", then 5, then 1
+  (`TimeNotices.tsx`); it stays until closed and never takes the cursor. The SEE-I
+  group also gets one at 10 minutes into the reading, saying the session is
+  waiting and the reading stays open beside it. The same in all three groups
+  otherwise, so no group is treated differently. The pre-test's card comes at 1
+  minute left, the post-test's at 10, 5 and 1.
 - **At 0:00 everything stops.** The screen says time is up, and whatever was in
   progress is recorded as ended by time (`timed_out`, at the deadline itself).
   An answer sent after the deadline is not graded, with one exception: in the
@@ -239,16 +244,36 @@ this."); the reading stays on screen afterwards.
 
 ### Before you start
 
-Every group sees one line of instructions when its reading opens, so no group is
-told more than another:
+Every group sees its instructions when its reading opens. Each names the goal,
+understanding the reading's concept (its title, in a sentence), and says to press
+Done only once they are confident they understand it:
 
 | Group | Says |
 | --- | --- |
-| SEE-I | The session goes through SEE-I a step at a time; read the whole material first; press Done when finished |
-| Chatbot | Read the material until they understand the concept; the chatbot beside it has the reading too, so they can ask it about anything in it; press Done when confident they understand it |
-| Reading only | Read the material in its entirety; press Done when finished |
+| SEE-I | Their 35 minutes cover two parts: reading on this screen (about 10 minutes suggested), then the tutoring session, where the screen splits with the reading still beside the chat. Press Done only once confident |
+| Chatbot | Read until they understand the concept; the chatbot beside it has the reading too, so they can ask it anything about it; press Done when confident |
+| Reading only | Read until they understand the concept; press Done when confident |
 
-It shows once. A participant who reloads partway does not see it again.
+It shows once. A participant who reloads partway does not see it again. Done asks
+first: the SEE-I group's "Start the tutoring session?", and the control groups'
+"Finish now?", which with tests says they go to the post-test and lose the reading
+(and the chatbot).
+
+### The briefing
+
+Added after the user acceptance test, where people went in without knowing what
+the study or SEE-I was (`frontend/src/features/trial/Briefing.tsx`). None of it is
+timed: each stage's clock still starts on its own Start.
+
+- **Welcome**, every group, before the pre-test's start screen: what the study is
+  for, their group's steps as a flowchart with each step's minutes and the total,
+  and that no timer is shown. The minutes come from `test_minutes` in `/trial/me`.
+- **About SENSEE-I** and **How the session works**, the SEE-I group only, after
+  the pre-test and before the reading, so the pre-test is answered without SEE-I
+  in mind. The first defines the four steps as the rubric grades them (Illustrate
+  is an analogy or metaphor, since the tool takes text only). The second is a
+  labelled picture of the session screen: the reading, the steps, Components,
+  Rubric (what an answer is graded on, changing with each step) and the chat box.
 
 ## What is recorded
 
@@ -363,7 +388,7 @@ which one they are in (`test_stage` on `/trial/me`):
 
 | Stage | What they see | Ends when |
 | --- | --- | --- |
-| `pretest` | "Pre-test", "You have 5 minutes." and Start, then one written question. Its clock starts on Start. The reading is not shown | Submitted, or 5 minutes |
+| `pretest` | The welcome, then "Pre-test", what it checks, "You have 5 minutes." and Start, then one written question. Its clock starts on Start. The reading is not shown | Submitted, or 5 minutes |
 | `session` | The reading, chatbot or SEE-I session, as without tests. A SEE-I session's end replaces the answer box with a strip saying how it ended (complete, or time up) and Continue to post-test, so the last feedback stays readable. Time running out anywhere else (on the reading, or in a control group) shows a "Time's up" popup with the same button | Finished, Done, or 35 minutes |
 | `posttest_ready` | "Post-test" and Start. Its clock starts on Start | Start pressed |
 | `posttest` | 12 questions, with a question list and "I'm sure / I'm not sure" ticks. A tick is required on every answered question (Submit asks for any missing; a blank question needs none), but time running out submits everything as it is | Submitted, 30 minutes, or the batch closing |
@@ -372,8 +397,8 @@ which one they are in (`test_stage` on `/trial/me`):
 - **The reading and the session clock do not start before the pre-test ends**,
   and the post-test cannot start before the session ends. The server refuses
   both, whatever the browser sends.
-- **Each test has its own countdown.** Finishing early moves straight on, so no
-  one waits for a slower group.
+- **Each test has its own clock**, kept out of sight like the session's. Finishing
+  early moves straight on, so no one waits for a slower group.
 - **Answers save as they are typed.** A test whose time runs out ends at its
   deadline with whatever was saved. Submitting asks first, since it cannot be
   undone.

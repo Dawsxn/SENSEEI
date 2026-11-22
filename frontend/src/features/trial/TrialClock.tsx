@@ -1,20 +1,18 @@
-/** The participant's countdown, in the top bar of the reading and the session.
+/** The participant's session clock, on the reading and the session screens.
  *
- * The same in every group, so no group is treated differently. In the last five
- * minutes it turns amber; at zero it asks the server again, which is what ends
- * the session on the record, and the screens follow the answer. */
+ * It is not shown: a running countdown confused people in the user acceptance
+ * test. It keeps time out of sight and shows the time pop-ups instead (15, 5
+ * and 1 minute left, plus any `extra`). The same in every group, so no group is
+ * treated differently. At zero it asks the server again, which is what ends the
+ * session on the record, and the screens follow the answer. */
 
 import { useQueryClient } from "@tanstack/react-query";
-import { Clock } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
-import { cn } from "../../lib/utils";
+import { SESSION_NOTICES, TimeNotices, type TimeNotice } from "./TimeNotices";
 import { useCountdown, useTrialStatus } from "./useTrial";
 
-/** When the countdown turns amber. */
-const LATE_SECONDS = 5 * 60;
-
-export function TrialClock() {
+export function TrialClock({ extra }: { extra?: TimeNotice[] }) {
   const { data, dataUpdatedAt } = useTrialStatus();
   const left = useCountdown(data?.seconds_left, dataUpdatedAt);
   const queryClient = useQueryClient();
@@ -24,28 +22,8 @@ export function TrialClock() {
     if (reachedZero) void queryClient.invalidateQueries({ queryKey: ["trial"] });
   }, [reachedZero, queryClient]);
 
-  if (left === null) return null;
-  const late = left <= LATE_SECONDS;
-  return (
-    <div
-      role="timer"
-      aria-label="Time left"
-      className={cn(
-        "flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2.5",
-        late && "bg-[#fffbeb]",
-      )}
-    >
-      <Clock className={cn("h-[15px] w-[15px]", late ? "text-[#92400e]" : "text-muted-foreground")} />
-      <span
-        className={cn(
-          "text-[13px] font-medium tabular-nums",
-          late ? "text-[#92400e]" : "text-[#3f3f46]",
-        )}
-      >
-        {formatClock(left)} left
-      </span>
-    </div>
-  );
+  const notices = useMemo(() => [...SESSION_NOTICES, ...(extra ?? [])], [extra]);
+  return <TimeNotices left={left} notices={notices} />;
 }
 
 /** `32:10`, or `4:58` under ten minutes. */
