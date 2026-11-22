@@ -496,28 +496,39 @@ class TestOption(BaseModel):
     text: str
 
 
+class TestStatement(BaseModel):
+    key: str
+    text: str
+
+
+class TestStep(BaseModel):
+    key: str
+    prompt: str
+
+
 class TestItemOut(BaseModel):
     id: str
-    kind: Literal["choice", "text", "groups"]
+    kind: Literal["choice", "truefalse", "text", "steps"]
     part: str
     question: str
     options: list[TestOption]
+    #: A true/false set's statements, each answered True or False.
+    statements: list[TestStatement] = []
+    #: A question answered in steps, one box per part.
+    steps: list[TestStep] = []
+    #: The first step locks once a later one has text.
+    lock_first: bool = False
     points: int
-    #: Ends with "I'm sure / I'm not sure".
+    #: Ends with "Is this answer fully correct?".
     ticked: bool
-
-
-class TestGroup(BaseModel):
-    name: str = Field(default="", max_length=500)
-    strategies: str = Field(default="", max_length=500)
-    why: str = Field(default="", max_length=500)
 
 
 class SavedAnswer(BaseModel):
     item: str
     choice: str | None = None
     text: str | None = None
-    groups: list[TestGroup] | None = None
+    #: A true/false set's marks, or a question in steps: {"a": true} or {"a": "..."}.
+    parts: dict[str, bool | str] | None = None
     sure: bool | None = None
 
 
@@ -529,8 +540,8 @@ class TestViewOut(BaseModel):
     started: bool
     #: None until it starts.
     seconds_left: int | None
-    strategies: list[str]
-    strategy_list_parts: list[str]
+    #: A line shown at the start of a part, under its heading.
+    part_intros: dict[str, str]
     items: list[TestItemOut]
     answers: list[SavedAnswer]
 
@@ -540,7 +551,7 @@ class TestAnswerIn(BaseModel):
 
     choice: str | None = Field(default=None, max_length=4)
     text: str | None = Field(default=None, max_length=5000)
-    groups: list[TestGroup] | None = Field(default=None, max_length=3)
+    parts: dict[str, bool | str] | None = Field(default=None, max_length=10)
     sure: bool | None = None
 
 
@@ -564,11 +575,38 @@ class GradingCriterion(BaseModel):
     text: str
 
 
+class GradingStepAnswer(BaseModel):
+    key: str
+    prompt: str
+    text: str | None
+
+
+class GradingStatement(BaseModel):
+    key: str
+    text: str
+    answer: bool
+    #: What they marked; None if left blank.
+    picked: bool | None
+
+
+class GradingSet(BaseModel):
+    """A true/false set, scored automatically."""
+
+    item: str
+    question: str
+    sure: bool | None
+    score: int
+    points: int
+    statements: list[GradingStatement]
+
+
 class GradingWritten(BaseModel):
     test: TestWhich
     item: str
     question: str
     text: str | None
+    #: A question answered in steps: each part with its prompt.
+    parts: list[GradingStepAnswer] | None = None
     sure: bool | None
     score: int | None
     points: int
@@ -587,8 +625,7 @@ class GradingDetailOut(BaseModel):
     calibration: float | None
     sure_but_wrong: int | None
     choices: list[GradingChoice]
-    #: Their 12a grouping table, shown with 12b.
-    groups: list[TestGroup] | None
+    sets: list[GradingSet]
     written: list[GradingWritten]
 
 

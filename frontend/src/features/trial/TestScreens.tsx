@@ -22,12 +22,11 @@ import { cn } from "../../lib/utils";
 import { useConcept, Welcome } from "./Briefing";
 import { POSTTEST_NOTICES, PRETEST_NOTICES, TimeNotices } from "./TimeNotices";
 import { logTrial, setTrialContext, useTrialLogging } from "./trialLog";
-import type { SavedAnswer, TestGroup, TestItem, TestView, TestWhich } from "./types";
+import type { SavedAnswer, TestItem, TestView, TestWhich } from "./types";
 import { useCountdown, useTrialStatus } from "./useTrial";
 
 /** How long typing pauses before an answer saves. */
 const SAVE_AFTER_MS = 700;
-const EMPTY_GROUPS: TestGroup[] = [0, 1, 2].map(() => ({ name: "", strategies: "", why: "" }));
 
 // --------------------------------------------------------------------------- #
 // shared pieces
@@ -186,7 +185,9 @@ function isAnswered(item: TestItem, a: SavedAnswer | undefined): boolean {
   if (!a) return false;
   if (item.kind === "choice") return !!a.choice;
   if (item.kind === "text") return !!a.text?.trim();
-  return !!a.groups?.some((g) => g.name.trim() || g.strategies.trim() || g.why.trim());
+  // A true/false set counts once any statement is marked; one in steps once
+  // any part has text.
+  return Object.values(a.parts ?? {}).some((v) => (typeof v === "string" ? !!v.trim() : true));
 }
 
 /** An answered question still missing its "How sure are you?" tick. The tick
@@ -392,7 +393,8 @@ export function PostTestScreen() {
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Post-test</h1>
             <p className="mt-3 text-[15px] leading-[1.65] text-muted-foreground">
               This checks what you understand about {concept} now. The reading won&rsquo;t be
-              shown. For each question you answer, tick how sure you are.
+              shown. For each question you answer, say whether you think it is fully correct.
+              Only choose &ldquo;Yes, I&rsquo;m sure&rdquo; if you expect full marks.
             </p>
             <p className="mt-3 text-[15px] font-medium">You have {view.minutes} minutes.</p>
             <Button className="mt-6" onClick={() => void start()} disabled={starting}>
@@ -465,7 +467,9 @@ export function PostTestScreen() {
                   <h2 className="text-[16px] font-semibold">Part {p.part}</h2>
                   <span className="text-[13px] text-muted-foreground">{p.points} points</span>
                 </div>
-                {view.strategy_list_parts.includes(p.part) && <StrategyList strategies={view.strategies} />}
+                {view.part_intros[p.part] && (
+                  <p className="mt-3 text-[13px] text-muted-foreground">{view.part_intros[p.part]}</p>
+                )}
                 {p.items.map((item) => (
                   <Question
                     key={item.id}
@@ -485,8 +489,8 @@ export function PostTestScreen() {
       </main>
       {askingForTicks && (
         <Dialog
-          title="Tick how sure you are"
-          body="Tick how sure you are for every question you answered. Questions you left blank need no tick."
+          title="Say if each answer is fully correct"
+          body="Choose Yes or No under every question you answered. Questions you left blank need neither."
         >
           <Button
             size="sm"
@@ -516,21 +520,6 @@ export function PostTestScreen() {
           </Button>
         </Dialog>
       )}
-    </div>
-  );
-}
-
-function StrategyList({ strategies }: { strategies: string[] }) {
-  return (
-    <div className="mt-4 rounded-lg border bg-[#fafafa] px-4 py-3.5">
-      <div className="mb-1 text-[13px] font-semibold">The seven offensive strategies from the reading</div>
-      <ol className="space-y-0.5 text-[13px] leading-[1.55] text-[#3f3f46]">
-        {strategies.map((s, i) => (
-          <li key={s}>
-            {i + 1}.&nbsp; {s}
-          </li>
-        ))}
-      </ol>
     </div>
   );
 }
@@ -575,18 +564,21 @@ function Question({
   onChange: (patch: Omit<SavedAnswer, "item">, now?: boolean) => void;
   anchor?: string;
 }) {
-  const groups = answer?.groups?.length ? answer.groups : EMPTY_GROUPS;
-  const setGroup = (row: number, key: keyof TestGroup, value: string) => {
-    const next = [0, 1, 2].map((i) => ({ ...(groups[i] ?? EMPTY_GROUPS[i]) }));
-    next[row][key] = value;
-    onChange({ groups: next });
-  };
+  const parts = answer?.parts ?? {};
+  // The whole set of parts is sent each time, so a save never loses one.
+  const setPart = (key: string, value: boolean | string, now = false) =>
+    onChange({ parts: { ...parts, [key]: value } }, now);
+  // In steps, the first part locks once a later one has text, so it can't be
+  // rewritten after the rest is seen. The server holds the same rule.
+  const [first, ...later] = item.steps.map((s) => s.key);
+  const locked =
+    item.lock_first && later.some((k) => typeof parts[k] === "string" && !!(parts[k] as string).trim());
 
   return (
     <div id={anchor ? `question-${anchor}` : undefined} className="scroll-mt-6">
       <div className="mt-6 flex gap-2.5 text-[14px] leading-[1.6]">
         <span className="min-w-[28px] font-semibold">{label(item.id)}.</span>
-        <span>{item.question}</span>
+        <span className="whitespace-pre-line">{item.question}</span>
       </div>
       <div className="ml-[38px]">
         {item.kind === "choice" && (
@@ -613,44 +605,75 @@ function Question({
             onPaste={logPaste}
           />
         )}
-        {item.kind === "groups" && (
-          <div className="mt-3 overflow-hidden rounded-md border">
-            <div className="grid grid-cols-[150px_1fr_1fr] border-b bg-[#fafafa] text-[12px] font-medium text-muted-foreground">
-              <span className="px-2.5 py-2">Group name</span>
-              <span className="border-l px-2.5 py-2">Strategies in this group</span>
-              <span className="border-l px-2.5 py-2">Why they belong together</span>
-            </div>
-            {[0, 1, 2].map((row) => (
-              <div key={row} className={cn("grid grid-cols-[150px_1fr_1fr]", row < 2 && "border-b")}>
-                {(["name", "strategies", "why"] as const).map((key, col) => (
-                  <textarea
-                    key={key}
-                    aria-label={`Group ${row + 1}, ${key === "name" ? "name" : key === "strategies" ? "strategies" : "why they belong together"}`}
-                    className={cn(
-                      "h-[64px] resize-none px-2.5 py-2 text-[13px] leading-[1.5] outline-none focus:bg-[#f0fdf4]",
-                      col > 0 && "border-l",
-                    )}
-                    value={groups[row]?.[key] ?? ""}
-                    onChange={(e) => setGroup(row, key, e.target.value)}
-                    onPaste={logPaste}
-                  />
-                ))}
+        {item.kind === "truefalse" && (
+          <div className="mt-2.5 overflow-hidden rounded-md border">
+            {item.statements.map((st, i) => (
+              <div
+                key={st.key}
+                role="radiogroup"
+                aria-label={`Statement ${st.key}`}
+                className={cn(
+                  "flex flex-col gap-2 px-3 py-2.5 text-[14px] leading-[1.55] sm:flex-row sm:items-start sm:gap-4",
+                  i > 0 && "border-t",
+                )}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="mr-1.5 font-medium text-muted-foreground">{st.key}.</span>
+                  {st.text}
+                </span>
+                <span className="flex shrink-0 gap-4 text-[13px]">
+                  <Radio name={`${item.id}-${st.key}`} checked={parts[st.key] === true} onChange={() => setPart(st.key, true, true)}>
+                    True
+                  </Radio>
+                  <Radio name={`${item.id}-${st.key}`} checked={parts[st.key] === false} onChange={() => setPart(st.key, false, true)}>
+                    False
+                  </Radio>
+                </span>
               </div>
             ))}
           </div>
         )}
+        {item.kind === "steps" && (
+          <div className="mt-2 space-y-4">
+            {item.steps.map((step) => {
+              const isLocked = locked && step.key === first;
+              return (
+                <div key={step.key}>
+                  <p className="text-[14px] leading-[1.6]">
+                    <span className="mr-1.5 font-semibold">({step.key})</span>
+                    {step.prompt}
+                  </p>
+                  <textarea
+                    aria-label={`Answer to question ${label(item.id)}, part ${step.key}`}
+                    className="mt-2 h-[96px] w-full resize-y rounded-md border px-3 py-2.5 text-[14px] leading-[1.6] outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground"
+                    placeholder="Type your answer"
+                    value={typeof parts[step.key] === "string" ? (parts[step.key] as string) : ""}
+                    onChange={(e) => setPart(step.key, e.target.value)}
+                    onPaste={logPaste}
+                    disabled={isLocked}
+                  />
+                  {isLocked && (
+                    <p className="mt-1 text-[12px] text-muted-foreground">
+                      Locked, since you&rsquo;ve started part ({later[0]}).
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
         {item.ticked && (
-          <div className="mt-3 flex items-center gap-5 text-[13px]">
-            <span className="italic text-muted-foreground">How sure are you?</span>
+          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+            <span className="italic text-muted-foreground">Is this answer fully correct?</span>
             {/* Required once the question is answered; a blank one needs no tick. */}
             {missingTick(item, answer) && (
               <span className="text-[12px] font-medium text-fail-foreground">Required</span>
             )}
             <Radio name={`${item.id}-sure`} checked={answer?.sure === true} onChange={() => onChange({ sure: true }, true)}>
-              I&rsquo;m sure
+              Yes, I&rsquo;m sure
             </Radio>
             <Radio name={`${item.id}-sure`} checked={answer?.sure === false} onChange={() => onChange({ sure: false }, true)}>
-              I&rsquo;m not sure
+              No, I&rsquo;m not sure
             </Radio>
           </div>
         )}

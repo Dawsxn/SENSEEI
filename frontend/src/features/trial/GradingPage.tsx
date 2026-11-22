@@ -2,9 +2,10 @@
  * (docs/context/trial.md; design/TrialGrading.dc.html).
  *
  * The grader and the research team see the same page. It shows participant IDs
- * and never a group, so grading stays blind. Multiple choice is scored already;
- * the grader scores each written answer against the rubric beside it, and a
- * score saves as soon as it is clicked. Scores can be changed any time. */
+ * and never a group, so grading stays blind. True/false sets (and multiple
+ * choice) are scored already; the grader scores each written answer against the
+ * rubric and reference answer beside it, and a score saves as soon as it is
+ * clicked. Scores can be changed any time. */
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -13,7 +14,7 @@ import { useSearchParams } from "react-router-dom";
 import { AppTopBar } from "../../components/AppTopBar";
 import { getGrading, getGradingList, setScore } from "../../lib/api";
 import { cn } from "../../lib/utils";
-import type { GradingDetail, GradingWritten, TestGroup } from "./types";
+import type { GradingDetail, GradingSet, GradingWritten } from "./types";
 
 const label = (w: Pick<GradingWritten, "test" | "item">) =>
   w.test === "pre" ? "Pre-test" : `Q${w.item.replace(/^q/, "")}`;
@@ -135,11 +136,13 @@ function Participant({ code }: { code: string }) {
             ))}
           </div>
         )}
+        {data.sets.map((set) => (
+          <SetCard key={set.item} set={set} />
+        ))}
         {data.written.map((w) => (
           <WrittenCard
             key={key(w)}
             w={w}
-            groups={w.item === "q12b" ? data.groups : null}
             focused={key(w) === focus}
             onFocus={() => setFocus(key(w))}
             onScore={(points) => void score(w, points)}
@@ -157,12 +160,16 @@ function tick(sure: boolean | null): string {
 
 function Summary({ data }: { data: GradingDetail }) {
   const preMax = data.written.find((w) => w.test === "pre")?.points;
+  const postMax =
+    data.sets.reduce((n, s) => n + s.points, 0) +
+    data.choices.length +
+    data.written.filter((w) => w.test === "post").reduce((n, w) => n + w.points, 0);
   const cells = [
     {
       label: "Pre-test",
       value: data.pretest_score === null ? null : `${data.pretest_score} / ${preMax ?? 3}`,
     },
-    { label: "Post-test", value: data.posttest_total === null ? null : `${data.posttest_total} / 20` },
+    { label: "Post-test", value: data.posttest_total === null ? null : `${data.posttest_total} / ${postMax}` },
     {
       label: "Calibration",
       value:
@@ -188,20 +195,55 @@ function Summary({ data }: { data: GradingDetail }) {
   );
 }
 
+/** A true/false set: each statement, what they marked, and the key. Scored
+ *  automatically, 1 point per statement marked right. */
+function SetCard({ set }: { set: GradingSet }) {
+  const mark = (v: boolean | null) => (v === null ? "Blank" : v ? "True" : "False");
+  return (
+    <div className="mb-3 overflow-hidden rounded-lg border">
+      <div className="flex items-baseline gap-3 border-b px-4 py-2.5">
+        <span className="flex-1 text-[13px]">
+          <span className="text-[12px] font-semibold">Q{set.item.replace(/^q/, "")}</span>
+          <span className="ml-1.5 text-muted-foreground">{set.question}</span>
+        </span>
+        <span className="whitespace-nowrap text-[12px] text-muted-foreground">
+          {set.score} / {set.points} &middot; scored automatically
+          {set.sure !== null && <> &middot; {tick(set.sure)}</>}
+        </span>
+      </div>
+      {set.statements.map((st) => {
+        const right = st.picked === st.answer;
+        return (
+          <div
+            key={st.key}
+            className="grid grid-cols-[1fr_auto] gap-3 border-b px-4 py-2 text-[13px] leading-[1.5] last:border-b-0"
+          >
+            <span className="text-[#3f3f46]">
+              <span className="mr-1.5 font-medium text-muted-foreground">{st.key}.</span>
+              {st.text}
+            </span>
+            <span className={cn("whitespace-nowrap", right ? "text-[#15803d]" : "text-[#b91c1c]")}>
+              {mark(st.picked)} &middot; {right ? "Correct" : `Answer is ${mark(st.answer)}`}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function WrittenCard({
   w,
-  groups,
   focused,
   onFocus,
   onScore,
 }: {
   w: GradingWritten;
-  groups: TestGroup[] | null;
   focused: boolean;
   onFocus: () => void;
   onScore: (points: number) => void;
 }) {
-  const answered = !!w.text?.trim();
+  const answered = w.parts ? w.parts.some((p) => !!p.text?.trim()) : !!w.text?.trim();
   return (
     <div
       onClick={onFocus}
@@ -213,36 +255,40 @@ function WrittenCard({
       <div className="flex items-start gap-3 px-4 pt-3">
         <span className="flex-1">
           <span className="text-[12px] font-semibold">{label(w)}</span>
-          <span className="ml-1.5 text-[13px] text-muted-foreground">{w.question}</span>
+          <span className="ml-1.5 whitespace-pre-line text-[13px] text-muted-foreground">{w.question}</span>
         </span>
         <span className="whitespace-nowrap text-[12px] text-muted-foreground">{tick(w.sure)}</span>
       </div>
-      {groups && groups.some((g) => g.name || g.strategies || g.why) && (
-        <div className="mx-4 mt-2.5 overflow-hidden rounded-md border text-[12.5px]">
-          <div className="grid grid-cols-[120px_1fr_1fr] border-b bg-[#fafafa] font-medium text-muted-foreground">
-            <span className="px-2 py-1.5">Group name</span>
-            <span className="border-l px-2 py-1.5">Strategies</span>
-            <span className="border-l px-2 py-1.5">Why</span>
-          </div>
-          {groups
-            .filter((g) => g.name || g.strategies || g.why)
-            .map((g, i) => (
-              <div key={i} className="grid grid-cols-[120px_1fr_1fr] border-b last:border-b-0">
-                <span className="px-2 py-1.5">{g.name}</span>
-                <span className="border-l px-2 py-1.5">{g.strategies}</span>
-                <span className="border-l px-2 py-1.5">{g.why}</span>
-              </div>
-            ))}
+      {w.parts ? (
+        // A question in steps: each part's prompt, then what they wrote.
+        <div className="mx-4 mt-2 space-y-2.5">
+          {w.parts.map((part) => (
+            <div key={part.key}>
+              <p className="text-[12.5px] leading-[1.5] text-muted-foreground">
+                <span className="mr-1 font-semibold">({part.key})</span>
+                {part.prompt}
+              </p>
+              <p
+                className={cn(
+                  "mt-1 whitespace-pre-wrap text-[14px] leading-[1.6]",
+                  !part.text?.trim() && "text-[#a1a1aa]",
+                )}
+              >
+                {part.text?.trim() ? part.text : "No answer"}
+              </p>
+            </div>
+          ))}
         </div>
+      ) : (
+        <p
+          className={cn(
+            "mx-4 mt-2 whitespace-pre-wrap text-[14px] leading-[1.6]",
+            !answered && "text-[#a1a1aa]",
+          )}
+        >
+          {answered ? w.text : "No answer"}
+        </p>
       )}
-      <p
-        className={cn(
-          "mx-4 mt-2 whitespace-pre-wrap text-[14px] leading-[1.6]",
-          !answered && "text-[#a1a1aa]",
-        )}
-      >
-        {answered ? w.text : "No answer"}
-      </p>
       <div className="flex justify-end gap-1.5 px-4 py-3">
         {Array.from({ length: w.points + 1 }, (_, n) => (
           <button

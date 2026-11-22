@@ -137,9 +137,11 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
             item = test.item(a.test, a.item)
             if item is None:
                 continue
+            # A true/false set's marks, or a question in steps, as JSON:
+            # {"a": true, ...} or {"a": "...", ...}.
             answer = (
                 a.choice if item.kind == "choice"
-                else json.dumps(a.groups) if item.kind == "groups" and a.groups
+                else json.dumps(a.parts) if item.kind in ("truefalse", "steps") and a.parts
                 else a.text or ""
             )
             test_rows.append(

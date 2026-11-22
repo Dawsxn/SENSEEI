@@ -6,8 +6,8 @@ class takes a test when its "Pre-test and post-test" setting names the test's
 key, which is offered only when the class's reading has the test's exact title.
 
 `load()` reads every file once and checks it, so a mistake in a test (a choice
-answer that is not one of the options, a total that is not what the plan says)
-stops the app at startup rather than surfacing in the middle of a sitting.
+answer that is not one of the options, a rubric that skips a score) stops the
+app at startup rather than surfacing in the middle of a sitting.
 """
 
 from __future__ import annotations
@@ -26,13 +26,24 @@ WHICH = (PRE, POST)
 #: The pre-test's single question, as an item id.
 PRE_ITEM = "pre"
 
-KINDS = ("choice", "text", "groups")
+#: choice: one option, 1 point. truefalse: a set of statements, 1 point each.
+#: text: written, graded by hand. steps: written in parts, one score by hand.
+KINDS = ("choice", "truefalse", "text", "steps")
+
+
+@dataclass(frozen=True)
+class Statement:
+    """One statement in a true/false set. `why` is for the answer key only."""
+
+    text: str
+    answer: bool
+    why: str = ""
 
 
 @dataclass(frozen=True)
 class Item:
     id: str
-    kind: str                       # choice | text | groups
+    kind: str                       # one of KINDS
     question: str
     part: str = ""                  # A to D; the pre-test has none
     dimension: str = ""
@@ -44,14 +55,20 @@ class Item:
     criteria: dict[int, str] = field(default_factory=dict)
     examples: dict[int, str] = field(default_factory=dict)
     scored: bool = True
+    statements: dict[str, Statement] = field(default_factory=dict)  # truefalse
+    steps: dict[str, str] = field(default_factory=dict)             # steps: part -> prompt
+    lock_first: bool = False                                        # steps
 
     @property
     def points(self) -> int:
-        """What full marks are worth: 1 for a choice, the top criterion for text."""
+        """What full marks are worth: 1 for a choice, 1 per statement in a
+        true/false set, the top criterion for anything written."""
         if not self.scored:
             return 0
         if self.kind == "choice":
             return 1
+        if self.kind == "truefalse":
+            return len(self.statements)
         return max(self.criteria)
 
     @property
@@ -61,7 +78,7 @@ class Item:
 
     @property
     def graded_by_hand(self) -> bool:
-        return self.scored and self.kind == "text"
+        return self.scored and self.kind in ("text", "steps")
 
 
 @dataclass(frozen=True)
@@ -70,8 +87,8 @@ class Test:
     reading_title: str
     pretest_minutes: int
     posttest_minutes: int
-    strategies: tuple[str, ...]
-    strategy_list_parts: tuple[str, ...]
+    #: A line shown at the start of a part, under its heading.
+    part_intros: dict[str, str]
     pretest: Item
     posttest: tuple[Item, ...]
 
@@ -106,10 +123,26 @@ def _item(raw: dict, where: str) -> Item:
         reference=raw.get("reference", ""),
         criteria={int(k): v for k, v in (raw.get("criteria") or {}).items()},
         examples={int(k): v for k, v in (raw.get("examples") or {}).items()},
-        scored=raw.get("scored", kind != "groups"),
+        scored=raw.get("scored", True),
+        statements={
+            str(k): Statement(
+                text=" ".join(str(v["text"]).split()),
+                answer=v["answer"],
+                why=v.get("why", ""),
+            )
+            for k, v in (raw.get("statements") or {}).items()
+        },
+        steps={str(k): " ".join(str(v).split()) for k, v in (raw.get("steps") or {}).items()},
+        lock_first=bool(raw.get("lock_first", False)),
     )
     if kind == "choice" and item.answer not in item.options:
         raise InvalidTest(f"{where}: the answer {item.answer!r} is not one of the options")
+    if kind == "truefalse" and (
+        not item.statements or any(not isinstance(st.answer, bool) for st in item.statements.values())
+    ):
+        raise InvalidTest(f"{where}: a true/false set needs statements, each answered true or false")
+    if kind == "steps" and len(item.steps) < 2:
+        raise InvalidTest(f"{where}: a question in steps needs at least two parts")
     if item.graded_by_hand and sorted(item.criteria) != list(range(max(item.criteria or [0]) + 1)):
         raise InvalidTest(f"{where}: criteria must run from 0 to the item's points")
     return item
@@ -123,8 +156,7 @@ def _test(path: Path) -> Test:
         reading_title=raw["reading_title"].strip(),
         pretest_minutes=int(raw["pretest_minutes"]),
         posttest_minutes=int(raw["posttest_minutes"]),
-        strategies=tuple(raw.get("strategies") or ()),
-        strategy_list_parts=tuple(raw.get("strategy_list_parts") or ()),
+        part_intros={str(k): v for k, v in (raw.get("part_intros") or {}).items()},
         pretest=_item({"id": PRE_ITEM, "kind": "text", **pre}, f"{path.name} pretest"),
         posttest=tuple(
             _item(r, f"{path.name} {r.get('id')}") for r in raw["posttest"]

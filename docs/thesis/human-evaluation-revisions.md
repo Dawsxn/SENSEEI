@@ -23,7 +23,7 @@ accept, adjust, or reject it, then update the manuscript to match.
 | 5 | **Consent is a Google Form, part 1 of the same form as the demographic survey.** It collects name, email and the participant ID; respondents are sent a copy of their responses | One form instead of paper copies on the day, and the emailed copy stands in for the participant's copy. Name and email are removed before analysis, and only the research team can open the responses. Confirm with the DLSU ethics office |
 | 6 | **No prior-knowledge screening.** Anyone who volunteers takes part; the demographic survey describes the sample but excludes no one | The pre-test measures what each person already knows, and the analysis adjusts for it, so screening is no longer needed to make the groups start equal |
 | 7 | **Pre-test: one question, "Define X"**, X being the reading's concept (a strategic offensive), scored 0–3 with its own anchors | Short, so it does not teach the concept or tire participants before the session, and it measures the starting point the analysis adjusts for |
-| 8 | **Post-test: 12 items on the four dimensions of conceptual understanding** (Mills, 2016), 20 points: 4 multiple-choice items on facts and procedures (1 each), 3 on connections and 4 on transfer (0–2 each), and a grouping task on metacognition (0–2). Never the pre-test question | It measures understanding as the paper defines it, and more items make the total more reliable. Repeating the pre-test question would reward memorizing one answer |
+| 8 | **Post-test: 8 questions on the four dimensions of conceptual understanding** (Mills, 2016), 30 points, all on the general concept: 3 true/false sets of 5 statements on facts and procedures (1 per statement), 2 written questions on connections and 2 short cases on transfer (0–3 each), and a checklist to build, apply and revise on metacognition (0–3). Each question is built so that a known misconception leads to a wrong answer. Never the pre-test question | It measures understanding as the paper defines it, and questions built around misconceptions separate real understanding from recognizing the reading's words. Repeating the pre-test question would reward memorizing one answer. Revised after the user acceptance test, when the earlier multiple choice proved easy to answer without understanding |
 | 9 | **Each short-answer item has its own 0–2 anchors**, with a scored example per level. Multiple choice uses an answer key | Each item tests a different dimension, so one shared rubric would not fit all of them |
 | 10 | **One grader scores every written answer, blind to the group**, on the grading page of the trial site, which shows participant IDs and never a group | One person grading everything keeps the scoring consistent. With one grader there is no agreement check unless a second person scores a subset (section 6) |
 | 11 | **ANCOVA on the post-test, with the pre-test as the covariate**, then pairwise comparisons of the adjusted means with Holm correction | Compares the groups as if they had started level, and with 15 per group it detects smaller differences than a plain ANOVA can |
@@ -57,7 +57,7 @@ accept, adjust, or reject it, then update the manuscript to match.
 | 9 | Briefing: open the site on your laptop, keep only that tab open | Room | (within the 20) |
 | 10 | Pre-test: "Define X", in the app | App | Up to 5 min |
 | 11 | Session: the group's screen opens with the 35-minute countdown | App | Up to 35 min |
-| 12 | Post-test: 12 items with a confidence tick after 11 of them, in the app | App | Up to 30 min |
+| 12 | Post-test: 8 questions with "Is this answer fully correct?" after the first 7, in the app | App | Up to 30 min |
 | 13 | Feedback form from the slide's QR code; the SEE-I group also answers the SUS | Form | About 2 to 4 min |
 
 About 6:00 to 7:40, 20 minutes outside the app and up to 70 inside. Participants learn their group only at step 11.
@@ -153,7 +153,7 @@ System Usability Scale composite, 0–100: average and spread, against the commo
 
 - **Narrow the claim.** "The variable distinguishing the two AI-assisted groups is the SEE-I scaffolding" claims more than the design can show: SENSEE-I also makes students write explanations, gives rubric feedback with retries, and knows the reading. Change to "the SEE-I-based design of SENSEE-I", which matches objective 5, and name what is bundled in the limitations.
 - **The chatbot is given the reading** as its only context, with no teaching instructions, and participants are told so. State it in §4.6.2: the AI groups differ only in guidance.
-- **The measures change:** a one-question pre-test, and a 12-item post-test on the four dimensions of conceptual understanding with confidence ticks.
+- **The measures change:** a one-question pre-test, and an 8-question post-test on the four dimensions of conceptual understanding (true/false sets, written questions, short cases and a checklist), each built around known misconceptions, with an "Is this answer fully correct?" choice after the first 7.
 - **"Qualitatively"**: see analysis item 7.
 
 ### §4.6.3 Participants and Sampling
@@ -165,7 +165,7 @@ System Usability Scale composite, 0–100: average and spread, against the commo
 ### §4.6.4 Procedure
 
 - **The pre-test is one written question,** taken in the app before the session, with 5 minutes. The reading does not open until it is in.
-- **The post-test is 12 items** covering facts and procedures, connections, transfer and metacognition, with a confidence tick after each of the first 11, taken in the app after the session with 30 minutes and without the reading.
+- **The post-test is 8 questions** covering facts and procedures, connections, transfer and metacognition, with "Is this answer fully correct?" after each of the first 7, taken in the app after the session with 30 minutes and without the reading.
 - **The session is 35 minutes, not 40,** enforced by the system from the moment the participant presses Start on the reading's instructions. No countdown is shown (it confused people in the user acceptance test); all three groups get the same pop-ups at 15, 5 and 1 minute left, and the SEE-I group a reminder after 10 minutes of reading. At the limit the session ends and is recorded as ended by time.
 - **A briefing comes first, outside the clocks.** Every group sees a welcome screen with the study's aim and its own steps and times. The SEE-I group also reads what SEE-I is and how the session screen works, after the pre-test so the pre-test is not shaped by it. Each stage's instructions name the goal (understanding the concept) and Done asks for confirmation.
 - **Each person moves on as soon as they finish a stage.** Every stage's start and end is recorded, and how it ended.
@@ -244,7 +244,7 @@ Check the DLSU research ethics office's consent template first; it may set the f
 ## 6. Still open
 
 - **The reading's scope:** confirm with Doc Ben that it stops after the seventh offensive strategy, before "Choosing Which Rivals to Attack".
-- **Doc Ben's review of the tests:** the 12 items, the answer key and the rubrics are drafted in `backend/trial_tests/strategic_offensives.yaml`. Changes go in before the first sitting.
+- **Doc Ben's review of the tests:** the 8 questions, the answer key and the rubrics are in `backend/trial_tests/strategic_offensives.yaml`. Changes go in before the first sitting.
 - **A source for calibration**, needed once this goes into the manuscript.
 - **Who the grader is**, and whether a second person scores a random subset so reliability can be checked.
 - **Sittings:** how many, and whether each uses the same reading.
