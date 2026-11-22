@@ -29,6 +29,7 @@ vi.mock("../trial/useTrial", () => ({
   useIsParticipant: () => false,
   useTrialStatus: () => ({ data: undefined }),
   useStartTrialClock: () => undefined,
+  useTestHandoff: () => undefined,
 }));
 vi.mock("../trial/TrialClock", () => ({ TrialClock: () => null, useTimeUp: () => false }));
 vi.mock("@tanstack/react-query", async () => ({

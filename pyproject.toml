@@ -16,7 +16,8 @@ dependencies = [
 #   pip install -e ".[gemini]"   provider: gemini (default) — supports thinking_level
 #   pip install -e ".[openai]"   provider: openai_compat (Groq / OpenRouter / Together / Ollama / OpenAI)
 [project.optional-dependencies]
-gemini = ["google-genai>=2.9.0"]
+# Below 3: 3.x changed defaults (the API version) under a working deploy.
+gemini = ["google-genai>=2.9.0,<3"]
 openai = ["openai>=1.40.0"]
 # The web app. Not needed to run the eval or the session harness.
 backend = [

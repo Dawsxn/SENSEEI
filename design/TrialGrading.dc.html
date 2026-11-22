@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap">
+  <style>
+    /* Grading the trial's written answers, and the class's test setting.
+       Same shell as TrialParticipants.dc.html (AppTopBar, ClassFormDialog). */
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .btn { border-radius: 6px; font-family: inherit; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; white-space: nowrap; }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+    .btn-md { height: 36px; padding: 0 16px; font-size: 14px; }
+    .btn-primary { border: none; background: #16a34a; color: #ffffff; }
+    .btn-secondary { border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; }
+    .tab { font-size: 14px; font-weight: 500; color: #71717a; height: 56px; display: flex; align-items: center; border-bottom: 2px solid transparent; box-sizing: border-box; margin-bottom: -1px; }
+    .tab-on { color: #09090b; border-bottom-color: #09090b; }
+    .mono { font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.05em; }
+    .card { border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden; }
+    .label { font-size: 12px; font-weight: 500; color: #71717a; text-transform: uppercase; letter-spacing: 0.04em; }
+    .input { height: 36px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 0 12px; display: flex; align-items: center; font-size: 14px; box-sizing: border-box; }
+    .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
+    .dialog { width: 420px; box-sizing: border-box; background: #ffffff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
+    .h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1360px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column;">
+
+  <!-- AppTopBar. The research team sees every section; a grader sees Grading only. -->
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 32px;">
+      <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: #16a34a;">SEE-I</span></span>
+      <div style="display: flex; gap: 24px;">
+        <sc-if value="{{team}}" hint-placeholder-val="{{true}}">
+          <span class="tab {{classesTab}}">Classes</span>
+          <span class="tab">Readings</span>
+          <span class="tab">Participants</span>
+        </sc-if>
+        <span class="tab {{gradingTab}}">Grading</span>
+      </div>
+    </div>
+    <div style="width: 32px; height: 32px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; min-height: 0; overflow: hidden;">
+    <div style="width: 1280px; margin: 0 auto; padding: 32px 0; box-sizing: border-box;">
+
+    <!-- ───── Grading, one participant at a time. The group is never shown. ───── -->
+    <sc-if value="{{grading}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px;">
+        <h1 class="h1">Grading</h1>
+        <span style="font-size: 13px; color: #71717a;">{{progress}}</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 240px 1fr 380px; gap: 20px; align-items: start;">
+
+        <!-- Participants -->
+        <div class="card">
+          <sc-for list="{{people}}" as="p" hint-placeholder-count="8">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-bottom: 1px solid #f4f4f5; background: {{p.bg}}; border-left: 3px solid {{p.mark}};">
+              <span class="mono" style="font-size: 13px;">{{p.id}}</span>
+              <span style="font-size: 12px; color: {{p.color}};">{{p.status}}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- That participant's written answers -->
+        <div>
+          <span class="mono" style="display: block; font-size: 15px; font-weight: 500; margin-bottom: 12px;">{{pid}}</span>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
+            <sc-for list="{{summary}}" as="m" hint-placeholder-count="3">
+              <div class="card" style="padding: 10px 14px;">
+                <div style="font-size: 12px; color: #71717a;">{{m.label}}</div>
+                <div style="font-size: 18px; font-weight: 600; margin-top: 2px; color: {{m.color}};">{{m.value}}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div class="card" style="margin-bottom: 12px;">
+            <div style="padding: 10px 16px; border-bottom: 1px solid #e4e4e7; font-size: 12px; font-weight: 600;">Multiple choice <span style="font-weight: 400; color: #71717a;">&middot; scored automatically</span></div>
+            <sc-for list="{{mcq}}" as="c" hint-placeholder-count="4">
+              <div style="display: grid; grid-template-columns: 40px 1fr 80px; align-items: center; padding: 8px 16px; border-bottom: 1px solid {{c.divider}}; font-size: 13px;">
+                <span style="font-weight: 600;">Q{{c.n}}</span>
+                <span style="color: {{c.color}};">{{c.text}}</span>
+                <span style="color: #71717a; text-align: right;">{{c.tick}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{allDone}}" hint-placeholder-val="{{false}}">
+            <div style="margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 13px; color: #15803d;">All of this participant's answers are graded.</div>
+          </sc-if>
+          <sc-for list="{{answers}}" as="x" hint-placeholder-count="3">
+            <div class="card" style="margin-bottom: 12px; border-color: {{x.border}}; box-shadow: {{x.shadow}};">
+              <div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px 0;">
+                <span style="flex-grow: 1;"><span style="font-size: 12px; font-weight: 600;">{{x.label}}</span>
+                <span style="font-size: 13px; color: #71717a; margin-left: 6px;">{{x.q}}</span></span>
+                <span style="font-size: 12px; color: #71717a; white-space: nowrap;">{{x.tick}}</span>
+              </div>
+              <p style="margin: 8px 16px 0; font-size: 14px; line-height: 1.6; color: {{x.color}};">{{x.answer}}</p>
+              <div style="display: flex; justify-content: flex-end; gap: 6px; padding: 12px 16px;">
+                <span style="display: {{x.d0}}; width: 36px; height: 32px; border-radius: 6px; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; border: 1px solid {{x.b0}}; background: {{x.f0}}; color: {{x.c0}};">0</span>
+                <span style="display: {{x.d1}}; width: 36px; height: 32px; border-radius: 6px; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; border: 1px solid {{x.b1}}; background: {{x.f1}}; color: {{x.c1}};">1</span>
+                <span style="display: {{x.d2}}; width: 36px; height: 32px; border-radius: 6px; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; border: 1px solid {{x.b2}}; background: {{x.f2}}; color: {{x.c2}};">2</span>
+                <span style="display: {{x.d3}}; width: 36px; height: 32px; border-radius: 6px; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; border: 1px solid {{x.b3}}; background: {{x.f3}}; color: {{x.c3}};">3</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- The rubric for the answer being graded -->
+        <div class="card" style="padding: 18px 20px;">
+          <div class="label">{{rLabel}}</div>
+          <div class="label" style="margin-top: 14px;">Reference answer</div>
+          <p style="margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: #3f3f46;">{{key}}</p>
+          <div style="margin-top: 16px; border: 1px solid #e4e4e7; border-radius: 6px; overflow: hidden;">
+            <sc-for list="{{criteria}}" as="k" hint-placeholder-count="3">
+              <div style="display: grid; grid-template-columns: 36px 1fr; border-bottom: 1px solid {{k.divider}}; font-size: 12.5px; line-height: 1.5;">
+                <span style="padding: 8px 0; text-align: center; font-weight: 600; background: #fafafa; border-right: 1px solid #e4e4e7;">{{k.pts}}</span>
+                <span style="padding: 8px 10px; color: #3f3f46;">{{k.text}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ───── Classes page behind the dialogs ───── -->
+    <sc-if value="{{classes}}" hint-placeholder-val="{{false}}">
+      <h1 class="h1">Classes</h1>
+    </sc-if>
+    </div>
+  </div>
+
+  <!-- ───── ClassFormDialog with the test setting under Mode ───── -->
+  <sc-if value="{{dialog}}" hint-placeholder-val="{{false}}">
+    <div class="overlay">
+      <div class="dialog">
+        <div style="font-size: 16px; font-weight: 600;">{{dialogTitle}}</div>
+        <div style="display: grid; grid-template-columns: 1fr 120px; gap: 12px; margin-top: 16px;">
+          <div style="font-size: 13px; font-weight: 500;">Name<div class="input" style="margin-top: 6px; font-weight: 400;">TRIAL</div></div>
+          <div style="font-size: 13px; font-weight: 500;">Section<div class="input" style="margin-top: 6px; font-weight: 400;">S1-A</div></div>
+        </div>
+        <div style="margin-top: 16px; font-size: 13px; font-weight: 500;">Mode</div>
+        <div style="margin-top: 6px; display: flex; gap: 2px; padding: 3px; background: #f4f4f5; border-radius: 6px;">
+          <span style="flex: 1; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">SEE-I</span>
+          <span style="flex: 1; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: #71717a;">Chatbot</span>
+          <span style="flex: 1; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: #71717a;">Reading only</span>
+        </div>
+        <div style="margin-top: 16px; font-size: 13px; font-weight: 500;">Pre-test and post-test</div>
+        <div class="input" style="margin-top: 6px; justify-content: space-between; background: {{selectBg}}; color: {{selectFg}};">
+          <span>{{selectValue}}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+        </div>
+        <p style="margin: 8px 0 0; font-size: 12px; color: #71717a;">{{dialogHint}}</p>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <span class="btn btn-secondary btn-sm">Cancel</span>
+          <span class="btn btn-primary btn-sm">{{dialogButton}}</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"state":{"editor":"enum","options":["Grading","Grading, no answer","Grading, all graded","Grader","New class","Edit class"],"default":"Grading","section":"State"}}'>
+const DATA = {"pre": {"q": "Define a strategic offensive."}, "q5": {"q": "The reading says strategic offensives should be based on a company\u0027s strengths and aimed at its rivals\u0027 weaknesses. How does this rule help a company choose which offensive strategy to use? Give one example using a strategy from the reading.", "key": "The company should pick the offensive where its own strength meets a rival\u0027s weakness. For example, a company that is good at product development should use continuous innovation against rivals that are slow at it, and only a company with a cost advantage should cut prices.", "scores": ["Explains that the rule points the company to the offensive that matches its strength to a rival\u0027s weakness, and gives a fitting example.", "States the rule or gives an example, but does not connect the two, or the example shows only one side.", "No link between the rule and the choice of strategy, or a wrong one."]}, "q6": {"q": "How is continuous product innovation different from disruptive product innovation? When would a company choose one over the other?"}};
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'Grading';
+    const grading = state.startsWith('Grading') || state === 'Grader';
+    const allDone = state === 'Grading, all graded';
+    const noAnswer = state === 'Grading, no answer';
+    const ids = ['P-4HWN-2RCE', 'P-7K3Q-9TXM', 'P-2CLE-7YUG', 'P-9MDA-3VKP', 'P-6TRB-8QHN', 'P-3XFE-5JWD', 'P-8PLC-4NAR', 'P-5GUY-2MTE'];
+    const sel = noAnswer ? 'P-2CLE-7YUG' : 'P-7K3Q-9TXM';
+    const statusOf = { 'P-4HWN-2RCE': 'Graded', 'P-7K3Q-9TXM': allDone ? 'Graded' : '7 left', 'P-2CLE-7YUG': '8 left' };
+    const people = ids.map((id) => {
+      const st = statusOf[id] || '9 left';
+      return { id, status: st, color: st === 'Graded' ? '#15803d' : '#71717a', bg: id === sel ? '#f4f4f5' : '#ffffff', mark: id === sel ? '#09090b' : 'transparent' };
+    });
+    const btns = (max, picked) => {
+      const o = {};
+      for (let n = 0; n <= 3; n++) {
+        const on = String(n) === picked;
+        o['d' + n] = n <= max ? 'inline-flex' : 'none';
+        o['b' + n] = on ? '#16a34a' : '#e4e4e7';
+        o['f' + n] = on ? '#f0fdf4' : '#ffffff';
+        o['c' + n] = on ? '#15803d' : '#09090b';
+      }
+      return o;
+    };
+    const card = (label, q, answer, max, picked, focus, tick) => Object.assign({
+      label, q, tick: tick || '', answer: answer || 'No answer', color: answer ? '#09090b' : '#a1a1aa',
+      border: focus ? '#16a34a' : '#e4e4e7', shadow: focus ? '0 0 0 3px #dcfce7' : 'none',
+    }, btns(max, picked));
+    const answers = noAnswer ? [
+      card('Pre-test', DATA.pre.q, 'A plan to beat competitors.', 3, '1', false, ''),
+      card('Q5', DATA.q5.q, '', 2, '0', true, 'No tick'),
+      card('Q6', DATA.q6.q, 'Continuous innovation is small improvements over time while disruptive is a big new idea.', 2, '', false, 'Not sure'),
+    ] : [
+      card('Pre-test', DATA.pre.q, 'An aggressive move a company makes to take market share from its rivals.', 3, '1', false),
+      card('Q5', DATA.q5.q, 'A company should attack where it is strong and the rival is weak. For example, if a company is good at making new products quickly and its rival is slow, it should keep releasing new products so customers move to it.', 2, allDone ? '2' : '', !allDone, 'Sure'),
+      card('Q6', DATA.q6.q, 'Continuous innovation keeps improving products so rivals feel pressure. Disruptive innovation makes something completely new, which is riskier but can create a new market.', 2, allDone ? '2' : '', false, 'Sure'),
+    ];
+    const dialog = state === 'New class' || state === 'Edit class';
+    const edit = state === 'Edit class';
+    const summary = [
+      { label: 'Pre-test', value: '1 / 3', color: '#09090b' },
+      { label: 'Post-test', value: allDone ? '16 / 20' : 'Not graded yet', color: allDone ? '#09090b' : '#a1a1aa' },
+      { label: 'Calibration', value: allDone ? '73%' : 'Not graded yet', color: allDone ? '#09090b' : '#a1a1aa' },
+    ];
+    const mcq = [[1, 'Picked b · Correct', 'Sure', true], [2, 'Picked c · Correct', 'Not sure', true], [3, 'Picked b · Answer is a', 'Sure', false], [4, 'Picked b · Correct', 'Sure', true]]
+      .map(([n, text, tick, ok], i) => ({ n, text, tick, color: ok ? '#15803d' : '#b91c1c', divider: i < 3 ? '#f4f4f5' : 'transparent' }));
+    return {
+      summary, mcq,
+      team: state !== 'Grader',
+      classesTab: dialog ? 'tab-on' : '',
+      gradingTab: grading ? 'tab-on' : '',
+      grading, classes: dialog, allDone,
+      progress: allDone ? '2 of 15 participants graded' : '1 of 15 participants graded',
+      people, pid: sel, answers,
+      rLabel: 'Question 5',
+      key: DATA.q5.key,
+      criteria: DATA.q5.scores.map((text, i) => ({ pts: String(2 - i), text, divider: i < 2 ? '#e4e4e7' : 'transparent' })),
+      dialog,
+      dialogTitle: edit ? 'Edit class' : 'New class',
+      dialogButton: edit ? 'Save' : 'Create class',
+      selectValue: edit ? 'Strategic Offensives' : 'Off',
+      selectBg: edit ? '#ffffff' : '#fafafa',
+      selectFg: edit ? '#09090b' : '#a1a1aa',
+      dialogHint: edit ? "Mode and tests can't be changed once a participant signs in." : 'Add a reading to this class first.',
+    };
+  }
+}
+</script>
+</body>
+</html>

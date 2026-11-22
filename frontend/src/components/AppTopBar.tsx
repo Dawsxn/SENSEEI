@@ -18,6 +18,8 @@ export function AppTopBar() {
   const { data: user } = useMe();
   const [joining, setJoining] = useState(false);
   const instructor = user?.role === "instructor";
+  // A grader sees one section, Grading, and nothing else.
+  const sections = instructor || user?.role === "grader";
 
   return (
     <header className="shrink-0 border-b">
@@ -28,7 +30,7 @@ export function AppTopBar() {
           <span className="text-[15px] font-semibold tracking-[-0.01em]">
             SEN<span className="text-primary">SEE-I</span>
           </span>
-          {instructor && <Sections className="hidden h-14 sm:flex" />}
+          {sections && <Sections className="hidden h-14 sm:flex" />}
         </div>
 
         <div className="flex items-center gap-3">
@@ -40,15 +42,18 @@ export function AppTopBar() {
           <AccountMenu />
         </div>
       </div>
-      {instructor && <Sections className="flex h-12 px-4 sm:hidden" />}
+      {sections && <Sections className="flex h-12 px-4 sm:hidden" />}
       {joining && <JoinClassDialog onClose={() => setJoining(false)} />}
     </header>
   );
 }
 
 function Sections({ className }: { className: string }) {
-  // The trial instance adds a third: the participant IDs.
+  // The trial instance adds the participant IDs and grading. A grader has
+  // grading alone.
   const trial = useTrialMode();
+  const { data: user } = useMe();
+  const grader = user?.role === "grader";
   const tab = ({ isActive }: { isActive: boolean }) =>
     `-mb-px flex items-center border-b-2 text-[14px] font-medium ${
       isActive
@@ -57,15 +62,24 @@ function Sections({ className }: { className: string }) {
     }`;
   return (
     <nav className={`gap-6 ${className}`}>
-      <NavLink to="/classes" className={tab}>
-        Classes
-      </NavLink>
-      <NavLink to="/library" className={tab}>
-        Readings
-      </NavLink>
-      {trial && (
+      {!grader && (
+        <>
+          <NavLink to="/classes" className={tab}>
+            Classes
+          </NavLink>
+          <NavLink to="/library" className={tab}>
+            Readings
+          </NavLink>
+        </>
+      )}
+      {trial && !grader && (
         <NavLink to="/participants" className={tab}>
           Participants
+        </NavLink>
+      )}
+      {trial && (
+        <NavLink to="/grading" className={tab}>
+          Grading
         </NavLink>
       )}
     </nav>

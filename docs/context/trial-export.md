@@ -26,10 +26,18 @@ One row per participant ID. Every group.
 | class | The class it was in, e.g. `TRIAL S1-A` |
 | group | `seei`, `chatbot` or `reading_only` |
 | signed_in_at | First sign-in. Empty if never used |
-| reading_opened_at | When the reading opened. Their 40 minutes start here |
+| reading_opened_at | When the reading opened. Their session time starts here |
 | done_at | When they pressed Done. Chatbot and reading-only groups only |
-| time_ran_out_at | When their 40 minutes ended. Empty if the reading never opened |
+| time_ran_out_at | When their session time ended. Empty if the reading never opened |
 | voided_at | When the ID was voided. Empty if it was not |
+| test | The test their class took, e.g. `strategic_offensives`. Empty without tests |
+| pretest_started_at, pretest_ended_at | When the pre-test started and ended |
+| pretest_ended_by | `submitted`, `time_up`, or `closed` (the batch closed while it ran) |
+| posttest_started_at, posttest_ended_at, posttest_ended_by | The same for the post-test |
+| pretest_score | 0 to 3. Empty until it is graded |
+| posttest_total | 0 to 20. Empty until every answer is scored |
+| calibration | The share of "sure / not sure" ticks that matched the result, 0 to 1. Empty until every ticked answer is scored |
+| sure_but_wrong | Answers ticked "sure" that did not get full marks |
 
 ## sessions.csv
 
@@ -43,7 +51,7 @@ One row per SEE-I session. The SEE-I group only; one session per participant.
 | status | `complete` (passed all four steps), `fallback` (ran out of attempts), `timed_out` (ran out of time), or `in_progress` |
 | last_step | The step they ended on: where they stopped, or `Illustrate` if complete |
 | started_at | When they pressed Done on the reading and the session began |
-| ended_at | When it ended. For `timed_out`, exactly when the 40 minutes ran out |
+| ended_at | When it ended. For `timed_out`, exactly when the session time ran out |
 | rubric_version, tutor_prompt_version, assessment_prompt_version, model | What graded and tutored this session |
 
 ## attempts.csv
@@ -128,6 +136,25 @@ and the attempt they were about to make (`{"panel": "rubric", "step":
 | tab_returned | Came back | |
 | turn_failed | An AI reply failed. Nothing was graded or lost; they sent it again | `where`: `assessment`, `tutor` or `chatbot` |
 
+## tests.csv
+
+One row per pre-test or post-test answer. Only for classes with tests.
+
+| Column | Meaning |
+| --- | --- |
+| participant_id | |
+| test | `pre` or `post` |
+| question | The question's id in the test file: `pre`, `q1` to `q11`, `q12a`, `q12b` |
+| part, dimension | The post-test part (A to D) and what it measures: `facts`, `connections`, `transfer`, `metacognition` |
+| kind | `choice`, `text`, or `groups` (the 12a table) |
+| answer | The letter picked, the text written, or the 12a table as JSON |
+| sure | `True` for "I'm sure", `False` for "I'm not sure". Empty if not ticked |
+| score | The points it got. Empty until graded |
+| max_score | What full marks are worth. Empty for 12a, which is not scored |
+| first_answered_at, last_changed_at | When it was first answered and last changed |
+| edits | How many saves changed it |
+| scored_at | When it was scored |
+
 ## What you can work out from these
 
 | Measure | From |
@@ -143,3 +170,6 @@ and the attempt they were about to make (`{"panel": "rubric", "step":
 | Pasted from the reading (chatbot) | `paste` events, and their lengths |
 | Time before Done (reading only) | `participants.done_at` minus `reading_opened_at` |
 | Rough experience | Count of `turn_failed` per participant |
+| Score per dimension | `tests.csv`: `score` summed by `dimension` |
+| Time on each test | `*_ended_at` minus `*_started_at` in `participants.csv` |
+| Looking things up during a test | `tab_left` and `paste` events whose `data` has `stage` `pretest` or `posttest` |
