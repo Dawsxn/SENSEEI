@@ -10,6 +10,7 @@ is the address of their page: pages and API share one origin.
 
 from __future__ import annotations
 
+import re
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -244,12 +245,32 @@ async def export(
         data = await export_service.export(db)
     except TrialOff:
         raise NOT_FOUND
-    day = utcnow().date().isoformat()
+    return _zip(data, f"senseei-trial-{utcnow().date().isoformat()}.zip")
+
+
+@router.get("/instructor/batches/{batch_id}/export")
+async def export_batch(
+    batch_id: uuid.UUID,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> Response:
+    """The same zip as the full export, holding only this batch's IDs."""
+    try:
+        batch = await trial_service.get_batch(db, user.id, batch_id)
+        data = await export_service.export(db, batch_id)
+    except (TrialOff, BatchNotFound):
+        raise NOT_FOUND
+    # The batch's name in the file name, reduced to characters every OS accepts.
+    slug = re.sub(r"[^A-Za-z0-9]+", "-", batch["name"]).strip("-").lower() or "batch"
+    return _zip(data, f"senseei-trial-{slug}-{utcnow().date().isoformat()}.zip")
+
+
+def _zip(data: bytes, filename: str) -> Response:
     return Response(
         content=data,
         media_type="application/zip",
         headers={
-            "Content-Disposition": f'attachment; filename="senseei-trial-{day}.zip"',
+            "Content-Disposition": f'attachment; filename="{filename}"',
             "Cache-Control": "no-store",
         },
     )

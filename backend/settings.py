@@ -70,6 +70,18 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.0
     llm_max_output_tokens: int = 4096
     llm_thinking_level: str | None = "low"
+    #: Where an `openai_compat` provider sends its requests, e.g.
+    #: https://api.deepseek.com. Unused by Gemini. Blank means the provider's own.
+    llm_base_url: str | None = None
+
+    # --- the figure describer at upload --------------------------------------
+    # Its own provider, because it reads the PDF itself and not every provider
+    # can (DeepSeek cannot). Each one left blank falls back to the main LLM
+    # setting above, so with none set the figures use the agents' provider.
+    figure_provider: str | None = None
+    figure_model: str | None = None
+    figure_api_key_env: str | None = None
+    figure_base_url: str | None = None
 
     # --- versions pinned per session --------------------------------------
     # Stamped on every session so a prompt or rubric change does not silently
@@ -89,7 +101,7 @@ class Settings(BaseSettings):
     # whole set of rules: participants sign in by ID, one session each, a clock,
     # and classes in the control groups' modes. The server enforces every one.
     trial_mode: bool = False
-    #: A participant's time for the session, from the moment their reading opens.
+    #: A participant's time for the session, from Start in Before you start.
     #: The study's 35 minutes live here, in the code, and the pre-test's and
     #: post-test's in the test file, so none of them can change between sittings
     #: without a release. The overrides exist only to try the flow locally
@@ -159,7 +171,26 @@ class Settings(BaseSettings):
             "temperature": self.llm_temperature,
             "max_output_tokens": self.llm_max_output_tokens,
             "thinking_level": self.llm_thinking_level,
+            "base_url": self.llm_base_url or None,
         }
+
+    def figure_provider_config(self) -> dict:
+        """The figure describer's provider: the main one, with any figure
+        setting that is filled in taking its place. Switching to another
+        provider (and its own key) moves everything that is not overridden."""
+        cfg = self.provider_config()
+        if self.figure_provider and self.figure_provider.strip():
+            # A different provider never inherits the main one's address.
+            cfg["provider"] = self.figure_provider.strip().lower()
+            cfg["base_url"] = None
+        for key, value in (
+            ("model", self.figure_model),
+            ("api_key_env", self.figure_api_key_env),
+            ("base_url", self.figure_base_url),
+        ):
+            if value and value.strip():
+                cfg[key] = value.strip()
+        return cfg
 
 
 @lru_cache

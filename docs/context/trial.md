@@ -147,6 +147,11 @@ can learn who took part (§4.6.3). The grader (`GRADER_EMAILS`) signs in the sam
 way but sees only the grading page: participant IDs and their answers, never a
 group or a class, so the grading stays blind.
 
+**The team shares the trial.** Every instructor account sees and manages every
+class, reading and batch on the trial instance, whoever made it, so anyone on the
+team can void a slip or close a batch on the day. Outside trial mode each
+instructor still sees only their own (`backend/services/ownership.py`).
+
 This also takes Google's sign-in settings out of the trial entirely: participants
 never meet Google's consent screen, so its publishing status and test-user list
 cannot block anyone on the day. In trial mode a Google account on neither
@@ -155,8 +160,9 @@ anyone else is an ID.
 
 ## A participant's session time
 
-- **The clock starts when the reading opens.** The 35 minutes cover reading as
-  well as the activity, as the manuscript's intervention phase does. The server
+- **The clock starts on Start in "Before you start"**, the one-line
+  instructions every group sees over its reading, so nobody loses time before
+  they are ready. The 35 minutes cover reading as well as the activity, as the manuscript's intervention phase does. The server
   holds the clock; the countdown only draws it, so a reload does not restart it
   and nothing the browser sends buys more time.
 - **A countdown is visible**, the same in all three groups, so no group is
@@ -334,8 +340,8 @@ which one they are in (`test_stage` on `/trial/me`):
 
 | Stage | What they see | Ends when |
 | --- | --- | --- |
-| `pretest` | One written question. The reading is not shown | Submitted, or 5 minutes |
-| `session` | The reading, chatbot or SEE-I session, as without tests | Finished, Done, or 35 minutes |
+| `pretest` | "Pre-test", "You have 5 minutes." and Start, then one written question. Its clock starts on Start. The reading is not shown | Submitted, or 5 minutes |
+| `session` | The reading, chatbot or SEE-I session, as without tests. A SEE-I session's end replaces the answer box with a strip saying how it ended (complete, out of attempts, or time up) and Continue to post-test, so the last feedback stays readable. Time running out anywhere else (on the reading, or in a control group) shows a "Time's up" popup with the same button | Finished, Done, or 35 minutes |
 | `posttest_ready` | "Post-test" and Start. Its clock starts on Start | Start pressed |
 | `posttest` | 12 questions, with a question list and "I'm sure / I'm not sure" ticks | Submitted, 30 minutes, or the batch closing |
 | `done` | "You're done" | |
@@ -376,7 +382,10 @@ or from an ID on a batch's page; the grader sees nothing else.
 ## Export
 
 **Download data** on the Participants tab gives one zip, `senseei-trial-<date>.zip`,
-of spreadsheet files, all keyed by participant ID, with a README saying what each
+of every batch. The download button on a batch's page gives the same zip for that
+batch's IDs only, `senseei-trial-<batch name>-<date>.zip`, so a dry run can be
+kept and then deleted without it ever mixing with a sitting. Both are
+spreadsheet files, all keyed by participant ID, with a README saying what each
 holds:
 
 | File | One row per |

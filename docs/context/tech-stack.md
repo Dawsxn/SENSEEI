@@ -76,6 +76,30 @@ eval's `config.yaml`, which configures eval runs only. See `agent-contracts.md`.
 The model itself is still open. Preliminary results used Gemini 3.1 Pro at a low
 thinking level, which the manuscript notes is not necessarily what ships.
 
+**Switching provider is settings only.** The image installs both provider
+libraries (`google-genai` below 3, `openai` below 4, so a major release cannot
+change behaviour under a deploy). The settings:
+
+| Setting | Gemini | DeepSeek |
+| --- | --- | --- |
+| `LLM_PROVIDER` | `gemini` | `openai_compat` |
+| `LLM_MODEL` | `gemini-3.1-pro-preview` | the evaluated model, e.g. `deepseek-flash` |
+| `LLM_BASE_URL` | blank | `https://api.deepseek.com` |
+| `LLM_API_KEY_ENV` | `GEMINI_API_KEY` | `DEEPSEEK_API_KEY` |
+
+The figure describer at upload reads the PDF itself, which DeepSeek cannot. The
+`FIGURE_PROVIDER`, `FIGURE_MODEL`, `FIGURE_API_KEY_ENV` and `FIGURE_BASE_URL`
+settings send it elsewhere; each one left blank follows the `LLM_` setting. With
+DeepSeek for the agents: `FIGURE_PROVIDER=gemini`,
+`FIGURE_MODEL=gemini-3.1-pro-preview`, `FIGURE_API_KEY_ENV=GEMINI_API_KEY`.
+
+The trial must run the model, `ASSESSMENT_PROMPT_VERSION` and `RUBRIC_VERSION`
+the eval measured. On the trial instance these belong in `render-trial.yaml`,
+not the dashboard, so they change only through a release.
+
+A provider failure shows the user only its type. The provider's own message goes
+to the server log (`senseei.provider`), with every API key scrubbed from it.
+
 ## Testing
 
 | Layer | Tool |

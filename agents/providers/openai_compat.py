@@ -52,12 +52,56 @@ class OpenAICompatProvider(LLMProvider):
         resp = self.client.chat.completions.create(**kwargs)
         u = getattr(resp, "usage", None)
         if u is not None:
-            self.last_usage = {
-                "input_tokens": getattr(u, "prompt_tokens", 0) or 0,
-                "output_tokens": getattr(u, "completion_tokens", 0) or 0,
-                "thinking_tokens": 0,
-                "total_tokens": getattr(u, "total_tokens", 0) or 0,
-            }
+            self.last_usage = self._usage(u)
         choice = resp.choices[0]
         self.last_finish_reason = getattr(choice, "finish_reason", None)
         return choice.message.content or ""
+
+    @staticmethod
+    def _usage(u) -> dict:
+        return {
+            "input_tokens": getattr(u, "prompt_tokens", 0) or 0,
+            "output_tokens": getattr(u, "completion_tokens", 0) or 0,
+            "thinking_tokens": 0,
+            "total_tokens": getattr(u, "total_tokens", 0) or 0,
+        }
+
+    def _stream(self, messages: list[dict]):
+        """Yield the reply's text as it arrives. Usage comes on the final chunk
+        (`include_usage`), so `last_usage` holds it once the stream is exhausted.
+        Prose only: the Tutor and the chatbot stream, the Assessment Agent never
+        does, so no JSON mode here."""
+        self.last_usage = None
+        self.last_finish_reason = None
+        for chunk in self.client.chat.completions.create(
+            model=self.model_name,
+            temperature=self.temperature,
+            max_tokens=self.max_output_tokens,
+            messages=messages,
+            stream=True,
+            stream_options={"include_usage": True},
+        ):
+            if getattr(chunk, "usage", None) is not None:
+                self.last_usage = self._usage(chunk.usage)
+            if not chunk.choices:
+                continue
+            choice = chunk.choices[0]
+            if choice.finish_reason:
+                self.last_finish_reason = choice.finish_reason
+            text = getattr(choice.delta, "content", None)
+            if text:
+                yield text
+
+    def stream(self, system_prompt: str, user_prompt: str):
+        yield from self._stream([
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ])
+
+    def chat_stream(self, turns: list[tuple[str, str]]):
+        """A real multi-turn conversation with no system message: the trial's
+        chatbot is the model as it comes (docs/context/trial.md)."""
+        yield from self._stream([
+            {"role": "user" if role == "user" else "assistant", "content": text}
+            for role, text in turns
+        ])

@@ -22,6 +22,7 @@ from agents.providers.base import LLMProvider
 from agents.rubric import criteria_for, load_rubric
 from backend.agent_runtime import Agents
 from backend.models import Attempt, CoreComponent, Reading, Role, User
+from backend.orchestrator import MAX_ATTEMPTS
 
 pytestmark = pytest.mark.usefixtures("fresh_engine", "auth_seed_student")
 
@@ -236,7 +237,7 @@ async def test_a_pass_advances_and_opens_the_next_step(seeded):
         assert final["terminal"] is False
         # advanced to a fresh step, so no attempts used on it yet
         assert final["attempts_used"] == 0
-        assert final["attempts_left"] == 3
+        assert final["attempts_left"] == MAX_ATTEMPTS
     finally:
         from backend.main import app
         app.dependency_overrides.clear()
@@ -293,14 +294,14 @@ async def test_a_fail_with_attempts_left_re_prompts_the_same_step(seeded):
         assert final["terminal"] is False
         # one attempt spent on this step, two left
         assert final["attempts_used"] == 1
-        assert final["attempts_left"] == 2
+        assert final["attempts_left"] == MAX_ATTEMPTS - 1
     finally:
         from backend.main import app
         app.dependency_overrides.clear()
 
 
 @pytest.mark.anyio
-async def test_three_failures_fall_back_and_end_the_session(seeded):
+async def test_running_out_of_attempts_falls_back_and_ends_the_session(seeded):
     agents = _stub_agents(StubProvider(pass_on=99), StubProvider(pass_on=99))
     client = make_client(agents)
     try:
@@ -310,7 +311,7 @@ async def test_three_failures_fall_back_and_end_the_session(seeded):
         session_id = dict(parse_sse(start.text))["session"]["id"]
 
         last = None
-        for _ in range(3):
+        for _ in range(MAX_ATTEMPTS):
             r = await client.post(
                 f"/sessions/{session_id}/responses", json={"text": "no"}
             )
@@ -323,11 +324,11 @@ async def test_three_failures_fall_back_and_end_the_session(seeded):
         assert final["status"] == "fallback"
         assert final["terminal"] is True
 
-        # exactly three attempts were recorded, all on State
+        # exactly MAX_ATTEMPTS attempts were recorded, all on State
         n = await _count(
             seeded_url(), Attempt, session_id=session_id
         )
-        assert n == 3
+        assert n == MAX_ATTEMPTS
 
         # a fourth submission is refused
         r = await client.post(
