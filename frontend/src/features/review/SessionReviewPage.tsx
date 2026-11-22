@@ -1,4 +1,4 @@
-import { Check, ChevronLeft } from "lucide-react";
+import { Check, ChevronLeft, X } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { SessionStatusBadge } from "../../components/SessionStatusBadge";
@@ -8,7 +8,7 @@ import { formatDate, formatDuration } from "../../lib/format";
 import { useMe } from "../auth/useAuth";
 import { useReadingSessions } from "../readings/useReadings";
 import type { SeeiStep } from "../tutoring/types";
-import type { SessionTranscript, TranscriptEntry } from "./types";
+import type { Judgment, SessionTranscript, TranscriptEntry } from "./types";
 import { useTranscript } from "./useTranscript";
 
 export function SessionReviewPage() {
@@ -178,10 +178,11 @@ function StepDivider({ step, passed }: { step: SeeiStep; passed: boolean }) {
 function Entry({ entry }: { entry: TranscriptEntry }) {
   if (entry.role === "student") {
     return (
-      <div className="my-4 flex justify-end">
+      <div className="my-4 flex flex-col items-end gap-2">
         <div className="max-w-[85%] rounded-lg bg-[#f0fdf4] px-4 py-2.5 text-[14px] leading-relaxed text-[#3f3f46]">
           {entry.content}
         </div>
+        {entry.judgment && <JudgmentCard judgment={entry.judgment} attempt={entry.attempt_number} />}
       </div>
     );
   }
@@ -193,6 +194,47 @@ function Entry({ entry }: { entry: TranscriptEntry }) {
     );
   }
   return <div className="my-4 text-[14px] leading-relaxed">{entry.content}</div>;
+}
+
+/** Under each answer, for the instructor: the verdict, every failed criterion
+ *  with the Assessment Agent's reason, and the passed ones on one line. */
+function JudgmentCard({ judgment, attempt }: { judgment: Judgment; attempt: number | null }) {
+  const failed = judgment.criteria.filter((c) => !c.passed);
+  const passed = judgment.criteria.filter((c) => c.passed);
+  const pass = judgment.verdict === "PASS";
+  return (
+    <div className="w-full max-w-[85%] rounded-lg border text-[13px]">
+      <div className="flex items-center justify-between rounded-t-lg border-b bg-muted/40 px-3 py-2">
+        <span className="font-medium">Attempt {attempt}</span>
+        <span
+          className={cn(
+            "rounded-full px-2 py-px text-[12px] font-medium",
+            pass ? "bg-accent-soft text-accent-soft-foreground" : "bg-fail text-fail-foreground",
+          )}
+        >
+          {pass ? "Passed" : "Not passed"}
+        </span>
+      </div>
+      {failed.map((c) => (
+        <div key={c.criterion} className="flex gap-2.5 border-b border-border/60 px-3 py-2 leading-[1.55] last:border-b-0">
+          <span className="flex w-[130px] shrink-0 items-start gap-1.5 font-medium text-fail-foreground">
+            <X className="mt-[3px] h-3.5 w-3.5 shrink-0" aria-hidden />
+            {c.criterion}
+          </span>
+          <span className="text-[#3f3f46]">{c.reason || "No reason given."}</span>
+        </div>
+      ))}
+      {passed.length > 0 && (
+        <div className="flex gap-2.5 px-3 py-2 leading-[1.55] text-muted-foreground">
+          <span className="flex w-[130px] shrink-0 items-start gap-1.5 font-medium text-primary">
+            <Check className="mt-[3px] h-3.5 w-3.5 shrink-0" aria-hidden />
+            Passed
+          </span>
+          <span>{passed.map((c) => c.criterion).join(", ")}</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function Notice({ children }: { children: React.ReactNode }) {

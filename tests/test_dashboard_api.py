@@ -289,6 +289,11 @@ async def test_the_instructor_can_read_their_students_transcript(world):
     assert body["reading_title"] == "Strategy"
     assert body["class_name"] == "STRAMA K31"
     assert [s["step"] for s in body["steps"]] == ["State", "Elaborate"]
+    # Each answer comes with how it was judged: the verdict and which criteria failed.
+    answers = [e for e in body["timeline"] if e["role"] == "student"]
+    assert [a["judgment"]["verdict"] for a in answers] == ["PASS", "FAIL", "FAIL", "FAIL"]
+    assert {c["criterion"] for c in answers[1]["judgment"]["criteria"]} == {"Completeness", "Coherence"}
+    assert not any(c["passed"] for c in answers[1]["judgment"]["criteria"])
 
 
 @pytest.mark.anyio
@@ -298,4 +303,7 @@ async def test_a_transcript_stays_closed_to_everyone_else(world):
     async with signed_in(world["mateo"]) as classmate:
         assert (await classmate.get(f"/sessions/{world['bea_session']}/transcript")).status_code == 404
     async with signed_in(world["bea"]) as bea:
-        assert (await bea.get(f"/sessions/{world['bea_session']}/transcript")).status_code == 200
+        r = await bea.get(f"/sessions/{world['bea_session']}/transcript")
+    assert r.status_code == 200
+    # The student reads their own session, but not how each answer was judged.
+    assert all(e.get("judgment") is None for e in r.json()["timeline"])
