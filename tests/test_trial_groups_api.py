@@ -37,20 +37,22 @@ class Recording(MockProvider):
 
     def __init__(self):
         super().__init__({})
-        self.sent: list[list[tuple[str, str]]] = []
+        self.sent: list[list[tuple]] = []
         self.systems: list[str | None] = []
+        self.searching: list[bool] = []
 
-    def chat_stream(self, turns, system=None):
+    def chat_stream(self, turns, system=None, web_search=False, found=None):
         self.sent.append(list(turns))
         self.systems.append(system)
-        yield from super().chat_stream(turns, system)
+        self.searching.append(web_search)
+        yield from super().chat_stream(turns, system, web_search, found)
 
 
 class Broken(LLMProvider):
     def complete(self, system_prompt, user_prompt):
         raise RuntimeError("simulated outage")
 
-    def chat_stream(self, turns, system=None):
+    def chat_stream(self, turns, system=None, web_search=False, found=None):
         yield "Half a rep"
         raise RuntimeError("simulated outage mid-reply")
 
@@ -101,6 +103,40 @@ async def _say(client, text):
 
 
 @pytest.mark.anyio
+async def test_the_chatbot_can_search_the_web_and_keeps_the_record(team, chatbot, trial_on, monkeypatch):
+    import csv
+    import io
+    import zipfile
+
+    from backend.settings import get_settings
+
+    monkeypatch.setenv("CHATBOT_WEB_SEARCH", "true")
+    get_settings.cache_clear()
+    ids = await _ids(team)
+    async with as_participant(ids["chatbot"]) as me:
+        await me.post("/trial/clock")
+        first = await _say(me, "What is an offensive?")
+        await _say(me, "And another?")
+        history = (await me.get("/trial/chat")).json()
+
+    assert chatbot.searching == [True, True]
+    # The participant sees the reply only: no sources in the stream or the history.
+    assert "example.com" not in str(first) and "example.com" not in str(history)
+    # The first reply's search record goes back with it on the next turn.
+    second_turns = chatbot.sent[-1]
+    assert second_turns[1][0] == "assistant" and second_turns[1][2]["server_tool_calls"]
+    replies = [m for m in await _rows(trial_on, ChatMessage, ids["chatbot"]) if m.role == "assistant"]
+    assert all(m.search and m.search["annotations"] for m in replies)
+
+    async with as_user(team["prof"]) as prof:
+        data = (await prof.get("/instructor/export")).content
+    text = zipfile.ZipFile(io.BytesIO(data)).read("chat_messages.csv").decode("utf-8-sig")
+    rows = [r for r in csv.DictReader(io.StringIO(text)) if r["participant_id"] == ids["chatbot"]]
+    assert [r["searched"] for r in rows] == ["", "True", "", "True"]
+    assert rows[1]["sources"] == "https://example.com/mock-source"
+
+
+@pytest.mark.anyio
 async def test_the_chatbot_is_a_conversation_given_the_reading_and_no_prompt(team, chatbot, trial_on):
     ids = await _ids(team)
     async with as_participant(ids["chatbot"]) as me:
@@ -116,9 +152,10 @@ async def test_the_chatbot_is_a_conversation_given_the_reading_and_no_prompt(tea
     # no teaching instructions.
     system = chatbot.systems[-1]
     assert "READING: Cognitive Offloading" in system and "\nbody\n" in system
-    assert chatbot.sent[-1][0] == ("user", "What is offloading?")
-    assert chatbot.sent[-1][-1] == ("user", "An example?")
-    assert [r for r, _ in chatbot.sent[-1]] == ["user", "assistant", "user"]
+    assert chatbot.sent[-1][0][:2] == ("user", "What is offloading?")
+    assert chatbot.sent[-1][-1][:2] == ("user", "An example?")
+    assert [t[0] for t in chatbot.sent[-1]] == ["user", "assistant", "user"]
+    assert chatbot.searching == [False, False]   # off unless the setting says so
     assert [(m["role"], m["content"][:11]) for m in history] == [
         ("user", "What is off"),
         ("assistant", "[MOCK chatb"),

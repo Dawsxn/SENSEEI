@@ -142,6 +142,45 @@ def test_the_openai_compatible_provider_streams_and_keeps_usage(monkeypatch):
     assert [m["role"] for m in sent["messages"]] == ["user", "assistant", "user"]
 
 
+def test_the_openai_compatible_provider_searches_the_web_when_asked(monkeypatch):
+    from agents.providers.openai_compat import OpenAICompatProvider
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
+    p = OpenAICompatProvider(
+        {"model": "deepseek-flash", "api_key_env": "DEEPSEEK_API_KEY",
+         "base_url": "https://api.deepseek.com", "json_mode": False}
+    )
+    sent = {}
+    calls = [{"type": "deepseek_web_search", "query": "strategic offensive"}]
+    cites = [{"type": "url_citation", "url_citation": {"url": "https://a.example", "title": "A"}}]
+
+    def create(**kwargs):
+        sent.update(kwargs)
+        last = SimpleNamespace(
+            choices=[SimpleNamespace(
+                delta=SimpleNamespace(content=None, server_tool_calls=calls, annotations=cites),
+                finish_reason="stop",
+            )],
+            usage=None,
+        )
+        return iter([_chunk("An offensive"), _chunk(" is…"), last])
+
+    p.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+
+    found = {}
+    turns = [("user", "a"), ("assistant", "b", {"server_tool_calls": [{"q": 1}]}), ("user", "c")]
+    assert "".join(p.chat_stream(turns, "sys", web_search=True, found=found)) == "An offensive is…"
+    assert sent["tools"] == [{"type": "deepseek_web_search"}]
+    assert sent["messages"][2] == {"role": "assistant", "content": "b", "server_tool_calls": [{"q": 1}]}
+    assert found == {"server_tool_calls": calls, "annotations": cites}
+
+    # Off: no tool, and an earlier record is not sent.
+    found = {}
+    sent.clear()
+    list(p.chat_stream(turns, "sys", found=found))
+    assert "tools" not in sent and "server_tool_calls" not in sent["messages"][2]
+
+
 def test_a_provider_error_is_logged_without_the_key(monkeypatch, caplog):
     from backend.services.provider_errors import log_failure
 

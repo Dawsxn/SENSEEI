@@ -37,6 +37,7 @@ from ..models import (
     TutorMessage,
     class_label,
 )
+from . import chat_service
 from .test_service import scores
 from .trial_service import deadline, require_trial
 
@@ -56,7 +57,8 @@ sessions.csv        the SEE-I group's sessions: how each ended and on which step
 attempts.csv        every SEE-I answer, with its verdict
 criteria.csv        every criterion judged on every answer, with the reason
 tutor_messages.csv  everything the tutor said, in order
-chat_messages.csv   the chatbot group's conversations, both sides
+chat_messages.csv   the chatbot group's conversations, both sides, with the
+                    pages each reply cited when it searched the web
 events.csv          what each participant did: panels, pages, pastes (length
                     only), replies shown, first keystrokes, leaving the tab
 """
@@ -234,8 +236,16 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
         .order_by(ChatMessage.created_at)
     )
     files["chat_messages.csv"] = _csv(
-        ["participant_id", "role", "created_at", "content"],
-        [[by_participant[m.participant_id], m.role, _iso(m.created_at), m.content] for m in chat],
+        ["participant_id", "role", "created_at", "content", "searched", "sources", "search"],
+        [
+            [
+                by_participant[m.participant_id], m.role, _iso(m.created_at), m.content,
+                "" if m.role == "user" else bool(m.search),
+                " ".join(chat_service.sources(m.search)),
+                json.dumps(m.search) if m.search else "",
+            ]
+            for m in chat
+        ],
     )
 
     events = await db.scalars(

@@ -153,6 +153,7 @@ System Usability Scale composite, 0–100: average and spread, against the commo
 
 - **Narrow the claim.** "The variable distinguishing the two AI-assisted groups is the SEE-I scaffolding" claims more than the design can show: SENSEE-I also makes students write explanations, gives rubric feedback with retries, and knows the reading. Change to "the SEE-I-based design of SENSEE-I", which matches objective 5, and name what is bundled in the limitations.
 - **The chatbot is given the reading** as its only context, with no teaching instructions, and participants are told so. State it in §4.6.2: the AI groups differ only in guidance.
+- **The chatbot can search the web**, as a typical chatbot can; its citations are not shown to participants. SENSEE-I cannot search, so state this difference in §4.6.2 alongside the reading. Which replies searched, and which pages they cited, are in the data.
 - **The measures change:** a one-question pre-test, and an 8-question post-test on the four dimensions of conceptual understanding (true/false sets, written questions, short cases and a checklist), each built around known misconceptions, with an "Is this answer fully correct?" choice after the first 7.
 - **"Qualitatively"**: see analysis item 7.
 
