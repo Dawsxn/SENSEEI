@@ -18,6 +18,9 @@ const api = vi.hoisted(() => ({
   getGradingList: vi.fn(),
   getGrading: vi.fn(),
   setScore: vi.fn(),
+  getTrialStatus: vi.fn(),
+  getReading: vi.fn(),
+  getMe: vi.fn(),
 }));
 
 vi.mock("../../lib/api", async () => {
@@ -49,10 +52,12 @@ const pre: TestView = {
   minutes: 5,
   started: true,
   seconds_left: 240,
-  strategies: [],
-  strategy_list_parts: [],
+  part_intros: {},
   items: [
-    { id: "pre", kind: "text", part: "", question: "Define a strategic offensive.", options: [], points: 3, ticked: false },
+    {
+      id: "pre", kind: "text", part: "", question: "Define a strategic offensive.", options: [],
+      statements: [], steps: [], lock_first: false, points: 3, ticked: false,
+    },
   ],
   answers: [],
 };
@@ -62,8 +67,17 @@ const item = (id: string, part: string, kind: TestItem["kind"] = "text"): TestIt
   kind,
   part,
   question: `Question ${id}`,
-  options: kind === "choice" ? [{ key: "a", text: "First" }, { key: "b", text: "Second" }] : [],
-  points: kind === "choice" ? 1 : kind === "groups" ? 0 : 2,
+  options: [],
+  statements:
+    kind === "truefalse"
+      ? [{ key: "a", text: "First statement" }, { key: "b", text: "Second statement" }]
+      : [],
+  steps:
+    kind === "steps"
+      ? [{ key: "a", prompt: "Write a checklist." }, { key: "b", prompt: "Use it." }, { key: "c", prompt: "Check it." }]
+      : [],
+  lock_first: kind === "steps",
+  points: kind === "truefalse" ? 2 : 3,
   ticked: part !== "D",
 });
 
@@ -72,15 +86,21 @@ const post: TestView = {
   minutes: 30,
   started: true,
   seconds_left: 1500,
-  strategies: ["Cutting prices", "Moving first"],
-  strategy_list_parts: ["D"],
-  items: [item("q1", "A", "choice"), item("q5", "B"), item("q12a", "D", "groups"), item("q12b", "D")],
+  part_intros: { A: "For each statement, choose True or False." },
+  items: [item("q1", "A", "truefalse"), item("q5", "B"), item("q8", "D", "steps")],
   answers: [{ item: "q5", text: "Already typed", sure: true }],
 };
 
 beforeEach(() => {
   vi.clearAllMocks();
   api.saveTestAnswer.mockResolvedValue({});
+  api.getTrialStatus.mockResolvedValue({
+    code: "P-7K3Q-9TXM", mode: "seei", done: false, reading_id: "r1", minutes: 35,
+    seconds_left: null, time_up: false, session: null, test_stage: "pretest",
+    test_minutes: { pre: 5, post: 30 },
+  });
+  api.getReading.mockResolvedValue({ id: "r1", title: "Strategic Offensives" });
+  api.getMe.mockRejectedValue(new Error("not signed in"));
 });
 
 describe("the pre-test", () => {
@@ -93,7 +113,8 @@ describe("the pre-test", () => {
     await waitFor(() =>
       expect(api.saveTestAnswer).toHaveBeenLastCalledWith("pre", "pre", { text: "A move" }),
     );
-    expect(screen.getByRole("timer")).toHaveTextContent(/[34]:\d\d left/);
+    // No countdown is shown, only pop-ups as time runs low.
+    expect(screen.queryByRole("timer")).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
     const dialog = screen.getByRole("alertdialog");
@@ -106,8 +127,17 @@ describe("the pre-test", () => {
   it("waits for Start before its clock runs", async () => {
     api.getTest.mockResolvedValue({ ...pre, started: false, seconds_left: null });
     api.startTest.mockResolvedValue(pre);
+    api.getMe.mockResolvedValue({ id: "u1", name: "P-7K3Q-9TXM", role: "student", participant: true });
     renderAt("/pretest", <PreTestScreen />);
+    // Every group's welcome first, with their steps and times.
+    expect(await screen.findByText("Good day!")).toBeInTheDocument();
+    const steps = screen.getByRole("list", { name: "Your steps" });
+    expect(steps).toHaveTextContent("About SENSEE-I");
+    expect(steps).toHaveTextContent("Reading and tutoring session35 min");
+    expect(screen.getByText("70 minutes in total")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
     expect(await screen.findByText("You have 5 minutes.")).toBeInTheDocument();
+    expect(await screen.findByText(/already know about strategic offensives/)).toBeInTheDocument();
     expect(api.startTest).not.toHaveBeenCalled();
     await userEvent.click(screen.getByRole("button", { name: "Start" }));
     expect(api.startTest).toHaveBeenCalledWith("pre");
@@ -118,28 +148,73 @@ describe("the post-test", () => {
   it("waits for Start before its clock runs", async () => {
     api.getTest.mockResolvedValue({ ...post, started: false, seconds_left: null });
     api.startTest.mockResolvedValue(post);
+    api.getMe.mockResolvedValue({ id: "u1", name: "P-7K3Q-9TXM", role: "student", participant: true });
     renderAt("/posttest", <PostTestScreen />);
-    expect(await screen.findByText(/You have 30 minutes, and the reading won.t be shown\./)).toBeInTheDocument();
+    expect(await screen.findByText("You have 30 minutes.")).toBeInTheDocument();
+    expect(screen.getByText(/Only choose .Yes, I.m sure. if you expect full marks/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Start" }));
     expect(api.startTest).toHaveBeenCalledWith("post");
     expect(await screen.findByText("Question q1")).toBeInTheDocument();
   });
 
-  it("shows the parts, the strategy list, and what is answered", async () => {
+  it("shows the parts, marks true/false statements, and what is answered", async () => {
     api.getTest.mockResolvedValue(post);
     renderAt("/posttest", <PostTestScreen />);
 
     expect(await screen.findByRole("heading", { name: "Part D" })).toBeInTheDocument();
-    expect(screen.getByText(/Cutting prices/)).toBeInTheDocument();
+    expect(screen.getByText("For each statement, choose True or False.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Question 5, answered" })).toBeInTheDocument();
     expect(screen.getByText("1 of 3 answered")).toBeInTheDocument();
 
-    await userEvent.click(screen.getByLabelText(/a\. First/));
+    // Each statement is marked on its own, and the whole set is sent.
+    const a = screen.getByRole("radiogroup", { name: "Statement a" });
+    await userEvent.click(within(a).getByLabelText("True"));
+    const b = screen.getByRole("radiogroup", { name: "Statement b" });
+    await userEvent.click(within(b).getByLabelText("False"));
     await waitFor(() =>
-      expect(api.saveTestAnswer).toHaveBeenCalledWith("post", "q1", { choice: "a" }),
+      expect(api.saveTestAnswer).toHaveBeenLastCalledWith("post", "q1", { parts: { a: true, b: false } }),
     );
+    // Answered but not yet ticked: the tick is required.
+    expect(screen.getByRole("button", { name: "Question 1, needs how sure" })).toBeInTheDocument();
+    expect(screen.getByText("Required")).toBeInTheDocument();
+    await userEvent.click(screen.getByLabelText(/No, I.m not sure/, { selector: "input[name='q1-sure']" }));
     expect(screen.getByRole("button", { name: "Question 1, answered" })).toBeInTheDocument();
-    expect(screen.getByLabelText(/I.m sure/, { selector: "input[name='q5-sure']" })).toBeChecked();
+    expect(screen.queryByText("Required")).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Yes, I.m sure/, { selector: "input[name='q5-sure']" })).toBeChecked();
+  });
+
+  it("locks the first part of a question in steps once a later part is started", async () => {
+    api.getTest.mockResolvedValue(post);
+    renderAt("/posttest", <PostTestScreen />);
+
+    const first = await screen.findByLabelText("Answer to question 8, part a");
+    await userEvent.type(first, "Does a rival lose?");
+    expect(first).toBeEnabled();
+    await userEvent.type(screen.getByLabelText("Answer to question 8, part b"), "No.");
+    expect(first).toBeDisabled();
+    expect(screen.getByText(/Locked, since you.ve started part \(b\)/)).toBeInTheDocument();
+  });
+
+  it("asks for the ticks on answered questions before submitting, not on blank ones", async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    api.getTest.mockResolvedValue({
+      ...post,
+      answers: [{ item: "q5", text: "Typed, no tick" }],
+    });
+    api.submitTest.mockResolvedValue({ test_stage: "done" });
+    renderAt("/posttest", <PostTestScreen />);
+
+    await userEvent.click((await screen.findAllByRole("button", { name: "Submit" }))[0]);
+    const ask = screen.getByRole("alertdialog");
+    expect(ask).toHaveTextContent("Choose Yes or No under every question you answered.");
+    await userEvent.click(within(ask).getByRole("button", { name: "Show me" }));
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    expect(api.submitTest).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByLabelText(/Yes, I.m sure/, { selector: "input[name='q5-sure']" }));
+    await userEvent.click(screen.getAllByRole("button", { name: "Submit" })[0]);
+    // q1 and q8 are blank, so they need no tick: straight to the usual confirmation.
+    expect(screen.getByRole("alertdialog")).toHaveTextContent("2 questions have no answer");
   });
 
   it("says how many questions are blank before submitting", async () => {
@@ -167,8 +242,20 @@ describe("grading", () => {
     posttest_total: null,
     calibration: null,
     sure_but_wrong: null,
-    choices: [{ item: "q1", choice: "b", answer: "a", correct: false, sure: true }],
-    groups: null,
+    choices: [],
+    sets: [
+      {
+        item: "q1",
+        question: "Which of these are true of a strategic offensive?",
+        sure: true,
+        score: 1,
+        points: 2,
+        statements: [
+          { key: "a", text: "It takes from rivals.", answer: true, picked: true },
+          { key: "b", text: "Any growth counts.", answer: false, picked: null },
+        ],
+      },
+    ],
     written: [
       {
         test: "pre",
@@ -188,9 +275,10 @@ describe("grading", () => {
         text: "",
         sure: false,
         score: null,
-        points: 2,
+        points: 3,
         reference: "Strength meets weakness.",
         criteria: [
+          { points: 3, text: "Explains the link and the goal." },
           { points: 2, text: "Explains the link." },
           { points: 1, text: "States it." },
           { points: 0, text: "No link." },
@@ -206,7 +294,9 @@ describe("grading", () => {
     renderAt("/grading", <GradingPage />);
 
     expect(await screen.findByText("1 left")).toBeInTheDocument();
-    expect(await screen.findByText("Picked b · Answer is a")).toBeInTheDocument();
+    // A true/false set: each statement, what they marked, and the key.
+    expect(await screen.findByText("True · Correct")).toBeInTheDocument();
+    expect(screen.getByText("Blank · Answer is False")).toBeInTheDocument();
     expect(screen.getByText("1 / 3")).toBeInTheDocument();
     expect(screen.getAllByText("Not graded yet")).toHaveLength(2);
     expect(screen.getByText("No answer")).toBeInTheDocument();

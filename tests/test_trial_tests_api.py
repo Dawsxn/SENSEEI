@@ -9,6 +9,7 @@ the strategic offensives test is written for.
 from __future__ import annotations
 
 import csv
+import json
 import io
 import zipfile
 from datetime import timedelta
@@ -111,15 +112,15 @@ async def _take_posttest(me, right: bool = True):
     test = load()[KEY]
     assert (await me.post("/trial/tests/post/start")).status_code == 200
     for item in test.posttest:
-        if item.kind == "choice":
-            pick = item.answer if right else next(k for k in item.options if k != item.answer)
-            r = await me.put(f"/trial/tests/post/answers/{item.id}", json={"choice": pick, "sure": True})
+        if item.kind == "truefalse":
+            marks = {k: st.answer if right else not st.answer for k, st in item.statements.items()}
+            r = await me.put(f"/trial/tests/post/answers/{item.id}", json={"parts": marks, "sure": True})
         elif item.kind == "text":
             r = await me.put(f"/trial/tests/post/answers/{item.id}", json={"text": "Because of strengths.", "sure": False})
         else:
             r = await me.put(
                 f"/trial/tests/post/answers/{item.id}",
-                json={"groups": [{"name": "Price", "strategies": "lower price", "why": "cheaper"}]},
+                json={"parts": {"a": "Does a rival lose?", "b": "No.", "c": "It worked."}},
             )
         assert r.status_code == 200, r.text
     r = await me.post("/trial/tests/post/submit")
@@ -134,8 +135,9 @@ async def _take_posttest(me, right: bool = True):
 async def test_the_test_file_adds_up():
     test = load()[KEY]
     assert test.total(PRE) == 3
-    assert test.total(POST) == 20
-    assert sum(i.ticked for i in test.posttest) == 11
+    assert test.total(POST) == 30                        # 3 sets of 5, 5 written out of 3
+    assert sum(i.ticked for i in test.posttest) == 7     # A1 to C7; Part D has none
+    assert [i.kind for i in test.posttest] == ["truefalse"] * 3 + ["text"] * 4 + ["steps"]
     assert test.pretest_minutes == 5 and test.posttest_minutes == 30
 
 
@@ -194,13 +196,16 @@ async def test_the_stages_run_in_order_and_the_server_holds_them(setup):
 
         status = await _through_pretest(me)
         assert status["test_stage"] == "session"
+        # The welcome screen's step times come from the test file.
+        assert status["test_minutes"] == {"pre": 5, "post": 30}
         assert (await me.put("/trial/tests/pre/answers/pre", json={"text": "late"})).status_code == 409
 
         assert (await me.post("/trial/clock")).status_code == 200
         assert (await me.post("/trial/done")).status_code == 200
         assert await _stage(me) == "posttest_ready"
         view = (await me.get("/trial/tests/post")).json()
-        assert view["started"] is False and len(view["items"]) == 13
+        assert view["started"] is False and len(view["items"]) == 8
+        assert view["part_intros"]["A"] == "For each statement, choose True or False."
 
         await _take_posttest(me)
         assert await _stage(me) == "done"
@@ -229,13 +234,14 @@ async def test_blank_answers_score_zero_when_a_test_ends(setup):
         await me.post("/trial/clock")
         await me.post("/trial/done")
         await me.post("/trial/tests/post/start")
-        await me.put("/trial/tests/post/answers/q1", json={"choice": "a"})
+        await me.put("/trial/tests/post/answers/q1", json={"parts": {"a": True, "b": True}})
         await me.post("/trial/tests/post/submit")
     answers = await _answers(setup["url"], code)
     assert answers[("pre", "pre")].score == 0
-    assert answers[("post", "q1")].score == 0             # wrong choice
-    assert answers[("post", "q5")].score == 0             # never answered
-    assert ("post", "q12a") not in answers                # not scored, so not zeroed
+    assert answers[("post", "q1")].score == 1             # a right, b wrong, c to e blank
+    assert answers[("post", "q2")].score == 0             # never answered
+    assert answers[("post", "q5")].score == 0
+    assert answers[("post", "q8")].score == 0             # in steps, never answered
 
 
 @pytest.mark.anyio
@@ -249,7 +255,8 @@ async def test_each_answer_keeps_its_history(setup):
         for text in ("A", "AB", "AB"):                     # the last save changes nothing
             await me.put("/trial/tests/post/answers/q5", json={"text": text})
         await me.put("/trial/tests/post/answers/q5", json={"sure": True})
-        assert (await me.put("/trial/tests/post/answers/q1", json={"choice": "z"})).status_code == 422
+        assert (await me.put("/trial/tests/post/answers/q1", json={"parts": {"z": True}})).status_code == 422
+        assert (await me.put("/trial/tests/post/answers/q1", json={"parts": {"a": "yes"}})).status_code == 422
         assert (await me.put("/trial/tests/post/answers/q99", json={"text": "x"})).status_code == 404
     a = (await _answers(setup["url"], code))[("post", "q5")]
     assert a.edits == 2 and a.sure is True
@@ -307,18 +314,23 @@ async def test_the_grader_sees_ids_scores_and_rubrics_but_never_the_group(setup,
         assert (await grader.get("/instructor/batches")).status_code == 403
         assert (await grader.get("/instructor/export")).status_code == 403
         listed = (await grader.get("/instructor/grading")).json()
-        assert listed == [{"code": code, "left": 9, "posttest_ended": True}]
+        assert listed == [{"code": code, "left": 6, "posttest_ended": True}]   # pre + 5 written
 
         detail = (await grader.get(f"/instructor/grading/{code}")).json()
         assert "reading_only" not in str(detail) and "group" not in detail
         assert detail["posttest_total"] is None and detail["pretest_score"] is None
-        assert all(c["correct"] for c in detail["choices"])
-        assert detail["groups"][0]["name"] == "Price"
+        assert [s["score"] for s in detail["sets"]] == [5, 5, 5]
+        assert detail["sets"][0]["statements"][1] == {
+            "key": "b", "text": detail["sets"][0]["statements"][1]["text"], "answer": False, "picked": False,
+        }
         written = {(w["test"], w["item"]): w for w in detail["written"]}
         assert written[("pre", "pre")]["points"] == 3
-        assert written[("post", "q5")]["criteria"][0]["points"] == 2
+        assert written[("post", "q5")]["criteria"][0]["points"] == 3
+        assert written[("post", "q5")]["reference"]
+        steps = written[("post", "q8")]["parts"]
+        assert [p["key"] for p in steps] == ["a", "b", "c"] and steps[1]["text"] == "No."
 
-        assert (await grader.put(f"/instructor/grading/{code}/post/q5", json={"score": 3})).status_code == 422
+        assert (await grader.put(f"/instructor/grading/{code}/post/q5", json={"score": 4})).status_code == 422
         assert (await grader.put(f"/instructor/grading/{code}/post/q1", json={"score": 1})).status_code == 422
         for (which, item), w in written.items():
             r = await grader.put(f"/instructor/grading/{code}/{which}/{item}", json={"score": w["points"]})
@@ -327,9 +339,9 @@ async def test_the_grader_sees_ids_scores_and_rubrics_but_never_the_group(setup,
 
     assert done["left"] == 0
     assert done["pretest_score"] == 3
-    assert done["posttest_total"] == 20
-    # Every choice ticked "sure" and right; every written answer "not sure" but full marks.
-    assert done["calibration"] == round(4 / 11, 3)
+    assert done["posttest_total"] == 30
+    # Every set ticked "sure" and all right; every written answer "not sure" but full marks.
+    assert done["calibration"] == round(3 / 7, 3)
     assert done["sure_but_wrong"] == 0
 
 
@@ -354,7 +366,29 @@ async def test_the_export_has_the_tests(setup, team):
     tests = [r for r in rows("tests.csv") if r["participant_id"] == code]
     q1 = next(r for r in tests if r["question"] == "q1")
     assert q1["score"] == "0" and q1["sure"] == "True" and q1["dimension"] == "facts"
-    assert q1["max_score"] == "1" and q1["edits"] == "1"
+    assert q1["max_score"] == "5" and q1["edits"] == "1" and q1["kind"] == "truefalse"
+    assert json.loads(q1["answer"]) == {"a": False, "b": True, "c": False, "d": True, "e": False}
+    q8 = next(r for r in tests if r["question"] == "q8")
+    assert json.loads(q8["answer"])["b"] == "No."
+
+
+@pytest.mark.anyio
+async def test_the_checklist_locks_once_the_case_is_started(setup):
+    code = setup["reading_only"]
+    async with as_participant(code) as me:
+        await _through_pretest(me)
+        await me.post("/trial/clock")
+        await me.post("/trial/done")
+        await me.post("/trial/tests/post/start")
+        put = lambda parts: me.put("/trial/tests/post/answers/q8", json={"parts": parts})
+        assert (await put({"a": "Is it aggressive?"})).status_code == 200
+        assert (await put({"a": "Is it aggressive? Does it grow?"})).status_code == 200   # still free
+        assert (await put({"b": "Yes, it grows."})).status_code == 200
+        r = await put({"a": "Does a rival lose anything?"})
+        assert r.status_code == 422                                   # locked now
+        assert (await put({"a": "Is it aggressive? Does it grow?", "c": "I'd add a rival question."})).status_code == 200
+    a = (await _answers(setup["url"], code))[("post", "q8")]
+    assert a.parts == {"a": "Is it aggressive? Does it grow?", "b": "Yes, it grows.", "c": "I'd add a rival question."}
 
 
 # --------------------------------------------------------------------------- #

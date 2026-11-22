@@ -84,7 +84,7 @@ What it changes:
 | Who signs in | DLSU Google accounts | Participants by ID; the research team and the grader by Google, and no one else |
 | Sessions per reading | Unlimited | One per participant |
 | After a session ends | Start a new attempt | Nothing further |
-| Time | No limit | 35 minutes, with a countdown (plus each test's own) |
+| Time | No limit | 35 minutes, with time pop-ups but no visible countdown (plus each test's own) |
 | A class | A SEE-I class | SEE-I, chatbot, or reading-only |
 | Interaction events | Not recorded | Recorded (see below) |
 
@@ -119,10 +119,14 @@ The trial instance honours this by **never holding identity at all**:
 1. **The team makes a batch of IDs** on the Participants tab before a sitting,
    choosing how many each class gets: "5 for each of the three classes". Each ID
    looks like `P-7K3Q-9TXM`, in the same unambiguous alphabet as join codes, and
-   nothing in it hints at the group. The IDs are drawn in a shuffled order.
-2. **The slips are printed** in that order: the ID and where to enter it, never
-   the class. Handing them out from the top of the stack assigns the groups at
-   random, in equal numbers per sitting (block randomization).
+   nothing in it hints at the group. The batch page lists them by class, with a
+   filter for one class and a copy button beside each ID.
+2. **The slips are printed** grouped by class, or one class at a time with the
+   filter. A line above each class's slips names it; it is cut off before the
+   slips go into the bowl. A slip itself shows only the ID and where to enter it,
+   never the class. **The fishbowl does the randomizing:** an equal number of
+   slips per class goes in, so drawing assigns the groups at random, in equal
+   numbers per sitting (block randomization).
 3. **At consent**, the participant draws a slip and the researcher writes the ID
    on both consent copies. That form is the only place an ID meets a name, and
    the participant does not know their group until they sign in.
@@ -169,17 +173,24 @@ anyone else is an ID.
 - **The clock starts on Start in "Before you start"**, the one-line
   instructions every group sees over its reading, so nobody loses time before
   they are ready. The 35 minutes cover reading as well as the activity, as the manuscript's intervention phase does. The server
-  holds the clock; the countdown only draws it, so a reload does not restart it
+  holds the clock; the screen only follows it, so a reload does not restart it
   and nothing the browser sends buys more time.
-- **A countdown is visible**, the same in all three groups, so no group is
-  treated differently. It turns amber in the last five minutes.
+- **No countdown is shown.** A running clock confused people in the user
+  acceptance test. Instead a small card says "15 minutes left", then 5, then 1
+  (`TimeNotices.tsx`); it stays until closed and never takes the cursor. The SEE-I
+  group also gets one at 10 minutes into the reading, saying the session is
+  waiting and the reading stays open beside it. The same in all three groups
+  otherwise, so no group is treated differently. The pre-test's card comes at 1
+  minute left, the post-test's at 10, 5 and 1.
 - **At 0:00 everything stops.** The screen says time is up, and whatever was in
   progress is recorded as ended by time (`timed_out`, at the deadline itself).
-  An answer sent after the deadline is not graded. That ending is kept and counted: the
+  An answer sent after the deadline is not graded, with one exception: in the
+  SEE-I group, an answer typed but not yet sent when time runs out is sent for
+  them, graded and stored as their last attempt, and replied to (see below). That ending is kept and counted: the
   analysis is intention-to-treat (§4.6.2), so a session cut off at Exemplify
   counts exactly as one that reached Illustrate.
 - **Finishing early ends the activity, not the sitting.** A SEE-I participant who
-  completes all four steps, or reaches the fallback, sees that they are done and
+  completes all four steps sees that they are done and
   is given nothing further, and remains at their station until the period ends
   (§4.6.4).
 
@@ -187,8 +198,22 @@ anyone else is an ID.
 
 The ordinary tutoring loop, once. No "Start a new attempt" after it ends, no way
 out of the session, and no class label on screen, since a class name could name
-the group. A reload picks the session back up. Running out of attempts ends it
-like finishing does, without the usual "your instructor has been notified".
+the group. A reload picks the session back up.
+
+**No attempt limit.** On the trial instance a participant keeps trying a step
+until they pass or their time runs out (`attempt_limit()` in
+`backend/orchestrator.py`), so a trial session never ends in fallback and the
+attempt dots are not shown. Elsewhere the limit is `MAX_ATTEMPTS`.
+
+**An answer left in the box at time-up is sent for them.** The screen sends it
+the moment it sees time is up, flagged `time_up`. The server takes it once and
+only within `TIME_UP_GRACE` of the deadline, ends the session first, then grades
+and stores it as an ordinary attempt. The reply says how it did without moving
+on: a pass is acknowledged with no next question, a fail gets its feedback with
+no request to try again. A pass on Illustrate marks the session complete. Grading
+finishes even if they move on to the post-test meanwhile. It is logged as `time_up_submit`, with the
+text itself if grading failed, since an attempt row is only written with its
+judgment.
 
 ### The chatbot group (active control)
 
@@ -196,15 +221,16 @@ A general-purpose chat with **no pedagogical prompt**, on **the same model** and
 settings as SENSEE-I's agents (§4.6.2), beside the same reading. Every message is
 recorded with its time, as a SEE-I session is.
 
-**The chatbot is not given the reading.** It knows only what the participant
-tells it; they may paste text from the reading in themselves. That is what
-unguided use looks like, which is what this group stands for. The cost is a
-second difference between the two AI groups, which the manuscript should state;
-the event log records how many chatbot participants pasted from the reading.
+**The chatbot is given the reading**, and the participant is told so, both
+in the "Before you start" popup and in a line above the chat. It is the reading
+and nothing more: `SYSTEM_PROMPT` in `backend/services/chat_service.py` hands it
+over and says only to use it as context, with no teaching instructions. So the
+two AI groups now differ only in guidance, since both have the reading. (Until
+the user acceptance test the chatbot was not given it; the adviser asked for it.)
 
 **What it is, exactly:** the same provider, model, temperature and thinking level
-as the agents, sent the whole conversation each turn with no system prompt at
-all. Its replies are shown the way a general-purpose chatbot shows them, with
+as the agents, sent the whole conversation each turn with the reading as its
+only system prompt. Its replies are shown the way a general-purpose chatbot shows them, with
 lists and bold, and the participant's messages sit in grey rather than SEE-I's
 green, so the screen does not read as SENSEE-I. A reload picks the conversation
 back up. A reply that fails is not stored; the message that asked for it is, and
@@ -222,16 +248,36 @@ this."); the reading stays on screen afterwards.
 
 ### Before you start
 
-Every group sees one line of instructions when its reading opens, so no group is
-told more than another:
+Every group sees its instructions when its reading opens. Each names the goal,
+understanding the reading's concept (its title, in a sentence), and says to press
+Done only once they are confident they understand it:
 
 | Group | Says |
 | --- | --- |
-| SEE-I | The session goes through SEE-I a step at a time; read the whole material first; press Done when finished |
-| Chatbot | Read the material; use the chatbot beside it however you like, though it doesn't have the reading; press Done when finished |
-| Reading only | Read the material in its entirety; press Done when finished |
+| SEE-I | Their 35 minutes cover two parts: reading on this screen (about 10 minutes suggested), then the tutoring session, where the screen splits with the reading still beside the chat. Press Done only once confident |
+| Chatbot | Read until they understand the concept; the chatbot beside it has the reading too, so they can ask it anything about it; press Done when confident |
+| Reading only | Read until they understand the concept; press Done when confident |
 
-It shows once. A participant who reloads partway does not see it again.
+It shows once. A participant who reloads partway does not see it again. Done asks
+first: the SEE-I group's "Start the tutoring session?", and the control groups'
+"Finish now?", which with tests says they go to the post-test and lose the reading
+(and the chatbot).
+
+### The briefing
+
+Added after the user acceptance test, where people went in without knowing what
+the study or SEE-I was (`frontend/src/features/trial/Briefing.tsx`). None of it is
+timed: each stage's clock still starts on its own Start.
+
+- **Welcome**, every group, before the pre-test's start screen: what the study is
+  for, their group's steps as a flowchart with each step's minutes and the total,
+  and that no timer is shown. The minutes come from `test_minutes` in `/trial/me`.
+- **About SENSEE-I** and **How the session works**, the SEE-I group only, after
+  the pre-test and before the reading, so the pre-test is answered without SEE-I
+  in mind. The first defines the four steps as the rubric grades them (Illustrate
+  is an analogy or metaphor, since the tool takes text only). The second is a
+  labelled picture of the session screen: the reading, the steps, Components,
+  Rubric (what an answer is graded on, changing with each step) and the chat box.
 
 ## What is recorded
 
@@ -249,8 +295,8 @@ Everything is keyed to the participant ID.
 From these alone, without new code: time per step and per attempt, attempts per
 step, where each participant stopped, which criteria failed on each attempt and
 **which were fixed on the next** (direct evidence of whether the feedback worked),
-answer length, how much an answer changed between attempts, and the fallback rate
-per step.
+answer length, and how much an answer changed between attempts. (The fallback
+rate is always zero on the trial: there is no attempt limit there.)
 
 ### Added in trial mode: the event log
 
@@ -346,17 +392,17 @@ which one they are in (`test_stage` on `/trial/me`):
 
 | Stage | What they see | Ends when |
 | --- | --- | --- |
-| `pretest` | "Pre-test", "You have 5 minutes." and Start, then one written question. Its clock starts on Start. The reading is not shown | Submitted, or 5 minutes |
-| `session` | The reading, chatbot or SEE-I session, as without tests. A SEE-I session's end replaces the answer box with a strip saying how it ended (complete, out of attempts, or time up) and Continue to post-test, so the last feedback stays readable. Time running out anywhere else (on the reading, or in a control group) shows a "Time's up" popup with the same button | Finished, Done, or 35 minutes |
+| `pretest` | The welcome, then "Pre-test", what it checks, "You have 5 minutes." and Start, then one written question. Its clock starts on Start. The reading is not shown | Submitted, or 5 minutes |
+| `session` | The reading, chatbot or SEE-I session, as without tests. A SEE-I session's end replaces the answer box with a strip saying how it ended (complete, or time up) and Continue to post-test, so the last feedback stays readable. Time running out anywhere else (on the reading, or in a control group) shows a "Time's up" popup with the same button | Finished, Done, or 35 minutes |
 | `posttest_ready` | "Post-test" and Start. Its clock starts on Start | Start pressed |
-| `posttest` | 12 questions, with a question list and "I'm sure / I'm not sure" ticks | Submitted, 30 minutes, or the batch closing |
+| `posttest` | 8 questions on the general concept, with a question list: three true/false sets (Part A, facts and procedures), two written questions on connections (B), two short cases on transfer (C), and a checklist to build, use and check (D, metacognition). Parts A to C end with "Is this answer fully correct? Yes, I'm sure / No, I'm not sure". That choice is required on every answered question (Submit asks for any missing; a blank question needs none), but time running out submits everything as it is | Submitted, 30 minutes, or the batch closing |
 | `done` | "You're done" | |
 
 - **The reading and the session clock do not start before the pre-test ends**,
   and the post-test cannot start before the session ends. The server refuses
   both, whatever the browser sends.
-- **Each test has its own countdown.** Finishing early moves straight on, so no
-  one waits for a slower group.
+- **Each test has its own clock**, kept out of sight like the session's. Finishing
+  early moves straight on, so no one waits for a slower group.
 - **Answers save as they are typed.** A test whose time runs out ends at its
   deadline with whatever was saved. Submitting asks first, since it cannot be
   undone.
@@ -365,12 +411,20 @@ which one they are in (`test_stage` on `/trial/me`):
   `posttest`.
 - **Each answer keeps its history:** when it was first answered, when last
   changed, and how many saves changed it.
-- **Scoring.** Multiple choice is scored as it is saved. A written answer left
-  blank scores 0 when its test ends. Every other written answer waits for the
-  grader. The pre-test score, the post-test total (out of 20) and calibration
-  appear once everything they depend on is scored. Calibration is the share of
-  ticked answers whose tick matched the result: "sure" with full marks, or "not
-  sure" without.
+- **Scoring.** A true/false set is scored as it is saved, 1 point per statement
+  marked right; a statement left blank scores 0. A written answer left blank
+  scores 0 when its test ends. Every other written answer waits for the grader,
+  0 to 3 against its rubric. Part D is one question in three parts, scored once
+  for the whole; its first part (the checklist) locks once the second is
+  started, on the screen and on the server. The pre-test score, the post-test
+  total (out of 30) and calibration appear once everything they depend on is
+  scored. Calibration is the share of ticked answers whose tick matched the
+  result: "sure" with full marks (all five statements right, for a set), or
+  "not sure" without.
+- **The test file.** `backend/trial_tests/strategic_offensives.yaml` holds the
+  questions, answer key, reference answers and rubrics. Every question is about
+  the reading's two core components; the full answer key, with why each
+  question is built the way it is, is kept with the thesis documents.
 - **The batch page.** With tests, an ID shows Finished once its post-test has
   ended, not when its session does. Closing a batch ends any test still running
   as `closed`.
@@ -379,9 +433,10 @@ which one they are in (`test_stage` on `/trial/me`):
 
 The **Grading** tab lists every ID with test answers, by ID only, with how many
 written answers are left. Opening one shows its pre-test and post-test totals,
-calibration, the multiple choice with what was picked and whether it was right,
-and each written answer with its tick, 0 to its points to click, and the rubric
-(reference answer and criteria) beside it. A score saves when clicked and can be
+calibration, each true/false set with every statement, what was marked and the
+key, and each written answer with its tick, 0 to its points to click, and the
+rubric (reference answer and criteria) beside it. Part D shows its three parts
+with their prompts. A score saves when clicked and can be
 changed at any time. The research team sees the same page, reached from the tab
 or from an ID on a batch's page; the grader sees nothing else.
 

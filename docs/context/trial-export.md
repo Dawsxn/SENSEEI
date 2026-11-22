@@ -136,6 +136,7 @@ and the attempt they were about to make (`{"panel": "rubric", "step":
 | tab_left | Left the page: another tab or window, or a reload | |
 | tab_returned | Came back | |
 | turn_failed | An AI reply failed. Nothing was graded or lost; they sent it again | `where`: `assessment`, `tutor` or `chatbot` |
+| time_up_submit | SEE-I group: time ran out with an answer typed but not sent, so it was sent for them, graded and stored as their last attempt, with a reply but no next question | `attempt_id` and `verdict`, or `graded`: false and the `text` if grading failed |
 
 ## tests.csv
 
@@ -145,13 +146,13 @@ One row per pre-test or post-test answer. Only for classes with tests.
 | --- | --- |
 | participant_id | |
 | test | `pre` or `post` |
-| question | The question's id in the test file: `pre`, `q1` to `q11`, `q12a`, `q12b` |
-| part, dimension | The post-test part (A to D) and what it measures: `facts`, `connections`, `transfer`, `metacognition` |
-| kind | `choice`, `text`, or `groups` (the 12a table) |
-| answer | The letter picked, the text written, or the 12a table as JSON |
-| sure | `True` for "I'm sure", `False` for "I'm not sure". Empty if not ticked |
-| score | The points it got. Empty until graded |
-| max_score | What full marks are worth. Empty for 12a, which is not scored |
+| question | The question's id in the test file: `pre`, `q1` to `q8` |
+| part, dimension | The post-test part (A to D) and what it measures: `facts`, `procedures`, `connections`, `transfer`, `metacognition` |
+| kind | `truefalse` (a set of statements), `text`, or `steps` (Part D, in parts) |
+| answer | The text written, or as JSON: a set's marks (`{"a": true, "b": false, ...}`, a blank statement missing) or Part D's parts (`{"a": "...", "b": "...", "c": "..."}`) |
+| sure | `True` for "Yes, I'm sure", `False` for "No, I'm not sure". Empty if not chosen |
+| score | The points it got: for a set, the statements marked right. Empty until graded |
+| max_score | What full marks are worth: 5 for a set, 3 for a written answer |
 | first_answered_at, last_changed_at | When it was first answered and last changed |
 | edits | How many saves changed it |
 | scored_at | When it was scored |

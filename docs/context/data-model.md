@@ -211,9 +211,9 @@ it is typed.
 | participant_id | |
 | test | `pre` or `post` |
 | item | The question's id in the test file. Unique with participant and test |
-| choice, text, groups | The answer: a letter, written text, or the 12a grouping table (JSON) |
+| choice, text, parts | The answer: a letter, written text, or an answer in parts (JSON): a true/false set's marks or Part D's three parts. `groups` keeps the earlier post-test's grouping table for answers already given |
 | sure | "I'm sure" (true) or "I'm not sure" (false). Null until ticked |
-| score, scored_at | Multiple choice is scored as it is saved; written answers by the grader |
+| score, scored_at | Multiple choice and true/false sets are scored as they are saved; written answers by the grader |
 | first_answered_at, last_changed_at, edits | The answer's history |
 
 The questions, answer key and rubrics are not in the database; they are in the

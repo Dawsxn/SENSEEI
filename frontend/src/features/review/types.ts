@@ -9,12 +9,20 @@ export interface StepSummary {
   passed: boolean;
 }
 
+/** How the Assessment Agent judged one answer. Sent to instructors only. */
+export interface Judgment {
+  verdict: "PASS" | "FAIL";
+  /** Failed first, then in the rubric's order. */
+  criteria: { criterion: string; passed: boolean; reason: string | null }[];
+}
+
 export interface TranscriptEntry {
   role: "tutor" | "student" | "fallback";
   step: SeeiStep;
   content: string;
   attempt_number: number | null;
   at: string;
+  judgment?: Judgment | null;
 }
 
 export interface SessionTranscript {

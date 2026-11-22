@@ -11,6 +11,7 @@
  * group it is the measure their exclusion rule uses. */
 
 import { useQueryClient } from "@tanstack/react-query";
+import { BookOpen } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -33,10 +34,27 @@ const PdfPanel = lazy(() =>
   import("../tutoring/PdfPanel").then((m) => ({ default: m.PdfPanel })),
 );
 
+/** "Before you start", for `concept` (the reading's, in a sentence). */
 const INTRO = {
-  chatbot:
-    "Read the material. You can use the chatbot beside it however you like, but it doesn't have the reading. Press Done when you're finished.",
-  reading: "Read the material in its entirety. Press Done when you're finished.",
+  chatbot: (concept: string, minutes: number) => [
+    `Read the material until you understand the concept of ${concept}. The chatbot beside it has the reading too, so you can ask it about anything in it.`,
+    `You have ${minutes} minutes. Press Done when you're confident you understand the concept.`,
+  ],
+  reading: (concept: string, minutes: number) =>
+    `Read the material until you understand the concept of ${concept}. You have ${minutes} minutes. Press Done when you're confident you understand it.`,
+};
+
+/** Done's confirmation. With a post-test next it says so, and that what they
+ *  have now (the reading, and the chatbot) goes. */
+const FINISH = {
+  chatbot: (concept: string, tests: boolean) =>
+    tests
+      ? `Press Finish when you're confident you understand the concept of ${concept}. You'll go to the post-test and won't see the reading or the chatbot again.`
+      : "You won't be able to send more messages.",
+  reading: (concept: string, tests: boolean) =>
+    tests
+      ? `Press Finish when you're confident you understand the concept of ${concept}. You'll go to the post-test and won't see the reading again.`
+      : "You can't undo this.",
 };
 
 const DONE_TEXT = "You're done. Please stay at your seat until time is up.";
@@ -66,6 +84,9 @@ function useControlGroup() {
   }
   return {
     reading,
+    concept: reading.data?.title.toLowerCase() ?? "the reading",
+    minutes: status?.minutes ?? 0,
+    tests: status?.test_stage != null,
     ended: done || timeUp,
     // Behind the popup, the bar must not say to wait: the popup moves them on.
     endText: timeUp && !done ? (timeUpPopup ? "Time's up." : TIME_UP_TEXT) : DONE_TEXT,
@@ -156,10 +177,14 @@ export function ReadingOnlyScreen() {
           <Button onClick={g.askToFinish}>Done</Button>
         </footer>
       )}
-      {g.intro && <ReadingIntroDialog body={INTRO.reading} onStart={g.closeIntro} />}
+      {g.intro && <ReadingIntroDialog body={INTRO.reading(g.concept, g.minutes)} onStart={g.closeIntro} />}
       {g.timeUpPopup && <TimeUpDialog onContinue={() => void g.moveOn()} />}
       {g.confirming && (
-        <FinishDialog body="You can't undo this." onConfirm={g.finish} onCancel={g.cancelFinish} />
+        <FinishDialog
+          body={FINISH.reading(g.concept, g.tests)}
+          onConfirm={g.finish}
+          onCancel={g.cancelFinish}
+        />
       )}
     </div>
   );
@@ -209,6 +234,10 @@ export function ChatbotScreen() {
           <Reading state={g.reading} />
         </div>
         <div className={cn("flex h-full min-h-0 flex-col", pane === "chat" ? "flex" : "hidden", "lg:flex")}>
+          <p className="flex shrink-0 items-center justify-center gap-2 border-b border-accent-soft-border bg-accent-soft py-2.5 text-[13px] text-accent-soft-foreground">
+            <BookOpen className="h-[15px] w-[15px]" aria-hidden />
+            This chatbot has the reading.
+          </p>
           <Conversation lines={state.lines} />
           {state.phase === "error" && !g.ended && (
             <p className="shrink-0 border-t border-fail-border bg-fail px-6 py-3 text-[13px] text-fail-foreground">
@@ -226,11 +255,11 @@ export function ChatbotScreen() {
         </div>
       </div>
 
-      {g.intro && <ReadingIntroDialog body={INTRO.chatbot} onStart={g.closeIntro} />}
+      {g.intro && <ReadingIntroDialog body={INTRO.chatbot(g.concept, g.minutes)} onStart={g.closeIntro} />}
       {g.timeUpPopup && <TimeUpDialog onContinue={() => void g.moveOn()} />}
       {g.confirming && (
         <FinishDialog
-          body="You won't be able to send more messages."
+          body={FINISH.chatbot(g.concept, g.tests)}
           onConfirm={g.finish}
           onCancel={g.cancelFinish}
         />

@@ -178,7 +178,7 @@ async def save_answer(
             db, user.id, which, item,
             choice=body.choice,
             text=body.text,
-            groups=None if body.groups is None else [g.model_dump() for g in body.groups],
+            parts=body.parts,
             sure=body.sure,
         )
     except TEST_ERRORS as e:

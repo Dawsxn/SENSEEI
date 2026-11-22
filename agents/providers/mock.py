@@ -137,7 +137,7 @@ class MockProvider(LLMProvider):
         for i, word in enumerate(words):
             yield word if i == 0 else " " + word
 
-    def chat_stream(self, turns: list[tuple[str, str]]):
+    def chat_stream(self, turns: list[tuple[str, str]], system: str | None = None):
         """A canned chatbot reply, in word-sized pieces. It quotes the question
         and carries a list and bold text, so the chat screen's formatting can be
         seen offline."""

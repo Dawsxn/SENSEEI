@@ -18,6 +18,8 @@ export interface TrialStatus {
   session: { id: string; status: SessionStatus } | null;
   /** With tests, where the participant is. Null for a class without them. */
   test_stage?: TestStage | null;
+  /** With tests, each test's length in minutes. */
+  test_minutes?: { pre: number; post: number } | null;
 }
 
 export type TestStage = "pretest" | "session" | "posttest_ready" | "posttest" | "done";
@@ -25,26 +27,26 @@ export type TestWhich = "pre" | "post";
 
 export interface TestItem {
   id: string;
-  kind: "choice" | "text" | "groups";
+  /** truefalse: statements each marked True or False. steps: written in parts. */
+  kind: "choice" | "truefalse" | "text" | "steps";
   part: string;
   question: string;
   options: { key: string; text: string }[];
+  statements: { key: string; text: string }[];
+  steps: { key: string; prompt: string }[];
+  /** The first step locks once a later one has text. */
+  lock_first: boolean;
   points: number;
-  /** Ends with "I'm sure / I'm not sure". */
+  /** Ends with "Is this answer fully correct?". */
   ticked: boolean;
-}
-
-export interface TestGroup {
-  name: string;
-  strategies: string;
-  why: string;
 }
 
 export interface SavedAnswer {
   item: string;
   choice?: string | null;
   text?: string | null;
-  groups?: TestGroup[] | null;
+  /** A true/false set's marks ({a: true}) or a question in steps ({a: "..."}). */
+  parts?: Record<string, boolean | string> | null;
   sure?: boolean | null;
 }
 
@@ -55,8 +57,8 @@ export interface TestView {
   started: boolean;
   /** Null until the test starts. */
   seconds_left: number | null;
-  strategies: string[];
-  strategy_list_parts: string[];
+  /** A line shown at the start of a part, under its heading. */
+  part_intros: Record<string, string>;
   items: TestItem[];
   answers: SavedAnswer[];
 }
@@ -73,11 +75,22 @@ export interface GradingWritten {
   item: string;
   question: string;
   text: string | null;
+  /** A question answered in steps: each part with its prompt. */
+  parts?: { key: string; prompt: string; text: string | null }[] | null;
   sure: boolean | null;
   score: number | null;
   points: number;
   reference: string;
   criteria: { points: number; text: string }[];
+}
+
+export interface GradingSet {
+  item: string;
+  question: string;
+  sure: boolean | null;
+  score: number;
+  points: number;
+  statements: { key: string; text: string; answer: boolean; picked: boolean | null }[];
 }
 
 /** One participant's tests for the grader. Never their group. */
@@ -96,7 +109,8 @@ export interface GradingDetail {
     correct: boolean;
     sure: boolean | null;
   }[];
-  groups: TestGroup[] | null;
+  /** True/false sets, scored automatically. */
+  sets: GradingSet[];
   written: GradingWritten[];
 }
 
@@ -125,7 +139,7 @@ export interface Batch {
   name: string;
   created_at: string;
   closed_at: string | null;
-  /** In slip order: shuffled, so the classes are mixed. */
+  /** In the order drawn (shuffled); the batch page lists them by class. */
   participants: BatchParticipant[];
 }
 

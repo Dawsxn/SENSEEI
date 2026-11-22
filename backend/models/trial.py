@@ -143,8 +143,11 @@ class TrialAnswer(Entity, table=True):
     item: str = Field(sa_type=String(16))
     choice: str | None = Field(default=None, sa_type=String(4))
     text: str | None = Field(default=None, sa_type=Text)
-    #: The 12a grouping table: a list of {"name", "strategies", "why"}.
+    #: The earlier post-test's grouping table, kept for answers already given.
     groups: list | None = Field(default=None, sa_type=JSONB)
+    #: An answer in parts: a true/false set's marks ({"a": true, ...}) or a
+    #: question answered in steps ({"a": "...", ...}).
+    parts: dict | None = Field(default=None, sa_type=JSONB)
     #: "I'm sure" (True) or "I'm not sure" (False). None until ticked.
     sure: bool | None = None
     score: int | None = None

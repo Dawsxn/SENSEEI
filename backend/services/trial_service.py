@@ -76,7 +76,7 @@ CLIENT_EVENTS = frozenset(
     }
 )
 #: What the server records itself, because only it knows.
-SERVER_EVENTS = frozenset({"reading_opened", "done", "turn_failed"})
+SERVER_EVENTS = frozenset({"reading_opened", "done", "turn_failed", "time_up_submit"})
 
 #: A browser clock this far from the server's is not believed; the event is
 #: stamped with the server's time instead.
@@ -257,6 +257,12 @@ async def status(db: AsyncSession, user_id: uuid.UUID) -> dict:
     test = await test_service.class_test(db, participant.class_id)
     return {
         "test_stage": await test_service.stage(db, participant, test),
+        # For the welcome screen's steps; None without tests.
+        "test_minutes": (
+            None if test is None
+            else {"pre": test_service.minutes(test, test_service.PRE),
+                  "post": test_service.minutes(test, test_service.POST)}
+        ),
         "code": participant.code,
         "done": participant.done_at is not None,
         "mode": ClassMode(mode).value,
