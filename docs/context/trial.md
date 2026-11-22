@@ -119,10 +119,14 @@ The trial instance honours this by **never holding identity at all**:
 1. **The team makes a batch of IDs** on the Participants tab before a sitting,
    choosing how many each class gets: "5 for each of the three classes". Each ID
    looks like `P-7K3Q-9TXM`, in the same unambiguous alphabet as join codes, and
-   nothing in it hints at the group. The IDs are drawn in a shuffled order.
-2. **The slips are printed** in that order: the ID and where to enter it, never
-   the class. Handing them out from the top of the stack assigns the groups at
-   random, in equal numbers per sitting (block randomization).
+   nothing in it hints at the group. The batch page lists them by class, with a
+   filter for one class and a copy button beside each ID.
+2. **The slips are printed** grouped by class, or one class at a time with the
+   filter. A line above each class's slips names it; it is cut off before the
+   slips go into the bowl. A slip itself shows only the ID and where to enter it,
+   never the class. **The fishbowl does the randomizing:** an equal number of
+   slips per class goes in, so drawing assigns the groups at random, in equal
+   numbers per sitting (block randomization).
 3. **At consent**, the participant draws a slip and the researcher writes the ID
    on both consent copies. That form is the only place an ID meets a name, and
    the participant does not know their group until they sign in.
