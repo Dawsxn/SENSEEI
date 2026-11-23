@@ -59,6 +59,7 @@
       <h1 class="h1">Good day!</h1>
       <p class="p">Thank you for agreeing to take part today. This study examines which way of studying an expository text best improves your understanding of the concept it explains.</p>
       <p class="p">You will complete the steps below. They depend on the group you were randomly assigned to through the ID slip you drew.</p>
+      <p class="p" style="margin-top: 20px; color: #09090b;">You are in the <span style="font-weight: 600;">{{groupName}}</span>.</p>
       <div style="margin-top: 36px; padding: 28px 0 24px; border: 1px solid #e4e4e7; border-radius: 8px; display: flex; justify-content: center; align-items: flex-start;">
         <sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
           <div style="display: {{s.arrow}}; align-items: center; height: 36px; color: #a1a1aa;">
@@ -229,7 +230,7 @@ class Component extends DCLogic {
     const dialog = (o) => Object.assign(v, { dialog: true, dPlain: true }, o);
 
     if (state.startsWith('Welcome')) {
-      Object.assign(v, { page: true, welcome: true, total: '70 minutes in total' });
+      Object.assign(v, { page: true, welcome: true, total: '70 minutes in total', groupName: state.endsWith('SEE-I') ? 'SENSEE-I group' : 'Chatbot group' });
       v.steps = state.endsWith('SEE-I')
         ? step([['Pre-test', '5 min'], ['About SENSEE-I', 'A short guide'], ['Reading and tutoring session', '35 min'], ['Post-test', '30 min']])
         : step([['Pre-test', '5 min'], ['Reading with a chatbot', '35 min'], ['Post-test', '30 min']]);

@@ -135,6 +135,8 @@ describe("the pre-test", () => {
     expect(steps).toHaveTextContent("About SENSEE-I");
     expect(steps).toHaveTextContent("Reading and tutoring session35 min");
     expect(screen.getByText("70 minutes in total")).toBeInTheDocument();
+    // The group is named, plainly, as the consent form names it.
+    expect(screen.getByText("SENSEE-I group")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Continue" }));
     expect(await screen.findByText("You have 5 minutes.")).toBeInTheDocument();
     expect(await screen.findByText(/already know about strategic offensives/)).toBeInTheDocument();
@@ -152,6 +154,7 @@ describe("the post-test", () => {
     renderAt("/posttest", <PostTestScreen />);
     expect(await screen.findByText("You have 30 minutes.")).toBeInTheDocument();
     expect(screen.getByText(/Only choose .Yes, I.m sure. if you expect full marks/)).toBeInTheDocument();
+    expect(screen.getByText(/as the reading describes them/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Start" }));
     expect(api.startTest).toHaveBeenCalledWith("post");
     expect(await screen.findByText("Question q1")).toBeInTheDocument();
