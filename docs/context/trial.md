@@ -280,8 +280,9 @@ the study or SEE-I was (`frontend/src/features/trial/Briefing.tsx`). None of it 
 timed: each stage's clock still starts on its own Start.
 
 - **Welcome**, every group, before the pre-test's start screen: what the study is
-  for, their group's steps as a flowchart with each step's minutes and the total,
-  and that no timer is shown. The minutes come from `test_minutes` in `/trial/me`.
+  for, their group by name ("You are in the Chatbot group", using the consent
+  form's plain names, never "control"), their steps as a flowchart with each
+  step's minutes and the total, and that no timer is shown. The minutes come from `test_minutes` in `/trial/me`.
 - **About SENSEE-I** and **How the session works**, the SEE-I group only, after
   the pre-test and before the reading, so the pre-test is answered without SEE-I
   in mind. The first defines the four steps as the rubric grades them (Illustrate
