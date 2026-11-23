@@ -37,6 +37,9 @@
         <span style="margin-left: 12px; font-size: 14px; color: #71717a;">15 IDs, 5 per class</span>
         <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
           <span style="font-size: 13px; color: #71717a; margin-right: 4px;">{{printNote}}</span>
+          <sc-if value="{{addBtn}}" hint-placeholder-val="{{false}}">
+            <span style="height: 36px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; box-sizing: border-box;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Add IDs</span>
+          </sc-if>
           <span class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></span>
           <span class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg></span>
           <span class="icon-btn" style="border-color: #fecaca;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
@@ -49,6 +52,13 @@
         </sc-for>
       </div>
 
+      <sc-if value="{{added}}" hint-placeholder-val="{{false}}">
+        <div style="margin-top: 14px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #15803d;">
+          <span>3 IDs added. They&rsquo;re marked New below.</span>
+          <span style="height: 32px; padding: 0 12px; background: #16a34a; color: #fff; border-radius: 6px; display: inline-flex; align-items: center; font-weight: 500;">Print the new IDs</span>
+        </div>
+      </sc-if>
+
       <div style="margin-top: 14px; border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
         <div class="row" style="border-top: none; height: 40px; font-size: 13px; color: #71717a;"><span>ID</span><span>Class</span><span>Status</span><span></span></div>
         <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
@@ -60,6 +70,7 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{r.copyColor}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{r.copyPath}}"></path></svg>
               </span>
               <span style="display: {{r.copiedShow}}; font-size: 12px; color: #15803d;">Copied</span>
+              <span style="display: {{r.newShow}}; font-size: 11px; font-weight: 600; color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 999px; padding: 0 7px;">New</span>
             </span>
             <span>{{r.cls}} <span style="color: #71717a;">&middot; {{r.mode}}</span></span>
             <span style="color: {{r.statusColor}};">{{r.status}}</span>
@@ -88,11 +99,38 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{dialog}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <div style="width: 420px; background: #fff; border-radius: 8px; padding: 24px; box-sizing: border-box; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+        <div style="font-size: 16px; font-weight: 600;">Add IDs to Sitting 1</div>
+        <div style="margin-top: 16px; font-size: 14px; font-weight: 500;">IDs to add per class</div>
+        <sc-for list="{{addRows}}" as="a" hint-placeholder-count="4">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; font-size: 14px;">
+            <span>{{a.cls}} <span style="color: #71717a;">&middot; {{a.mode}}</span></span>
+            <span style="display: flex; align-items: center; gap: 6px;">
+              <span style="width: 72px; height: 36px; border: 1px solid #e4e4e7; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: {{a.color}};">{{a.n}}</span>
+              <span style="width: 20px; display: inline-flex; justify-content: center; visibility: {{a.x}};"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"></path></svg></span>
+            </span>
+          </div>
+        </sc-for>
+        <div style="margin-top: 12px; height: 36px; border: 1px solid #e4e4e7; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 14px; color: #71717a;">
+          Add another class
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg>
+        </div>
+        <div style="margin-top: 12px; font-size: 13px; color: #71717a;">4 new IDs. Add the same number to each class to keep the groups even.</div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <span style="height: 36px; padding: 0 14px; border: 1px solid #e4e4e7; border-radius: 6px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 500;">Cancel</span>
+          <span style="height: 36px; padding: 0 14px; background: #16a34a; color: #fff; border-radius: 6px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 500;">Add IDs</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <div style="position: absolute; left: 16px; bottom: 12px; font-size: 12px; color: #a1a1aa;">{{caption}}</div>
 </div>
 </x-dc>
 
-<script data-dc-script data-props='{"state":{"editor":"enum","options":["Batch, all","Batch, SEE-I","Batch, copied","Print, all","Print, SEE-I"],"default":"Batch, all","section":"State"}}'>
+<script data-dc-script data-props='{"state":{"editor":"enum","options":["Batch, all","Batch, SEE-I","Batch, copied","Print, all","Print, SEE-I","Add IDs, dialog","Add IDs, added"],"default":"Batch, all","section":"State"}}'>
 const DATA = [
   ["SEE-I", "TRIAL S1-A", [["P-3MRX-8QWB", "Signed in"], ["P-7K3Q-9TXM", "Finished"], ["P-8RAV-4TMS", "Not used"], ["P-C2TF-7KXA", "Not used"], ["P-M4QE-2LJR", "Not used"]]],
   ["Chatbot", "TRIAL S1-B", [["P-5WQE-3JPK", "Not used"], ["P-6BFJ-5VNH", "Voided"], ["P-9ZTP-6KAD", "Signed in"], ["P-D7XM-4RPE", "Not used"], ["P-TQ8C-5HWA", "Not used"]]],
@@ -104,15 +142,25 @@ class Component extends DCLogic {
   renderVals() {
     const state = this.props.state ?? 'Batch, all';
     const only = state.endsWith('SEE-I') ? 'SEE-I' : null;
-    const shown = DATA.filter(([m]) => !only || m === only);
-    const v = { page: state.startsWith('Batch'), sheet: state.startsWith('Print'), caption: state,
-      pageBg: state.startsWith('Print') ? '#e4e4e7' : '#ffffff', printNote: only ? 'Prints SEE-I only' : '' };
-    v.chips = [['All', 15], ['SEE-I', 5], ['Chatbot', 5], ['Reading only', 5]].map(([label, n]) =>
+    const adding = state.startsWith('Add');
+    const added = state === 'Add IDs, added';
+    const NEW = { 'SEE-I': 'P-N4KX-7TQA', 'Chatbot': 'P-H8WE-2MRD', 'Reading only': 'P-Q3VC-9LJT' };
+    const data = DATA.map(([m, c, ids]) => [m, c, added ? [...ids, [NEW[m], 'Not used', true]] : ids]);
+    const shown = data.filter(([m]) => !only || m === only);
+    const v = { page: state.startsWith('Batch') || adding, sheet: state.startsWith('Print'), caption: state,
+      pageBg: state.startsWith('Print') ? '#e4e4e7' : '#ffffff', printNote: only ? 'Prints SEE-I only' : '',
+      addBtn: !state.startsWith('Print'), dialog: state === 'Add IDs, dialog', added,
+      addRows: [
+        ...data.map(([mode, cls]) => ({ mode, cls, n: '1', color: '#09090b', x: 'hidden' })),
+        { mode: 'SEE-I', cls: 'TRIAL S1-D', n: '1', color: '#09090b', x: 'visible' },
+      ] };
+    const per = added ? 6 : 5;
+    v.chips = [['All', per * 3], ['SEE-I', per], ['Chatbot', per], ['Reading only', per]].map(([label, n]) =>
       ({ label, n, cls: (only ? label === only : label === 'All') ? 'on' : '' }));
     v.rows = [];
     shown.forEach(([mode, cls, ids], gi) => {
       v.rows.push({ head: 'flex', item: 'none', group: mode, count: '&middot; ' + cls + ' &middot; ' + ids.length });
-      ids.forEach(([code, status], i) => {
+      ids.forEach(([code, status, isNew], i) => {
         const copied = state === 'Batch, copied' && gi === 0 && i === 2;
         const hover = copied;
         v.rows.push({ head: 'none', item: 'grid', code, cls, mode, status,
@@ -122,7 +170,7 @@ class Component extends DCLogic {
           voidShow: status === 'Voided' || status === 'Finished' ? 'none' : 'block',
           copyShow: status === 'Voided' ? 'none' : 'flex',
           copyBg: hover ? '#f0fdf4' : 'transparent', copyColor: copied ? '#15803d' : '#a1a1aa',
-          copyPath: copied ? CHECK : COPY, copiedShow: copied ? 'inline' : 'none' });
+          copyPath: copied ? CHECK : COPY, copiedShow: copied ? 'inline' : 'none', newShow: isNew ? 'inline' : 'none' });
       });
     });
     v.cells = [];
@@ -130,6 +178,7 @@ class Component extends DCLogic {
       v.cells.push({ head: 'flex', slip: 'none', gap: i ? 22 : 0, title: mode.toUpperCase() + ' &middot; ' + cls + ' &middot; ' + ids.filter(([, s]) => s !== 'Voided').length + ' slips', note: 'Cut this line off before the slips go in the bowl.', code: '' });
       ids.filter(([, s]) => s !== 'Voided').forEach(([code]) => v.cells.push({ head: 'none', slip: 'flex', gap: 0, title: '', note: '', code }));
     });
+    if (state === 'Add IDs, added') v.caption = 'After adding: Print the new IDs prints only the three New ones, grouped like any print';
     if (state === 'Batch, copied') v.caption = 'Batch, after pressing copy: the icon turns to a tick and says Copied for 2 seconds';
     return v;
   }

@@ -23,6 +23,29 @@ describe("a chatbot reply", () => {
     expect(document.querySelector("img")).toBeNull();
     expect(screen.getByText(/<img src=x/)).toBeInTheDocument();
   });
+
+  it("draws a table, with ragged rows filled out and a divider", () => {
+    const blocks = parseBlocks(
+      "Compare:\n\n| Strategy | When |\n|---|:---:|\n| Price cut | **low** costs |\n| Innovate |\n\n---\nDone.",
+    );
+    expect(blocks.map((b) => b.kind)).toEqual(["p", "table", "hr", "p"]);
+    expect(blocks[1]).toEqual({
+      kind: "table",
+      head: ["Strategy", "When"],
+      rows: [["Price cut", "**low** costs"], ["Innovate", ""]],
+    });
+    render(<ChatText text={"| A | B |\n| --- | --- |\n| 1 | **2** |"} />);
+    expect(screen.getByRole("columnheader", { name: "A" })).toBeInTheDocument();
+    expect(screen.getByText("2").tagName).toBe("STRONG");
+  });
+
+  it("leaves a table that isn't well formed as plain text", () => {
+    // No |---| row: the lines stay exactly as the model wrote them.
+    const blocks = parseBlocks("| just | pipes |\n| no separator |");
+    expect(blocks).toEqual([{ kind: "p", lines: ["| just | pipes |", "| no separator |"] }]);
+    // A pipe line inside a code block is code, not a table.
+    expect(parseBlocks("```\n| a | b |\n|---|---|\n```").map((b) => b.kind)).toEqual(["code"]);
+  });
 });
 
 describe("the conversation", () => {

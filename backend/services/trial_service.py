@@ -115,6 +115,10 @@ class BatchOpen(Exception):
     """A batch must be closed before it can be deleted."""
 
 
+class BatchClosed(Exception):
+    """A closed batch takes no more IDs: its sitting is over."""
+
+
 def require_trial() -> None:
     if not get_settings().trial_mode:
         raise TrialOff
@@ -572,13 +576,48 @@ async def create_batch(
     the ID and their email is empty: nothing in the app says who they are.
     """
     require_trial()
+    counts = await _checked_counts(db, instructor_id, counts, already=0)
+    batch = ParticipantBatch(instructor_id=instructor_id, name=name)
+    db.add(batch)
+    await db.flush()
+    await _make_ids(db, batch, counts, start=0)
+    await db.commit()
+    return await get_batch(db, instructor_id, batch.id)
+
+
+async def add_to_batch(
+    db: AsyncSession,
+    instructor_id: uuid.UUID,
+    batch_id: uuid.UUID,
+    counts: dict[uuid.UUID, int],
+) -> dict:
+    """Add IDs to an open batch: `counts[class_id]` more for each class. A class
+    not yet in the batch joins it. Counts can differ between classes; keeping
+    the groups even is the team's call. Returns the batch, with the new IDs
+    under `added` so the page can mark and print just those."""
+    require_trial()
+    batch = await _owned_batch(db, instructor_id, batch_id)
+    if batch.closed_at is not None:
+        raise BatchClosed
+    have = list(await db.scalars(select(Participant.position).where(Participant.batch_id == batch.id)))
+    counts = await _checked_counts(db, instructor_id, counts, already=len(have))
+    added = await _make_ids(db, batch, counts, start=max(have, default=-1) + 1)
+    await db.commit()
+    out = await get_batch(db, instructor_id, batch.id)
+    out["added"] = added
+    return out
+
+
+async def _checked_counts(
+    db: AsyncSession, instructor_id: uuid.UUID, counts: dict[uuid.UUID, int], already: int
+) -> dict[uuid.UUID, int]:
+    """The classes to make IDs for, each a live class of the team's."""
     counts = {class_id: n for class_id, n in counts.items() if n > 0}
     total = sum(counts.values())
     if total == 0:
         raise InvalidBatch("a batch needs at least one ID")
-    if total > MAX_BATCH:
+    if already + total > MAX_BATCH:
         raise InvalidBatch(f"a batch holds at most {MAX_BATCH} IDs")
-
     owned = set(
         await db.scalars(
             select(Class.id).where(
@@ -590,15 +629,17 @@ async def create_batch(
     )
     if owned != set(counts):
         raise InvalidBatch("one of those classes does not exist")
+    return counts
 
+
+async def _make_ids(
+    db: AsyncSession, batch: ParticipantBatch, counts: dict[uuid.UUID, int], start: int
+) -> list[str]:
+    """Make the IDs, in a shuffled order from `start`. The caller commits."""
     order = [class_id for class_id, n in counts.items() for _ in range(n)]
     random.SystemRandom().shuffle(order)
-    codes = await _fresh_codes(db, total)
-
-    batch = ParticipantBatch(instructor_id=instructor_id, name=name)
-    db.add(batch)
-    await db.flush()
-    for position, (class_id, code) in enumerate(zip(order, codes)):
+    codes = await _fresh_codes(db, len(order))
+    for position, (class_id, code) in enumerate(zip(order, codes), start=start):
         user = User(
             role=Role.STUDENT,
             name=code,
@@ -618,8 +659,7 @@ async def create_batch(
                 position=position,
             )
         )
-    await db.commit()
-    return await get_batch(db, instructor_id, batch.id)
+    return codes
 
 
 async def close_batch(

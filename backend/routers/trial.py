@@ -23,6 +23,7 @@ from ..db import get_session
 from ..deps import get_chatbot_dep, require_grader, require_instructor, require_student
 from ..models import User, utcnow
 from ..schemas import (
+    BatchAddIn,
     BatchIn,
     BatchListItem,
     BatchOut,
@@ -41,6 +42,7 @@ from ..schemas import (
 from ..services import chat_service, export_service, test_service, trial_service
 from ..services.detach import detached
 from ..services.trial_service import (
+    BatchClosed,
     BatchNotFound,
     InvalidBatch,
     BatchOpen,
@@ -360,6 +362,28 @@ async def create_batch(
         return BatchOut(**await trial_service.create_batch(db, user.id, body.name, counts))
     except TrialOff:
         raise NOT_FOUND
+    except InvalidBatch as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@router.post("/instructor/batches/{batch_id}/ids", response_model=BatchOut)
+async def add_to_batch(
+    batch_id: uuid.UUID,
+    body: BatchAddIn,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> BatchOut:
+    """More IDs for an open batch: `count` per class, which may differ, and a
+    class not in the batch yet joins it. The new IDs come back under `added`."""
+    counts: dict[uuid.UUID, int] = {}
+    for row in body.classes:
+        counts[row.class_id] = counts.get(row.class_id, 0) + row.count
+    try:
+        return BatchOut(**await trial_service.add_to_batch(db, user.id, batch_id, counts))
+    except (TrialOff, BatchNotFound):
+        raise NOT_FOUND
+    except BatchClosed:
+        raise HTTPException(status_code=409, detail="the batch is closed")
     except InvalidBatch as e:
         raise HTTPException(status_code=422, detail=str(e))
 
