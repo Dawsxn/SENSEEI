@@ -128,7 +128,7 @@ posttest:
   dimension: connections
   kind: text
   question: A company is deciding whether to base its offensive on something it does well or something
-    it does not do well. How could this choice affect the result of the offensive? Explain why.
+    it does not do well. How might this choice affect how the offensive turns out? Explain your answer.
   goal: Connect what an offensive is based on to whether it reaches its goal. The student has to supply
     the goal (profitable share won from rivals) themselves.
   reference: Basing it on something the company does well lets it win customers at a cost it can sustain,
@@ -149,8 +149,8 @@ posttest:
   dimension: connections
   kind: text
   question: Continuous product innovation means regularly bringing out new or improved products to draw
-    customers away from rivals. For what kind of company, facing what kind of rivals, would this offensive
-    work well? Explain why.
+    customers away from rivals. What kind of company, up against what kind of rivals, would this offensive
+    work well for? Explain why.
   goal: Connect one of the reading's strategies to the rule for choosing an offensive (own strengths
     against rivals' weaknesses).
   reference: A company that is good at developing new products quickly, facing rivals that are slow or
@@ -224,17 +224,15 @@ posttest:
   dimension: metacognition
   kind: steps
   lock_first: true
-  question: Build your own checklist, use it on a case, and check how it did.
+  question: Answer (a), (b) and (c) in order.
   steps:
-    a: Write your own checklist of 2 to 4 questions that someone could ask to decide whether a move is a
-      well-chosen strategic offensive. Part (a) is not scored on its own. Once you start part (b), you
-      can't change part (a), so make sure your checklist is final first. If it needs fixing, say so in
-      part (c).
-    b: 'Use your checklist on this case: A coffee chain opens 30 branches in a province where no other
-      coffee company operates or plans to. Its customers there are people who never bought coffee from
-      anyone before. Its CEO calls it "our biggest strategic offensive ever." Is the CEO right?'
-    c: Did your checklist lead you to the right answer? If not, or if it was hard to apply, how would you
-      change it?
+    a: List 2 to 4 questions you would ask to decide whether a company's move is a good strategic
+      offensive. This part is not scored by itself, and it locks once you start (b).
+    b: A coffee chain opens 30 branches in a province where no other coffee company operates or plans
+      to. Its customers there have never bought coffee from anyone before. The CEO calls this "our
+      biggest strategic offensive ever." Using your questions from (a), is the CEO right?
+    c: Did your questions from (a) lead you to the right answer? If not, or if they were hard to use,
+      what would you change or add?
   goal: Build a structure of their own (a checklist), test it on a case chosen to break a weak one, and
     revise it. One score for the whole, decided mostly by (c), with (a) and (b) as the evidence.
   reference: 'The CEO is wrong. It is not an offensive: no rival loses customers or an advantage, since no
