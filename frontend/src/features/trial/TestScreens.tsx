@@ -392,8 +392,8 @@ export function PostTestScreen() {
           <div className="-mt-16 max-w-[520px] text-center">
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Post-test</h1>
             <p className="mt-3 text-[15px] leading-[1.65] text-muted-foreground">
-              This checks what you understand about {concept} now. The reading won&rsquo;t be
-              shown. For each question you answer, say whether you think it is fully correct.
+              This checks what you understand about {concept} as the reading describes them. The
+              reading won&rsquo;t be shown. For each question you answer, say whether you think it is fully correct.
               Only choose &ldquo;Yes, I&rsquo;m sure&rdquo; if you expect full marks.
             </p>
             <p className="mt-3 text-[15px] font-medium">You have {view.minutes} minutes.</p>
@@ -459,7 +459,8 @@ export function PostTestScreen() {
           <div className="min-w-0 flex-1 pb-16 pt-10">
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Post-test</h1>
             <p className="mt-1.5 text-[14px] text-muted-foreground">
-              Answer every question in your own words, without mentioning how you studied the reading.
+              Answer every question in your own words, based on the reading, without mentioning how you
+              studied it.
             </p>
             {parts.map((p) => (
               <section key={p.part}>

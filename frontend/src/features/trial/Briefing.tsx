@@ -63,6 +63,15 @@ function Continue({ onClick }: { onClick: () => void }) {
 // --------------------------------------------------------------------------- #
 // welcome
 
+/** The group's name, as the consent form gives it. Plain names that say what
+ *  each group does: never "control" or "experimental", which can change how
+ *  hard a participant tries. */
+const GROUP_NAME: Record<ClassMode, string> = {
+  seei: "SENSEE-I group",
+  chatbot: "Chatbot group",
+  reading_only: "Reading-only group",
+};
+
 const STEP_NAME: Record<ClassMode, string> = {
   seei: "Reading and tutoring session",
   chatbot: "Reading with a chatbot",
@@ -97,6 +106,9 @@ export function Welcome({ onContinue }: { onContinue: () => void }) {
         You will complete the steps below. They depend on the group you were randomly assigned to
         through the ID slip you drew.
       </P>
+      <p className="mt-5 text-[15px] leading-[1.65]">
+        You are in the <span className="font-semibold">{GROUP_NAME[data.mode]}</span>.
+      </p>
       <ol
         aria-label="Your steps"
         className="mt-8 flex flex-col items-stretch gap-3 rounded-lg border px-5 py-6 sm:flex-row sm:items-start sm:justify-center sm:gap-0"

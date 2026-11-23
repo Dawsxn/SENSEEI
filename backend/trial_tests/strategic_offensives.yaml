@@ -34,7 +34,7 @@ posttest_minutes: 30
 part_intros:
   A: For each statement, choose True or False.
 pretest:
-  question: Define what a strategic offensive is, to the best of your ability.
+  question: Define what a strategic offensive is in business, to the best of your ability.
   reference: An aggressive move to gain market share or an advantage at rivals' expense, built on the
     company's own strengths and aimed at rivals' weaknesses.
   criteria:
