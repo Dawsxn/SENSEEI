@@ -144,6 +144,8 @@ export interface Batch {
   closed_at: string | null;
   /** In the order drawn (shuffled); the batch page lists them by class. */
   participants: BatchParticipant[];
+  /** After adding IDs: just the new ones. */
+  added?: string[];
 }
 
 export interface NewBatch {

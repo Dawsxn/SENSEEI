@@ -28,6 +28,20 @@ const batch: Batch = {
 
 vi.mock("./useTrial", () => ({ useBatch: () => ({ data: batch }) }));
 vi.mock("../../components/AppTopBar", () => ({ AppTopBar: () => null }));
+vi.mock("../classes/useClasses", () => ({
+  useClasses: () => ({
+    data: [
+      { id: "a", label: "TRIAL S1-A", mode: "seei" },
+      { id: "b", label: "TRIAL S1-B", mode: "chatbot" },
+      { id: "d", label: "TRIAL S1-D", mode: "seei" },
+    ],
+  }),
+}));
+const api = vi.hoisted(() => ({ addBatchIds: vi.fn() }));
+vi.mock("../../lib/api", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/api")>("../../lib/api");
+  return { ...actual, ...api };
+});
 
 function renderPage() {
   render(
@@ -66,5 +80,27 @@ describe("a batch's page", () => {
     await userEvent.click(screen.getByRole("button", { name: "Copy P-AAAA-0004" }));
     expect(writeText).toHaveBeenCalledWith("P-AAAA-0004");
     expect(await screen.findByText("Copied")).toBeInTheDocument();
+  });
+
+  it("adds IDs unevenly, to the batch's classes and another, and marks the new ones", async () => {
+    api.addBatchIds.mockResolvedValue({ ...batch, added: ["P-AAAA-0004"] });
+    renderPage();
+    await userEvent.click(screen.getByRole("button", { name: "Add IDs" }));
+    const dialog = screen.getByRole("dialog");
+    // The batch's own classes start at 1; another class can be brought in.
+    expect(within(dialog).getByLabelText("IDs to add for TRIAL S1-A")).toHaveValue(1);
+    await userEvent.clear(within(dialog).getByLabelText("IDs to add for TRIAL S1-B"));
+    await userEvent.selectOptions(within(dialog).getByLabelText("Add another class"), "d");
+    await userEvent.type(within(dialog).getByLabelText("IDs to add for TRIAL S1-D"), "2");
+    expect(dialog).toHaveTextContent("3 new IDs.");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Add IDs" }));
+
+    expect(api.addBatchIds).toHaveBeenCalledWith("b1", [
+      { class_id: "a", count: 1 },
+      { class_id: "d", count: 2 },
+    ]);
+    expect(await screen.findByText("1 ID added. It’s marked New below.")).toBeInTheDocument();
+    expect(screen.getByText("New")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Print the new IDs" })).toBeInTheDocument();
   });
 });

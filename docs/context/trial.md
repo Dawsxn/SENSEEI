@@ -133,7 +133,11 @@ The trial instance honours this by **never holding identity at all**:
 4. **At the computer**, the participant types their ID. It is their whole sign-in:
    no Google, no username, no password. It drops them into their class's mode.
 5. **During the sitting**, a spoiled slip or someone who leaves is handled by
-   voiding that one ID. It stops working at once.
+   voiding that one ID. It stops working at once. More IDs can be added to an
+   open batch with **Add IDs**: any number per class, uneven if need be, and a
+   class not yet in the batch can join it. The new IDs are marked New on the
+   page and can be printed on their own, so slips already cut are not printed
+   again. A closed batch takes no more.
 6. **After the sitting**, the team closes the batch. Its IDs stop working, anyone
    still signed in with one is signed out, and any session still going ends as if
    time ran out, so nobody can return later and change their data.
@@ -241,7 +245,8 @@ provider without the tool (Gemini, the mock), the setting does nothing.
 **What it is, exactly:** the same provider, model, temperature and thinking level
 as the agents, sent the whole conversation each turn with the reading as its
 only system prompt. Its replies are shown the way a general-purpose chatbot shows them, with
-lists and bold, and the participant's messages sit in grey rather than SEE-I's
+lists, bold and tables (a table too wide for the panel scrolls sideways inside
+itself), and the participant's messages sit in grey rather than SEE-I's
 green, so the screen does not read as SENSEE-I. A reload picks the conversation
 back up. A reply that fails is not stored; the message that asked for it is, and
 the failure is in the event log.
@@ -268,7 +273,10 @@ Done only once they are confident they understand it:
 | Chatbot | Read until they understand the concept; the chatbot beside it has the reading too, so they can ask it anything about it; press Done when confident |
 | Reading only | Read until they understand the concept; press Done when confident |
 
-It shows once. A participant who reloads partway does not see it again. Done asks
+It shows once. A participant who reloads partway does not see it again. Only
+the Start button closes it on the trial, since closing it starts the clock:
+Escape and clicks outside the box do nothing, and selecting its text with the
+mouse let go over Start does not count as pressing it. Done asks
 first: the SEE-I group's "Start the tutoring session?", and the control groups'
 "Finish now?", which with tests says they go to the post-test and lose the reading
 (and the chatbot).
