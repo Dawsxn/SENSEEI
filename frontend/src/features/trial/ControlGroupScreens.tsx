@@ -177,7 +177,9 @@ export function ReadingOnlyScreen() {
           <Button onClick={g.askToFinish}>Done</Button>
         </footer>
       )}
-      {g.intro && <ReadingIntroDialog body={INTRO.reading(g.concept, g.minutes)} onStart={g.closeIntro} />}
+      {g.intro && (
+        <ReadingIntroDialog body={INTRO.reading(g.concept, g.minutes)} onStart={g.closeIntro} startOnly />
+      )}
       {g.timeUpPopup && <TimeUpDialog onContinue={() => void g.moveOn()} />}
       {g.confirming && (
         <FinishDialog
@@ -255,7 +257,9 @@ export function ChatbotScreen() {
         </div>
       </div>
 
-      {g.intro && <ReadingIntroDialog body={INTRO.chatbot(g.concept, g.minutes)} onStart={g.closeIntro} />}
+      {g.intro && (
+        <ReadingIntroDialog body={INTRO.chatbot(g.concept, g.minutes)} onStart={g.closeIntro} startOnly />
+      )}
       {g.timeUpPopup && <TimeUpDialog onContinue={() => void g.moveOn()} />}
       {g.confirming && (
         <FinishDialog

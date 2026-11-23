@@ -158,7 +158,7 @@ export function ReadingStepScreen() {
 
       {showIntro && !participant && <ReadingIntroDialog onStart={closeIntro} />}
       {showIntro && participant && (
-        <ReadingIntroDialog onStart={closeIntro}>
+        <ReadingIntroDialog onStart={closeIntro} startOnly>
           <div className="text-[14px] leading-[1.6] text-muted-foreground">
             <p className="mt-2">You have {status?.minutes ?? 35} minutes for two parts:</p>
             <ol className="mt-2 list-decimal space-y-1.5 pl-5">
@@ -174,8 +174,10 @@ export function ReadingStepScreen() {
               </li>
             </ol>
             <p className="mt-2">
-              You can still look at the reading during the session, but press Done only once
-              you&rsquo;re confident you understand the concept.
+              <span className="font-semibold text-foreground">
+                You can still look at the reading during the session
+              </span>
+              , but press Done only once you&rsquo;re confident you understand the concept.
             </p>
           </div>
         </ReadingIntroDialog>

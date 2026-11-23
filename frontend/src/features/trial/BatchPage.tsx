@@ -13,7 +13,7 @@
  * undone. Each ID links to its answers on the grading page. */
 
 import { useEffect, useMemo, useState } from "react";
-import { Ban, Check, ChevronLeft, Copy, Download, Lock, Printer, Trash2 } from "lucide-react";
+import { Ban, Check, ChevronLeft, Copy, Download, Lock, Plus, Printer, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -21,7 +21,8 @@ import { AppTopBar } from "../../components/AppTopBar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/button";
-import { batchExportUrl, closeBatch, deleteBatch, voidParticipant } from "../../lib/api";
+import { addBatchIds, batchExportUrl, closeBatch, deleteBatch, voidParticipant } from "../../lib/api";
+import { AddIdsDialog } from "./AddIdsDialog";
 import { cn } from "../../lib/utils";
 import { MODE_LABEL, type ClassMode } from "../classes/types";
 import type { Batch, BatchParticipant, ParticipantStatus } from "./types";
@@ -70,6 +71,7 @@ function groupsOf(batch: Batch): Group[] {
 type Dialog =
   | { kind: "close" }
   | { kind: "delete" }
+  | { kind: "add" }
   | { kind: "void"; participant: BatchParticipant }
   | null;
 
@@ -83,6 +85,22 @@ export function BatchPage() {
   const shown = filter === "all" ? groups : groups.filter((g) => g.classId === filter);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  // The IDs just added, marked New until the page reloads, and printable on
+  // their own so slips already cut aren't printed again.
+  const [added, setAdded] = useState<string[]>([]);
+  const [printingNew, setPrintingNew] = useState(false);
+  const printed = printingNew
+    ? groups
+        .map((g) => ({ ...g, participants: g.participants.filter((p) => added.includes(p.code)) }))
+        .filter((g) => g.participants.length > 0)
+    : shown;
+  useEffect(() => {
+    if (!printingNew) return;
+    const done = () => setPrintingNew(false);
+    window.addEventListener("afterprint", done);
+    window.print();
+    return () => window.removeEventListener("afterprint", done);
+  }, [printingNew]);
 
   async function settle(updated: Batch) {
     queryClient.setQueryData(["batch", batchId], updated);
@@ -122,6 +140,12 @@ export function BatchPage() {
                       <span className="mr-1 text-[13px] text-muted-foreground">
                         Prints {shown[0].name} only
                       </span>
+                    )}
+                    {!batch.closed_at && (
+                      <Button variant="secondary" size="sm" onClick={() => setDialog({ kind: "add" })}>
+                        <Plus className="h-4 w-4" />
+                        Add IDs
+                      </Button>
                     )}
                     {/* A plain link, like Download data: the browser saves the zip. */}
                     <Tooltip text="Download this batch's data" align="right">
@@ -189,6 +213,22 @@ export function BatchPage() {
                   ))}
                 </div>
 
+                {added.length > 0 && (
+                  <div
+                    role="status"
+                    className="mb-3.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-accent-soft-border bg-accent-soft px-3.5 py-2.5 text-[13px] text-accent-soft-foreground"
+                  >
+                    <span>
+                      {added.length === 1
+                        ? "1 ID added. It\u2019s marked New below."
+                        : `${added.length} IDs added. They\u2019re marked New below.`}
+                    </span>
+                    <Button size="sm" onClick={() => setPrintingNew(true)}>
+                      Print the new IDs
+                    </Button>
+                  </div>
+                )}
+
                 <div className="overflow-hidden rounded-lg border">
                   <div className="hidden h-10 grid-cols-[200px_1fr_140px_28px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
                     <span>ID</span>
@@ -208,6 +248,7 @@ export function BatchPage() {
                         <Row
                           key={p.id}
                           participant={p}
+                          isNew={added.includes(p.code)}
                           canVoid={!batch.closed_at}
                           onVoid={() => setDialog({ kind: "void", participant: p })}
                         />
@@ -221,7 +262,18 @@ export function BatchPage() {
         </main>
       </div>
 
-      {batch && <Slips groups={shown} />}
+      {batch && <Slips groups={printed} />}
+      {batch && dialog?.kind === "add" && (
+        <AddIdsDialog
+          batch={batch}
+          onCancel={() => setDialog(null)}
+          onSubmit={async (classes) => {
+            const updated = await addBatchIds(batch.id, classes);
+            setAdded(updated.added ?? []);
+            await settle(updated);
+          }}
+        />
+      )}
 
       {batch && dialog?.kind === "close" && (
         <ConfirmDialog
@@ -270,10 +322,12 @@ export function BatchPage() {
 
 function Row({
   participant: p,
+  isNew = false,
   canVoid,
   onVoid,
 }: {
   participant: BatchParticipant;
+  isNew?: boolean;
   canVoid: boolean;
   onVoid: () => void;
 }) {
@@ -293,6 +347,11 @@ function Row({
           </Link>
           {/* A voided ID no longer works, so there is nothing to copy. */}
           {p.status !== "voided" && <CopyButton code={p.code} />}
+          {isNew && (
+            <span className="rounded-full border border-accent-soft-border bg-accent-soft px-1.5 text-[11px] font-semibold text-accent-soft-foreground">
+              New
+            </span>
+          )}
         </span>
         {/* On narrow screens the columns collapse into this line. */}
         <span className="mt-0.5 block text-[12px] text-muted-foreground sm:hidden">

@@ -3,12 +3,16 @@
  * It says what the session will ask of them and why reading the whole thing
  * matters, which is the one thing they cannot work out from the screen itself.
  *
- * Escape and a click on the overlay dismiss it, unlike the leave-session
- * dialog: this one informs rather than asks, so there is no wrong way to close
- * it and nothing is lost by closing it early.
+ * Outside the trial, Escape and a click on the overlay dismiss it, unlike the
+ * leave-session dialog: this one informs rather than asks, so there is no wrong
+ * way to close it. A click only counts if the press also began on the overlay,
+ * so selecting text and letting go outside the box doesn't close it.
+ *
+ * In the trial (`startOnly`) closing it starts the participant's clock, so only
+ * the Start button does: no Escape, no overlay click.
  */
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { Button } from "../../components/ui/button";
 
@@ -24,28 +28,38 @@ export function ReadingIntroDialog({
   onStart,
   body = SEEI_INTRO,
   children,
+  startOnly = false,
 }: {
   onStart: () => void;
   body?: string | string[];
   children?: React.ReactNode;
+  startOnly?: boolean;
 }) {
+  // Where the press began: a click on the overlay only counts if it did too.
+  const pressedOnOverlay = useRef(false);
+
   useEffect(() => {
+    if (startOnly) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onStart();
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onStart]);
+  }, [onStart, startOnly]);
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-0 sm:items-center sm:p-4"
-      onClick={onStart}
+      onMouseDown={(e) => {
+        pressedOnOverlay.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (!startOnly && pressedOnOverlay.current && e.target === e.currentTarget) onStart();
+      }}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="reading-intro-title"
         className="w-full max-w-[460px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
-        onClick={(e) => e.stopPropagation()}
       >
         <h2 id="reading-intro-title" className="text-[16px] font-semibold">
           Before you start

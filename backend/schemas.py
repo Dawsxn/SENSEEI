@@ -416,6 +416,12 @@ class BatchClassCount(BaseModel):
     count: int = Field(ge=0, le=300)
 
 
+class BatchAddIn(BaseModel):
+    """More IDs for an open batch, per class; a class not in it yet joins it."""
+
+    classes: list[BatchClassCount] = Field(min_length=1, max_length=50)
+
+
 class BatchIn(BaseModel):
     name: str = Field(min_length=1, max_length=60)
     classes: list[BatchClassCount] = Field(min_length=1)
@@ -453,8 +459,10 @@ class BatchOut(BaseModel):
     name: str
     created_at: datetime
     closed_at: datetime | None
-    #: In the order the slips print: shuffled, so the classes are mixed.
+    #: In the order drawn (shuffled); the batch page lists them by class.
     participants: list[BatchParticipant]
+    #: After adding IDs: just the new ones, so the page can mark and print them.
+    added: list[str] = []
 
 
 class TrialEventIn(BaseModel):

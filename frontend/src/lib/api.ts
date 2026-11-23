@@ -329,6 +329,9 @@ export const getBatches = () => send<BatchListItem[]>("/instructor/batches", "GE
 export const getBatch = (id: string) => send<Batch>(`/instructor/batches/${id}`, "GET");
 export const createBatch = (batch: NewBatch) =>
   send<Batch>("/instructor/batches", "POST", batch);
+/** More IDs for an open batch; the new ones come back under `added`. */
+export const addBatchIds = (id: string, classes: { class_id: string; count: number }[]) =>
+  send<Batch>(`/instructor/batches/${id}/ids`, "POST", { classes });
 export const closeBatch = (id: string) =>
   send<Batch>(`/instructor/batches/${id}/close`, "POST");
 /** Where Download data points: a zip of the whole trial's records. */

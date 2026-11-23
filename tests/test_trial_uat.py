@@ -152,3 +152,45 @@ async def test_a_time_up_answer_is_taken_a_moment_early_but_not_long_after(team,
         await _set_clock(trial_on, late, minutes_ago=minutes + 10)
         r = await me.post(f"/sessions/{session_id}/responses", json={"text": "x", "time_up": True})
     assert parse_sse(r.text) == [("error", {"detail": "session has already ended"})]
+
+
+# --------------------------------------------------------------------------- #
+# adding IDs to a batch
+
+
+@pytest.mark.anyio
+@pytest.mark.usefixtures("fresh_engine")
+async def test_ids_can_be_added_to_an_open_batch_unevenly_and_to_a_new_class(team, trial_on):
+    async with as_user(team["prof"]) as prof:
+        classes = await _three_groups(prof, team["reading"])
+        batch = await _batch(prof, classes, per_class=1)
+        extra = (await prof.post(
+            "/instructor/classes", json={"name": "TRIAL", "section": "S1-D", "mode": "seei"}
+        )).json()["id"]
+
+        url = f"/instructor/batches/{batch['id']}/ids"
+        r = await prof.post(url, json={"classes": [
+            {"class_id": classes["seei"], "count": 1},
+            {"class_id": classes["chatbot"], "count": 0},
+            {"class_id": extra, "count": 2},
+        ]})
+        assert r.status_code == 200, r.text
+        out = r.json()
+        assert len(out["added"]) == 3 and len(out["participants"]) == 6
+        by_code = {p["code"]: p for p in out["participants"]}
+        assert sorted(by_code[c]["class_id"] for c in out["added"]) == sorted([classes["seei"], extra, extra])
+        assert len(by_code) == 6                                   # every ID unique
+
+        # Nothing at all, or a class that isn't the team's, is refused.
+        assert (await prof.post(url, json={"classes": [{"class_id": extra, "count": 0}]})).status_code == 422
+        missing = "00000000-0000-0000-0000-000000000000"
+        assert (await prof.post(url, json={"classes": [{"class_id": missing, "count": 1}]})).status_code == 422
+
+    # A new ID signs in like any other while the batch is open.
+    async with _participant(out["added"][0], pass_on=1) as me:
+        assert (await me.get("/trial/me")).json()["code"] == out["added"][0]
+
+    # A closed batch takes no more.
+    async with as_user(team["prof"]) as prof:
+        await prof.post(f"/instructor/batches/{batch['id']}/close")
+        assert (await prof.post(url, json={"classes": [{"class_id": extra, "count": 1}]})).status_code == 409
