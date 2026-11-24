@@ -26,7 +26,10 @@ design changes, so it always matches.
 | Screen | Image |
 | --- | --- |
 | Sign in | [png/01-sign-in.png](png/01-sign-in.png) |
-| Reading list | [png/02-reading-list.png](png/02-reading-list.png) |
+| Reading list (replaced by the three below) | [png/02-reading-list.png](png/02-reading-list.png) |
+| Student classes | [png/02c-student-classes.png](png/02c-student-classes.png) |
+| Student class | [png/02d-student-class.png](png/02d-student-class.png) |
+| Student reading | [png/03d-student-reading.png](png/03d-student-reading.png) |
 | Join a class | [png/02b-join-class.png](png/02b-join-class.png) |
 | Join a class, wrong code | [png/02b-join-wrong.png](png/02b-join-wrong.png) |
 | Reading detail, full page | [png/03-reading-detail.png](png/03-reading-detail.png) |

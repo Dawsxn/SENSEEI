@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #09090b; background: #ffffff; }
+    .top { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; }
+    .wrap { max-width: 1148px; margin: 0 auto; padding: 32px 24px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; }
+    h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .btn { height: 32px; padding: 0 14px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,0.05); background: #ffffff; color: #09090b; border: 1px solid #e4e4e7; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .card { border: 1px solid #e4e4e7; border-radius: 10px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .band { height: 96px; margin: 8px 8px 0; border-radius: 8px; position: relative; }
+    .more { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 6px; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; }
+    .pop { position: absolute; top: 42px; right: 8px; z-index: 5; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 12px; }
+    .sw { display: flex; gap: 8px; }
+    .sw span { width: 24px; height: 24px; border-radius: 999px; display: block; }
+    .sw span.sel { box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #09090b; }
+    .body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+    .meta { font-size: 13px; color: #71717a; }
+    .bar { height: 6px; border-radius: 999px; background: #f4f4f5; overflow: hidden; }
+    .bar div { height: 100%; background: #16a34a; border-radius: 999px; }
+    .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sec { font-size: 13px; font-weight: 500; color: #52525b; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chip { position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 20px); box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; color: #27272a; background: rgba(255,255,255,0.75); border-radius: 6px; padding: 3px 8px; }
+
+    /* tablet: two cards a row */
+    @media (max-width: 1023px) {
+      .wrap { padding: 28px 32px 40px; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    }
+    /* phone: one card a row, shorter band */
+    @media (max-width: 639px) {
+      .top { padding: 0 16px; }
+      .wrap { padding: 20px 16px 32px; gap: 20px; }
+      h1 { font-size: 22px; }
+      .grid { grid-template-columns: 1fr; gap: 12px; }
+      .band { height: 64px; }
+    }
+  </style>
+</helmet>
+<div>
+  <div class="top">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="21" height="21" viewBox="0 0 100 100" fill="#16a34a">
+        <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+        <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+        <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+        <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+      </svg>
+      <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: #16a34a;">SEE-I</span></span>
+    </div>
+    <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">NT</div>
+  </div>
+
+  <div class="wrap">
+    <div style="display: flex; align-items: center; justify-content: space-between;"><h1>Classes</h1><button class="btn">+ Join a class</button></div>
+
+    <div class="grid">
+      <sc-for list="{{cards}}" as="c">
+      <div class="card">
+        <div class="band" style="background: {{c.colour}};"><div class="more"><svg width="16" height="16" viewBox="0 0 24 24" fill="#3f3f46"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></div><sc-if value="{{chip}}"><span class="chip">{{c.section}}</span></sc-if></div>
+        <div class="body">
+          <sc-if value="{{joined}}"><div class="name">{{c.name}} {{c.section}}</div></sc-if>
+          <sc-if value="{{under}}"><div><div class="name">{{c.name}}</div><div class="sec">{{c.section}}</div></div></sc-if>
+          <sc-if value="{{chip}}"><div class="name">{{c.name}}</div></sc-if>
+          <span class="meta">{{c.done}} of {{c.total}} readings finished</span>
+          <div class="bar"><div style="width: {{c.pct}}%;"></div></div>
+        </div>
+      </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"layout":{"editor":"select","options":["under","joined","chip"],"default":"under"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const layout = this.props.layout ?? 'under';
+    return {
+      joined: layout === 'joined',
+      under: layout === 'under',
+      chip: layout === 'chip',
+      cards: [
+        { name: 'STRAMA', section: 'K31', colour: '#86efac', done: 2, total: 4, pct: 50 },
+        { name: 'STSWENG', section: 'S11', colour: '#93c5fd', done: 1, total: 2, pct: 50 },
+        { name: 'CSARCH2', section: 'Thursday Evening Blk', colour: '#fcd34d', done: 0, total: 3, pct: 0 },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

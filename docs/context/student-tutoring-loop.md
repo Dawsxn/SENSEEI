@@ -33,17 +33,18 @@ cut off by time is kept and counted, never discarded.
 
 ## Entering a session
 
-1. **Reading list.** The student opens the app to the readings assigned to the
-   classes they are enrolled in. Enrolment determines visibility: a student sees
-   a reading only if one of their classes has it assigned.
+1. **Classes, then readings.** The student opens the app to the classes they
+   are enrolled in, each with how many of its readings they have finished, and
+   opens a class to see its readings. Enrolment determines visibility: a student
+   sees a reading only if one of their classes has it assigned.
 2. **Core components.** Each reading carries one or more core components, the
    essential defining parts of the concept, supplied by the instructor at upload.
 3. **Already-attempted readings.** Selecting one shows a read-only view of the
    most recent session by default, with the option to start a new attempt
    (§4.3.1). Earlier sessions on that reading remain viewable. There is no cap on
    how many times a student may re-attempt a reading.
-4. **Reading detail.** A dialog over the list, showing the reading's class, its
-   core component(s), and any past sessions on it.
+4. **Reading detail.** A page of its own under the class, showing the
+   reading's core component(s), any past sessions on it, and Start.
 5. **Reading step.** The reading is shown on its own, as the instructor's
    original PDF where one is stored and as the extracted text otherwise. An
    opening dialog says what the session will ask for. The student must
