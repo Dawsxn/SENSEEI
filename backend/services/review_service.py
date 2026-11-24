@@ -1,6 +1,6 @@
 """Read-only views of finished (or abandoned) sessions.
 
-The reads behind the reading detail dialog and the session review screen.
+The reads behind the reading page's past sessions and the session review screen.
 
 Two people may open a transcript, by two different rules. A student may open
 their own, and only while they can still see the reading. An instructor may open
@@ -24,6 +24,7 @@ from ..models import (
     CriterionJudgment,
     Attempt,
     Class,
+    CoreComponent,
     Enrolment,
     Reading,
     ReadingAssignment,
@@ -110,12 +111,12 @@ async def list_sessions_for_reading(
 
 async def _instructor_header(
     db: AsyncSession, instructor_id: uuid.UUID, sess: Session
-) -> tuple[str, str] | None:
-    """The reading's title and class label, if this instructor may see the
-    session: their class, holding both the reading and the student."""
+) -> tuple[str, str, uuid.UUID] | None:
+    """The reading's title, class label and class id, if this instructor may
+    see the session: their class, holding both the reading and the student."""
     hit = (
         await db.execute(
-            select(Reading.title, class_label())
+            select(Reading.title, class_label(), Class.id)
             .join(
                 ReadingAssignment,
                 (ReadingAssignment.reading_id == Reading.id)
@@ -137,7 +138,7 @@ async def _instructor_header(
             .limit(1)
         )
     ).first()
-    return None if hit is None else (hit[0], hit[1])
+    return None if hit is None else (hit[0], hit[1], hit[2])
 
 
 async def _judgments(db: AsyncSession, session_id: uuid.UUID) -> dict[uuid.UUID, list[dict]]:
@@ -191,7 +192,7 @@ async def get_transcript(
         header = await _instructor_header(db, viewer.id, sess)
         if header is None:
             return None
-        reading_title, class_name = header
+        reading_title, class_name, class_id = header
     else:
         if sess.student_id != viewer.id:
             return None
@@ -200,13 +201,14 @@ async def get_transcript(
         hit = (
             await db.execute(
                 _visible_readings(viewer.id)
+                .add_columns(Class.id)
                 .where(Reading.id == sess.reading_id)
                 .limit(1)
             )
         ).first()
         if hit is None:
             return None
-        reading_title, class_name = hit[0].title, hit[1]
+        reading_title, class_name, class_id = hit[0].title, hit[1], hit[2]
 
     # Which attempt this is: its 1-based order among that student's sessions on
     # this reading.
@@ -230,8 +232,13 @@ async def get_transcript(
             .order_by(Attempt.submitted_at)
         )
     ).all()
-    # The instructor also sees how each answer was judged; the student does not.
-    judgments = await _judgments(db, session_id) if instructor else {}
+    # Both see which criteria each answer missed, as the student did live. Only
+    # the instructor sees the Assessment Agent's reasons.
+    judgments = await _judgments(db, session_id)
+    if not instructor:
+        for items in judgments.values():
+            for c in items:
+                c["reason"] = None
 
     # per-step summary, in SEE-I order, for the steps the session actually reached
     steps = []
@@ -275,18 +282,26 @@ async def get_transcript(
                 "at": attempt.submitted_at,
                 "judgment": (
                     {"verdict": verdict, "criteria": judgments.get(attempt.id, [])}
-                    if instructor and verdict is not None
+                    if verdict is not None
                     else None
                 ),
             }
         )
     timeline.sort(key=lambda e: e["at"])
 
+    components = await db.scalars(
+        select(CoreComponent.text)
+        .where(CoreComponent.reading_id == sess.reading_id)
+        .order_by(CoreComponent.position)
+    )
+
     return {
         "id": sess.id,
         "reading_id": sess.reading_id,
         "reading_title": reading_title,
         "class_name": class_name,
+        "class_id": class_id,
+        "core_components": list(components),
         "student_name": student_name,
         "index": index or 1,
         "status": SessionStatus(sess.status).value,

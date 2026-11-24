@@ -150,7 +150,8 @@ class CriterionResult(BaseModel):
 
 
 class Judgment(BaseModel):
-    """How the Assessment Agent judged one answer. Instructors only."""
+    """How the Assessment Agent judged one answer. The student gets the criteria
+    without the reasons, which only the instructor sees."""
 
     verdict: str
     criteria: list[CriterionResult]
@@ -170,6 +171,10 @@ class SessionTranscript(BaseModel):
     reading_id: uuid.UUID
     reading_title: str
     class_name: str
+    #: The class the session is reviewed under, for the breadcrumb and for an old
+    #: `/review/{id}` link to find its new address.
+    class_id: uuid.UUID
+    core_components: list[str]
     #: Whose session it is. The student knows; the instructor reading it needs telling.
     student_name: str
     index: int  # which attempt at the reading this session is

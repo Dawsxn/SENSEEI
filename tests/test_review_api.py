@@ -20,6 +20,8 @@ from backend.models import (
     Assessment,
     Attempt,
     Class,
+    CoreComponent,
+    CriterionJudgment,
     Enrolment,
     Reading,
     ReadingAssignment,
@@ -99,6 +101,7 @@ async def reviewable(point_app_at_test_db):
             Enrolment(student_id=me.id, class_id=klass.id),
             Enrolment(student_id=other.id, class_id=klass.id),
             ReadingAssignment(reading_id=reading.id, class_id=klass.id),
+            CoreComponent(reading_id=reading.id, text="a coordinated set of actions", position=0),
         ])
         await s.flush()
 
@@ -138,7 +141,13 @@ async def reviewable(point_app_at_test_db):
         second_rows.append(sa1)
         s.add_all(second_rows)
         await s.flush()
-        s.add(Assessment(attempt_id=sa1.id, verdict=sv1))
+        failed_state = Assessment(attempt_id=sa1.id, verdict=sv1)
+        s.add(failed_state)
+        await s.flush()
+        s.add_all([
+            CriterionJudgment(assessment_id=failed_state.id, criterion="Brevity", passed=False, reason="Three sentences, not one."),
+            CriterionJudgment(assessment_id=failed_state.id, criterion="Accuracy", passed=True, reason="Matches the reading."),
+        ])
         s.add(tutor_reply(second, SeeiStep.STATE, sa1, ["Acknowledgement", "Criterion-Based Feedback", "Re-Prompt"], "Try again.", c2))
         sa2, sv2 = attempt_with_verdict(second, SeeiStep.STATE, 2, Verdict.PASS, "sharper", c2)
         s.add(sa2)
@@ -163,7 +172,7 @@ async def reviewable(point_app_at_test_db):
         await s.commit()
         ids = {
             "reading": reading.id, "first": first.id, "second": second.id,
-            "theirs": theirs.id,
+            "theirs": theirs.id, "class": klass.id,
         }
     await engine.dispose()
     return ids
@@ -225,3 +234,24 @@ async def test_transcript_of_a_missing_session_is_404(reviewable):
     async with make_client() as client:
         r = await client.get(f"/sessions/{uuid.uuid4()}/transcript")
     assert r.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_transcript_carries_its_class_and_core_components(reviewable):
+    async with make_client() as client:
+        t = (await client.get(f"/sessions/{reviewable['second']}/transcript")).json()
+
+    assert t["class_id"] == str(reviewable["class"])
+    assert t["core_components"] == ["a coordinated set of actions"]
+
+
+@pytest.mark.anyio
+async def test_student_sees_missed_criteria_but_not_the_reasons(reviewable):
+    async with make_client() as client:
+        t = (await client.get(f"/sessions/{reviewable['second']}/transcript")).json()
+
+    first_answer = next(e for e in t["timeline"] if e["role"] == "student")
+    criteria = first_answer["judgment"]["criteria"]
+    # failed first, as the instructor sees them, but with every reason withheld
+    assert [(c["criterion"], c["passed"]) for c in criteria] == [("Brevity", False), ("Accuracy", True)]
+    assert all(c["reason"] is None for c in criteria)
