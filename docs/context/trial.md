@@ -485,6 +485,61 @@ name or an email, since the instance never has any. Every column, and the
 measures they give, are in `docs/context/trial-export.md`. Every participant from every
 batch is included, whoever on the team made the batch.
 
+## Analysis
+
+The **Analysis** tab shows the research team the trial's descriptive figures,
+so a sitting can be looked at on the day and exclusions weighed before anything
+is exported (`backend/services/analysis_service.py`,
+`frontend/src/features/trial/AnalysisPage.tsx`).
+
+- **Built from the export's tables.** `export_service.tables` builds every file of
+  the zip, and the tab computes from those same rows, so every figure is one a
+  reader of the export can reproduce. The study's inferential analysis still
+  happens outside the app.
+- **A Batch menu** shows one sitting, or all of them, kept in the URL as on
+  Grading.
+- **Only Finished IDs are counted**, by the batch page's own rule: never a voided
+  ID; with tests, once the post-test has ended; without, once the SEE-I session
+  has ended, Done was pressed, or the time ran out. An ID that signed in but has
+  not finished is listed, marked "Not finished", and left out of every figure;
+  issued but unused IDs are reported as a number.
+- **Four views:**
+  - *Group comparison.* Overlapping bell curves per group for a chosen measure,
+    each the normal curve with the group's mean and SD, with every actual value
+    as a dot beneath. Then every measure in full (n, mean, SD, median,
+    quartiles, range): pre-test and post-test scores, calibration, sure but
+    wrong, the time on each test, and the time from opening the reading to the
+    end. Then each post-test dimension. Columns are the three groups, then the
+    SEE-I group split by whether its session **completed** all four steps. On
+    every mean, median and dimension row, the best of Chatbot, Reading only and
+    SEE-I all is green: the highest, or the lowest on sure but wrong, where
+    lower is better and its heading row says so. Times get no green: less time
+    is not better (finishing too fast is an exclusion rule) and more is not
+    either. The SEE-I split never competes, since its columns are parts of
+    SEE-I, not rivals to it.
+  - *SEE-I sessions.* How each ended, attempts to pass each step, the
+    most-failed criteria, and how often a failed criterion passed on the next
+    attempt.
+  - *Behaviour.* Pastes, leaving the tab during a test, thinking time, chatbot
+    use, time before Done.
+  - *Participants.* Every ID, with flags worth a second look.
+- **"Completed", not "finished", for a SEE-I session.** Finished is the batch
+  page's word for a participant; a session that reached the end of Illustrate is
+  completed.
+- **The curves are a summary.** With a handful of people per group, a normal
+  curve is a rough picture of a few values, so the dots are drawn under every
+  curve, and a group with fewer than two values, or no spread, gets dots only.
+  The curves overlay the three groups, not the SEE-I split: three colours are as
+  many as stay distinguishable for colour-blind readers where curves overlap.
+- **Read-only.** The tab presents what the database holds and changes nothing:
+  no answer, score or verdict is recomputed or rewritten. Pass and fail are the
+  stored verdicts, the ones the participant saw; `model_verdict` is not used.
+- **Exclusions are tried, not made.** Unticking an ID leaves it out of every
+  figure. Nothing is saved or deleted: a reload or another batch puts everyone
+  back. The exclusion rules above are still applied in the analysis.
+- **The research team only.** The figures name each ID's group, so the grader
+  never sees the tab, and the API refuses them, keeping the grading blind.
+
 ## Withdrawal
 
 A participant who withdraws gives the team their ID (or their name, which the

@@ -126,9 +126,10 @@ Drawn from shadcn. Anything not on this list is a new decision, not a default.
 | --- | --- |
 | `Button` | Default and outline variants, default and small sizes |
 | `Card` | Grouping on pre-reading and sign-in |
-| `Table` | Reading list, and later the instructor roster |
-| `Tabs` | Class filter, and the SEE-I step progression |
-| `Badge` | Status, and criteria that were not met |
+| `Table` | Reading list, the instructor roster, and the trial's Analysis figures |
+| `Tabs` | Class filter, the SEE-I step progression, and the Analysis views |
+| `Badge` | Status, and criteria that were not met. Adds `success`, `failure` and `neutral` variants: the soft treatments above, as pills |
+| `Checkbox` | Analysis, ticking an ID in or out of the figures. Its check is lucide's, not `@radix-ui/react-icons`, so the app keeps one icon set |
 | `Textarea` | Response input |
 | `Accordion` | Session review transcript, collapsed per step |
 | `Avatar` | Top bar |
@@ -182,6 +183,59 @@ Established by the tutoring screen (`feat/chat-ui`), from
   defaulting to the chat. On a phone the top bar drops the progress bar and the
   Rubric label (its icon stays). The compact control sizes are kept; the app is
   still desk-first, it just no longer breaks on a narrow screen.
+
+### Figure tables
+
+Established by the trial's Analysis tab (`feat/trial-analysis`), from
+`design/png/12-trial-analysis.png`.
+
+- **A card per table**, titled in the card-title style with one muted line under
+  it saying how to read the figures. The table runs to the card's edges.
+- **Numbers align right**, in tabular figures, so columns line up digit for
+  digit. Labels align left. A missing value is an em dash, never a zero.
+- **A column's size sits in its header** (`n = 5`), because every figure under
+  it means less the smaller it is. An empty column greys out rather than
+  disappearing, so the columns never move.
+- **The groups come first, their breakdowns after a hairline.** The three groups
+  sit side by side (SEE-I as "all"), then a hairline, then the SEE-I group's two
+  parts, so the comparison between groups reads without the breakdown in the way.
+- **Flags are soft-red pills**, and statuses are success or neutral pills. Nothing
+  in a figure table is solid colour.
+- **Wide tables scroll sideways inside their card**, keeping each cell on one
+  line, rather than wrapping IDs and times.
+- **The best value is green.** Where a row compares groups (a mean, a median,
+  a share), the best of the compared columns sits in the success treatment
+  (`#f0fdf4` / `#bbf7d0` / `#15803d`) as a 6px-radius pill at 600 weight, with a
+  tooltip naming what it is best of. Best, not highest: on a measure where lower
+  is better, the lowest is green, and the measure's heading row says "lower is
+  better". Green keeps the one meaning it has across the app, success. Rows
+  where a best means nothing (n, SD, quartiles, range) carry no mark, and nor
+  does a measure with no better direction, such as time.
+- **A measure described in full is a block of rows** under a muted heading row
+  naming it (n, mean, SD, median, quartiles, range), the statistics indented
+  beneath. A pair (quartiles, range) shows as low–high, each end in the
+  measure's own format.
+
+### Distribution charts
+
+Established by the Analysis tab's bell curves
+(`frontend/src/features/trial/DistributionChart.tsx`). The first chart in the
+app, so its rules are the dataviz method's, with these values:
+
+- **Series colours** are the validated categorical slots `#2a78d6`, `#eb6834`,
+  `#1baf7a`, in that fixed order, and never more than three overlap: past three,
+  colour-blind readers can no longer tell overlapping curves apart. The third
+  sits below 3:1 on white, so every curve is also named on the chart and the
+  figures are in a table beside it. Green stays reserved for success; these are
+  identity colours, not states.
+- **Marks are thin**: 2px lines, a 10% fill so overlaps stay visible, the mean as
+  a dashed line, values as 8px dots with a 2px white ring.
+- **Grid and axes are recessive**: one hairline baseline, ticks and labels in the
+  muted text colour, no y-axis where the height has no unit a reader needs.
+- **Text never wears a series colour.** Labels and legend text use the text
+  tokens; a dot beside them carries the identity.
+- **Every chart is hoverable**: a crosshair with a tooltip on curves, a tooltip
+  on each dot.
 
 ## Related
 

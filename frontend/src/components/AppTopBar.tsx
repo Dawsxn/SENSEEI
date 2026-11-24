@@ -49,8 +49,8 @@ export function AppTopBar() {
 }
 
 function Sections({ className }: { className: string }) {
-  // The trial instance adds the participant IDs and grading. A grader has
-  // grading alone.
+  // The trial instance adds the participant IDs, the analysis and grading. A
+  // grader has grading alone.
   const trial = useTrialMode();
   const { data: user } = useMe();
   const grader = user?.role === "grader";
@@ -73,9 +73,15 @@ function Sections({ className }: { className: string }) {
         </>
       )}
       {trial && !grader && (
-        <NavLink to="/participants" className={tab}>
-          Participants
-        </NavLink>
+        <>
+          <NavLink to="/participants" className={tab}>
+            Participants
+          </NavLink>
+          {/* The figures name each ID's group, so never for the grader. */}
+          <NavLink to="/analysis" className={tab}>
+            Analysis
+          </NavLink>
+        </>
       )}
       {trial && (
         <NavLink to="/grading" className={tab}>

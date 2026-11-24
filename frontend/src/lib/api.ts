@@ -32,6 +32,7 @@ import type {
 } from "../features/library/types";
 import type { SessionTranscript } from "../features/review/types";
 import type {
+  Analysis,
   Batch,
   BatchListItem,
   ChatEvent,
@@ -358,6 +359,15 @@ export const submitTest = (which: TestWhich) =>
   send<TrialStatus>(`/trial/tests/${which}/submit`, "POST");
 
 // Grading, for the grader and the research team.
+/** The trial's figures for one batch (or all, with none), leaving out `exclude`. */
+export function getAnalysis(batch: string | null, exclude: string[]): Promise<Analysis> {
+  const params = new URLSearchParams();
+  if (batch) params.set("batch", batch);
+  for (const code of exclude) params.append("exclude", code);
+  const query = params.toString();
+  return send<Analysis>(`/instructor/analysis${query ? `?${query}` : ""}`, "GET");
+}
+
 export const getGradingList = () => send<GradingListItem[]>("/instructor/grading", "GET");
 export const getGrading = (code: string) =>
   send<GradingDetail>(`/instructor/grading/${encodeURIComponent(code)}`, "GET");

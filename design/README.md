@@ -97,6 +97,11 @@ design changes, so it always matches.
 | Trial: grading, no answer | [png/11-trial-grading-no-answer.png](png/11-trial-grading-no-answer.png) |
 | Trial: grading, all graded | [png/11-trial-grading-graded.png](png/11-trial-grading-graded.png) |
 | Trial: the grader's view | [png/11-trial-grader.png](png/11-trial-grader.png) |
+| Trial: analysis, group comparison | [png/12-trial-analysis.png](png/12-trial-analysis.png) |
+| Trial: analysis, descriptive statistics, best in green | [png/12-trial-analysis-statistics.png](png/12-trial-analysis-statistics.png) |
+| Trial: analysis, SEE-I sessions | [png/12-trial-analysis-seei.png](png/12-trial-analysis-seei.png) |
+| Trial: analysis, behaviour | [png/12-trial-analysis-behaviour.png](png/12-trial-analysis-behaviour.png) |
+| Trial: analysis, one ID left out | [png/12-trial-analysis-participants.png](png/12-trial-analysis-participants.png) |
 | Trial: new class, tests off | [png/11b-trial-new-class-tests.png](png/11b-trial-new-class-tests.png) |
 | Trial: edit class, with tests | [png/11b-trial-edit-class-tests.png](png/11b-trial-edit-class-tests.png) |
 | Trial: the last five minutes | [png/09b-trial-last-minutes.png](png/09b-trial-last-minutes.png) |

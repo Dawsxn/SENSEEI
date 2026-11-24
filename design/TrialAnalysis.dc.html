@@ -1,0 +1,388 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap">
+  <style>
+    /* The trial's Analysis tab: descriptive figures for the research team.
+       Same shell as TrialGrading.dc.html. Tables, tabs, badges and checkboxes
+       are shadcn's (Table, Tabs, Badge, Checkbox). The figures are made up. */
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .tab { font-size: 14px; font-weight: 500; color: #71717a; height: 56px; display: flex; align-items: center; border-bottom: 2px solid transparent; box-sizing: border-box; margin-bottom: -1px; }
+    .tab-on { color: #09090b; border-bottom-color: #09090b; }
+    .mono { font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.05em; }
+    .card { border: 1px solid #e4e4e7; border-radius: 8px; padding: 16px 20px 4px; margin-bottom: 20px; }
+    .h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .h2 { margin: 0; font-size: 14px; font-weight: 500; }
+    .note { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: #71717a; }
+    .select { height: 32px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 0 10px; display: inline-flex; align-items: center; gap: 24px; font-size: 13px; box-sizing: border-box; }
+    .vtabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 8px; background: #f4f4f5; margin-bottom: 20px; }
+    .vtab { height: 28px; padding: 0 12px; border-radius: 6px; font-size: 14px; font-weight: 500; color: #71717a; display: flex; align-items: center; }
+    .vtab-on { background: #ffffff; color: #09090b; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+    table { width: calc(100% + 40px); margin: 12px -20px 0; border-collapse: collapse; font-size: 13px; }
+    th { font-size: 12px; font-weight: 500; color: #71717a; padding: 10px 12px; border-bottom: 1px solid #e4e4e7; text-align: right; white-space: nowrap; }
+    td { padding: 9px 12px; border-bottom: 1px solid #e4e4e7; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    th:first-child, td:first-child { padding-left: 20px; text-align: left; }
+    th:last-child, td:last-child { padding-right: 20px; }
+    .left { text-align: left; }
+    .split { border-left: 1px solid #e4e4e7; }
+    .badge { display: inline-flex; border-radius: 999px; border: 1px solid; padding: 1px 8px; font-size: 12px; font-weight: 500; }
+    .ok { border-color: #bbf7d0; background: #f0fdf4; color: #15803d; }
+    .plain { border-color: #e4e4e7; background: #f4f4f5; color: #3f3f46; }
+    .best { display: inline-flex; border: 1px solid #bbf7d0; background: #f0fdf4; color: #15803d; font-weight: 600; border-radius: 6px; padding: 1px 8px; }
+    .flag { border-color: #fecaca; background: #fef2f2; color: #b91c1c; font-weight: 400; }
+    .box { width: 16px; height: 16px; border-radius: 4px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+    .stat { border: 1px solid #e4e4e7; border-radius: 8px; padding: 10px 14px; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1360px; height: 900px; background: #ffffff; color: #09090b; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!-- AppTopBar. Analysis is the research team's: the grader never sees it. -->
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 32px;">
+      <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: #16a34a;">SEE-I</span></span>
+      <div style="display: flex; gap: 24px;">
+        <sc-if value="{{team}}" hint-placeholder-val="{{true}}">
+          <span class="tab">Classes</span>
+          <span class="tab">Readings</span>
+          <span class="tab">Participants</span>
+          <span class="tab tab-on">Analysis</span>
+        </sc-if>
+        <span class="tab {{gradingTab}}">Grading</span>
+      </div>
+    </div>
+    <div style="width: 32px; height: 32px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 32px 40px; overflow: hidden;">
+    <sc-if value="{{grader}}" hint-placeholder-val="{{false}}">
+      <h1 class="h1">Grading</h1>
+      <p class="note" style="margin-top: 12px;">The grader's bar has Grading alone. The Analysis tab names each ID's group, so it is never shown to them, and its API refuses them.</p>
+    </sc-if>
+
+    <sc-if value="{{team}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <h1 class="h1">Analysis</h1>
+        <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: #71717a;">
+          <span>{{included}}</span>
+          <sc-if value="{{someOut}}" hint-placeholder-val="{{false}}">
+            <span>&middot; <span style="text-decoration: underline; text-underline-offset: 2px;">Include everyone</span></span>
+          </sc-if>
+          <span>Batch</span>
+          <span class="select" style="color: #09090b;">{{batch}}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </span>
+        </div>
+      </div>
+      <p class="note" style="margin: 0 0 16px;">Descriptive figures for the IDs shown as Finished on the batch page (left out: 12 issued but never used). With a few people per group, one participant can move a mean a long way, so read them as a description, not a test.</p>
+
+      <div class="vtabs">
+        <span class="vtab {{t1}}">Group comparison</span>
+        <span class="vtab {{t2}}">SEE-I sessions</span>
+        <span class="vtab {{t3}}">Behaviour</span>
+        <span class="vtab {{t4}}">Participants</span>
+      </div>
+
+      <!-- Group comparison: the distributions, then every measure in full. One
+           column per group, then the SEE-I group split by whether its session
+           completed all four steps. Only IDs Finished on the batch page count. -->
+      <sc-if value="{{comparison}}" hint-placeholder-val="{{true}}">
+        <sc-if value="{{showDist}}" hint-placeholder-val="{{true}}">
+        <div class="card" style="padding-bottom: 16px;">
+          <h2 class="h2">Distributions</h2>
+          <p class="note">Each curve is a normal distribution with the group's mean and SD; the dots under the axis are the actual values, one per participant. With so few people per group, read the dots first.</p>
+          <div class="vtabs" style="margin: 12px 0 10px;">
+            <span class="vtab" style="font-size: 13px;">Pre-test score</span>
+            <span class="vtab vtab-on" style="font-size: 13px;">Post-test score</span>
+            <span class="vtab" style="font-size: 13px;">Calibration</span>
+            <span class="vtab" style="font-size: 13px;">Sure but wrong</span>
+            <span class="vtab" style="font-size: 13px;">Pre-test time</span>
+            <span class="vtab" style="font-size: 13px;">Post-test time</span>
+          </div>
+          <div style="display: flex; gap: 20px; font-size: 12px; color: #71717a; margin-bottom: 4px;">
+            <sc-for list="{{legend}}" as="l" hint-placeholder-count="3">
+              <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 999px; background: {{l.color}};"></span><span style="color: #09090b; font-weight: 500;">{{l.name}}</span>{{l.stats}}</span>
+            </sc-for>
+          </div>
+          <svg viewBox="0 0 1280 250" width="1238" height="242" style="display: block;">
+            <line x1="16" x2="1264" y1="170" y2="170" stroke="#e4e4e7"/>
+            <sc-for list="{{axis}}" as="t" hint-placeholder-count="7">
+              <line x1="{{t.x}}" x2="{{t.x}}" y1="170" y2="174" stroke="#d4d4d8"/><text x="{{t.x}}" y="188" text-anchor="middle" font-size="11" fill="#71717a">{{t.label}}</text>
+            </sc-for>
+            <sc-for list="{{curves}}" as="c" hint-placeholder-count="3">
+              <path d="{{c.area}}" fill="{{c.color}}" fill-opacity="0.1"/>
+              <path d="{{c.line}}" fill="none" stroke="{{c.color}}" stroke-width="2"/>
+              <line x1="{{c.mx}}" x2="{{c.mx}}" y1="{{c.my}}" y2="170" stroke="{{c.color}}" stroke-width="1.5" stroke-dasharray="3 3"/>
+              <text x="{{c.mx}}" y="{{c.ly}}" text-anchor="middle" font-size="12" font-weight="500" fill="#09090b">{{c.name}}</text>
+            </sc-for>
+            <sc-for list="{{dots}}" as="d" hint-placeholder-count="16">
+              <circle cx="{{d.x}}" cy="{{d.y}}" r="4" fill="{{d.color}}" stroke="#ffffff" stroke-width="2"/>
+            </sc-for>
+          </svg>
+        </div>
+        </sc-if>
+        <div class="card">
+          <h2 class="h2">Descriptive statistics</h2>
+          <p class="note">Every measure in full, by group. Green marks the best of Chatbot, Reading only and SEE-I all on each mean and median: the highest, or the lowest where the measure says lower is better.</p>
+          <table>
+            <tr><th></th><th>Chatbot<br><span style="font-weight: 400;">n = 5</span></th><th>Reading only<br><span style="font-weight: 400;">n = 6</span></th><th>SEE-I all<br><span style="font-weight: 400;">n = 5</span></th><th class="split">SEE-I completed<br><span style="font-weight: 400;">n = 2</span></th><th>SEE-I not completed<br><span style="font-weight: 400;">n = 3</span></th></tr>
+            <sc-for list="{{scores}}" as="r" hint-placeholder-count="7">
+              <tr style="background: {{r.bg}};"><td style="color: {{r.fg}}; font-weight: {{r.weight}}; padding-left: {{r.indent}};">{{r.label}}</td><td>{{r.a}}</td><td>{{r.b}}</td><td>{{r.e}}</td><td class="split">{{r.c}}</td><td>{{r.d}}</td></tr>
+            </sc-for>
+          </table>
+        </div>
+        <div class="card">
+          <h2 class="h2">Post-test by dimension</h2>
+          <p class="note">Points scored as a share of the points available, over every answer in the column.</p>
+          <table>
+            <tr><th></th><th>Chatbot</th><th>Reading only</th><th>SEE-I all</th><th class="split">SEE-I completed</th><th>SEE-I not completed</th></tr>
+            <sc-for list="{{dims}}" as="r" hint-placeholder-count="5">
+              <tr><td style="color: #3f3f46;">{{r.label}}</td><td>{{r.a}}</td><td>{{r.b}}</td><td>{{r.e}}</td><td class="split">{{r.c}}</td><td>{{r.d}}</td></tr>
+            </sc-for>
+          </table>
+        </div>
+      </sc-if>
+
+      <!-- SEE-I sessions -->
+      <sc-if value="{{seei}}" hint-placeholder-val="{{false}}">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+          <sc-for list="{{stats}}" as="s" hint-placeholder-count="4">
+            <div class="stat">
+              <div style="font-size: 12px; color: #71717a;">{{s.label}}</div>
+              <div style="font-size: 18px; font-weight: 600; margin-top: 2px;">{{s.value}}</div>
+              <div style="font-size: 12px; color: #71717a;">{{s.sub}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div class="card">
+          <h2 class="h2">Steps</h2>
+          <p class="note">Attempts to pass is the attempt number of the pass, among those who passed.</p>
+          <table>
+            <tr><th>Step</th><th>Reached</th><th>Passed</th><th>Attempts</th><th>Pass rate</th><th>Attempts to pass</th><th>Most attempts</th></tr>
+            <sc-for list="{{steps}}" as="r" hint-placeholder-count="4">
+              <tr><td>{{r.step}}</td><td>{{r.a}}</td><td>{{r.b}}</td><td>{{r.c}}</td><td>{{r.d}}</td><td>{{r.e}}</td><td>{{r.f}}</td></tr>
+            </sc-for>
+          </table>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="card">
+            <h2 class="h2">Criteria, most failed first</h2>
+            <table>
+              <tr><th>Step</th><th class="left">Criterion</th><th>Judged</th><th>Failed</th><th>Fail rate</th></tr>
+              <sc-for list="{{criteria}}" as="r" hint-placeholder-count="4">
+                <tr><td>{{r.step}}</td><td class="left">{{r.name}}</td><td>{{r.a}}</td><td>{{r.b}}</td><td>{{r.c}}</td></tr>
+              </sc-for>
+            </table>
+          </div>
+          <div class="card">
+            <h2 class="h2">Fixed on the next attempt</h2>
+            <p class="note">A criterion failed on one attempt and passed on the next. Failures with no next attempt are left out.</p>
+            <table>
+              <tr><th>Criterion</th><th>Failed</th><th>Fixed</th><th>Rate</th></tr>
+              <sc-for list="{{fixes}}" as="r" hint-placeholder-count="3">
+                <tr><td>{{r.name}}</td><td>{{r.a}}</td><td>{{r.b}}</td><td>{{r.c}}</td></tr>
+              </sc-for>
+            </table>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Behaviour -->
+      <sc-if value="{{behaviour}}" hint-placeholder-val="{{false}}">
+        <div class="card">
+          <h2 class="h2">By group</h2>
+          <p class="note">Pastes record their length only, never the text. Thinking time is from a reply arriving to the first key typed after it.</p>
+          <table>
+            <tr><th></th><th>Chatbot</th><th>Reading only</th><th>SEE-I all</th><th class="split">SEE-I completed</th><th>SEE-I not completed</th></tr>
+            <sc-for list="{{habits}}" as="r" hint-placeholder-count="6">
+              <tr><td style="color: #3f3f46;">{{r.label}}</td><td>{{r.a}}</td><td>{{r.b}}</td><td>{{r.e}}</td><td class="split">{{r.c}}</td><td>{{r.d}}</td></tr>
+            </sc-for>
+          </table>
+        </div>
+        <div class="card">
+          <h2 class="h2">Worth a second look</h2>
+          <p class="note">Flags only. Whether to exclude anyone is the team's decision, against the cut-offs set from the dry run.</p>
+          <table>
+            <tr><th>ID</th><th class="left">Group</th><th class="left">Flags</th><th>Test pastes</th><th>Test tab leaves</th></tr>
+            <sc-for list="{{flagged}}" as="r" hint-placeholder-count="3">
+              <tr><td class="mono">{{r.id}}</td><td class="left">{{r.group}}</td><td class="left"><span class="badge flag">{{r.flag}}</span></td><td>{{r.a}}</td><td>{{r.b}}</td></tr>
+            </sc-for>
+          </table>
+        </div>
+      </sc-if>
+
+      <!-- Participants: untick to leave an ID out of every figure. -->
+      <sc-if value="{{participants}}" hint-placeholder-val="{{false}}">
+        <div class="card">
+          <h2 class="h2">Every participant</h2>
+          <p class="note">Untick an ID to leave it out of every figure on this page. Nothing is saved: a reload, or another batch, puts everyone back.</p>
+          <table>
+            <tr><th class="left">In</th><th class="left">ID</th><th class="left">Group</th><th class="left">SEE-I</th><th>Pre</th><th>Post</th><th>Calibration</th><th>Sure but wrong</th><th>Time</th><th>Turns / questions</th><th>Pastes</th><th class="left">Flags</th></tr>
+            <sc-for list="{{people}}" as="p" hint-placeholder-count="8">
+              <tr style="background: {{p.bg}}; color: {{p.fg}};">
+                <td><span class="box" style="background: {{p.boxBg}}; border: 1px solid {{p.boxBorder}};"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: {{p.tick}};"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="left mono" style="text-decoration: {{p.strike}};">{{p.id}}</td>
+                <td class="left">{{p.group}}</td>
+                <td class="left"><span class="badge {{p.statusClass}}" style="display: {{p.statusShow}};">{{p.status}}</span></td>
+                <td>{{p.pre}}</td><td>{{p.post}}</td><td>{{p.cal}}</td><td>{{p.sbw}}</td><td>{{p.time}}</td><td>{{p.turns}}</td><td>{{p.pastes}}</td>
+                <td class="left"><span class="badge flag" style="display: {{p.flagShow}};">{{p.flag}}</span><span style="display: {{p.dashShow}}; color: #a1a1aa;">&mdash;</span></td>
+              </tr>
+            </sc-for>
+          </table>
+        </div>
+      </sc-if>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"state":{"editor":"enum","options":["Group comparison","Group comparison, statistics","SEE-I sessions","Behaviour","Participants","Participants, one left out","Grader"],"default":"Group comparison","section":"State"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state || 'Group comparison';
+    const grader = state === 'Grader';
+    const out = state === 'Participants, one left out';
+    const row = (label, a, b, c, d, e) => ({ label, a, b, c, d, e });
+    const people = [
+      ['P-AB3K-7QXM', 'Chatbot', '', '', 1, 16, '43%', 4, '12.1 min', 5, 0, ''],
+      ['P-C9TD-2LWR', 'Chatbot', '', '', 0, 9, '33%', 4, '17.8 min', 5, 1, 'Pasted during a test'],
+      ['P-HM4V-8KPE', 'Reading only', '', '', 1, 17, '29%', 5, '14.6 min', '', 0, ''],
+      ['P-JR6N-3FYT', 'Reading only', '', '', 2, 22, '43%', 4, '8.7 min', '', 0, 'Left the tab during a test'],
+      ['P-K7WQ-5BDS', 'SEE-I', 'Completed', 'ok', 1, 18, '29%', 5, '25.1 min', 8, 5, ''],
+      ['P-MT2X-9GHC', 'SEE-I', 'Timed out', 'plain', 2, 19, '80%', 0, '35.0 min', 5, 3, ''],
+      ['P-NP8F-4ZJA', 'SEE-I', 'Timed out', 'plain', 0, 16, '71%', 1, '35.0 min', 8, 17, 'Pasted during a test'],
+      ['P-QX5L-6VRE', 'SEE-I', 'Timed out', 'plain', 1, 14, '0%', 7, '35.0 min', 12, 4, ''],
+    ].map(([id, group, status, cls, pre, post, cal, sbw, time, turns, pastes, flag]) => {
+      const gone = out && id === 'P-NP8F-4ZJA';
+      return {
+        id, group, status, statusClass: cls, statusShow: status ? 'inline-flex' : 'none',
+        pre, post, cal, sbw, time, turns, pastes, flag,
+        flagShow: flag ? 'inline-flex' : 'none', dashShow: flag ? 'none' : 'inline',
+        bg: gone ? '#fafafa' : '#ffffff', fg: gone ? '#71717a' : '#09090b',
+        strike: gone ? 'line-through' : 'none',
+        boxBg: gone ? '#ffffff' : '#16a34a', boxBorder: gone ? '#a1a1aa' : '#16a34a', tick: gone ? 'none' : 'inline',
+      };
+    });
+    const tab = state.startsWith('Group comparison') ? 't1' : { 'SEE-I sessions': 't2', 'Behaviour': 't3' }[state] || 't4';
+    return {
+      grader, team: !grader,
+      gradingTab: grader ? 'tab-on' : '',
+      comparison: state.startsWith('Group comparison'),
+      showDist: state === 'Group comparison',
+      seei: state === 'SEE-I sessions',
+      behaviour: state === 'Behaviour',
+      participants: state.startsWith('Participants'),
+      t1: tab === 't1' ? 'vtab-on' : '', t2: tab === 't2' ? 'vtab-on' : '',
+      t3: tab === 't3' ? 'vtab-on' : '', t4: tab === 't4' ? 'vtab-on' : '',
+      someOut: out,
+      included: out ? '15 of 16 finished participants included' : '16 of 16 finished participants included',
+      batch: 'Sitting 1',
+      // A measure's heading row, then its statistics indented beneath.
+      scores: [
+        ['Post-test score (out of 30)'],
+        ['n', '5', '6', '2', '3', '5'],
+        ['Mean', '14.6', '<span class="best">17</span>', '15', '17', '16.2'],
+        ['SD', '4.72', '5.1', '4.24', '2.65', '2.95'],
+        ['Median', '16', '16.5', '15', '18', '<span class="best">18</span>'],
+        ['Quartiles (Q1&ndash;Q3)', '12&ndash;19', '15.25&ndash;20.75', '13.5&ndash;16.5', '16&ndash;18.5', '14&ndash;18'],
+        ['Range', '7&ndash;19', '9&ndash;23', '12&ndash;18', '14&ndash;19', '12&ndash;19'],
+        ['Pre-test score (out of 3)'],
+        ['n', '5', '6', '2', '3', '5'],
+        ['Mean', '0.8', '1', '1.5', '1.67', '<span class="best">1.6</span>'],
+      ].map(([label, a = '', b = '', c = '', d = '', e = '']) => {
+        const head = a === '';
+        return { label, a, b, c, d, e, bg: head ? '#fafafa' : '#ffffff', fg: head ? '#09090b' : '#3f3f46',
+                 weight: head ? 500 : 400, indent: head ? '20px' : '32px' };
+      }),
+      ...(() => {
+        // Three fitted normal curves for the post-test, drawn as the app draws them.
+        const groups = [
+          { name: 'Chatbot', color: '#2a78d6', mean: 14.6, sd: 4.72, values: [7, 12, 16, 19, 19] },
+          { name: 'Reading only', color: '#eb6834', mean: 17, sd: 5.1, values: [9, 15, 16, 17, 22, 23] },
+          { name: 'SEE-I', color: '#1baf7a', mean: 16.2, sd: 2.95, values: [12, 14, 16, 18, 19] },
+        ];
+        const X = (v) => 16 + (v / 30) * 1248;
+        const pdf = (v, m, s) => Math.exp(-0.5 * ((v - m) / s) ** 2) / (s * Math.sqrt(2 * Math.PI));
+        const top = Math.max(...groups.map((g) => pdf(g.mean, g.mean, g.sd)));
+        const Y = (d) => 170 - (d / top) * 140;
+        const labelY = {};
+        const curves = groups.map((g) => {
+          const pts = Array.from({ length: 121 }, (_, i) => [i / 4, pdf(i / 4, g.mean, g.sd)]);
+          const line = pts.map(([v, d], i) => `${i ? 'L' : 'M'}${X(v).toFixed(1)},${Y(d).toFixed(1)}`).join('');
+          const my = Y(pdf(g.mean, g.mean, g.sd));
+          let ly = my - 8;
+          while (Object.values(labelY).some(([x, y]) => Math.abs(x - X(g.mean)) < 90 && Math.abs(y - ly) < 14)) ly -= 14;
+          labelY[g.name] = [X(g.mean), ly];
+          return { name: g.name, color: g.color, line, area: `${line}L${X(30)},170L${X(0)},170Z`,
+                   mx: X(g.mean).toFixed(1), my: my.toFixed(1), ly: ly.toFixed(1) };
+        });
+        const dots = groups.flatMap((g, row) => {
+          const seen = {};
+          return g.values.map((v) => {
+            seen[v] = (seen[v] || 0) + 1;
+            return { x: (X(v) + (seen[v] - 1) * 5).toFixed(1), y: 206 + row * 12, color: g.color };
+          });
+        });
+        return {
+          curves, dots,
+          axis: [0, 5, 10, 15, 20, 25, 30].map((t) => ({ x: X(t).toFixed(1), label: String(t) })),
+          legend: groups.map((g) => ({ name: g.name, color: g.color,
+                                       stats: `n = ${g.values.length} &middot; mean ${g.mean} &middot; SD ${g.sd}` })),
+        };
+      })(),
+      dims: [
+        row('Facts', '72%', '77%', '55%', '70%', '64%'),
+        row('Procedures', '68%', '53%', '60%', '60%', '60%'),
+        row('Connections', '40%', '44%', '33%', '56%', '47%'),
+        row('Transfer', '23%', '47%', '58%', '33%', '43%'),
+        row('Metacognition', '7%', '39%', '33%', '56%', '47%'),
+      ],
+      stats: [
+        { label: 'Sessions', value: '5', sub: '' },
+        { label: 'Completed all four steps', value: '2 of 5', sub: '' },
+        { label: 'Feedback fixed a failed criterion', value: '67%', sub: '33 of 49 on the next attempt' },
+      ],
+      steps: [
+        { step: 'State', a: 5, b: 5, c: 13, d: '38%', e: '2.6', f: 6 },
+        { step: 'Elaborate', a: 5, b: 4, c: 20, d: '20%', e: '4', f: 6 },
+        { step: 'Exemplify', a: 4, b: 3, c: 10, d: '30%', e: '2.67', f: 4 },
+        { step: 'Illustrate', a: 2, b: 2, c: 3, d: '67%', e: '1.5', f: 2 },
+      ],
+      criteria: [
+        { step: 'Exemplify', name: 'Contrast', a: 10, b: 7, c: '70%' },
+        { step: 'Elaborate', name: 'Completeness', a: 20, b: 12, c: '60%' },
+        { step: 'State', name: 'Completeness', a: 13, b: 7, c: '54%' },
+        { step: 'Elaborate', name: 'Accuracy', a: 20, b: 6, c: '30%' },
+      ],
+      fixes: [
+        { name: 'Completeness', a: 19, b: 9, c: '47%' },
+        { name: 'Accuracy', a: 8, b: 6, c: '75%' },
+        { name: 'Contrast', a: 6, b: 2, c: '33%' },
+      ],
+      habits: [
+        row('Thinking time after a reply (median)', '32 s', '&mdash;', '26 s', '19 s', '22 s'),
+        row('Pasted outside the tests', '0', '0', '2', '3', '5'),
+        row('Pasted during a test', '1', '0', '0', '1', '1'),
+        row('Left the tab during a test', '1', '2', '1', '1', '2'),
+        row('AI replies that failed', '0', '0', '0', '0', '0'),
+      ],
+      flagged: [
+        { id: 'P-C9TD-2LWR', group: 'Chatbot', flag: 'Pasted during a test', a: 1, b: 2 },
+        { id: 'P-JR6N-3FYT', group: 'Reading only', flag: 'Left the tab during a test', a: 0, b: 8 },
+        { id: 'P-NP8F-4ZJA', group: 'SEE-I', flag: 'Pasted during a test', a: 8, b: 19 },
+      ],
+      people,
+    };
+  }
+}
+</script>
+</body>
+</html>

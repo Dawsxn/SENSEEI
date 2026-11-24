@@ -36,7 +36,7 @@ One row per participant ID. Every group.
 | pretest_ended_by | `submitted`, `time_up`, or `closed` (the batch closed while it ran) |
 | posttest_started_at, posttest_ended_at, posttest_ended_by | The same for the post-test |
 | pretest_score | 0 to 3. Empty until it is graded |
-| posttest_total | 0 to 20. Empty until every answer is scored |
+| posttest_total | 0 to 30. Empty until every answer is scored |
 | calibration | The share of "sure / not sure" ticks that matched the result, 0 to 1. Empty until every ticked answer is scored |
 | sure_but_wrong | Answers ticked "sure" that did not get full marks |
 
@@ -63,7 +63,7 @@ One row per SEE-I answer.
 | --- | --- |
 | participant_id, session_id | |
 | step | `State`, `Elaborate`, `Exemplify` or `Illustrate` |
-| attempt_number | 1, 2 or 3 on that step |
+| attempt_number | 1, 2, 3 and on, on that step. The trial has no attempt limit |
 | submitted_at | When they sent it |
 | verdict | `PASS` or `FAIL`. Fails if any criterion failed |
 | model_verdict | What the model itself said. Usually the same as `verdict`; a difference is worth a look |

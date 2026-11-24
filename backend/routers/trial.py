@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,6 +23,7 @@ from ..db import get_session
 from ..deps import get_chatbot_dep, require_grader, require_instructor, require_student
 from ..models import User, utcnow
 from ..schemas import (
+    AnalysisOut,
     BatchAddIn,
     BatchIn,
     BatchListItem,
@@ -39,7 +40,7 @@ from ..schemas import (
     TrialEventsIn,
     TrialStatusOut,
 )
-from ..services import chat_service, export_service, test_service, trial_service
+from ..services import analysis_service, chat_service, export_service, test_service, trial_service
 from ..services.detach import detached
 from ..services.trial_service import (
     BatchClosed,
@@ -276,6 +277,22 @@ def _zip(data: bytes, filename: str) -> Response:
             "Cache-Control": "no-store",
         },
     )
+
+
+@router.get("/instructor/analysis", response_model=AnalysisOut)
+async def analysis(
+    batch: uuid.UUID | None = None,
+    exclude: list[str] = Query(default=[]),
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> AnalysisOut:
+    """The trial's descriptive figures, for one batch or all of them, leaving out
+    the IDs in `exclude`. The research team only: the figures name each ID's
+    group, which the grader must not see."""
+    try:
+        return AnalysisOut(**await analysis_service.analysis(db, user.id, batch, set(exclude)))
+    except (TrialOff, BatchNotFound):
+        raise NOT_FOUND
 
 
 @router.get("/instructor/grading", response_model=list[GradingListItem])
