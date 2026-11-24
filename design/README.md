@@ -44,6 +44,9 @@ design changes, so it always matches.
 | Reference panel, rubric | [png/04d-panel-rubric.png](png/04d-panel-rubric.png) |
 | Session review, student | [png/05-session-review.png](png/05-session-review.png) |
 | Session review, instructor | [png/05b-session-review-instructor.png](png/05b-session-review-instructor.png) |
+| Session review, student (replaces the two above) | [png/05c-session-review-student.png](png/05c-session-review-student.png) |
+| Session review, instructor (replaces the two above) | [png/05c-session-review-instructor.png](png/05c-session-review-instructor.png) |
+| Session review, rubric opened from a tag | [png/05c-session-review-rubric.png](png/05c-session-review-rubric.png) |
 | Instructor classes | [png/06-classes.png](png/06-classes.png) |
 | Instructor classes, empty | [png/06-classes-empty.png](png/06-classes-empty.png) |
 | New class | [png/06-new-class.png](png/06-new-class.png) |

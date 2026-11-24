@@ -18,7 +18,7 @@ A session ends in one of two ways:
 | Fallback | The student hit the maximum attempts on some step |
 
 Both endings are terminal. A finished session of either kind is read-only, and
-both give the student the option to start a new attempt at that reading.
+the student can start the reading again from the reading's page.
 
 A session cannot be paused. If a student tries to leave mid-session, the app asks
 them to confirm, warning that the session will be discarded and cannot be
@@ -39,10 +39,13 @@ cut off by time is kept and counted, never discarded.
    sees a reading only if one of their classes has it assigned.
 2. **Core components.** Each reading carries one or more core components, the
    essential defining parts of the concept, supplied by the instructor at upload.
-3. **Already-attempted readings.** Selecting one shows a read-only view of the
-   most recent session by default, with the option to start a new attempt
-   (§4.3.1). Earlier sessions on that reading remain viewable. There is no cap on
-   how many times a student may re-attempt a reading.
+3. **Already-attempted readings.** The reading's page lists every past session
+   on it, and each opens read-only under the reading (§4.3.1): a summary of the
+   steps reached, then the conversation, with the criteria each answer missed
+   shown as they were during the session, and the core components and rubric a
+   tap away. The instructor sees the same page with the Assessment Agent's
+   reason for each criterion. Starting again is from the reading's page. There
+   is no cap on how many times a student may re-attempt a reading.
 4. **Reading detail.** A page of its own under the class, showing the
    reading's core component(s), any past sessions on it, and Start.
 5. **Reading step.** The reading is shown on its own, as the instructor's

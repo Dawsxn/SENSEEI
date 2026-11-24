@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #09090b; background: #ffffff; }
+    .top { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; }
+    .wrap { max-width: 868px; margin: 0 auto; padding: 24px 24px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; }
+    .crumbs { font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: #52525b; }
+    .back { display: none; font-size: 13px; color: #52525b; align-items: center; gap: 4px; }
+    h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .sub { font-size: 14px; color: #71717a; margin-top: 4px; }
+
+    .summary { border: 1px solid #e4e4e7; border-radius: 10px; overflow: hidden; }
+    .shead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #71717a; }
+    .chip { display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 22px; border-radius: 999px; border: 1px solid; font-size: 12px; font-weight: 500; }
+    .bad { border-color: #fecaca; color: #b91c1c; background: #fef2f2; }
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .step { padding: 12px 16px; border-left: 1px solid #e4e4e7; display: flex; flex-direction: column; gap: 4px; }
+    .step:first-child { border-left: none; }
+    .sname { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .scount { font-size: 13px; color: #71717a; }
+    .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .ok-t { color: #16a34a; } .bad-t { color: #b91c1c; } .na-t { color: #a1a1aa; }
+    .step.na .sname { color: #a1a1aa; }
+
+    .divider { display: flex; align-items: center; gap: 12px; margin: 28px 0 4px; }
+    .divider:first-child { margin-top: 0; }
+    .divider span { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+    .divider i { flex: 1; height: 1px; background: #e4e4e7; }
+    .tutor { margin: 16px 0; font-size: 14px; line-height: 1.6; }
+    .me { margin: 16px 0; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .bubble { max-width: 85%; border-radius: 8px; background: #f0fdf4; padding: 10px 16px; font-size: 14px; line-height: 1.6; color: #3f3f46; box-sizing: border-box; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tag { display: inline-flex; align-items: center; height: 22px; padding: 0 10px; border-radius: 999px; border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; font-size: 12px; font-weight: 500; }
+    .fallback { margin: 16px 0; border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; border-radius: 8px; padding: 12px 16px; font-size: 14px; line-height: 1.6; }
+
+    .judge { width: 85%; max-width: 85%; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 13px; box-sizing: border-box; }
+    .jhead { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #e4e4e7; background: #fafafa; border-radius: 8px 8px 0 0; }
+    .jhead b { font-weight: 500; }
+    .pill { border-radius: 999px; padding: 1px 8px; font-size: 12px; font-weight: 500; }
+    .pill.no { background: #fef2f2; color: #b91c1c; } .pill.yes { background: #f0fdf4; color: #15803d; }
+    .jrow { display: flex; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #f4f4f5; line-height: 1.55; }
+    .jrow:last-child { border-bottom: none; }
+    .jrow .k { width: 120px; flex-shrink: 0; font-weight: 500; }
+    .jrow .v { color: #3f3f46; }
+    .jrow.pass .v { color: #71717a; }
+
+    .wrap { position: relative; }
+    .headrow { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+    .refs { display: flex; gap: 8px; flex-shrink: 0; }
+    .rbtn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px; font-size: 13px; font-weight: 500; background: #ffffff; }
+    .rbtn.on { background: #f4f4f5; }
+    .tag.tapped { box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #fca5a5; }
+    .scrim { display: none; }
+    .top { position: relative; z-index: 6; background: #ffffff; }
+    .wrap.scrolled { margin-top: -690px; }
+    .panel { position: fixed; right: 24px; top: 68px; z-index: 5; width: 440px; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.14); overflow: hidden; }
+    .phead { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #71717a; }
+    .crit { display: flex; gap: 12px; padding: 10px 16px; font-size: 13px; line-height: 1.5; color: #3f3f46; }
+    .ctag { flex-shrink: 0; width: 118px; box-sizing: border-box; display: inline-flex; align-self: flex-start; justify-content: center; height: 22px; align-items: center; border-radius: 999px; border: 1px solid #e4e4e7; font-size: 12px; font-weight: 500; color: #3f3f46; }
+    .ctag.miss { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+    .pnote { padding: 10px 16px; font-size: 12px; color: #71717a; background: #fafafa; border-top: 1px solid #e4e4e7; }
+    .prow { display: flex; justify-content: space-between; align-items: center; padding: 11px 16px; border-top: 1px solid #e4e4e7; font-size: 14px; }
+    .crit:last-of-type { padding-bottom: 14px; }
+
+    @media (max-width: 639px) {
+      .wrap.scrolled { margin-top: -1300px; }
+      .headrow { flex-direction: column; align-items: stretch; gap: 12px; }
+      .refs .rbtn { flex: 1; justify-content: center; }
+      .scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 4; }
+      .panel { position: fixed; left: 0; right: 0; top: auto; bottom: 0; width: auto; border-radius: 14px 14px 0 0; }
+      .top { padding: 0 16px; }
+      .wrap { padding: 16px 16px 32px; gap: 20px; }
+      .crumbs { display: none; }
+      .back { display: inline-flex; }
+      h1 { font-size: 22px; }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .step:nth-child(3) { border-left: none; }
+      .step:nth-child(n+3) { border-top: 1px solid #e4e4e7; }
+      .bubble, .judge { max-width: 92%; width: auto; }
+      .judge { width: 92%; }
+      .jrow { flex-direction: column; gap: 2px; }
+      .jrow .k { width: auto; }
+    }
+  </style>
+</helmet>
+<div>
+  <div class="top">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="21" height="21" viewBox="0 0 100 100" fill="#16a34a">
+        <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+        <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+        <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+        <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+      </svg>
+      <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: #16a34a;">SEE-I</span></span>
+      <sc-if value="{{instructor}}"><span style="margin-left: 24px; font-size: 14px; font-weight: 500;">Classes</span><span style="margin-left: 20px; font-size: 14px; font-weight: 500; color: #71717a;">Readings</span></sc-if>
+    </div>
+    <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5;"></div>
+  </div>
+
+  <div class="wrap {{scrolled}}">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="crumbs">
+        <span>Classes</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+        <span>STSWENG S11</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+        <span>Business Model</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+        <span style="color: #09090b;">{{current}}</span>
+      </div>
+      <div class="back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+        Business Model
+      </div>
+      <div class="headrow">
+        <div>
+          <h1>{{title}}</h1>
+          <div class="sub meta"><span class="chip bad">Failed</span><span>{{sub}}</span></div>
+        </div>
+        <div class="refs">
+          <span class="rbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>Components</span>
+          <span class="rbtn {{rubricOn}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/></svg>Rubric</span>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{panel}}">
+    <div class="scrim"></div>
+    <div class="panel">
+      <div class="phead"><span>Rubric &middot; Exemplify</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+      <div class="crit"><span class="ctag">Originality</span><span>The example is the student's own original example. It is not taken from or based on an example in the text/reading.</span></div>
+      <div class="crit"><span class="ctag">Fit</span><span>The example genuinely displays the concept as stated and elaborated. It is a true instance of the concept, not something only partially or tangentially related.</span></div>
+      <div class="crit"><span class="ctag">Concreteness</span><span>The example is concrete and points to a real or realistic instance the reader can connect with.</span></div>
+      <div class="crit"><span class="ctag">Explicit Mapping</span><span>The example includes an explanation of how or why it illustrates the concept. It is not simply presented without connecting it back.</span></div>
+      <div class="crit"><span class="ctag miss">Contrast</span><span>The response includes a contrasting example: a genuine non-example (something that is not an instance of the concept) that clarifies the concept's boundary.</span></div>
+      <div class="crit"><span class="ctag">Accuracy</span><span>The response is faithful to the reading: everything it asserts about the concept is correct and consistent with the source. It does not contradict the reading, misrepresent the concept, or rely on claims the source does not support.</span></div>
+      <div class="prow">State<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+      <div class="prow">Elaborate<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+      <div class="prow">Illustrate<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+    </div>
+    </sc-if>
+
+    <div class="summary">
+            <div class="steps">
+        <div class="step"><div class="sname"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"></path></svg>State</div><div class="scount">1 try</div></div>
+        <div class="step"><div class="sname"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"></path></svg>Elaborate</div><div class="scount">2 tries</div></div>
+        <div class="step"><div class="sname"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>Exemplify</div><div class="scount">3 tries</div></div>
+        <div class="step na"><div class="sname"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2.5" stroke-linecap="round"><path d="M6 12h12"></path></svg>Illustrate</div><div class="scount">Not reached</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="divider"><span class="ok-t">State</span><i></i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"></path></svg></div>
+      <div class="tutor">To start, state in your own words what a business model is.</div>
+      <div class="me"><div class="bubble">A business model is how a company plans to make money by giving customers something they value at a price that covers its costs.</div>
+        <sc-if value="{{instructor}}"><div class="judge"><div class="jhead"><b>Try 1</b><span class="pill yes">Passed</span></div><div class="jrow pass"><span class="k ok-t">✓ Passed</span><span class="v">Brevity, Own Words, Clarity, Completeness, Accuracy</span></div></div></sc-if>
+      </div>
+      <div class="tutor">That captures it. Now elaborate: what are the two parts of a business model, and how do they fit together?</div>
+
+      <div class="divider"><span class="ok-t">Elaborate</span><i></i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"></path></svg></div>
+      <div class="me"><div class="bubble">It has a value proposition, which is what the customer gets.</div>
+        <sc-if value="{{instructor}}"><div class="judge"><div class="jhead"><b>Try 1</b><span class="pill no">Not passed</span></div><div class="jrow"><span class="k bad-t">✕ Completeness</span><span class="v">Names the value proposition but leaves out the profit formula, so only one of the two parts is covered.</span></div><div class="jrow pass"><span class="k ok-t">✓ Passed</span><span class="v">Own Words, Coherence, Accuracy</span></div></div></sc-if>
+      </div>
+      <div class="tutor">You have one half. What is the other part, the one about how the company earns from that value?
+        <sc-if value="{{student}}"><div class="tags"><span class="tag">Completeness</span></div></sc-if>
+      </div>
+      <div class="me"><div class="bubble">The value proposition, which is what customers get for the price, and the profit formula, which shows how revenue covers costs and leaves a profit.</div>
+        <sc-if value="{{instructor}}"><div class="judge"><div class="jhead"><b>Try 2</b><span class="pill yes">Passed</span></div><div class="jrow pass"><span class="k ok-t">✓ Passed</span><span class="v">Completeness, Own Words, Coherence, Accuracy</span></div></div></sc-if>
+      </div>
+
+      <div class="divider"><span class="na-t" style="color:#71717a">Exemplify</span><i></i></div>
+      <div class="tutor">Good. Give an example of a business and describe its business model in those two parts.</div>
+      <div class="me"><div class="bubble">A coffee shop sells coffee.</div>
+        <sc-if value="{{instructor}}"><div class="judge"><div class="jhead"><b>Try 1</b><span class="pill no">Not passed</span></div><div class="jrow"><span class="k bad-t">✕ Explicit Mapping</span><span class="v">The example names a business but does not connect it to either part of a business model.</span></div><div class="jrow"><span class="k bad-t">✕ Contrast</span><span class="v">No non-example is given to show where the concept ends.</span></div></div></sc-if>
+      </div>
+      <div class="tutor">That names a business. What does the coffee shop offer its customers, and how does it make money from it?
+        <sc-if value="{{student}}"><div class="tags"><span class="tag">Explicit Mapping</span><span class="tag">Contrast</span></div></sc-if>
+      </div>
+      <div class="me"><div class="bubble">It offers coffee that customers like, and it makes money by selling cups.</div>
+        <sc-if value="{{instructor}}"><div class="judge"><div class="jhead"><b>Try 2</b><span class="pill no">Not passed</span></div><div class="jrow"><span class="k bad-t">✕ Contrast</span><span class="v">Still gives no non-example, so the boundary of the concept is not shown.</span></div><div class="jrow pass"><span class="k ok-t">✓ Passed</span><span class="v">Originality, Fit, Concreteness, Explicit Mapping, Accuracy</span></div></div></sc-if>
+      </div>
+      <div class="tutor">That connects the example to the concept. Now add something that is not a business model, to show where the idea ends.
+        <sc-if value="{{student}}"><div class="tags"><span class="tag {{tapped}}">Contrast</span></div></sc-if>
+      </div>
+      <div class="me"><div class="bubble">A coffee shop that gives coffee away for free.</div>
+        <sc-if value="{{instructor}}"><div class="judge"><div class="jhead"><b>Try 3</b><span class="pill no">Not passed</span></div><div class="jrow"><span class="k bad-t">✕ Contrast</span><span class="v">The non-example is still a business, so it does not mark where the concept ends.</span></div><div class="jrow pass"><span class="k ok-t">✓ Passed</span><span class="v">Originality, Fit, Concreteness, Explicit Mapping, Accuracy</span></div></div></sc-if>
+      </div>
+      <div class="fallback">This step took a few tries, so we'll stop here. Your instructor can see how it went, and you can start the reading again any time.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"role":{"editor":"select","options":["student","instructor"],"default":"student"},"panel":{"editor":"select","options":["closed","rubric"],"default":"closed"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const instructor = (this.props.role ?? 'student') === 'instructor';
+    return {
+      instructor,
+      student: !instructor,
+      panel: this.props.panel === 'rubric',
+      rubricOn: this.props.panel === 'rubric' ? 'on' : '',
+      tapped: this.props.panel === 'rubric' ? 'tapped' : '',
+      scrolled: this.props.panel === 'rubric' ? 'scrolled' : '',
+      title: instructor ? 'Mateo Cruz' : 'Business Model',
+      sub: (instructor ? 'Business Model &middot; ' : '') + 'Attempt 1 &middot; Nov 13, 2026, 10:02 AM &middot; 22 minutes',
+      current: instructor ? 'Mateo Cruz, attempt 1' : 'Attempt 1',
+    };
+  }
+}
+</script>
+</body>
+</html>
