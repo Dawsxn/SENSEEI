@@ -14,6 +14,7 @@ import { Button } from "../../components/ui/button";
 import { formatDate } from "../../lib/format";
 import { cn } from "../../lib/utils";
 import { Breadcrumb, Notice, SessionStatusChip } from "./parts";
+import { ReadingSkeleton, SessionRowsSkeleton } from "./skeletons";
 import { useMyClass, useReading, useReadingSessions } from "./useReadings";
 
 export function StudentReadingPage() {
@@ -24,8 +25,8 @@ export function StudentReadingPage() {
   const { data: sessions } = useReadingSessions(readingId);
 
   // The reading must belong to this class, or the breadcrumb would lie.
-  const inClass = klass.data?.readings.some((r) => r.id === readingId);
-  const failed = klass.isError || reading.isError || (klass.data && !inClass);
+  const notInClass = klass.data && !klass.data.readings.some((r) => r.id === readingId);
+  const failed = klass.isError || reading.isError;
   const r = reading.data;
 
   return (
@@ -33,10 +34,11 @@ export function StudentReadingPage() {
       <AppTopBar />
       <main className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-[1148px] flex-col gap-6 px-4 pb-8 pt-4 sm:gap-7 sm:px-8 sm:pb-12 sm:pt-6 lg:px-6">
-          {failed && <Notice>Couldn't find this reading in your class.</Notice>}
-          {!failed && (!klass.data || !r) && <Notice>Loading the reading…</Notice>}
+          {failed && <Notice>Couldn't load this reading. Try again.</Notice>}
+          {!failed && notInClass && <Notice>This reading isn't in this class.</Notice>}
+          {!failed && !notInClass && (!klass.data || !r) && <ReadingSkeleton />}
 
-          {!failed && klass.data && r && (
+          {!failed && !notInClass && klass.data && r && (
             <>
               <div className="flex flex-col gap-2.5">
                 <Breadcrumb
@@ -91,7 +93,8 @@ export function StudentReadingPage() {
 
                 <section className="flex flex-col gap-2.5">
                   <SectionLabel>Past sessions</SectionLabel>
-                  <div className="overflow-hidden rounded-lg border">
+                  {!sessions && <SessionRowsSkeleton />}
+                  <div className={cn("overflow-hidden rounded-lg border", !sessions && "hidden")}>
                     {sessions && sessions.length === 0 && (
                       <div className="px-4 py-7 text-center text-[14px] text-muted-foreground">
                         No attempts yet

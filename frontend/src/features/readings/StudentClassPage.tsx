@@ -10,6 +10,7 @@ import { AppTopBar } from "../../components/AppTopBar";
 import { cn } from "../../lib/utils";
 import { Breadcrumb, Notice, ProgressBar, ReadingStatusChip } from "./parts";
 import type { ReadingListItem } from "./types";
+import { ClassSkeleton } from "./skeletons";
 import { useMyClass } from "./useReadings";
 
 type Filter = "all" | "todo" | "finished";
@@ -53,7 +54,7 @@ export function StudentClassPage() {
       <AppTopBar />
       <main className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-[1148px] flex-col gap-4 px-4 py-4 sm:gap-5 sm:px-8 sm:py-6 lg:px-6">
-          {isLoading && <Notice>Loading the class…</Notice>}
+          {isLoading && <ClassSkeleton />}
           {isError && (
             <Notice>Couldn't load this class. It may have been removed.</Notice>
           )}

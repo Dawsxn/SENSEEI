@@ -89,6 +89,14 @@ describe("the classes page", () => {
     expect(localStorage.getItem("senseei.class-colour.c1")).toBe("#f9a8d4");
   });
 
+  it("shows placeholders, not text, while the classes load", async () => {
+    api.getMyClasses.mockReturnValue(new Promise(() => {}));
+    show("/");
+
+    expect(await screen.findByRole("status", { name: "Loading your classes" })).toBeInTheDocument();
+    expect(screen.queryByText(/Loading/)).not.toBeInTheDocument();
+  });
+
   it("opens Join a class from beside the heading", async () => {
     api.getMyClasses.mockResolvedValue([]);
     show("/");
@@ -170,6 +178,6 @@ describe("the reading page", () => {
     api.getReadingSessions.mockResolvedValue([]);
     show("/classes/c1/readings/r9");
 
-    expect(await screen.findByText(/Couldn't find this reading/)).toBeInTheDocument();
+    expect(await screen.findByText("This reading isn't in this class.")).toBeInTheDocument();
   });
 });

@@ -16,6 +16,7 @@ import { cn } from "../../lib/utils";
 import { CLASS_COLOURS, classColour, saveClassColour } from "./classColours";
 import { JoinClassDialog } from "./JoinClassDialog";
 import { Notice, ProgressBar } from "./parts";
+import { ClassesSkeleton } from "./skeletons";
 import type { StudentClassItem } from "./types";
 import { useMyClasses } from "./useReadings";
 
@@ -37,7 +38,7 @@ export function StudentClassesPage() {
             </Button>
           </div>
 
-          {isLoading && <Notice>Loading your classes…</Notice>}
+          {isLoading && <ClassesSkeleton />}
           {isError && <Notice>Couldn't load your classes. Try again.</Notice>}
           {data && data.length === 0 && (
             <Notice>No classes available</Notice>

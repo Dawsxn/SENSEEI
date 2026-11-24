@@ -15,6 +15,7 @@ import { Navigate, useParams } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
 import { Button } from "../../components/ui/button";
+import { Loading, Skeleton } from "../../components/ui/Skeleton";
 import { cn } from "../../lib/utils";
 import { formatDateTime, formatDuration } from "../../lib/format";
 import { useMe } from "../auth/useAuth";
@@ -63,7 +64,7 @@ export function SessionReviewPage() {
       <AppTopBar />
       <main className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-[868px] flex-col gap-5 px-4 pb-8 pt-4 sm:gap-6 sm:px-6 sm:pb-12 sm:pt-6">
-          {isLoading && <Notice>Loading the session…</Notice>}
+          {isLoading && <ReviewSkeleton />}
           {(isError || wrongPlace) && <Notice>Couldn't load this session.</Notice>}
 
           {t && !wrongPlace && (
@@ -162,6 +163,50 @@ export function OldReviewLink() {
   if (!t) return null;
   return (
     <Navigate to={`/classes/${t.class_id}/readings/${t.reading_id}/sessions/${t.id}`} replace />
+  );
+}
+
+/** The header, the step card and the start of the conversation, in grey. */
+function ReviewSkeleton() {
+  return (
+    <Loading label="Loading the session" className="flex flex-col gap-5 sm:gap-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-3.5 w-64 max-w-full" />
+          <Skeleton className="h-7 w-48" />
+          <div className="flex items-center gap-2.5">
+            <Skeleton className="h-[22px] w-24 rounded-full" />
+            <Skeleton className="h-4 w-56 max-w-[60%]" />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-8 flex-1 sm:w-[118px] sm:flex-none" />
+          <Skeleton className="h-8 flex-1 sm:w-[86px] sm:flex-none" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 overflow-hidden rounded-lg border sm:grid-cols-4">
+        {STEPS.map((step, i) => (
+          <div
+            key={step}
+            className={cn(
+              "flex flex-col gap-2 px-4 py-3.5",
+              i % 2 === 1 && "border-l",
+              i >= 2 && "border-t sm:border-t-0",
+              i === 2 && "sm:border-l",
+            )}
+          >
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-3.5 w-12" />
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="ml-auto h-16 w-[85%] rounded-lg" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    </Loading>
   );
 }
 

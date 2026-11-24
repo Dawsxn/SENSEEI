@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { ChevronRight, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
+import { Loading, Skeleton } from "../../components/ui/Skeleton";
 import { getRubric } from "../../lib/api";
 import { cn } from "../../lib/utils";
 import type { SeeiStep } from "./types";
@@ -138,7 +139,19 @@ export function RubricPanel({
 
   return (
     <Popover title={`Rubric · ${step}`} onClose={onClose} placement={placement}>
-      {isLoading && <Notice>Loading the rubric…</Notice>}
+      {isLoading && (
+        <Loading label="Loading the rubric" className="flex flex-col gap-3 px-4 py-3.5">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex gap-3">
+              <Skeleton className="h-5 w-[104px] shrink-0 rounded-full" />
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-3/4" />
+              </div>
+            </div>
+          ))}
+        </Loading>
+      )}
       {isError && <Notice>Couldn&rsquo;t load the rubric.</Notice>}
 
       {current && (
