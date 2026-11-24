@@ -112,7 +112,9 @@ describe("the class page", () => {
     api.getMyClass.mockResolvedValue(STRAMA);
     show("/classes/c1");
 
-    expect(await screen.findByText("2 of 3 readings finished")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Finished\s*2/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /To do\s*1/ })).toBeInTheDocument();
+    expect(screen.queryByText(/readings finished/)).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /Business Model|Strategy|Strategic Vision/ })).toHaveLength(3);
 
     await userEvent.click(screen.getByRole("button", { name: /To do/ }));

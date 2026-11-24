@@ -1,6 +1,7 @@
 /** One of the student's classes: its readings, filtered by whether they are
  *  done. A reading counts as finished once a session on it has ended, passed
- *  or failed, the same rule as the progress on the class card. */
+ *  or failed, the same rule as the progress on the class card, which is where
+ *  the progress lives; here the filter's counts say it. */
 
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
@@ -8,7 +9,7 @@ import { Link, useParams } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
 import { cn } from "../../lib/utils";
-import { Breadcrumb, Notice, ProgressBar, ReadingStatusChip } from "./parts";
+import { Breadcrumb, Notice, ReadingStatusChip } from "./parts";
 import type { ReadingListItem } from "./types";
 import { ClassSkeleton } from "./skeletons";
 import { useMyClass } from "./useReadings";
@@ -66,28 +67,13 @@ export function StudentClassPage() {
                   trail={[{ label: "Classes", to: "/" }]}
                   current={data.label}
                 />
-                <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                  <div className="min-w-0">
-                    <h1 className="truncate text-[22px] font-semibold tracking-[-0.02em] sm:text-[24px]">
-                      {data.name}
-                    </h1>
-                    {data.section && (
-                      <div className="mt-0.5 truncate text-[14px] font-medium text-foreground/70">
-                        {data.section}
-                      </div>
-                    )}
-                  </div>
-                  {readings.length > 0 && (
-                    <div className="flex items-center gap-3 text-[13px] text-muted-foreground">
-                      <span className="shrink-0">
-                        {done} of {readings.length}{" "}
-                        {readings.length === 1 ? "reading" : "readings"}{" "}
-                        finished
-                      </span>
-                      <ProgressBar
-                        value={readings.length ? done / readings.length : 0}
-                        className="flex-1 sm:w-40 sm:flex-none"
-                      />
+                <div className="min-w-0">
+                  <h1 className="truncate text-[22px] font-semibold tracking-[-0.02em] sm:text-[24px]">
+                    {data.name}
+                  </h1>
+                  {data.section && (
+                    <div className="mt-0.5 truncate text-[14px] font-medium text-foreground/70">
+                      {data.section}
                     </div>
                   )}
                 </div>

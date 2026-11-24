@@ -29,12 +29,9 @@ export function ClassSkeleton() {
     <Loading label="Loading the class" className="flex flex-col gap-4 sm:gap-5">
       <div className="flex flex-col gap-3">
         <Skeleton className="h-3.5 w-32" />
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-2">
-            <Skeleton className="h-7 w-40" />
-            <Skeleton className="h-3.5 w-12" />
-          </div>
-          <Skeleton className="h-3.5 w-full sm:w-72" />
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="h-3.5 w-12" />
         </div>
       </div>
       <Skeleton className="h-[34px] w-full rounded-lg sm:w-[318px]" />
