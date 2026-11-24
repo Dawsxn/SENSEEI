@@ -2,8 +2,8 @@
  *  past sessions on it, and Start.
  *
  * Start always reads the same: the past sessions beside it already show
- * whether this is a first try. Opening a session goes to its review, and Back
- * from there returns here.
+ * whether this is a first try. Opening a session goes to its review, whose
+ * breadcrumb leads back here.
  */
 
 import { ChevronRight } from "lucide-react";
@@ -100,7 +100,7 @@ export function StudentReadingPage() {
                     {sessions?.map((s, i) => (
                       <Link
                         key={s.id}
-                        to={`/review/${s.id}`}
+                        to={`/classes/${klass.data.id}/readings/${r.id}/sessions/${s.id}`}
                         className={cn(
                           "flex items-center gap-2.5 px-3.5 py-3 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none sm:gap-3 sm:px-4",
                           i > 0 && "border-t",

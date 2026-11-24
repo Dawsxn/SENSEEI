@@ -9,26 +9,34 @@
  * words. Between them they are why the tags need only carry names.
  */
 
-import { useEffect } from "react";
-import { X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronRight, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { getRubric } from "../../lib/api";
 import { cn } from "../../lib/utils";
 import type { SeeiStep } from "./types";
 
+/** Where a panel opens. `bar`: under the live session's top bar, which does not
+ *  scroll. `page`: on a page that scrolls, so it stays in view at the top right,
+ *  and on a phone rises from the bottom over a dimmed page. */
+export type PanelPlacement = "bar" | "page";
+
 /** The shell: a card under the top bar, dismissed the same way either way. */
 function Popover({
   title,
   onClose,
+  placement = "bar",
   className,
   children,
 }: {
   title: string;
   onClose: () => void;
+  placement?: PanelPlacement;
   className?: string;
   children: React.ReactNode;
 }) {
+  const page = placement === "page";
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
@@ -39,13 +47,18 @@ function Popover({
     <>
       {/* Catches the click-away without dimming: the reading stays readable,
           which is the reason this is a popover and not a modal. */}
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div
+        className={cn("fixed inset-0 z-40", page && "bg-black/30 sm:bg-transparent")}
+        onClick={onClose}
+      />
       <div
         role="dialog"
         aria-label={title}
         className={cn(
           "absolute right-2 top-[58px] z-50 w-[min(440px,calc(100vw-1rem))]",
           "overflow-hidden rounded-lg border bg-background shadow-lg sm:right-4",
+          page &&
+            "fixed inset-x-0 bottom-0 top-auto w-full rounded-b-none rounded-t-xl sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-[68px] sm:w-[440px] sm:rounded-lg",
           className,
         )}
       >
@@ -70,15 +83,17 @@ function Popover({
 export function ComponentsPanel({
   components,
   onClose,
+  placement,
 }: {
   components: string[];
   onClose: () => void;
+  placement?: PanelPlacement;
 }) {
   return (
-    <Popover title="Core components" onClose={onClose}>
+    <Popover title="Core components" onClose={onClose} placement={placement}>
       {components.length === 0 ? (
         <p className="px-4 py-4 text-[13px] text-muted-foreground">
-          This reading has no core components yet.
+          No core components available
         </p>
       ) : (
         <ul className="flex flex-col gap-2.5 px-4 py-3.5">
@@ -98,25 +113,31 @@ export function RubricPanel({
   currentStep,
   unmet,
   onClose,
+  placement,
 }: {
   currentStep: SeeiStep | null;
   /** Criteria the last attempt missed, marked so the tags in the chat and the
    *  definitions here are visibly the same things. */
   unmet: string[];
   onClose: () => void;
+  placement?: PanelPlacement;
 }) {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["rubric"],
     queryFn: getRubric,
   });
 
-  const step = currentStep ?? "State";
+  // Opens on the step in question; the others are a tap away. The marks belong
+  // to that step's answer, so they show only while it is the one in view.
+  const home = currentStep ?? "State";
+  const [step, setStep] = useState<SeeiStep>(home);
+  useEffect(() => setStep(home), [home]);
   const current = data?.steps.find((s) => s.step === step);
   const others = data?.steps.filter((s) => s.step !== step) ?? [];
-  const missed = new Set(unmet);
+  const missed = new Set(step === home ? unmet : []);
 
   return (
-    <Popover title={`Rubric · ${step}`} onClose={onClose}>
+    <Popover title={`Rubric · ${step}`} onClose={onClose} placement={placement}>
       {isLoading && <Notice>Loading the rubric…</Notice>}
       {isError && <Notice>Couldn&rsquo;t load the rubric.</Notice>}
 
@@ -137,22 +158,16 @@ export function RubricPanel({
             ))}
           </div>
 
-          {unmet.length > 0 && (
-            <p className="border-t bg-muted/40 px-4 py-2 text-[11px] text-muted-foreground">
-              Red marks what your last attempt missed.
-            </p>
-          )}
-
           {others.map((s) => (
-            <div
+            <button
               key={s.step}
-              className="flex items-center justify-between border-t px-4 py-2 text-[12px] text-[#3f3f46]"
+              type="button"
+              onClick={() => setStep(s.step)}
+              className="flex w-full items-center justify-between border-t px-4 py-2 text-left text-[12px] text-foreground/80 hover:bg-muted/50"
             >
               {s.step}
-              <span className="text-[11px] text-muted-foreground">
-                {s.criteria.length} criteria
-              </span>
-            </div>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+            </button>
           ))}
         </>
       )}

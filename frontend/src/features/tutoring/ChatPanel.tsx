@@ -137,7 +137,7 @@ function AttemptDots({ used }: { used: number }) {
   return (
     <span
       className="flex items-center gap-1"
-      aria-label={`Attempt ${active + 1} of ${MAX_ATTEMPTS}`}
+      aria-label={`Try ${active + 1} of ${MAX_ATTEMPTS}`}
     >
       {Array.from({ length: MAX_ATTEMPTS }, (_, i) => (
         <span
@@ -272,7 +272,7 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
       state.status === "complete"
         ? ["Session complete", "You finished all four steps."]
         : state.status === "fallback"
-          ? ["Session ended", "You've used all your attempts, so the session has ended."]
+          ? ["Session ended", "You've used all your tries for this step, so the session has ended."]
           : ["Time's up", "Your session has ended, and anything you typed was sent."];
     return (
       <div className="flex shrink-0 items-center gap-4 border-t py-3.5 pl-6 pr-4">

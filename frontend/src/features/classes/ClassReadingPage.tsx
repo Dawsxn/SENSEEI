@@ -82,7 +82,7 @@ export function ClassReadingPage() {
                       key={s.id}
                       student={s}
                       trial={trial}
-                      onOpen={() => s.session_id && navigate(`/review/${s.session_id}`)}
+                      onOpen={() => s.session_id && navigate(`/classes/${classId}/readings/${readingId}/sessions/${s.session_id}`)}
                     />
                   ))
                 )}

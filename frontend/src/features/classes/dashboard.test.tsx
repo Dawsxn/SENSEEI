@@ -63,7 +63,7 @@ function renderReading() {
     [
       { path: "/classes/:classId/readings/:readingId", element: <ClassReadingPage /> },
       { path: "/classes/:classId", element: <p>Class page</p> },
-      { path: "/review/:sessionId", element: <p>Transcript</p> },
+      { path: "/classes/:classId/readings/:readingId/sessions/:sessionId", element: <p>Transcript</p> },
     ],
     { initialEntries: ["/classes/c1/readings/r1"] },
   );
@@ -83,7 +83,7 @@ describe("the statistics", () => {
     expect(
       screen.getByRole("button", { name: "For this reading only." }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Share of attempts/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Share of tries/ })).toBeInTheDocument();
     expect(screen.getByText("100%")).toBeInTheDocument();
     expect(screen.getByText("20%")).toBeInTheDocument();
     expect(screen.getByText("Completeness")).toBeInTheDocument();

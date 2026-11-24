@@ -19,7 +19,7 @@ const ended = (status: TutoringState["status"]): TutoringState => ({
 describe("the end of a trial session", () => {
   it.each([
     ["complete", "Session complete", "You finished all four steps."],
-    ["fallback", "Session ended", "You've used all your attempts, so the session has ended."],
+    ["fallback", "Session ended", "You've used all your tries for this step, so the session has ended."],
     ["timed_out", "Time's up", "Your session has ended, and anything you typed was sent."],
   ] as const)("says how it ended (%s) and waits for Continue", async (status, title, line) => {
     const onContinue = vi.fn();
@@ -65,9 +65,9 @@ describe("the end of a trial session", () => {
       messages: [{ key: "m", role: "tutor", step: "State", content: "State it.", unmet: [], streaming: false }],
     };
     const { rerender } = render(<ChatPanel state={running} onSubmit={vi.fn()} />);
-    expect(screen.getByLabelText(/Attempt 1 of/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Try 1 of/)).toBeInTheDocument();
     rerender(<ChatPanel state={running} onSubmit={vi.fn()} trial={{ timeUp: false }} />);
-    expect(screen.queryByLabelText(/Attempt 1 of/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Try 1 of/)).not.toBeInTheDocument();
   });
 
   it("keeps the old wording when the class has no post-test", () => {

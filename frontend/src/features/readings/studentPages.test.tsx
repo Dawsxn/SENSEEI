@@ -49,7 +49,7 @@ function show(path: string) {
       { path: "/classes/:classId", element: <StudentClassPage /> },
       { path: "/classes/:classId/readings/:readingId", element: <StudentReadingPage /> },
       { path: "/read/:readingId", element: <div>reading step</div> },
-      { path: "/review/:sessionId", element: <div>review page</div> },
+      { path: "/classes/:classId/readings/:readingId/sessions/:sessionId", element: <div>review page</div> },
     ],
     { initialEntries: [path] },
   );
@@ -149,7 +149,7 @@ describe("the reading page", () => {
     expect(await screen.findByText("how profit is made")).toBeInTheDocument();
     const attempt = await screen.findByRole("link", { name: /Attempt 1/ });
     expect(within(attempt).getByText("Failed")).toBeInTheDocument();
-    expect(attempt).toHaveAttribute("href", "/review/s1");
+    expect(attempt).toHaveAttribute("href", "/classes/c1/readings/r1/sessions/s1");
 
     await userEvent.click(screen.getByRole("button", { name: "Start" }));
     expect(router.state.location.pathname).toBe("/read/r1");

@@ -12,7 +12,7 @@ import { LibraryReadingPage } from "./features/library/LibraryReadingPage";
 import { StudentClassPage } from "./features/readings/StudentClassPage";
 import { StudentReadingPage } from "./features/readings/StudentReadingPage";
 import { UploadReadingPage } from "./features/library/UploadReadingPage";
-import { SessionReviewPage } from "./features/review/SessionReviewPage";
+import { OldReviewLink, SessionReviewPage } from "./features/review/SessionReviewPage";
 import { ReadingStepScreen } from "./features/tutoring/ReadingStepScreen";
 import { TutoringScreen } from "./features/tutoring/TutoringScreen";
 import { BatchPage } from "./features/trial/BatchPage";
@@ -39,7 +39,8 @@ const router = createBrowserRouter([
   // row is written when /tutor is reached.
   { path: "/read/:readingId", element: signedIn(<ReadingStepScreen />) },
   { path: "/tutor/:readingId", element: signedIn(<TutoringScreen />) },
-  { path: "/review/:sessionId", element: signedIn(<SessionReviewPage />) },
+  // Sessions moved under their reading; an old link finds its new address.
+  { path: "/review/:sessionId", element: signedIn(<OldReviewLink />) },
   { path: "/classes", element: instructor(<ClassListPage />) },
   // A class and a reading in it share one address across roles; a student's
   // list of classes is their home, `/`.
@@ -51,6 +52,12 @@ const router = createBrowserRouter([
     path: "/classes/:classId/readings/:readingId",
     element: signedIn(
       <ByRole instructor={<ClassReadingPage />} student={<StudentReadingPage />} />,
+    ),
+  },
+  {
+    path: "/classes/:classId/readings/:readingId/sessions/:sessionId",
+    element: signedIn(
+      <ByRole instructor={<SessionReviewPage />} student={<SessionReviewPage />} />,
     ),
   },
   { path: "/library", element: instructor(<LibraryListPage />) },

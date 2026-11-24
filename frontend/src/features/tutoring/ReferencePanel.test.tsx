@@ -66,16 +66,16 @@ describe("the rubric panel", () => {
     expect(screen.getByText("State")).toBeInTheDocument();
   });
 
-  it("explains the marking only when something was missed", async () => {
-    const { unmount } = renderWithQuery(
+  it("switches to another step, without that step's answer marks", async () => {
+    renderWithQuery(
       <RubricPanel currentStep="State" unmet={["Brevity"]} onClose={vi.fn()} />,
     );
-    expect(await screen.findByText(/Red marks what your last attempt missed/)).toBeInTheDocument();
-    unmount();
-
-    renderWithQuery(<RubricPanel currentStep="State" unmet={[]} onClose={vi.fn()} />);
     await screen.findByText(BREVITY);
-    expect(screen.queryByText(/Red marks/)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /Elaborate/ }));
+    expect(screen.getByText("It hangs together.")).toBeInTheDocument();
+    expect(screen.queryByText(BREVITY)).not.toBeInTheDocument();
+    expect(screen.getByText("Rubric · Elaborate")).toBeInTheDocument();
   });
 
   it("closes on Escape", async () => {
@@ -102,6 +102,6 @@ describe("the components panel", () => {
 
   it("says so plainly when a reading has none", () => {
     render(<ComponentsPanel components={[]} onClose={vi.fn()} />);
-    expect(screen.getByText(/no core components yet/)).toBeInTheDocument();
+    expect(screen.getByText("No core components available")).toBeInTheDocument();
   });
 });

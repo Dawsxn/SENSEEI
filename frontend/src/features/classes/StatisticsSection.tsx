@@ -14,7 +14,7 @@ import type { Statistics } from "./types";
 
 /** What each number is counting, for anyone who has not read the rubric. */
 const TIPS = {
-  pass: "Share of attempts that passed each step.",
+  pass: "Share of tries that passed each step.",
   criteria: "Criteria that failed most often.",
   attempts: "Tries needed to pass, counting only students who passed.",
 };
@@ -64,7 +64,7 @@ export function StatisticsSection({ statistics, scope }: StatisticsSectionProps)
           </Card>
 
           {/* Last in the row, so its bubble opens leftwards rather than off the page. */}
-          <Card title="Average attempts to pass" tip={TIPS.attempts} tipAlign="left">
+          <Card title="Average tries to pass" tip={TIPS.attempts} tipAlign="left">
             {statistics.average_attempts.map((a) => (
               <Row key={a.step} label={a.step} value={a.average.toFixed(1)} />
             ))}
