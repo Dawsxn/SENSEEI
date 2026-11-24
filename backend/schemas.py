@@ -43,6 +43,30 @@ class ReadingListItem(BaseModel):
     status: ReadingStatus
 
 
+class StudentClassItem(BaseModel):
+    """A class on the student's home page. Name and section come apart for the
+    card, which sets them on two lines, and joined as `label` for anywhere the
+    class is named in one breath."""
+
+    id: uuid.UUID
+    name: str
+    section: str
+    label: str
+    reading_count: int
+    #: Readings whose latest finished session passed or failed.
+    finished_count: int
+
+
+class StudentClassDetail(BaseModel):
+    """One of the student's classes, with its readings, oldest first."""
+
+    id: uuid.UUID
+    name: str
+    section: str
+    label: str
+    readings: list[ReadingListItem]
+
+
 class ReadingDetail(BaseModel):
     id: uuid.UUID
     title: str

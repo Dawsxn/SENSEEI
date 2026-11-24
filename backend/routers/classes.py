@@ -2,12 +2,13 @@
 
 The instructor routes are all scoped to classes the signed-in instructor owns,
 and one that is not theirs is a 404, the same as one that does not exist. The
-single student route is joining by code.
+student routes are joining by code and reading the classes joined.
 
 The instructor routes live under `/instructor`, not at `/classes`, because
 `/classes` is the address of the instructor's page. The pages and the API share
 one origin, so an API path that matches a page path answers a refreshed or
-bookmarked page with JSON.
+bookmarked page with JSON. For the same reason a student's classes are read
+from `/enrolments`, where joining one already lives.
 """
 
 from __future__ import annotations
@@ -29,8 +30,10 @@ from ..schemas import (
     JoinCodeOut,
     JoinIn,
     JoinOut,
+    StudentClassDetail,
+    StudentClassItem,
 )
-from ..services import analytics_service, class_service
+from ..services import analytics_service, class_service, reading_service
 from ..services.analytics_service import ReadingNotInClass
 from ..services.class_service import (
     ClassNotFound,
@@ -195,6 +198,28 @@ async def remove_student(
     except ClassNotFound:
         raise NOT_FOUND
     return Response(status_code=204)
+
+
+@router.get("/enrolments", response_model=list[StudentClassItem])
+async def list_my_classes(
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> list[StudentClassItem]:
+    """The classes this student is in, with how far they are through each."""
+    return [StudentClassItem(**row) for row in await reading_service.list_classes(db, user.id)]
+
+
+@router.get("/enrolments/{class_id}", response_model=StudentClassDetail)
+async def get_my_class(
+    class_id: uuid.UUID,
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> StudentClassDetail:
+    """One class the student is in, with its readings. Any other class is a 404."""
+    detail = await reading_service.get_class(db, user.id, class_id)
+    if detail is None:
+        raise NOT_FOUND
+    return StudentClassDetail(**detail)
 
 
 @router.post("/enrolments", response_model=JoinOut)

@@ -169,3 +169,95 @@ async def get_reading_file(
         )
     ).first()
     return None if hit is None else hit[2]
+
+
+# --------------------------------------------------------------------------- #
+# a student's classes
+
+
+def _enrolled_classes(user_id: uuid.UUID):
+    """A select of (Class, label) for the classes the student is enrolled in."""
+    return (
+        select(Class, class_label().label("label"))
+        .join(
+            Enrolment,
+            (Enrolment.class_id == Class.id)
+            & (Enrolment.student_id == user_id)
+            & (Enrolment.deleted_at.is_(None)),
+        )
+        .where(Class.deleted_at.is_(None))
+    )
+
+
+async def _class_readings(db: AsyncSession, class_ids: list[uuid.UUID]) -> list:
+    """(class id, Reading) for every live reading assigned to these classes,
+    oldest upload first, the same order as the reading list."""
+    if not class_ids:
+        return []
+    return (
+        await db.execute(
+            select(ReadingAssignment.class_id, Reading)
+            .join(Reading, Reading.id == ReadingAssignment.reading_id)
+            .where(
+                ReadingAssignment.class_id.in_(class_ids),
+                ReadingAssignment.deleted_at.is_(None),
+                Reading.deleted_at.is_(None),
+            )
+            .order_by(Reading.created_at, Reading.title)
+        )
+    ).all()
+
+
+async def list_classes(db: AsyncSession, user_id: uuid.UUID) -> list[dict]:
+    """The student's classes, with how many of each one's readings they finished.
+
+    A class with no readings is listed too, so a class just joined shows up
+    before its instructor has assigned anything. Finished means the latest
+    finished session passed or failed, the same rule as the reading's status.
+    """
+    classes = (await db.execute(_enrolled_classes(user_id).order_by(class_label()))).all()
+    pairs = await _class_readings(db, [k.id for k, _ in classes])
+    statuses = await _statuses(db, user_id, list({r.id for _, r in pairs}))
+    counts = {k.id: [0, 0] for k, _ in classes}
+    for class_id, reading in pairs:
+        counts[class_id][0] += 1
+        counts[class_id][1] += reading.id in statuses
+    return [
+        {
+            "id": klass.id,
+            "name": klass.name,
+            "section": klass.section,
+            "label": label,
+            "reading_count": counts[klass.id][0],
+            "finished_count": counts[klass.id][1],
+        }
+        for klass, label in classes
+    ]
+
+
+async def get_class(
+    db: AsyncSession, user_id: uuid.UUID, class_id: uuid.UUID
+) -> dict | None:
+    """One of the student's classes and its readings, or None if they are not in it."""
+    hit = (await db.execute(_enrolled_classes(user_id).where(Class.id == class_id))).first()
+    if hit is None:
+        return None
+    klass, label = hit
+    readings = [r for _, r in await _class_readings(db, [klass.id])]
+    statuses = await _statuses(db, user_id, [r.id for r in readings])
+    return {
+        "id": klass.id,
+        "name": klass.name,
+        "section": klass.section,
+        "label": label,
+        "readings": [
+            {
+                "id": r.id,
+                "title": r.title,
+                "description": r.description,
+                "class_name": label,
+                "status": statuses.get(r.id, "not_started"),
+            }
+            for r in readings
+        ],
+    }
