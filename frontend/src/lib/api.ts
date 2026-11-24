@@ -13,8 +13,9 @@ import type {
 } from "../features/auth/types";
 import type {
   ReadingDetail,
-  ReadingListItem,
   ReadingSessionItem,
+  StudentClassDetail,
+  StudentClassItem,
 } from "../features/readings/types";
 import type {
   ClassDashboard,
@@ -156,12 +157,6 @@ export async function logout(): Promise<void> {
   await fetch("/auth/logout", { method: "POST" });
 }
 
-export async function getReadings(): Promise<ReadingListItem[]> {
-  const response = await fetch("/readings");
-  if (!response.ok) throw new Error(`readings: ${response.status}`);
-  return response.json();
-}
-
 export async function getReading(readingId: string): Promise<ReadingDetail> {
   const response = await fetch(`/readings/${readingId}`);
   if (!response.ok) throw new Error(`reading ${readingId}: ${response.status}`);
@@ -272,6 +267,8 @@ export const getClassStatistics = (classId: string) =>
   send<ClassDashboard>(`/instructor/classes/${classId}/statistics`, "GET");
 export const getClassReading = (classId: string, readingId: string) =>
   send<ClassReadingDetail>(`/instructor/classes/${classId}/readings/${readingId}`, "GET");
+export const getMyClasses = () => send<StudentClassItem[]>("/enrolments", "GET");
+export const getMyClass = (id: string) => send<StudentClassDetail>(`/enrolments/${id}`, "GET");
 export const joinClass = (joinCode: string) =>
   send<JoinResult>("/enrolments", "POST", { join_code: joinCode });
 

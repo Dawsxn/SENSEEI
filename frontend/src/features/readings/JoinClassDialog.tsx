@@ -32,8 +32,8 @@ export function JoinClassDialog({ onClose }: { onClose: () => void }) {
     setError(null);
     try {
       const result = await joinClass(code);
-      // The new class's readings belong in the list behind this dialog.
-      await queryClient.invalidateQueries({ queryKey: ["readings"] });
+      // The new class belongs on the page behind this dialog.
+      await queryClient.invalidateQueries({ queryKey: ["my-classes"] });
       setJoined(result);
     } catch (err) {
       setError(
@@ -63,11 +63,6 @@ export function JoinClassDialog({ onClose }: { onClose: () => void }) {
             <h2 id="join-title" className="text-[16px] font-semibold">
               You joined {joined.label}
             </h2>
-            <p className="mt-1.5 text-[14px] text-muted-foreground">
-              {joined.reading_count > 0
-                ? "Its readings are now in your list."
-                : "It has no readings yet. They will appear in your list once added."}
-            </p>
             <div className="mt-5 flex justify-end">
               <Button size="sm" onClick={onClose} autoFocus>
                 Done

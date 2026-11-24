@@ -1,10 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getReading, getReadings, getReadingSessions } from "../../lib/api";
+import { getMyClass, getMyClasses, getReading, getReadingSessions } from "../../lib/api";
 
-/** The readings this student can see. A plain request-response read. */
-export function useReadings() {
-  return useQuery({ queryKey: ["readings"], queryFn: getReadings });
+/** The classes this student is in, with their progress. */
+export function useMyClasses() {
+  return useQuery({ queryKey: ["my-classes"], queryFn: getMyClasses });
+}
+
+/** One of the student's classes and its readings. */
+export function useMyClass(classId: string | undefined) {
+  return useQuery({
+    queryKey: ["my-classes", classId],
+    queryFn: () => getMyClass(classId!),
+    enabled: !!classId,
+  });
 }
 
 /** One reading's detail — its text, class and core components. */

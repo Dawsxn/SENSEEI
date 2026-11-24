@@ -5,18 +5,15 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 import { SwitchUserDialog } from "../features/auth/SwitchUserDialog";
 import { useMe, useTrialMode } from "../features/auth/useAuth";
-import { JoinClassDialog } from "../features/readings/JoinClassDialog";
 import { logout } from "../lib/api";
-import { Button } from "./ui/button";
 
-/** The app shell's top bar: the wordmark, the instructor's two sections, Join a
- *  class, and the account menu. Join a class is for students only; instructors
- *  make classes rather than join them. The sections are for instructors only;
- *  a student has one page to be on. On a phone the sections drop to a row of
- *  their own under the bar, where there is room for them. */
+/** The app shell's top bar: the wordmark, the instructor's two sections, and
+ *  the account menu. The sections are for instructors only; a student moves
+ *  between their classes from the pages themselves, and joins one from the
+ *  Classes page. On a phone the sections drop to a row of their own under the
+ *  bar, where there is room for them. */
 export function AppTopBar() {
   const { data: user } = useMe();
-  const [joining, setJoining] = useState(false);
   const instructor = user?.role === "instructor";
   // A grader sees one section, Grading, and nothing else.
   const sections = instructor || user?.role === "grader";
@@ -33,17 +30,9 @@ export function AppTopBar() {
           {sections && <Sections className="hidden h-14 sm:flex" />}
         </div>
 
-        <div className="flex items-center gap-3">
-          {user?.role === "student" && (
-            <Button variant="secondary" size="sm" onClick={() => setJoining(true)}>
-              Join a class
-            </Button>
-          )}
-          <AccountMenu />
-        </div>
+        <AccountMenu />
       </div>
       {sections && <Sections className="flex h-12 px-4 sm:hidden" />}
-      {joining && <JoinClassDialog onClose={() => setJoining(false)} />}
     </header>
   );
 }

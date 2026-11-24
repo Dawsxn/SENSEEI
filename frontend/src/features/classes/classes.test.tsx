@@ -81,7 +81,7 @@ describe("the class form", () => {
 });
 
 describe("joining a class", () => {
-  it("says what was joined, and admits when it has no readings yet", async () => {
+  it("says what was joined", async () => {
     joinClass.mockResolvedValue({ class_id: "c1", label: "STRAMA K32", reading_count: 0 });
     withQuery(<JoinClassDialog onClose={vi.fn()} />);
 
@@ -89,7 +89,6 @@ describe("joining a class", () => {
 
     expect(joinClass).toHaveBeenLastCalledWith("R96E RZAE");
     expect(await screen.findByText("You joined STRAMA K32")).toBeInTheDocument();
-    expect(screen.getByText(/no readings yet/)).toBeInTheDocument();
   });
 
   it("keeps the dialog open with an inline error for a wrong code", async () => {

@@ -10,6 +10,27 @@ export interface ReadingListItem {
   status: ReadingStatus;
 }
 
+/** A class on the student's home page. */
+export interface StudentClassItem {
+  id: string;
+  name: string;
+  section: string;
+  /** Name and section joined, `STRAMA K31`. */
+  label: string;
+  reading_count: number;
+  /** Readings whose latest finished session passed or failed. */
+  finished_count: number;
+}
+
+/** One of the student's classes, with its readings, oldest first. */
+export interface StudentClassDetail {
+  id: string;
+  name: string;
+  section: string;
+  label: string;
+  readings: ReadingListItem[];
+}
+
 export interface ReadingDetail {
   id: string;
   title: string;

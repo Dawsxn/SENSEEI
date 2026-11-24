@@ -2,13 +2,15 @@ import type { ReactNode } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import { RequireAuth } from "./features/auth/RequireAuth";
-import { HomeRoute, RequireGrader, RequireInstructor } from "./features/auth/RoleRoutes";
+import { ByRole, HomeRoute, RequireGrader, RequireInstructor } from "./features/auth/RoleRoutes";
 import { ClassDetailPage } from "./features/classes/ClassDetailPage";
 import { ClassReadingPage } from "./features/classes/ClassReadingPage";
 import { ClassListPage } from "./features/classes/ClassListPage";
 import { SignInScreen } from "./features/auth/SignInScreen";
 import { LibraryListPage } from "./features/library/LibraryListPage";
 import { LibraryReadingPage } from "./features/library/LibraryReadingPage";
+import { StudentClassPage } from "./features/readings/StudentClassPage";
+import { StudentReadingPage } from "./features/readings/StudentReadingPage";
 import { UploadReadingPage } from "./features/library/UploadReadingPage";
 import { SessionReviewPage } from "./features/review/SessionReviewPage";
 import { ReadingStepScreen } from "./features/tutoring/ReadingStepScreen";
@@ -39,10 +41,17 @@ const router = createBrowserRouter([
   { path: "/tutor/:readingId", element: signedIn(<TutoringScreen />) },
   { path: "/review/:sessionId", element: signedIn(<SessionReviewPage />) },
   { path: "/classes", element: instructor(<ClassListPage />) },
-  { path: "/classes/:classId", element: instructor(<ClassDetailPage />) },
+  // A class and a reading in it share one address across roles; a student's
+  // list of classes is their home, `/`.
+  {
+    path: "/classes/:classId",
+    element: signedIn(<ByRole instructor={<ClassDetailPage />} student={<StudentClassPage />} />),
+  },
   {
     path: "/classes/:classId/readings/:readingId",
-    element: instructor(<ClassReadingPage />),
+    element: signedIn(
+      <ByRole instructor={<ClassReadingPage />} student={<StudentReadingPage />} />,
+    ),
   },
   { path: "/library", element: instructor(<LibraryListPage />) },
   { path: "/library/new", element: instructor(<UploadReadingPage />) },
