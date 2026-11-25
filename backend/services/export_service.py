@@ -68,6 +68,10 @@ def _iso(value: datetime | None) -> str:
     return value.isoformat() if value else ""
 
 
+#: A file's header and its rows, before it is written out as CSV.
+Table = tuple[list[str], list[list]]
+
+
 def _csv(header: list[str], rows) -> str:
     out = io.StringIO()
     writer = csv.writer(out)
@@ -80,6 +84,21 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
     """The zip, as bytes. Small enough to build in memory: a trial is tens of
     participants, not thousands. With `batch_id`, only that batch's IDs, and so
     only what was recorded for them: every other file is keyed to these IDs."""
+    files = {"README.txt": README}
+    for name, (header, rows) in (await tables(db, batch_id)).items():
+        files[name] = _csv(header, rows)
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        for name, text in files.items():
+            # A byte-order mark, so Excel reads the text as UTF-8.
+            zf.writestr(name, ("﻿" if name.endswith(".csv") else "") + text)
+    return buffer.getvalue()
+
+
+async def tables(db: AsyncSession, batch_id: uuid.UUID | None = None) -> dict[str, Table]:
+    """Every file of the export, as header and rows. The Analysis tab reads these
+    too, so what it shows is exactly what the export holds."""
     require_trial()
 
     query = (
@@ -112,8 +131,8 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
         return ["" if got[k] is None else got[k]
                 for k in ("pretest_score", "posttest_total", "calibration", "sure_but_wrong")]
 
-    files: dict[str, str] = {"README.txt": README}
-    files["participants.csv"] = _csv(
+    files: dict[str, Table] = {}
+    files["participants.csv"] = (
         ["participant_id", "batch", "class", "group", "signed_in_at", "reading_opened_at",
          "done_at", "time_ran_out_at", "voided_at", "test",
          "pretest_started_at", "pretest_ended_at", "pretest_ended_by",
@@ -152,7 +171,7 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
                  item.points if item.scored else "", _iso(a.first_answered_at),
                  _iso(a.last_changed_at), a.edits, _iso(a.scored_at)]
             )
-    files["tests.csv"] = _csv(
+    files["tests.csv"] = (
         ["participant_id", "test", "question", "part", "dimension", "kind", "answer", "sure",
          "score", "max_score", "first_answered_at", "last_changed_at", "edits", "scored_at"],
         test_rows,
@@ -166,7 +185,7 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
             .order_by(Session.started_at)
         )
     ).all()
-    files["sessions.csv"] = _csv(
+    files["sessions.csv"] = (
         ["participant_id", "session_id", "reading", "status", "last_step", "started_at",
          "ended_at", "rubric_version", "tutor_prompt_version", "assessment_prompt_version",
          "model"],
@@ -187,7 +206,7 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
             .order_by(Attempt.submitted_at)
         )
     ).all()
-    files["attempts.csv"] = _csv(
+    files["attempts.csv"] = (
         ["participant_id", "session_id", "step", "attempt_number", "submitted_at", "verdict",
          "model_verdict", "response_text"],
         [
@@ -206,7 +225,7 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
             .order_by(Attempt.submitted_at, CriterionJudgment.criterion)
         )
     ).all()
-    files["criteria.csv"] = _csv(
+    files["criteria.csv"] = (
         ["participant_id", "session_id", "step", "attempt_number", "criterion", "passed",
          "reason"],
         [
@@ -221,7 +240,7 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
         .where(TutorMessage.session_id.in_(list(owner)))
         .order_by(TutorMessage.created_at)
     )
-    files["tutor_messages.csv"] = _csv(
+    files["tutor_messages.csv"] = (
         ["participant_id", "session_id", "step", "moves", "created_at", "content"],
         [
             [owner[m.session_id], m.session_id, m.step, " + ".join(m.moves or []),
@@ -235,7 +254,7 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
         .where(ChatMessage.participant_id.in_(list(by_participant)))
         .order_by(ChatMessage.created_at)
     )
-    files["chat_messages.csv"] = _csv(
+    files["chat_messages.csv"] = (
         ["participant_id", "role", "created_at", "content", "searched", "sources", "search"],
         [
             [
@@ -253,7 +272,7 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
         .where(TrialEvent.participant_id.in_(list(by_participant)))
         .order_by(TrialEvent.participant_id, TrialEvent.at)
     )
-    files["events.csv"] = _csv(
+    files["events.csv"] = (
         ["participant_id", "kind", "data", "at", "received_at"],
         [
             [by_participant[e.participant_id], e.kind,
@@ -263,9 +282,4 @@ async def export(db: AsyncSession, batch_id: uuid.UUID | None = None) -> bytes:
         ],
     )
 
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-        for name, text in files.items():
-            # A byte-order mark, so Excel reads the text as UTF-8.
-            zf.writestr(name, ("﻿" if name.endswith(".csv") else "") + text)
-    return buffer.getvalue()
+    return files

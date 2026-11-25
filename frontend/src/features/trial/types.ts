@@ -166,3 +166,132 @@ export type ChatEvent =
   | { type: "delta"; text: string }
   | { type: "message_end"; id: string; content: string }
   | { type: "error"; detail: string };
+
+/** The Analysis tab, from AnalysisOut in backend/schemas.py. The research
+ *  team only: it names each ID's group. */
+export type AnalysisFormat =
+  | "number"
+  | "share"
+  | "minutes"
+  | "seconds"
+  | "people"
+  | "count";
+
+export interface AnalysisColumn {
+  key: string;
+  label: string;
+  n: number;
+}
+
+export interface AnalysisRow {
+  key: string;
+  label: string;
+  format: AnalysisFormat;
+  section: "scores" | "dimensions" | "behaviour";
+  /** In scores, the measure this row describes; its rows are n, mean, SD... */
+  measure: string | null;
+  /** Quartiles and range are [low, high]. */
+  values: Record<string, number | [number, number] | null>;
+}
+
+/** One measure's values per group, for the overlapping bell curves. */
+export interface AnalysisDistribution {
+  key: string;
+  label: string;
+  format: AnalysisFormat;
+  low: number | null;
+  high: number | null;
+  series: Record<string, { values: number[]; mean: number | null; sd: number | null }>;
+}
+
+export interface AnalysisStep {
+  step: string;
+  attempts: number;
+  pass_rate: number | null;
+  passed: number;
+  reached: number;
+  attempts_to_pass: number | null;
+  most_attempts: number | null;
+}
+
+export interface AnalysisSession {
+  code: string;
+  status: string | null;
+  last_step: string | null;
+  /** The session completed all four steps. */
+  completed: boolean | null;
+  reading_minutes: number | null;
+  session_minutes: number | null;
+  turns: number | null;
+  pretest_score: number | null;
+  posttest_total: number | null;
+}
+
+export interface AnalysisFix {
+  criterion: string;
+  failed: number;
+  fixed: number;
+  rate: number | null;
+}
+
+export interface AnalysisParticipant {
+  code: string;
+  batch: string;
+  group: ClassMode;
+  /** Finished as the batch page counts it. Only these are in the figures. */
+  finished: boolean;
+  excluded: boolean;
+  voided: boolean;
+  status: string | null;
+  last_step: string | null;
+  /** SEE-I only: the session completed all four steps. */
+  completed: boolean | null;
+  pretest_score: number | null;
+  posttest_total: number | null;
+  posttest_max: number | null;
+  calibration: number | null;
+  sure_but_wrong: number | null;
+  pretest_minutes: number | null;
+  posttest_minutes: number | null;
+  pretest_ended_by: string | null;
+  posttest_ended_by: string | null;
+  reading_minutes: number | null;
+  session_minutes: number | null;
+  total_minutes: number | null;
+  minutes_to_done: number | null;
+  turns: number | null;
+  chat_questions: number | null;
+  chat_words: number | null;
+  pastes: number;
+  paste_chars: number;
+  test_pastes: number;
+  test_tab_left: number;
+  thinking_seconds: number | null;
+  turn_failed: number;
+  flags: string[];
+}
+
+export interface Analysis {
+  batches: { id: string; name: string }[];
+  batch_id: string | null;
+  used: number;
+  unused: number;
+  /** Signed in and Finished on the batch page. */
+  finished: number;
+  /** In the figures: Finished, after exclusions. */
+  included: number;
+  comparison: {
+    columns: AnalysisColumn[];
+    posttest_max: number | null;
+    rows: AnalysisRow[];
+    distributions: AnalysisDistribution[];
+  };
+  seei: {
+    sessions: AnalysisSession[];
+    steps: AnalysisStep[];
+    criteria: { step: string; criterion: string; judged: number; failed: number; fail_rate: number }[];
+    fixes: AnalysisFix[];
+    fixed_overall: AnalysisFix;
+  };
+  participants: AnalysisParticipant[];
+}

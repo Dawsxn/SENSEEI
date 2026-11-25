@@ -642,3 +642,158 @@ class GradingDetailOut(BaseModel):
 
 class ScoreIn(BaseModel):
     score: int = Field(ge=0, le=10)
+
+
+# --------------------------------------------------------------------------- #
+# the trial's Analysis tab (backend/services/analysis_service.py)
+
+
+class AnalysisBatch(BaseModel):
+    id: uuid.UUID
+    name: str
+
+
+class AnalysisColumn(BaseModel):
+    key: str
+    label: str
+    n: int
+
+
+class AnalysisRow(BaseModel):
+    key: str
+    label: str
+    #: How to show a value: number, share, minutes, seconds, people, count. A
+    #: pair is shown as low–high, each in that format.
+    format: str
+    #: scores, dimensions or behaviour.
+    section: str
+    #: In scores, the measure this row describes (its rows are n, mean, SD...).
+    measure: str | None = None
+    #: One value per column key; quartiles and range are [low, high].
+    values: dict[str, float | int | list[float] | None]
+
+
+class AnalysisSeries(BaseModel):
+    #: The group's values, sorted. Never an ID.
+    values: list[float]
+    mean: float | None
+    sd: float | None
+
+
+class AnalysisDistribution(BaseModel):
+    key: str
+    label: str
+    format: str
+    #: The range the measure can take; None where it has no fixed bound.
+    low: float | None
+    high: float | None
+    #: One series per group: chatbot, reading_only, seei.
+    series: dict[str, AnalysisSeries]
+
+
+class AnalysisComparison(BaseModel):
+    columns: list[AnalysisColumn]
+    posttest_max: float | None
+    rows: list[AnalysisRow]
+    distributions: list[AnalysisDistribution]
+
+
+class AnalysisSession(BaseModel):
+    code: str
+    status: str | None
+    last_step: str | None
+    #: The session completed all four steps.
+    completed: bool | None
+    reading_minutes: float | None
+    session_minutes: float | None
+    turns: int | None
+    pretest_score: float | None
+    posttest_total: float | None
+
+
+class AnalysisStep(BaseModel):
+    step: str
+    attempts: int
+    pass_rate: float | None
+    passed: int
+    reached: int
+    attempts_to_pass: float | None
+    most_attempts: int | None
+
+
+class AnalysisCriterion(BaseModel):
+    step: str
+    criterion: str
+    judged: int
+    failed: int
+    fail_rate: float
+
+
+class AnalysisFix(BaseModel):
+    criterion: str
+    failed: int
+    fixed: int
+    rate: float | None = None
+
+
+class AnalysisSeei(BaseModel):
+    sessions: list[AnalysisSession]
+    steps: list[AnalysisStep]
+    criteria: list[AnalysisCriterion]
+    fixes: list[AnalysisFix]
+    fixed_overall: AnalysisFix
+
+
+class AnalysisParticipant(BaseModel):
+    code: str
+    batch: str
+    group: ClassMode
+    #: Finished as the batch page counts it. Only these are in the figures.
+    finished: bool
+    excluded: bool
+    voided: bool
+    status: str | None
+    last_step: str | None
+    #: SEE-I only: the session completed all four steps.
+    completed: bool | None
+    pretest_score: float | None
+    posttest_total: float | None
+    posttest_max: float | None
+    calibration: float | None
+    sure_but_wrong: float | None
+    pretest_minutes: float | None
+    posttest_minutes: float | None
+    pretest_ended_by: str | None
+    posttest_ended_by: str | None
+    reading_minutes: float | None
+    session_minutes: float | None
+    total_minutes: float | None
+    minutes_to_done: float | None
+    turns: int | None
+    chat_questions: int | None
+    chat_words: int | None
+    pastes: int
+    paste_chars: int
+    test_pastes: int
+    test_tab_left: int
+    thinking_seconds: float | None
+    turn_failed: int
+    flags: list[str]
+
+
+class AnalysisOut(BaseModel):
+    """The trial's descriptive figures, for the research team only: they name
+    each ID's group, so the grader never sees them."""
+
+    batches: list[AnalysisBatch]
+    batch_id: uuid.UUID | None
+    #: IDs that signed in, and IDs issued but never used.
+    used: int
+    unused: int
+    #: IDs that signed in and are Finished on the batch page.
+    finished: int
+    #: IDs in the figures: Finished, after exclusions.
+    included: int
+    comparison: AnalysisComparison
+    seei: AnalysisSeei
+    participants: list[AnalysisParticipant]

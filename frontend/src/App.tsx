@@ -13,6 +13,7 @@ import { UploadReadingPage } from "./features/library/UploadReadingPage";
 import { SessionReviewPage } from "./features/review/SessionReviewPage";
 import { ReadingStepScreen } from "./features/tutoring/ReadingStepScreen";
 import { TutoringScreen } from "./features/tutoring/TutoringScreen";
+import { AnalysisPage } from "./features/trial/AnalysisPage";
 import { BatchPage } from "./features/trial/BatchPage";
 import { ChatbotScreen, ReadingOnlyScreen } from "./features/trial/ControlGroupScreens";
 import { GradingPage } from "./features/trial/GradingPage";
@@ -50,6 +51,9 @@ const router = createBrowserRouter([
   // Trial mode only; the API under them answers 404 anywhere else.
   { path: "/participants", element: instructor(<ParticipantsPage />) },
   { path: "/participants/:batchId", element: instructor(<BatchPage />) },
+  // The trial's figures. The research team only: they name each ID's group,
+  // so the grader never sees them. `?batch=` picks one sitting.
+  { path: "/analysis", element: instructor(<AnalysisPage />) },
   // The trial's control groups. A participant lands on theirs from `/`.
   { path: "/chat/:readingId", element: signedIn(<ChatbotScreen />) },
   { path: "/reading/:readingId", element: signedIn(<ReadingOnlyScreen />) },
