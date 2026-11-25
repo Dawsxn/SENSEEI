@@ -147,16 +147,15 @@ export function AnalysisPage() {
           {data && data.used > 0 && (
             <>
               <p className="mb-4 text-[13px] leading-[1.6] text-muted-foreground">
-                Descriptive figures for the IDs shown as Finished on the batch page
+                Only participants marked Finished on the batch page are counted
                 {(() => {
                   const out = [
-                    data.used > data.finished && `${data.used - data.finished} signed in but not finished`,
-                    data.unused > 0 && `${data.unused} issued but never used`,
+                    data.used > data.finished && `${data.used - data.finished} signed in but didn't finish`,
+                    data.unused > 0 && `${data.unused} IDs were never used`,
                   ].filter(Boolean);
-                  return out.length ? ` (left out: ${out.join("; ")})` : "";
+                  return out.length ? ` (not counted: ${out.join(", ")})` : "";
                 })()}
-                . With a few people per group, one participant can move a mean a long way, so read
-                them as a description, not a test.
+                . The groups are small, so one person can change an average a lot.
               </p>
               <Tabs value={tab} onValueChange={(v) => go({ tab: v as Tab })}>
                 <TabsList className="mb-5 h-auto max-w-full justify-start overflow-x-auto">
@@ -281,7 +280,7 @@ function Comparison({ data }: { data: Analysis }) {
       {dist && (
         <Card
           title="Distributions"
-          note="Each curve is a normal distribution with the group's mean and SD; the dots under the axis are the actual values, one per participant. With so few people per group, read the dots first: the curves only summarise them."
+          note="Each dot under the axis is one participant. The curves are drawn from each group's mean and SD."
         >
           <Tabs value={dist.key} onValueChange={setMeasure}>
             <TabsList className="mb-4 h-auto max-w-full flex-wrap justify-start">
@@ -299,14 +298,14 @@ function Comparison({ data }: { data: Analysis }) {
       )}
       <Card
         title="Descriptive statistics"
-        note={`Every measure in full, by group. SD is the sample SD; quartiles are inclusive. Calibration is the share of "sure / not sure" ticks that matched full marks. Green marks the best of Chatbot, Reading only and SEE-I all on each mean and median: the highest, or the lowest where the measure says lower is better.`}
+        note={`Calibration is how often a participant's "sure" or "not sure" matched whether they got full marks. Green shows the best of Chatbot, Reading only and SEE-I all. For sure but wrong, lower is better.`}
       >
         <FigureTable columns={columns} rows={scores} />
       </Card>
       {dims.length > 0 && (
         <Card
           title="Post-test by dimension"
-          note="Points scored as a share of the points available, over every answer in the column. Green marks the best (highest) of Chatbot, Reading only and SEE-I all."
+          note="The share of available points each group scored. Green shows the highest of Chatbot, Reading only and SEE-I all."
         >
           <FigureTable columns={columns} rows={dims} />
         </Card>
@@ -322,11 +321,11 @@ function Behaviour({ data }: { data: Analysis }) {
   const reading = data.participants.filter((p) => p.group === "reading_only" && counted(p));
   return (
     <>
-      <Card title="By group" note="Pastes record their length only, never the text. Thinking time is from a reply arriving to the first key typed after it.">
+      <Card title="By group" note="Only the length of a paste is recorded, not the text. Thinking time is how long someone waited after a reply before they started typing.">
         <FigureTable columns={data.comparison.columns} rows={rows} />
       </Card>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Card title="Chatbot use" note="For the exclusion rule on session length or words typed.">
+        <Card title="Chatbot use" note="Use this to check the exclusion rule on session length and words typed.">
           <SimpleTable
             head={["ID", "Questions", "Words typed", "Session"]}
             rows={chat.map((p) => [
@@ -338,7 +337,7 @@ function Behaviour({ data }: { data: Analysis }) {
             empty="No chatbot participants included."
           />
         </Card>
-        <Card title="Reading only" note="For the exclusion rule on time before pressing Done.">
+        <Card title="Reading only" note="Use this to check the exclusion rule on time before pressing Done.">
           <SimpleTable
             head={["ID", "Time to Done", "Pre-test", "Post-test"]}
             rows={reading.map((p) => [
@@ -351,7 +350,7 @@ function Behaviour({ data }: { data: Analysis }) {
           />
         </Card>
       </div>
-      <Card title="Worth a second look" note="Flags only. Whether to exclude anyone is the team's decision, against the cut-offs set from the dry run.">
+      <Card title="Worth a second look" note="These are only flags. Decide on exclusions using the cut-offs from the dry run.">
         <SimpleTable
           head={["ID", "Group", "Flags", "Test pastes", "Test tab leaves"]}
           rows={flagged.map((p) => [
@@ -394,7 +393,7 @@ function Seei({ data }: { data: Analysis }) {
           ])}
         />
       </Card>
-      <Card title="Steps" note="Attempts to pass is the attempt number of the pass, among those who passed.">
+      <Card title="Steps" note="Attempts to pass is the average attempt on which participants passed the step. It only counts those who passed.">
         <SimpleTable
           head={["Step", "Reached", "Passed", "Attempts", "Pass rate", "Attempts to pass", "Most attempts"]}
           rows={steps.map((s) => [
@@ -415,7 +414,7 @@ function Seei({ data }: { data: Analysis }) {
             rows={criteria.map((c) => [c.step, c.criterion, c.judged, c.failed, fmt(c.fail_rate, "share")])}
           />
         </Card>
-        <Card title="Fixed on the next attempt" note="A criterion failed on one attempt and passed on the next. Failures with no next attempt are left out.">
+        <Card title="Fixed on the next attempt" note="How often a failed criterion was passed on the next attempt. A fail on someone's last attempt isn't counted.">
           <SimpleTable
             head={["Criterion", "Failed", "Fixed", "Rate"]}
             rows={fixes.map((f) => [f.criterion, f.failed, f.fixed, fmt(f.rate, "share")])}
@@ -458,7 +457,7 @@ function Participants({ data, onToggle }: { data: Analysis; onToggle: (code: str
   );
 
   return (
-    <Card title="Every participant" note="Untick an ID to leave it out of every figure on this page. Nothing is saved: a reload, or another batch, puts everyone back.">
+    <Card title="Every participant" note="Untick an ID to leave it out of the figures. This isn't saved, so reloading or changing batch brings everyone back.">
       <div className="-mx-5">
         <Table className="min-w-[960px] whitespace-nowrap text-[13px]">
           <TableHeader className="text-[12px]">

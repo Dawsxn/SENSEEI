@@ -151,7 +151,7 @@ describe("the Analysis tab", () => {
   it("counts only Finished IDs and says what it left out", async () => {
     renderPage();
     expect(await screen.findByText("2 of 2 finished participants included")).toBeInTheDocument();
-    expect(screen.getByText(/1 signed in but not finished; 3 issued but never used/)).toBeInTheDocument();
+    expect(screen.getByText(/not counted: 1 signed in but didn.t finish, 3 IDs were never used/)).toBeInTheDocument();
   });
 
   it("draws the distributions, and says when a group is too small to fit a curve", async () => {
