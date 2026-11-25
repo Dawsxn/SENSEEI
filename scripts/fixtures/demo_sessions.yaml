@@ -1,0 +1,483 @@
+# The demo's tutoring sessions, written out in full.
+#
+# Written for this repository in the style of real sessions: short first tries,
+# the usual misses (a definition that covers one half of the concept, an example
+# lifted from the reading, no non-example), and tutor replies that follow the
+# dialogue moves the Orchestrator would choose. No participant's words are used.
+#
+# Each try lists the criteria it failed, with the Assessment Agent's reason, and
+# the tutor's reply. A try with no `fail` passed. A session's status follows from
+# its tries: four steps passed is complete, five failed tries on a step is a
+# fallback, and `end: left` is a student who left partway through.
+#
+# `student` is an index into STUDENTS in scripts/seed.py. Sessions on a reading
+# the seed could not load (the trial reading, when its local files are absent)
+# are skipped.
+
+sessions:
+  # --- Dawson: a clean pass with one stumble ---------------------------------
+  - student: 0
+    reading: strategic_offensives
+    days_ago: 6
+    at: "14:05"
+    steps:
+      - step: State
+        prompt: >-
+          Let's start with State. In one or two sentences and in your own words,
+          what is a strategic offensive?
+        tries:
+          - answer: A strategic offensive is when a company attacks its competitors to get more market share.
+            fail:
+              Completeness: >-
+                It names only one reason to go on the offensive, gaining market
+                share. It leaves out whittling away at a strong rival's advantage,
+                and that the attack should be built on the company's own strengths.
+            reply: >-
+                You have the core idea that an offensive is an attack on rivals to
+                win share. What's missing is the other half: when else a company
+                would go on the offensive, and what the attack should be built on.
+                Try stating it again with both of those in.
+          - answer: >-
+              It's when a company deliberately goes after rivals, either to take
+              profitable market share from them or to weaken a strong rival's edge,
+              using what the company is already good at against where rivals are weak.
+            reply: >-
+              That covers both parts: why a company attacks, and what it attacks
+              with. Next, let's go deeper with Elaborate.
+      - step: Elaborate
+        prompt: >-
+          Now Elaborate. Explain strategic offensives in more detail, as if to a
+          classmate who missed the reading. Why go on the offensive, and what makes
+          one likely to work?
+        tries:
+          - answer: >-
+              A company doesn't always just defend its position. Sometimes it sees a
+              chance to grow by winning customers away from competitors, as long as
+              that growth is profitable and not just buying share at a loss. Other
+              times a rival is so far ahead that the company has to chip away at
+              that rival's advantage or it will keep falling behind. Either way the
+              offensive only makes sense if it plays to the company's strengths, like
+              lower costs or better R&D, and hits rivals where they're weak. If you
+              attack with something you're not good at, you're likely to lose.
+            reply: >-
+              Clear and complete. You explained both triggers for an offensive and
+              why it has to rest on the company's own strengths. On to Exemplify.
+      - step: Exemplify
+        prompt: >-
+          Exemplify: give an example of a strategic offensive that isn't from the
+          reading, explain why it counts, and give one thing that is not a
+          strategic offensive.
+        tries:
+          - answer: >-
+              A milk tea chain that already buys its tapioca and tea leaves in bulk
+              much cheaper than the small shops around it could open branches next
+              to those shops and sell the same drinks for less. That's an offensive
+              because it's taking customers from rivals, and it's based on its cost
+              advantage, which the small shops can't match. A non-example would be
+              the same chain renovating its stores just to keep its regulars. That
+              protects what it has instead of attacking anyone.
+            reply: >-
+              A good original example, and you tied it back to both parts: taking
+              share from rivals and building on a cost advantage. The renovation is
+              a clear non-example. Last step, Illustrate.
+      - step: Illustrate
+        prompt: >-
+          Illustrate: compare a strategic offensive to something outside business,
+          an analogy or metaphor that captures how it works.
+        tries:
+          - answer: >-
+              It's like a basketball team with really fast guards choosing to push
+              the ball on fast breaks every time the other team's big men are slow
+              to get back. You attack with what you do best, at the exact spot where
+              the other team is weakest.
+            reply: >-
+              That analogy holds up: the team's speed is the strength, the slow
+              defenders are the weakness, and the attack is aimed right there. You
+              have passed all four steps.
+
+  # --- Mariel, attempt 1: runs out of tries on Elaborate (flagged) -----------
+  - student: 1
+    reading: strategic_offensives
+    days_ago: 9
+    at: "10:40"
+    steps:
+      - step: State
+        prompt: >-
+          Let's start with State. In one or two sentences and in your own words,
+          what is a strategic offensive?
+        tries:
+          - answer: >-
+              Strategic offensives are basically about being aggressive in business,
+              like how big companies always try to be number one and they do a lot of
+              things like lowering prices or making new products or ads so that they
+              can be the best in the market and get more profits and growth.
+            fail:
+              Brevity: >-
+                It runs long and lists tactics instead of saying what an offensive is.
+              Completeness: >-
+                It does not say why a company goes on the offensive, at rivals'
+                expense or to weaken a strong rival, or that it should rest on the
+                company's strengths.
+            reply: >-
+              You've picked up that offensives are aggressive moves. Right now the
+              answer is mostly a list of tactics, though. Try one or two sentences
+              on what an offensive is for and what it should be based on.
+          - answer: >-
+              A strategic offensive is an aggressive move to win profitable market
+              share from rivals or cut into a stronger rival's advantage, and it
+              should be based on the company's own strengths.
+            reply: >-
+              Much tighter, and both parts are there. Let's move to Elaborate.
+      - step: Elaborate
+        prompt: >-
+          Now Elaborate. Explain strategic offensives in more detail, as if to a
+          classmate who missed the reading. Why go on the offensive, and what makes
+          one likely to work?
+        tries:
+          - answer: It means the company attacks to get market share and uses its strengths.
+            fail:
+              Completeness: >-
+                It repeats the statement in fewer words and adds no explanation of
+                either part.
+            reply: >-
+              That's close to your statement again. Elaborate asks for more: why
+              would a company choose to attack, and why does it matter what the
+              attack is built on?
+          - answer: >-
+              There are many types of offensives, like cutting prices, being first
+              with new technology, continuous innovation, disruptive innovation,
+              copying good ideas, guerrilla tactics, and preemptive strikes.
+            fail:
+              Coherence: >-
+                It lists the kinds of offensives instead of explaining the concept
+                itself.
+              Completeness: >-
+                It does not explain when an offensive is called for or why it should
+                rest on the company's strengths.
+            reply: >-
+              Those are kinds of offensives, which is useful later. For now, explain
+              the idea itself: when it makes sense to attack, and what the attack
+              should rest on.
+          - answer: >-
+              Companies go on the offensive when they want more market share. Like a
+              company that has lower prices can steal customers from others, for
+              example a fast food chain doing a promo against another chain.
+            fail:
+              Coherence: >-
+                It moves on to an example before the explanation is finished.
+              Completeness: >-
+                It still leaves out the case of weakening a strong rival, and only
+                hints at the role of the company's strengths.
+            reply: >-
+              You're getting closer with the idea of stealing customers. Keep the
+              example for the next step, and explain the second reason to attack,
+              plus why it has to match what the company is good at.
+          - answer: >-
+              An offensive is when a company wants to win market share any way it
+              can, even if it loses money, because market share is what matters most
+              in the long run.
+            fail:
+              Accuracy: >-
+                The offensive is meant to win profitable share. Winning share at a
+                loss is not what the concept describes.
+              Completeness: >-
+                It leaves out weakening a strong rival and building on the company's
+                strengths.
+            reply: >-
+              Careful there: the share an offensive goes after is profitable share,
+              not share at any cost. Try again, covering both reasons to attack and
+              what the attack is built on.
+          - answer: >-
+              They do it to gain market share from rivals, and also sometimes to
+              attack the leader. It's like going to war so you need to be ready.
+            fail:
+              Completeness: >-
+                It names both reasons but does not explain them, or why the
+                offensive should rest on the company's own strengths.
+              Own Words: >-
+                The war comparison echoes the reading's own image rather than the
+                student's explanation.
+            reply: >-
+              You now have both reasons to attack, which is progress. This step
+              still needs them explained, along with why the attack has to rest on
+              the company's strengths.
+
+  # --- Mariel, attempt 2: passes, which clears the flag ----------------------
+  - student: 1
+    reading: strategic_offensives
+    days_ago: 3
+    at: "19:15"
+    steps:
+      - step: State
+        prompt: >-
+          Let's start with State. In one or two sentences and in your own words,
+          what is a strategic offensive?
+        tries:
+          - answer: >-
+              An aggressive move a company makes to take profitable market share
+              from rivals or to wear down a stronger rival's advantage, built on what
+              the company does best.
+            reply: >-
+              Clear and complete in one sentence. On to Elaborate.
+      - step: Elaborate
+        prompt: >-
+          Now Elaborate. Explain strategic offensives in more detail, as if to a
+          classmate who missed the reading. Why go on the offensive, and what makes
+          one likely to work?
+        tries:
+          - answer: >-
+              There are two reasons to attack. One is when the company sees an
+              opening to win customers from rivals. The other is when a rival is
+              too strong and the company has to weaken it.
+            fail:
+              Completeness: >-
+                It explains the two reasons to attack but not what the offensive
+                should be built on or aimed at.
+            reply: >-
+              Both reasons to attack are well explained now. One piece is left:
+              what makes an offensive likely to succeed. What should it be built on,
+              and where should it be aimed?
+          - answer: >-
+              There are two reasons to attack. One is when the company sees an
+              opening to win customers from rivals profitably. The other is when a
+              rival is so strong that the company has to weaken its advantage or keep
+              losing ground. In both cases the attack should use the company's
+              strongest assets, like low costs or strong R&D, and go after the areas
+              where rivals are weakest. Attacking with something you're bad at, like
+              cutting prices when your costs are high, usually fails.
+            reply: >-
+              That's a full explanation, and the price-cutting point shows why the
+              strengths matter. Now Exemplify.
+      - step: Exemplify
+        prompt: >-
+          Exemplify: give an example of a strategic offensive that isn't from the
+          reading, explain why it counts, and give one thing that is not a
+          strategic offensive.
+        tries:
+          - answer: >-
+              A local airline with the cheapest operating costs in the country adds
+              flights on a route where a bigger airline charges high fares, and sells
+              seats for much less. It's an offensive because it takes passengers from
+              the bigger airline using its cost advantage.
+            fail:
+              Contrast: There is no non-example.
+            reply: >-
+              A strong example, and you explained why it fits. It still needs a
+              non-example: something a company might do that is not a strategic
+              offensive.
+          - answer: >-
+              A local airline with the cheapest operating costs in the country adds
+              flights on a route where a bigger airline charges high fares, and sells
+              seats for much less. It's an offensive because it takes passengers from
+              the bigger airline using its cost advantage. A non-example is the same
+              airline lowering fares on a route only it flies, because there's no
+              rival to take share from.
+            reply: >-
+              The non-example draws the line well: no rival, no offensive. Last
+              step, Illustrate.
+      - step: Illustrate
+        prompt: >-
+          Illustrate: compare a strategic offensive to something outside business,
+          an analogy or metaphor that captures how it works.
+        tries:
+          - answer: >-
+              It's like a chess player who's strong in the endgame trading pieces
+              early against someone who's known to be weak once the board is empty.
+              You steer the game toward your strength and their weakness.
+            reply: >-
+              A fitting analogy: you can picture the board emptying, and it keeps
+              both halves of the concept. You have passed all four steps.
+
+  # --- Paolo: runs out of tries on Exemplify (flagged) ------------------------
+  - student: 2
+    reading: strategic_offensives
+    days_ago: 5
+    at: "21:30"
+    steps:
+      - step: State
+        prompt: >-
+          Let's start with State. In one or two sentences and in your own words,
+          what is a strategic offensive?
+        tries:
+          - answer: >-
+              It's an aggressive move to gain profitable market share from rivals or
+              to wear down a strong rival's edge, using the company's strengths.
+            reply: >-
+              Clear and complete. On to Elaborate.
+      - step: Elaborate
+        prompt: >-
+          Now Elaborate. Explain strategic offensives in more detail, as if to a
+          classmate who missed the reading. Why go on the offensive, and what makes
+          one likely to work?
+        tries:
+          - answer: >-
+              A company goes on the offensive when it spots a chance to win
+              customers away from rivals at a profit, or when a rival is so strong
+              that it has to chip away at that rival's advantage. To work, the
+              attack has to come from what the company is good at, and it should be
+              pointed at where the competitor is weak. If a company with high costs
+              tries a price war it will probably lose.
+            reply: >-
+              Well explained, both why and how. Now Exemplify.
+      - step: Exemplify
+        prompt: >-
+          Exemplify: give an example of a strategic offensive that isn't from the
+          reading, explain why it counts, and give one thing that is not a
+          strategic offensive.
+        tries:
+          - answer: Netflix, because it made a new market with streaming.
+            fail:
+              Originality: Netflix is one of the reading's own examples.
+              Explicit Mapping: >-
+                It does not explain how the example shows an offensive.
+              Contrast: There is no non-example.
+            reply: >-
+              Netflix comes from the reading, so this step needs an example of your
+              own. Pick one, say how it shows an offensive, and add a non-example.
+          - answer: A company that lowers its prices.
+            fail:
+              Concreteness: >-
+                It does not point to a real or realistic company or situation.
+              Explicit Mapping: >-
+                It does not say who the rivals are or what strength the move rests on.
+              Contrast: There is no non-example.
+            reply: >-
+              Lowering prices can be an offensive, but this is too general to show
+              it. Name a company, say who it's taking customers from and what
+              strength lets it, and give a non-example.
+          - answer: >-
+              Shopee giving free shipping vouchers so people buy there instead of
+              Lazada. It's an offensive because they want market share.
+            fail:
+              Explicit Mapping: >-
+                It does not explain what strength of the company the move is built on.
+              Contrast: There is no non-example.
+            reply: >-
+              Better, that's a concrete example with a clear rival. Explain what
+              Shopee is strong in that makes this move work, and add something that
+              would not be an offensive.
+          - answer: >-
+              Shopee giving free shipping vouchers to beat Lazada, since Shopee has a
+              lot of money. A non-example is Jollibee, because it's just a restaurant.
+            fail:
+              Contrast: >-
+                A company on its own is not a non-example. The contrast needs to be
+                a move that is not an offensive.
+              Explicit Mapping: >-
+                Having money is mentioned, but not how the vouchers aim at a weakness
+                of Lazada's.
+            reply: >-
+              The strength is there now. The non-example needs to be an action, like
+              something a company does to protect what it has, rather than a
+              company. And say what weakness of Lazada's the vouchers aim at.
+          - answer: >-
+              A non-example would be a company that doesn't compete. Shopee's
+              vouchers are an offensive because they attack Lazada.
+            fail:
+              Contrast: >-
+                A company that does not compete is too vague to mark the concept's
+                boundary.
+              Explicit Mapping: >-
+                It still does not connect the move to Shopee's strengths and Lazada's
+                weaknesses.
+            reply: >-
+              You had a good example going. What it needed was the link between
+              Shopee's strengths and a weakness of Lazada's, and a non-example that
+              is a specific action, not a kind of company.
+
+  # --- Dawson: Recovery to the Bisector, answering from the figures ----------
+  - student: 0
+    reading: tennis_recovery
+    days_ago: 2
+    at: "16:50"
+    steps:
+      - step: State
+        prompt: >-
+          Let's start with State. In one or two sentences and in your own words,
+          what does recovering to the bisector mean?
+        tries:
+          - answer: >-
+              After you hit, you move to the line that splits the opponent's
+              possible shots in half, not to the middle of the court, and that line
+              changes every time the ball moves.
+            reply: >-
+              Both parts are there: the bisector, not the centre, and it moves with
+              the ball. On to Elaborate.
+      - step: Elaborate
+        prompt: >-
+          Now Elaborate. Explain recovering to the bisector in more detail. Why is
+          that the right place to stand, and why does it keep changing?
+        tries:
+          - answer: >-
+              The opponent can hit anywhere between a down-the-line shot and the
+              sharpest cross-court angle. If you go back to the centre mark you might
+              be close to one of those and far from the other. In Figure 2 the
+              runs from the centre mark are 4.2 m and 6.9 m, but from the bisector
+              they're 5.2 m and 6.3 m, so the longest run gets shorter even though
+              the short one gets a bit longer. That's what matters, because the shot
+              you can't reach is the far one. And since the angles come from where
+              the ball is, every new ball gives a new bisector.
+            reply: >-
+              Using the distances from Figure 2 makes the trade-off very clear: a
+              shorter longest run is the point. On to Exemplify.
+      - step: Exemplify
+        prompt: >-
+          Exemplify: give a situation that shows recovering to the bisector, explain
+          why it fits, and give one that does not.
+        tries:
+          - answer: >-
+              In badminton doubles, if I lift the shuttle deep to my opponent's
+              backhand corner, I shouldn't go back to the exact middle. I should
+              shift toward the side their cross-court reply would go, since that's
+              the shot that would be furthest from me. A non-example is a player who
+              always runs back to the centre mark after every shot, no matter where
+              the ball went.
+            reply: >-
+              Taking it into badminton shows you understand the idea beyond tennis,
+              and the non-example is exactly the habit the reading warns about. Last
+              step, Illustrate.
+      - step: Illustrate
+        prompt: >-
+          Illustrate: compare recovering to the bisector to something outside
+          tennis, an analogy or picture that captures it.
+        tries:
+          - answer: >-
+              It's like a goalkeeper facing a penalty kick from an angle. They don't
+              stand in the middle of the goal, they stand on the line from the ball
+              that splits the gap between the two posts, so neither post is too far
+              to dive to. If the ball is placed somewhere else, the spot changes.
+            reply: >-
+              A great picture: the posts mark the two extremes and the keeper stands
+              on the line between them. You have passed all four steps.
+
+  # --- Mariel: Recovery to the Bisector, left partway through ----------------
+  - student: 1
+    reading: tennis_recovery
+    days_ago: 1
+    at: "08:20"
+    end: left
+    steps:
+      - step: State
+        prompt: >-
+          Let's start with State. In one or two sentences and in your own words,
+          what does recovering to the bisector mean?
+        tries:
+          - answer: >-
+              Going back to the line that cuts the opponent's possible shots in half
+              after you hit, instead of the centre, which moves whenever the ball does.
+            reply: >-
+              Clear and complete. On to Elaborate.
+      - step: Elaborate
+        prompt: >-
+          Now Elaborate. Explain recovering to the bisector in more detail. Why is
+          that the right place to stand, and why does it keep changing?
+        tries:
+          - answer: Because it's the best place to stand.
+            fail:
+              Completeness: >-
+                It does not explain why the bisector is better than the centre, or
+                why it changes.
+            reply: >-
+              That's the conclusion, but this step is about the why. What happens to
+              the furthest shot when you stand on the bisector, and why does the
+              spot change from ball to ball?

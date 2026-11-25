@@ -1,43 +1,48 @@
 #!/usr/bin/env python3
-"""Fill the local database with data the app can be developed against.
+"""Fill the local database with the demo: one instructor, three classes, four
+students, two readings, and sessions that show every state the app has.
 
     docker compose up -d --wait
     alembic upgrade head
     python scripts/seed.py
 
-One instructor, two classes, five students, and four expository texts. Several students have real
-sessions behind them, with attempts, assessments and per-criterion judgments, so
-the instructor dashboard has something to return and its queries can be checked
-against numbers a human can count.
+What it sets up, and what each piece is there to show:
 
-Two things here are real rather than invented:
+- **DEMO_CLASS_1** has three students and both readings. Its sessions cover a
+  clean pass, a student flagged after running out of tries, a flag cleared by a
+  later pass (the earlier attempt stays marked), and a session left partway.
+- **DEMO_CLASS_2** shares the trial reading and one student with DEMO_CLASS_1,
+  so a reading and a student each sit in two classes.
+- **DEMO_CLASS_3** has the trial reading and no students: the empty states.
+- **Anthony Baybayon** is in no class, to show a student's empty page and
+  joining with a code.
 
-- **Three of the reading texts and their core components** come from the eval
-  dataset, so the app and the eval harness study the same material. The fourth,
-  the tennis reading, is written for this repository: it is the only one whose
-  figures carry detail the prose does not, which is what makes it a test of
-  grading a student who answers by pointing at one.
-- **The student responses** are rows from that dataset too, each already
-  labelled with the verdict it should get and the criteria it was written to
-  fail. That is why the seeded pass/fail pattern is coherent rather than
-  arbitrary.
+The readings:
 
-**The tutor messages are written by this script, not by the Tutor Agent.** They
-are stand-ins so the transcript view has something to render. Nothing here calls
-an LLM, and the seed costs nothing to run.
+- **Strategic Offensives** is the reading the trial used. Its PDF and text are
+  not published with this repository, so the seed reads them from
+  `scripts/fixtures/local/` (ignored by git) and leaves the reading and its
+  sessions out when they are not there.
+- **Recovery to the Bisector** is written for this repository. Its figures carry
+  detail the prose does not, which is what makes it a test of a student who
+  answers by pointing at one.
+
+**The sessions are scripted, not generated.** `scripts/fixtures/demo_sessions.yaml`
+holds every answer, judgment and tutor reply, written for the demo in the style
+of real sessions. Nothing here calls an LLM, and the seed costs nothing to run.
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
-import csv
 import sys
 import uuid
 from collections import defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import yaml
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,22 +60,21 @@ from backend.models import (
     ReadingAssignment,
     ReadingFile,
     Role,
+    SeeiStep,
     Session,
     SessionStatus,
     TutorMessage,
     User,
     Verdict,
-    utcnow,
 )
 from backend.settings import get_settings
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA = ROOT / "assessment-agent-eval" / "data"
-
-#: The original PDFs of the seeded readings, named by slug. These are the real
-#: documents the extracted text in the eval dataset came from, so what a seeded
-#: student reads on screen is what the agents grade against.
-PDFS = ROOT / "scripts" / "fixtures" / "readings"
+FIXTURES = ROOT / "scripts" / "fixtures"
+#: Readings that cannot be published, read from here when present.
+LOCAL = FIXTURES / "local"
+PDFS = FIXTURES / "readings"
+SESSIONS_FILE = FIXTURES / "demo_sessions.yaml"
 
 for _stream in (sys.stdout, sys.stderr):
     try:
@@ -81,44 +85,58 @@ for _stream in (sys.stdout, sys.stderr):
 #: The attempt limit lives with the loop it governs, in the Orchestrator, so the
 #: seeded sessions cannot disagree with how the live loop behaves.
 from backend.orchestrator import MAX_ATTEMPTS as ATTEMPT_LIMIT  # noqa: E402
+from backend.orchestrator import MOVES  # noqa: E402
 
 RUBRIC_VERSION = "v3"
 
 #: Readings get deterministic ids, derived from their slug, so the same reading
-#: keeps the same id across reseeds. That gives the frontend a stable id to enter
-#: a session with before a reading-list screen and its API exist. Everything else
-#: (users, sessions, attempts) stays random.
+#: keeps the same id across reseeds. Everything else stays random.
 SEED_NAMESPACE = uuid.uuid5(uuid.NAMESPACE_DNS, "seed.senseei.dlsu")
 
 
 def reading_id(slug: str) -> uuid.UUID:
-    """The stable id for a seeded reading. `strategy` is the frontend's dev entry."""
+    """The stable id for a seeded reading."""
     return uuid.uuid5(SEED_NAMESPACE, slug)
 
-TITLES = {
-    "strategy": "Strategy",
-    "business_model": "Business Model",
-    "strategic_vision": "Strategic Vision",
+
+INSTRUCTOR = ("Thomas Tiam-Lee", "thomas_tiamlee@dlsu.edu.ph")
+
+STUDENTS = [
+    ("Dawson Catignas", "dawson_catignas@dlsu.edu.ph"),
+    ("Mariel Tamondong", "mariel_tamondong@dlsu.edu.ph"),
+    ("Paolo Cruzado", "paolo_cruzado@dlsu.edu.ph"),
+    ("Anthony Baybayon", "anthony_baybayon@dlsu.edu.ph"),
+]
+
+#: Name, section and join code. Placeholders, so nothing reads as a real course.
+CLASSES = [
+    ("DEMO_CLASS_1", "S01", "DEMA-2345"),
+    ("DEMO_CLASS_2", "S02", "DEMB-2345"),
+    ("DEMO_CLASS_3", "S03", "DEMC-2345"),
+]
+
+#: Student index to the classes they are in, by index into CLASSES. Anthony
+#: (index 3) is in none.
+ENROLMENTS = {0: [0, 1], 1: [0], 2: [0]}
+
+#: How long ago the students joined: before every scripted session.
+ENROLLED_DAYS_AGO = 14
+
+#: Reading slug to the classes it is assigned to.
+ASSIGNMENTS = {
+    "strategic_offensives": [0, 1, 2],
+    "tennis_recovery": [0],
 }
 
-#: One-line topic summaries, shown under the title in the reading list. The
-#: instructor writes these on the upload screen; the seed supplies its own, in
-#: the same style.
-DESCRIPTIONS = {
-    "strategy": "Coordinated actions to outperform rivals",
-    "business_model": "Customer value proposition, profit formula",
-    "strategic_vision": "Direction, market position, future course",
+TRIAL_READING = {
+    "slug": "strategic_offensives",
+    "title": "Strategic Offensives",
+    "description": "When and how a company attacks its rivals",
 }
 
-#: A fourth reading that is not from the eval dataset, and deliberately so.
-#: Its PDF carries two diagrams whose detail the prose does not repeat, which is
-#: the only way to check what happens when a student answers by pointing at a
-#: figure: the student sees the diagram, the Assessment Agent sees the bracketed
-#: description of it in `content`, and the grade should come out the same.
-#:
-#: Its text and PDF live beside the other fixtures. `content` here is what the
-#: upload flow produces — extracted prose with each figure written out in
-#: words, reviewed by the instructor before going live.
+#: Its PDF carries two diagrams whose detail the prose does not repeat. The
+#: student sees the diagram, the Assessment Agent sees the bracketed description
+#: of it in `content`, and the grade should come out the same.
 TENNIS = {
     "slug": "tennis_recovery",
     "title": "Recovery to the Bisector",
@@ -131,112 +149,57 @@ TENNIS = {
     ],
 }
 
-INSTRUCTOR = ("Prof. Reyes", "a.reyes@dlsu.edu.ph")
-
-STUDENTS = [
-    ("Mateo Cruz", "mateo_cruz@dlsu.edu.ph"),
-    ("Bea Villanueva", "bea_villanueva@dlsu.edu.ph"),
-    ("Nikko Tan", "nikko_tan@dlsu.edu.ph"),
-    ("Chelsea Ocampo", "chelsea_ocampo@dlsu.edu.ph"),
-    ("Rafael Lim", "rafael_lim@dlsu.edu.ph"),
-]
-
-#: Two different courses, not two sections of one. A student can be enrolled in
-#: both, which is what gives the reading list's class filter something to filter
-#: — and it cannot happen with two sections of the same course, where enrolment
-#: in one excludes the other.
-CLASSES = [("STSWENG", "S11", "7HWP-3CNE"), ("STRAMA", "K31", "4KQ2-9TXM")]
-
-#: Which steps each seeded session gets, and the verdict of every attempt within
-#: them. Outcomes are spread on purpose: a dashboard where everyone passes on
-#: the first try proves nothing about the queries behind it.
-PLANS: dict[str, list[list[str]]] = {
-    # a clean run, four steps, first try each
-    "clean": [["PASS"], ["PASS"], ["PASS"], ["PASS"]],
-    # one stumble on State, recovered
-    "one_retry": [["FAIL", "PASS"], ["PASS"], ["PASS"], ["PASS"]],
-    # struggled in the middle
-    "two_retries": [["PASS"], ["FAIL", "PASS"], ["FAIL", "FAIL", "PASS"], ["PASS"]],
-    # attempts exhausted on State: ends in fallback, flags the instructor
-    "fallback": [["FAIL"] * ATTEMPT_LIMIT],
-    # three steps passed, then attempts exhausted on Illustrate
-    "late_fallback": [["PASS"], ["PASS"], ["PASS"], ["FAIL"] * ATTEMPT_LIMIT],
-    # stopped partway, still open
-    "in_progress": [["PASS"], ["FAIL"]],
-}
-
-#: Student index, reading slug, plan, and how many days ago it happened.
-#:
-#: Every pair here must be one the student can actually see, or the session is
-#: unreachable: the reading list derives its status through the same visibility
-#: query, and the review screen lists sessions per reading the same way.
-#:
-#: The tennis reading has no sessions. Its responses would have to come from the
-#: eval dataset, which does not cover it, and leaving it unattempted is also what
-#: makes it the clean one to test a fresh session against.
-SESSIONS = [
-    (0, "business_model", "late_fallback", 11),
-    (1, "business_model", "fallback", 10),
-    (2, "business_model", "in_progress", 8),
-    (2, "strategy", "fallback", 9),
-    (3, "strategy", "clean", 7),
-    (4, "strategy", "one_retry", 6),
-    (3, "strategic_vision", "fallback", 4),
-    (4, "strategic_vision", "two_retries", 3),
-    # a second, abandoned attempt: not resumable, so it must read as not started
-    (0, "business_model", "in_progress", 1),
-]
-
-MOVES = {
-    "first": ["Prompt"],
-    "retry": ["Acknowledgement", "Criterion-Based Feedback", "Re-Prompt"],
-    "final_fail": ["Acknowledgement", "Criterion-Based Feedback"],
-    "passed": ["Acknowledgement", "Transition"],
-}
+#: Manila, where the demo is shown: a session's `at` is a local time of day.
+MANILA = timezone(timedelta(hours=8))
 
 
 # ---------------------------------------------------------------------------
-# the dataset
+# loading
 
 
-def _slug(filename: str) -> str:
-    """The reading a CSV row names. Example sets from v4 on grade against the
-    concept's section of the chapter (`business_model_section.txt`), earlier ones
-    against the whole reading (`business_model.txt`); both are the same reading
-    here."""
-    return filename.replace(".txt", "").removesuffix("_section")
+def _trial_reading() -> dict | None:
+    """The trial reading from the local folder, or None when it is not there.
+
+    The text is the instructor's checked copy when present, and otherwise what
+    the PDF yields on its own, without figure descriptions.
+    """
+    slug = TRIAL_READING["slug"]
+    pdf = LOCAL / f"{slug}.pdf"
+    components = LOCAL / f"{slug}.components.txt"
+    if not pdf.exists() or not components.exists():
+        return None
+    text_file = LOCAL / f"{slug}.txt"
+    data = pdf.read_bytes()
+    if text_file.exists():
+        content = text_file.read_text(encoding="utf-8").strip()
+    else:
+        from backend.services.pdf_text import extract_pages_text, to_text
+
+        content = to_text(extract_pages_text(data))
+    return {
+        "title": TRIAL_READING["title"],
+        "description": TRIAL_READING["description"],
+        "content": content,
+        "components": [
+            line.strip()
+            for line in components.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ],
+        "pdf": data,
+    }
 
 
 def load_readings() -> dict[str, dict]:
-    """The four readings: text, core components and the original PDF.
-
-    Three come from the eval dataset, keyed by the CSV's reading filename. The
-    tennis reading is appended separately because it has no eval rows — it is a
-    fixture for the figure-reference case, not study material.
-    """
-    csv_path = sorted(DATA.glob("example_set_v*.csv"))[-1]
-    components: dict[str, str] = {}
-    with open(csv_path, encoding="utf-8-sig", newline="") as f:
-        for row in csv.DictReader(f):
-            components.setdefault(row["reading_filename"], row["core_components"])
-
+    """The readings the seed can find, by slug."""
     out: dict[str, dict] = {}
-    for filename, comps in components.items():
-        slug = _slug(filename)
-        if slug not in TITLES:
-            continue  # a reading with no core components is not seeded
-        text = (DATA / "readings" / filename).read_text(encoding="utf-8").strip()
-        pdf = PDFS / f"{slug}.pdf"
-        out[slug] = {
-            "title": TITLES[slug],
-            "description": DESCRIPTIONS.get(slug),
-            "content": text,
-            # several components are joined with || in the one CSV field
-            "components": [c.strip() for c in comps.split("||") if c.strip()],
-            # A reading without a PDF is not an error: it falls back to the text
-            # view. Only the seed can make one; an upload always stores its PDF.
-            "pdf": pdf.read_bytes() if pdf.exists() else None,
-        }
+    trial = _trial_reading()
+    if trial is not None:
+        out[TRIAL_READING["slug"]] = trial
+    else:
+        print(
+            f"note: {TRIAL_READING['title']} not found in {LOCAL}; "
+            "seeding without it and its sessions."
+        )
 
     tennis_pdf = PDFS / f"{TENNIS['slug']}.pdf"
     out[TENNIS["slug"]] = {
@@ -249,97 +212,57 @@ def load_readings() -> dict[str, dict]:
     return out
 
 
-def load_responses() -> dict[tuple[str, str, str], list[dict]]:
-    """Student responses from the eval CSV, keyed by reading, step and verdict."""
-    csv_path = sorted(DATA.glob("example_set_v*.csv"))[-1]
-    out: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
-    with open(csv_path, encoding="utf-8-sig", newline="") as f:
-        for row in csv.DictReader(f):
-            key = (
-                _slug(row["reading_filename"]),
-                row["seei_step"],
-                row["expected_verdict"],
-            )
-            out[key].append(row)
-    return out
-
-
-def failed_criteria(row: dict, step: str) -> list[str]:
-    """The criteria a FAIL row was written to break, as canonical names."""
-    targeted = [c.strip() for c in row["criterion_targeted"].split("+") if c.strip()]
-    known = criteria_for(step)
-    for name in targeted:
-        if name not in known:
-            raise SystemExit(
-                f"Dataset row {row['id']} targets {name!r}, which is not a {step} "
-                f"criterion in rubric {RUBRIC_VERSION}. The dataset and the "
-                f"rubric have drifted apart."
-            )
-    return targeted
+def load_sessions() -> list[dict]:
+    """The scripted sessions, checked against the rubric they are graded on."""
+    sessions = yaml.safe_load(SESSIONS_FILE.read_text(encoding="utf-8"))["sessions"]
+    for n, spec in enumerate(sessions, start=1):
+        for step in spec["steps"]:
+            known = criteria_for(step["step"])
+            for t in step["tries"]:
+                unknown = set(t.get("fail") or {}) - set(known)
+                if unknown:
+                    raise SystemExit(
+                        f"session {n}, {step['step']}: {sorted(unknown)} are not "
+                        f"{step['step']} criteria in rubric {RUBRIC_VERSION}."
+                    )
+            if len(step["tries"]) > ATTEMPT_LIMIT:
+                raise SystemExit(f"session {n}, {step['step']}: over {ATTEMPT_LIMIT} tries.")
+    return sessions
 
 
 # ---------------------------------------------------------------------------
 # building rows
 
 
-def tutor_text(kind: str, step: str, title: str, unmet: list[str]) -> str:
-    """Stand-in copy. The real thing comes from the Tutor Agent at runtime."""
-    named = ", ".join(unmet)
-    if kind == "first":
-        return (
-            f"Let us work on {step}. In your own words, "
-            f"{step.lower()} the concept of {title}."
-        )
-    if kind == "passed":
-        return f"That meets the criteria for {step}. Moving on."
-    if kind == "retry":
-        return (
-            f"That is an attempt, but it does not yet meet {named}. "
-            f"Try {step.lower()} again with those in mind."
-        )
-    return (
-        f"That attempt does not meet {named}, and there are no attempts "
-        f"left for {step}."
-    )
+def _status(spec: dict) -> SessionStatus:
+    """What a scripted session's tries add up to."""
+    if spec.get("end") == "left":
+        return SessionStatus.LEFT
+    last = spec["steps"][-1]
+    if last["tries"][-1].get("fail"):
+        if len(last["tries"]) < ATTEMPT_LIMIT:
+            raise SystemExit("a session ends on a failed try with tries left; mark it `end: left`.")
+        return SessionStatus.FALLBACK
+    if len(spec["steps"]) == len(STEP_ORDER):
+        return SessionStatus.COMPLETE
+    raise SystemExit("a session stops after a passed step; mark it `end: left`.")
 
 
-def build_session(
-    student: User,
-    reading: Reading,
-    slug: str,
-    plan_name: str,
-    days_ago: int,
-    responses: dict[tuple[str, str, str], list[dict]],
-    picked: dict[tuple, int],
-) -> list:
-    """One session and everything hanging off it, as a flat list of rows."""
-    plan = PLANS[plan_name]
+def build_session(student: User, reading: Reading, spec: dict) -> list:
+    """One scripted session and everything hanging off it, as a flat list of rows."""
     settings = get_settings()
-    started = utcnow() - timedelta(days=days_ago)
-
-    steps_done = len(plan)
-    last = plan[-1]
-    exhausted = len(last) >= ATTEMPT_LIMIT and last[-1] == "FAIL"
-    finished_all = steps_done == len(STEP_ORDER) and last[-1] == "PASS"
-
-    if exhausted:
-        status = SessionStatus.FALLBACK
-    elif finished_all:
-        status = SessionStatus.COMPLETE
-    else:
-        status = SessionStatus.IN_PROGRESS
+    hour, minute = (int(x) for x in spec["at"].split(":"))
+    local = datetime.now(MANILA).replace(hour=hour, minute=minute, second=0, microsecond=0)
+    started = (local - timedelta(days=spec["days_ago"])).astimezone(timezone.utc)
+    status = _status(spec)
 
     sess = Session(
         student_id=student.id,
         reading_id=reading.id,
         status=status,
-        current_step=STEP_ORDER[min(steps_done - 1, len(STEP_ORDER) - 1)],
+        current_step=SeeiStep(spec["steps"][-1]["step"]),
         started_at=started,
-        ended_at=(
-            None
-            if status is SessionStatus.IN_PROGRESS
-            else started + timedelta(minutes=14)
-        ),
+        ended_at=None,
         rubric_version=RUBRIC_VERSION,
         tutor_prompt_version=settings.tutor_prompt_version,
         assessment_prompt_version=settings.assessment_prompt_version,
@@ -348,95 +271,88 @@ def build_session(
     rows: list = [sess]
     clock = started
 
-    for step_index, verdicts in enumerate(plan):
-        step = STEP_ORDER[step_index]
-        step_name = step.value
-
-        # the question that opens the step
-        clock += timedelta(seconds=20)
+    for step_spec in spec["steps"]:
+        step = SeeiStep(step_spec["step"])
+        clock += timedelta(seconds=6)
         rows.append(
             TutorMessage(
                 session_id=sess.id,
                 step=step,
                 attempt_id=None,
-                moves=MOVES["first"],
-                content=tutor_text("first", step_name, reading.title, []),
+                moves=MOVES["first_attempt"],
+                content=step_spec["prompt"].strip(),
                 created_at=clock,
             )
         )
 
-        for number, verdict in enumerate(verdicts, start=1):
-            key = (slug, step_name, verdict)
-            pool = responses.get(key) or []
-            if not pool:
-                raise SystemExit(f"No {verdict} response in the dataset for {key}")
-            row = pool[picked[key] % len(pool)]
-            picked[key] += 1
-
-            clock += timedelta(minutes=2)
+        for number, t in enumerate(step_spec["tries"], start=1):
+            answer = t["answer"].strip()
+            failed = t.get("fail") or {}
+            # time to think and type, longer for a longer answer
+            clock += timedelta(seconds=45 + 2 * len(answer.split()))
             attempt = Attempt(
                 session_id=sess.id,
                 step=step,
                 attempt_number=number,
-                response_text=row["user_response"],
+                response_text=answer,
                 submitted_at=clock,
             )
             rows.append(attempt)
 
-            unmet = failed_criteria(row, step_name) if verdict == "FAIL" else []
-            words = max(len(row["user_response"].split()), 1)
+            verdict = Verdict.FAIL if failed else Verdict.PASS
             assessment = Assessment(
                 attempt_id=attempt.id,
-                verdict=Verdict(verdict),
-                model_verdict=verdict,
-                raw_response=row["rationale"],
+                verdict=verdict,
+                model_verdict=verdict.value,
+                raw_response="; ".join(f"{c}: {r.strip()}" for c, r in failed.items())
+                or "Every criterion met.",
                 warnings=[],
                 usage={
-                    "input_tokens": 1400 + words * 4,
-                    "thinking_tokens": 180,
-                    "output_tokens": 210,
+                    "input_tokens": 1800 + len(answer.split()) * 4,
+                    "thinking_tokens": 220,
+                    "output_tokens": 240,
                 },
                 created_at=clock + timedelta(seconds=4),
             )
             rows.append(assessment)
-
-            for criterion in criteria_for(step_name):
+            for criterion in criteria_for(step.value):
                 rows.append(
                     CriterionJudgment(
                         assessment_id=assessment.id,
                         criterion=criterion,
-                        passed=criterion not in unmet,
-                        reason=row["rationale"] if criterion in unmet else None,
+                        passed=criterion not in failed,
+                        reason=failed[criterion].strip() if criterion in failed else None,
                     )
                 )
 
-            if verdict == "PASS":
-                kind = "passed"
+            if not failed:
+                situation = "passed"
             elif number >= ATTEMPT_LIMIT:
-                kind = "final_fail"
+                situation = "final_fail"
             else:
-                kind = "retry"
-
-            clock += timedelta(seconds=8)
+                situation = "retry"
+            clock += timedelta(seconds=7)
             rows.append(
                 TutorMessage(
                     session_id=sess.id,
                     step=step,
                     attempt_id=attempt.id,
-                    moves=MOVES[kind],
-                    content=tutor_text(kind, step_name, reading.title, unmet),
+                    moves=MOVES[situation],
+                    content=t["reply"].strip(),
                     created_at=clock,
                 )
             )
 
+    if status is not SessionStatus.IN_PROGRESS:
+        # a student who left is marked when they confirmed, a little after the
+        # last message
+        sess.ended_at = clock + timedelta(minutes=2 if status is SessionStatus.LEFT else 0)
     return rows
 
 
 def build_everything() -> list:
     """Every row the seed inserts, in insertion order."""
     readings_data = load_readings()
-    responses = load_responses()
-    picked: dict[tuple, int] = defaultdict(int)
     rows: list = []
 
     instructor = User(
@@ -454,22 +370,20 @@ def build_everything() -> list:
     rows += classes
 
     students = [
-        User(
-            role=Role.STUDENT,
-            name=name,
-            email=email,
-            google_sub=f"seed-student-{i + 1}",
-        )
+        User(role=Role.STUDENT, name=name, email=email, google_sub=f"seed-student-{i + 1}")
         for i, (name, email) in enumerate(STUDENTS)
     ]
     rows += students
-
-    # first three in STSWENG, last three in STRAMA, so the middle student takes
-    # both courses and sees the readings of each
-    for student in students[:3]:
-        rows.append(Enrolment(student_id=student.id, class_id=classes[0].id))
-    for student in students[2:]:
-        rows.append(Enrolment(student_id=student.id, class_id=classes[1].id))
+    for student_index, class_indexes in ENROLMENTS.items():
+        for c in class_indexes:
+            # joined before the term's first session, so no session predates it
+            rows.append(
+                Enrolment(
+                    student_id=students[student_index].id,
+                    class_id=classes[c].id,
+                    enrolled_at=datetime.now(timezone.utc) - timedelta(days=ENROLLED_DAYS_AGO),
+                )
+            )
 
     readings: dict[str, Reading] = {}
     for slug, data in readings_data.items():
@@ -492,37 +406,13 @@ def build_everything() -> list:
                 )
             )
         for position, component in enumerate(data["components"]):
-            rows.append(
-                CoreComponent(
-                    reading_id=reading.id, text=component, position=position
-                )
-            )
+            rows.append(CoreComponent(reading_id=reading.id, text=component, position=position))
+        for c in ASSIGNMENTS[slug]:
+            rows.append(ReadingAssignment(reading_id=reading.id, class_id=classes[c].id))
 
-    # Each reading belongs to exactly one class. Assigning one to both would
-    # show it twice to the student enrolled in both, because visibility is
-    # resolved per class: two rows for one reading.
-    for class_index, slug in (
-        (0, "business_model"),
-        (0, "tennis_recovery"),
-        (1, "strategy"),
-        (1, "strategic_vision"),
-    ):
-        rows.append(
-            ReadingAssignment(
-                reading_id=readings[slug].id, class_id=classes[class_index].id
-            )
-        )
-
-    for student_index, slug, plan_name, days_ago in SESSIONS:
-        rows += build_session(
-            students[student_index],
-            readings[slug],
-            slug,
-            plan_name,
-            days_ago,
-            responses,
-            picked,
-        )
+    for spec in load_sessions():
+        if spec["reading"] in readings:
+            rows += build_session(students[spec["student"]], readings[spec["reading"]], spec)
 
     return rows
 
