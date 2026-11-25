@@ -7,6 +7,7 @@ import { ClassDetailPage } from "./features/classes/ClassDetailPage";
 import { ClassReadingPage } from "./features/classes/ClassReadingPage";
 import { ClassListPage } from "./features/classes/ClassListPage";
 import { SignInScreen } from "./features/auth/SignInScreen";
+import { HowItWorks } from "./features/intro/HowItWorks";
 import { LibraryListPage } from "./features/library/LibraryListPage";
 import { LibraryReadingPage } from "./features/library/LibraryReadingPage";
 import { StudentClassPage } from "./features/readings/StudentClassPage";
@@ -35,6 +36,8 @@ const router = createBrowserRouter([
   // The sign-in screen is open; every other route requires a session.
   { path: "/login", element: <SignInScreen /> },
   { path: "/", element: signedIn(<HomeRoute />) },
+  // The SEE-I walkthrough: before a student's first session, and from the help icon.
+  { path: "/how-it-works", element: signedIn(<HowItWorks />) },
   // The reading step comes before the session and creates nothing; the session
   // row is written when /tutor is reached.
   { path: "/read/:readingId", element: signedIn(<ReadingStepScreen />) },

@@ -153,6 +153,9 @@ export async function devLogin(userId: string): Promise<void> {
   if (!response.ok) throw new Error(`dev login: ${response.status}`);
 }
 
+/** Record that the walkthrough has been seen, so it does not open unasked again. */
+export const markIntroSeen = () => send<void>("/auth/me/intro", "POST");
+
 export async function logout(): Promise<void> {
   await fetch("/auth/logout", { method: "POST" });
 }

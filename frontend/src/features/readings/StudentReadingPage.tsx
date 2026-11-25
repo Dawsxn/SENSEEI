@@ -2,7 +2,8 @@
  *  past sessions on it, and Start.
  *
  * Start always reads the same: the past sessions beside it already show
- * whether this is a first try. Opening a session goes to its review, whose
+ * whether this is a first attempt. A student who has never been through the
+ * SEE-I walkthrough goes through it first, on the way to the reading. Opening a session goes to its review, whose
  * breadcrumb leads back here.
  */
 
@@ -10,6 +11,7 @@ import { ChevronRight } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
+import { useMe } from "../auth/useAuth";
 import { Button } from "../../components/ui/button";
 import { formatDate } from "../../lib/format";
 import { cn } from "../../lib/utils";
@@ -23,6 +25,7 @@ export function StudentReadingPage() {
   const klass = useMyClass(classId);
   const reading = useReading(readingId);
   const { data: sessions } = useReadingSessions(readingId);
+  const { data: me } = useMe();
 
   // The reading must belong to this class, or the breadcrumb would lie.
   const notInClass = klass.data && !klass.data.readings.some((r) => r.id === readingId);
@@ -59,7 +62,13 @@ export function StudentReadingPage() {
                   </div>
                   <Button
                     className="h-10 w-full px-5 sm:h-9 sm:w-auto"
-                    onClick={() => navigate(`/read/${r.id}`)}
+                    onClick={() =>
+                      navigate(
+                        me && !me.seen_intro
+                          ? `/how-it-works?next=${encodeURIComponent(`/read/${r.id}`)}`
+                          : `/read/${r.id}`,
+                      )
+                    }
                   >
                     Start
                   </Button>

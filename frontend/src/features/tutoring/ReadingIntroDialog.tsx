@@ -16,17 +16,13 @@ import { useEffect, useRef } from "react";
 
 import { Button } from "../../components/ui/button";
 
-const SEEI_INTRO =
-  "This session will take you through SEE-I one step at a time. Read the material " +
-  "in its entirety first, as the session will test your conceptual understanding " +
-  "of it. Press Done when you are finished.";
-
-/** `body` replaces the SEE-I wording, for the trial's control groups. Each
- *  string in a list is its own paragraph. `children`, when given, replaces it
- *  all (the trial's SEE-I wording, which has a list). */
+/** `body` is what it says: the goal of the session outside the trial, and the
+ *  trial's own wording for its control groups. Each string in a list is its own
+ *  paragraph. `children`, when given, replaces it all (the trial's SEE-I
+ *  wording, which has a list). */
 export function ReadingIntroDialog({
   onStart,
-  body = SEEI_INTRO,
+  body = "",
   children,
   startOnly = false,
 }: {

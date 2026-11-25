@@ -145,7 +145,7 @@ export function Welcome({ onContinue }: { onContinue: () => void }) {
 // --------------------------------------------------------------------------- #
 // the SEE-I group's guide
 
-const SEEI: [string, string][] = [
+export const SEEI: [string, string][] = [
   ["State", "Say what the concept is, briefly and clearly."],
   ["Elaborate", "Explain it in more detail, in your own words."],
   ["Exemplify", "Give your own example of it, plus one thing that is not an example."],

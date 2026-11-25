@@ -156,7 +156,12 @@ export function ReadingStepScreen() {
         </footer>
       )}
 
-      {showIntro && !participant && <ReadingIntroDialog onStart={closeIntro} />}
+      {showIntro && !participant && reading && (
+        <ReadingIntroDialog
+          onStart={closeIntro}
+          body={`The goal of this session is to understand the concept: ${reading.title.toLowerCase()}. Take your time with the reading first, and press Done when you've finished it.`}
+        />
+      )}
       {showIntro && participant && (
         <ReadingIntroDialog onStart={closeIntro} startOnly>
           <div className="text-[14px] leading-[1.6] text-muted-foreground">
