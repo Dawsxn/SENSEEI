@@ -48,13 +48,20 @@ cut off by time is kept and counted, never discarded.
    is no cap on how many times a student may re-attempt a reading.
 4. **Reading detail.** A page of its own under the class, showing the
    reading's core component(s), any past sessions on it, and Start.
-5. **Reading step.** The reading is shown on its own, as the instructor's
+5. **Walkthrough, the first time only.** Before a student's first session on
+   any reading, Start goes through three screens: the four SEE-I steps, how a
+   session runs (the reading alone, then the tutoring screen with the reading
+   still available, then the end), and what the core components and the rubric
+   are. Seeing it is recorded on the account, so it does not show again on
+   another device; the help icon in the top bar opens it any time. The trial
+   keeps its own briefing and never shows this.
+6. **Reading step.** The reading is shown on its own, as the instructor's
    original PDF where one is stored and as the extracted text otherwise. An
-   opening dialog says what the session will ask for. The student must
+   opening dialog names the concept the session is about. The student must
    explicitly tell the system they have finished; there is no automatic advance,
    and the button is never gated on scroll position, because scrolling is not
    reading.
-6. **Tutoring.** A split screen appears, reading on one half and chat on the
+7. **Tutoring.** A split screen appears, reading on one half and chat on the
    other. The SEE-I process begins with State.
 
 **The session is created at the end of step 5, not the start of step 6.** Opening

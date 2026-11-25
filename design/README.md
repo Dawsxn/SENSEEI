@@ -34,6 +34,11 @@ design changes, so it always matches.
 | Join a class, wrong code | [png/02b-join-wrong.png](png/02b-join-wrong.png) |
 | Reading detail, full page | [png/03-reading-detail.png](png/03-reading-detail.png) |
 | Reading detail, dialog | [png/03b-reading-detail-dialog.png](png/03b-reading-detail-dialog.png) |
+| Walkthrough, 1 of 3 | [png/03e-walkthrough-1.png](png/03e-walkthrough-1.png) |
+| Walkthrough, 2 of 3 | [png/03e-walkthrough-2.png](png/03e-walkthrough-2.png) |
+| Walkthrough, 3 of 3 | [png/03e-walkthrough-3.png](png/03e-walkthrough-3.png) |
+| Help icon on the reading page | [png/03e-help-icon.png](png/03e-help-icon.png) |
+| Before you start, with the concept | [png/03e-before-you-start.png](png/03e-before-you-start.png) |
 | Reading step, intro dialog | [png/03c-reading-step-intro.png](png/03c-reading-step-intro.png) |
 | Reading step | [png/03c-reading-step.png](png/03c-reading-step.png) |
 | Reading step, text fallback | [png/03c-reading-step-text.png](png/03c-reading-step-text.png) |

@@ -94,6 +94,7 @@ both. The trial instance adds a third, the grader, who only grades the tests.
 | email | |
 | google_sub | Google account subject, the stable identifier from sign-in |
 | participant_identifier | Null for ordinary users. On the trial instance, the participant's ID, see [participant](#participant) |
+| intro_seen_at | When the student first went through the SEE-I walkthrough. Null until then, which is what shows it before their first session |
 | created_at | |
 
 Sign-in is Google OAuth, restricted to DLSU addresses. A non-DLSU Google account
