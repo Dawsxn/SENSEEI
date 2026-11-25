@@ -27,11 +27,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.figures import Figure, FigureDescriber
 
+from .analytics_service import Scope, _sessions
 from .ownership import owned_by
 from ..models import (
     FINISHED_STATUSES,
     Class,
     CoreComponent,
+    Enrolment,
     Reading,
     ReadingAssignment,
     ReadingFile,
@@ -329,13 +331,32 @@ async def get_reading(
     has_file = await db.scalar(
         select(ReadingFile.id).where(ReadingFile.reading_id == reading_id)
     )
+    session_count = await db.scalar(
+        select(func.count())
+        .select_from(Session)
+        .where(Session.reading_id == reading_id, Session.status.in_(FINISHED_STATUSES))
+    )
+    classes = (await _classes_of(db, [reading_id]))[reading_id]
+    for c in classes:
+        c["student_count"] = await db.scalar(
+            select(func.count())
+            .select_from(Enrolment)
+            .where(Enrolment.class_id == c["id"], Enrolment.deleted_at.is_(None))
+        )
+        # counted the way the class's own page counts them
+        c["session_count"] = await db.scalar(
+            select(func.count()).select_from(
+                _sessions(Scope(c["id"], reading_id)).subquery()
+            )
+        )
     return {
         "id": reading.id,
         "title": reading.title,
         "description": reading.description,
         "content": reading.content,
         "core_components": list(components),
-        "classes": (await _classes_of(db, [reading_id]))[reading_id],
+        "classes": classes,
+        "session_count": session_count or 0,
         "has_file": has_file is not None,
         "created_at": reading.created_at,
     }

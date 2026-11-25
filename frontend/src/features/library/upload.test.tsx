@@ -85,7 +85,7 @@ describe("uploading a reading", () => {
 
     const save = screen.getByRole("button", { name: "Save reading" });
     expect(save).toBeDisabled();
-    expect(screen.getByText(/Students won.t see this/)).toBeInTheDocument();
+    expect(screen.getByText(/Students in the classes you tick can open this reading/)).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText("Core component 1"), "Five forces shape profit.");
     await userEvent.click(await screen.findByLabelText("STRAMA K31"));
     await userEvent.click(save);
@@ -129,7 +129,8 @@ describe("uploading a reading", () => {
     expect(
       await screen.findByText("No text found. The PDF may be a scanned image."),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("PDF file")).toBeInTheDocument();
+    // the file stays chosen, to be removed for another
+    expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
   });
 
   it("says when the figures could not be described", async () => {
@@ -148,13 +149,13 @@ describe("uploading a reading", () => {
     const router = renderUpload();
 
     await userEvent.upload(screen.getByLabelText("PDF file"), pdf());
-    await userEvent.click(screen.getByRole("button", { name: "Readings" }));
+    await userEvent.click(screen.getAllByRole("link", { name: "Readings" })[0]);
     expect(screen.getByText("Leave this upload?")).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Stay" }));
     expect(router.state.location.pathname).toBe("/library/new");
 
-    await userEvent.click(screen.getByRole("button", { name: "Readings" }));
+    await userEvent.click(screen.getAllByRole("link", { name: "Readings" })[0]);
     await userEvent.click(screen.getByRole("button", { name: "Leave" }));
     expect(await screen.findByText("Readings list")).toBeInTheDocument();
   });
@@ -164,7 +165,7 @@ describe("uploading a reading", () => {
     renderUpload("/library/new?class=k31");
 
     // Back before anything is chosen: straight to the class, no dialog.
-    expect(await screen.findByRole("button", { name: /STRAMA K31/ })).toBeInTheDocument();
+    expect((await screen.findAllByRole("link", { name: /STRAMA K31/ }))[0]).toHaveAttribute("href", "/classes/k31");
 
     await userEvent.upload(screen.getByLabelText("PDF file"), pdf());
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -172,12 +173,34 @@ describe("uploading a reading", () => {
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
 
     expect(await screen.findByLabelText("STRAMA K31")).toBeChecked();
-    expect(screen.queryByText(/Students won.t see this/)).not.toBeInTheDocument();
   });
 
   it("leaves without asking when nothing has been chosen", async () => {
     renderUpload();
-    await userEvent.click(screen.getByRole("button", { name: "Readings" }));
+    await userEvent.click(screen.getAllByRole("link", { name: "Readings" })[0]);
     expect(await screen.findByText("Readings list")).toBeInTheDocument();
+  });
+  it("keeps the file when reading it fails, and tries again", async () => {
+    api.extractReading
+      .mockRejectedValueOnce(new ApiError(500, "extract: 500"))
+      .mockResolvedValueOnce({ text: "Text.", figures_described: 0, figures_failed: false });
+    renderUpload();
+    await userEvent.upload(screen.getByLabelText("PDF file"), pdf());
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(await screen.findByText("Something went wrong while reading your PDF.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByLabelText("Reading text")).toBeInTheDocument();
+  });
+
+  it("offers no Try again when the file itself is the problem", async () => {
+    api.extractReading.mockRejectedValueOnce(new ApiError(422, "extract: 422", "no_text"));
+    renderUpload();
+    await userEvent.upload(screen.getByLabelText("PDF file"), pdf());
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(await screen.findByText("No text found. The PDF may be a scanned image.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument();
   });
 });

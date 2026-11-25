@@ -151,7 +151,10 @@ export function ReadingClassesDialog({
   }
 
   return (
-    <Shell title="Classes" onCancel={onCancel} onSubmit={submit}>
+    <Shell title="Change classes" onCancel={onCancel} onSubmit={submit}>
+      <p className="mt-1.5 text-[14px] leading-[1.5] text-muted-foreground">
+        Students in the classes you tick can open this reading.
+      </p>
       <div className="mt-4">
         <ClassPicker selected={selected} onChange={setSelected} />
       </div>

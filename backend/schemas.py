@@ -299,13 +299,23 @@ class LibraryItem(BaseModel):
     created_at: datetime
 
 
+class LibraryClass(ClassRef):
+    """A class a reading is in, as the reading's page lists it."""
+
+    student_count: int
+    #: Finished sessions on this reading by the class's students.
+    session_count: int
+
+
 class LibraryReading(BaseModel):
     id: uuid.UUID
     title: str
     description: str | None
     content: str
     core_components: list[str]
-    classes: list[ClassRef]
+    classes: list[LibraryClass]
+    #: Finished sessions on it by any student, as the readings list counts them.
+    session_count: int
     has_file: bool
     created_at: datetime
 

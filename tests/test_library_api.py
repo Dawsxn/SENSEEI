@@ -202,7 +202,10 @@ async def test_saving_stores_the_corrected_text_file_and_components(people, poin
     assert detail["title"] == "Recovery"
     assert detail["content"] == "The text as the instructor corrected it."
     assert detail["core_components"] == ["Recover to the bisector.", "It moves with the ball."]
-    assert [c["label"] for c in detail["classes"]] == ["STRAMA K31"]
+    assert detail["classes"] == [
+        {"id": str(people["a"]), "label": "STRAMA K31", "student_count": 1, "session_count": 0}
+    ]
+    assert detail["session_count"] == 0
     assert detail["has_file"] is True
     assert file.status_code == 200 and file.content == TENNIS
 
