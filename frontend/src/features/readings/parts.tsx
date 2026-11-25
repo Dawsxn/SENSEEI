@@ -1,11 +1,11 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Flag } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 import { cn } from "../../lib/utils";
 import type { ReadingStatus, SessionStatus } from "./types";
 
-type Tone = "done" | "failed" | "neutral";
+export type Tone = "done" | "failed" | "neutral";
 
 const TONES: Record<Tone, string> = {
   done: "border-accent-soft-border bg-accent-soft text-accent-soft-foreground",
@@ -14,7 +14,7 @@ const TONES: Record<Tone, string> = {
 };
 
 /** A status pill of one fixed width, so a column of them lines up. */
-function Chip({ tone, children }: { tone: Tone; children: ReactNode }) {
+export function Chip({ tone, children }: { tone: Tone; children: ReactNode }) {
   return (
     <span
       className={cn(
@@ -50,7 +50,23 @@ const SESSION: Record<SessionStatus, [Tone, string]> = {
   abandoned: ["neutral", "Not finished"],
 };
 
-export function SessionStatusChip({ status }: { status: SessionStatus }) {
+/** A session's outcome. For the instructor, a session that ran out of tries
+ *  is Flagged, which is what it means to them; the student sees Failed. */
+export function SessionStatusChip({
+  status,
+  instructor = false,
+}: {
+  status: SessionStatus;
+  instructor?: boolean;
+}) {
+  if (instructor && status === "fallback") {
+    return (
+      <Chip tone="failed">
+        <Flag className="mr-1 h-3 w-3" aria-hidden />
+        Flagged
+      </Chip>
+    );
+  }
   const [tone, label] = SESSION[status];
   return <Chip tone={tone}>{label}</Chip>;
 }

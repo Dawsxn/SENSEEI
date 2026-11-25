@@ -17,7 +17,7 @@ const transcript: SessionTranscript = {
   class_name: "STSWENG S11",
   class_id: "c1",
   core_components: ["how value is created"],
-  student_name: "Mateo Cruz",
+  student_name: "Mateo Cruz", student_id: "u1",
   index: 1,
   status: "fallback",
   started_at: "2026-11-13T01:00:00Z",

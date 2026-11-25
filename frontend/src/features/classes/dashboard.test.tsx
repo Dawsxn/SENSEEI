@@ -1,7 +1,7 @@
 /** The class dashboard: what the statistics show, and what the roster says. */
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
@@ -64,6 +64,7 @@ function renderReading() {
       { path: "/classes/:classId/readings/:readingId", element: <ClassReadingPage /> },
       { path: "/classes/:classId", element: <p>Class page</p> },
       { path: "/classes/:classId/readings/:readingId/sessions/:sessionId", element: <p>Transcript</p> },
+      { path: "/classes/:classId/readings/:readingId/students/:studentId", element: <p>Sessions</p> },
     ],
     { initialEntries: ["/classes/c1/readings/r1"] },
   );
@@ -105,35 +106,42 @@ describe("the statistics", () => {
 });
 
 describe("the roster", () => {
-  it("says how far each student got, and where one stopped", async () => {
+  it("says how far each student got, in the same words as the student", async () => {
     api.getClassReading.mockResolvedValue(READING);
     renderReading();
 
-    expect(await screen.findByText("Strategy")).toBeInTheDocument();
-    expect(screen.getAllByText("Stopped early").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Stopped on Elaborate/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Completed").length).toBeGreaterThan(0);
+    expect(await screen.findByRole("heading", { name: "Strategy" })).toBeInTheDocument();
+    expect(screen.getAllByText("Complete").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Not started").length).toBeGreaterThan(0);
   });
 
-  it("opens a student's transcript, except for one who never started", async () => {
+  it("lists who is flagged above everything else", async () => {
     api.getClassReading.mockResolvedValue(READING);
     renderReading();
-    await screen.findByText("Strategy");
 
-    // By text rather than by role: a disabled button is not in the a11y tree.
-    const row = (name: string) => screen.getByText(name).closest("button")!;
-    expect(row("Chelsea")).toBeDisabled();
+    const box = await screen.findByRole("region", { name: "Flagged" });
+    expect(within(box).getByText("Bea")).toBeInTheDocument();
+    expect(within(box).queryByText("Mateo")).not.toBeInTheDocument();
+    // and Bea's own row says so too
+    expect(screen.getAllByText("Flagged").length).toBeGreaterThan(1);
+  });
 
-    await userEvent.click(row("Mateo"));
-    expect(await screen.findByText("Transcript")).toBeInTheDocument();
+  it("opens a student's sessions, except for one who never started", async () => {
+    api.getClassReading.mockResolvedValue(READING);
+    const router = renderReading();
+    await screen.findByRole("heading", { name: "Strategy" });
+
+    expect(screen.queryByRole("link", { name: /Chelsea/ })).not.toBeInTheDocument();
+    const mateo = screen.getAllByRole("link").find((a) => a.textContent?.includes("Mateo"))!;
+    await userEvent.click(mateo);
+    expect(router.state.location.pathname).toBe("/classes/c1/readings/r1/students/s3");
   });
 
   it("goes back to the class it belongs to", async () => {
     api.getClassReading.mockResolvedValue(READING);
     const router = renderReading();
 
-    await userEvent.click(await screen.findByRole("button", { name: /STRAMA K31/ }));
+    await userEvent.click((await screen.findAllByRole("link", { name: "STRAMA K31" }))[0]);
     expect(router.state.location.pathname).toBe("/classes/c1");
   });
 });

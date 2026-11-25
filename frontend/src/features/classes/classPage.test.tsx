@@ -64,7 +64,8 @@ beforeEach(() => {
   api.getClass.mockResolvedValue(CLASS);
   api.getClassStatistics.mockResolvedValue({
     statistics: { session_count: 0, pass_rates: [], failed_criteria: [], average_attempts: [] },
-    readings: [{ id: "r1", title: "Strategy", description: null, session_count: 5 }],
+    readings: [{ id: "r1", title: "Strategy", description: null, session_count: 5, flagged_count: 1 }],
+    flagged_student_ids: ["s1"],
   });
   api.addReadingsToClass.mockClear();
 });
@@ -97,10 +98,17 @@ describe("the class page", () => {
     expect(await screen.findByText("5 sessions")).toBeInTheDocument();
   });
 
-  it("lists the students on their own tab, with remove in each one's menu", async () => {
+  it("marks a reading with how many of its students are flagged", async () => {
     show("/classes/c1");
+    expect(await screen.findByText("1 flagged")).toBeInTheDocument();
+  });
+
+  it("lists the students on their own tab, flagged ones marked, with remove in each one's menu", async () => {
+    const router = show("/classes/c1");
     await userEvent.click(await screen.findByRole("tab", { name: /Students/ }));
-    expect(screen.getByText("Nikko Tan")).toBeInTheDocument();
+    expect(await screen.findByText("Flagged")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Nikko Tan/ })).toHaveAttribute("href", "/classes/c1/students/s1");
+    expect(router.state.location.pathname).toBe("/classes/c1");
     await userEvent.click(screen.getByRole("button", { name: "Options for Nikko Tan" }));
     await userEvent.click(screen.getByRole("menuitem", { name: "Remove from class" }));
     expect(screen.getByText("Remove Nikko Tan?")).toBeInTheDocument();

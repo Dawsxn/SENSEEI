@@ -75,10 +75,17 @@ export function SessionReviewPage() {
                     { label: "Classes", to: instructor ? "/classes" : "/" },
                     { label: classLabel ?? "Class", to: `/classes/${classId}` },
                     { label: t.reading_title, to: `/classes/${classId}/readings/${readingId}` },
+                    // The instructor goes back to this student's sessions on the reading.
+                    ...(instructor
+                      ? [
+                          {
+                            label: t.student_name,
+                            to: `/classes/${classId}/readings/${readingId}/students/${t.student_id}`,
+                          },
+                        ]
+                      : []),
                   ]}
-                  current={
-                    instructor ? `${t.student_name}, attempt ${t.index}` : `Attempt ${t.index}`
-                  }
+                  current={`Attempt ${t.index}`}
                 />
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                   <div className="min-w-0">
@@ -86,7 +93,7 @@ export function SessionReviewPage() {
                       {instructor ? t.student_name : t.reading_title}
                     </h1>
                     <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-[14px] text-muted-foreground">
-                      <SessionStatusChip status={t.status} />
+                      <SessionStatusChip status={t.status} instructor={instructor} />
                       <span>
                         {[
                           instructor && t.reading_title,

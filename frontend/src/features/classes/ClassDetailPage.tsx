@@ -6,6 +6,10 @@
  * is what an instructor opens most; the join code sits in the header, ready to
  * copy without scrolling, since it is what they share in front of a class.
  *
+ * A flag shows where it needs attention: on a reading, how many of its
+ * students are flagged; on a student, that they are flagged on some reading,
+ * which their own page names.
+ *
  * What changes the class itself (editing it, a new join code, deleting it) is
  * in the ⋯ menu, and removing a student is in that student's own ⋯, so nothing
  * that takes something away sits in plain view to be pressed by mistake.
@@ -35,6 +39,7 @@ import { deleteClass, removeStudent, replaceJoinCode, updateClass } from "../../
 import { useTrialMode } from "../auth/useAuth";
 import { Breadcrumb, Notice } from "../readings/parts";
 import { ClassFormDialog } from "./ClassFormDialog";
+import { FlagPill, Initials } from "./parts";
 import { ReadingPicker } from "./ReadingPicker";
 import { StatisticsSection } from "./StatisticsSection";
 import { MODE_LABEL, type ClassFields, type ClassStudent } from "./types";
@@ -210,7 +215,8 @@ export function ClassDetailPage() {
                 ) : (
                   <div className="overflow-hidden rounded-lg border">
                     {klass.readings.map((r, i) => {
-                      const sessions = dashboard?.readings.find((d) => d.id === r.id)?.session_count;
+                      const counts = dashboard?.readings.find((d) => d.id === r.id);
+                      const sessions = counts?.session_count;
                       return (
                         <Link
                           key={r.id}
@@ -226,6 +232,7 @@ export function ClassDetailPage() {
                               <div className="mt-0.5 text-[13px] text-muted-foreground">{r.description}</div>
                             )}
                           </div>
+                          {!!counts?.flagged_count && <FlagPill>{counts.flagged_count} flagged</FlagPill>}
                           {sessions !== undefined && (
                             <span className="shrink-0 whitespace-nowrap text-[13px] text-muted-foreground">
                               {plural(sessions, "session", "sessions")}
@@ -263,18 +270,23 @@ export function ClassDetailPage() {
                       ) : (
                         <div
                           key={s.id}
-                          className={cn("flex items-center gap-3 py-3 pl-4 pr-2 sm:gap-4 sm:pl-5 sm:pr-3", i > 0 && "border-t")}
+                          className={cn("flex items-center gap-1 pr-2 hover:bg-muted/50 sm:pr-3", i > 0 && "border-t")}
                         >
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-medium text-muted-foreground">
-                            {initials(s.name)}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[14px] font-medium">{s.name}</span>
-                            <span className="block truncate text-[13px] text-muted-foreground">{s.email}</span>
-                          </span>
-                          <span className="hidden whitespace-nowrap text-[13px] text-muted-foreground sm:block">
-                            Joined {formatShortDate(s.enrolled_at)}
-                          </span>
+                          {/* The row opens the student; the ⋯ beside it is apart from the link. */}
+                          <Link
+                            to={`/classes/${classId}/students/${s.id}`}
+                            className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 focus-visible:outline-none sm:gap-4 sm:pl-5"
+                          >
+                            <Initials name={s.name} />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-[14px] font-medium">{s.name}</span>
+                              <span className="block truncate text-[13px] text-muted-foreground">{s.email}</span>
+                            </span>
+                            {dashboard?.flagged_student_ids?.includes(s.id) && <FlagPill>Flagged</FlagPill>}
+                            <span className="hidden whitespace-nowrap text-[13px] text-muted-foreground sm:block">
+                              Joined {formatShortDate(s.enrolled_at)}
+                            </span>
+                          </Link>
                           <Menu
                             label={`Options for ${s.name}`}
                             trigger={<MoreHorizontal className="h-4 w-4" />}
@@ -287,6 +299,14 @@ export function ClassDetailPage() {
                               },
                             ]}
                           />
+                          <Link
+                            to={`/classes/${classId}/students/${s.id}`}
+                            tabIndex={-1}
+                            aria-hidden
+                            className="flex h-8 items-center"
+                          >
+                            <ChevronRight className="h-[18px] w-[18px] shrink-0 text-muted-foreground/70" />
+                          </Link>
                         </div>
                       ),
                     )}
@@ -394,13 +414,4 @@ function ClassSkeleton() {
       </div>
     </Loading>
   );
-}
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join("");
 }

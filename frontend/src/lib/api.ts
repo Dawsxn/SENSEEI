@@ -24,6 +24,8 @@ import type {
   ClassListItem,
   ClassReadingDetail,
   JoinResult,
+  StudentInClass,
+  StudentSessions,
 } from "../features/classes/types";
 import type {
   ExtractResult,
@@ -279,6 +281,13 @@ export const getClassStatistics = (classId: string) =>
   send<ClassDashboard>(`/instructor/classes/${classId}/statistics`, "GET");
 export const getClassReading = (classId: string, readingId: string) =>
   send<ClassReadingDetail>(`/instructor/classes/${classId}/readings/${readingId}`, "GET");
+export const getClassStudent = (classId: string, studentId: string) =>
+  send<StudentInClass>(`/instructor/classes/${classId}/students/${studentId}`, "GET");
+export const getStudentSessions = (classId: string, readingId: string, studentId: string) =>
+  send<StudentSessions>(
+    `/instructor/classes/${classId}/readings/${readingId}/students/${studentId}`,
+    "GET",
+  );
 export const getMyClasses = () => send<StudentClassItem[]>("/enrolments", "GET");
 export const getMyClass = (id: string) => send<StudentClassDetail>(`/enrolments/${id}`, "GET");
 export const joinClass = (joinCode: string) =>

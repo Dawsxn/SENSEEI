@@ -36,7 +36,7 @@ const opening: StreamEvent[] = [
 function transcript(timeline: SessionTranscript["timeline"]): SessionTranscript {
   return {
     id: "s1", reading_id: "r1", reading_title: "Strategy", class_name: "STRAMA K31", class_id: "c1",
-    core_components: [], student_name: "S", index: 1, status: "in_progress",
+    core_components: [], student_name: "S", student_id: "u1", index: 1, status: "in_progress",
     started_at: "1", ended_at: null, steps: [], timeline,
   };
 }

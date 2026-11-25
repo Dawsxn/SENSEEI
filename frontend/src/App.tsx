@@ -6,6 +6,7 @@ import { ByRole, HomeRoute, RequireGrader, RequireInstructor } from "./features/
 import { ClassDetailPage } from "./features/classes/ClassDetailPage";
 import { ClassReadingPage } from "./features/classes/ClassReadingPage";
 import { ClassListPage } from "./features/classes/ClassListPage";
+import { ClassStudentPage, StudentSessionsPage } from "./features/classes/StudentPages";
 import { SignInScreen } from "./features/auth/SignInScreen";
 import { NotFoundPage, RouteErrorPage } from "./features/errors/ErrorPages";
 import { HowItWorks } from "./features/intro/HowItWorks";
@@ -62,6 +63,12 @@ const router = createBrowserRouter([
         element: signedIn(
           <ByRole instructor={<ClassReadingPage />} student={<StudentReadingPage />} />,
         ),
+      },
+      // The instructor's two views of one student: in the class, and on a reading.
+      { path: "/classes/:classId/students/:studentId", element: instructor(<ClassStudentPage />) },
+      {
+        path: "/classes/:classId/readings/:readingId/students/:studentId",
+        element: instructor(<StudentSessionsPage />),
       },
       {
         path: "/classes/:classId/readings/:readingId/sessions/:sessionId",

@@ -79,7 +79,7 @@ describe("a session picked back up", () => {
     class_name: "TRIAL S1-A",
     class_id: "c1",
     core_components: [],
-    student_name: "P-7K3Q-9TXM",
+    student_name: "P-7K3Q-9TXM", student_id: "u1",
     index: 1,
     status: "in_progress",
     started_at: "2026-10-28T01:00:00Z",

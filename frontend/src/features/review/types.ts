@@ -36,6 +36,8 @@ export interface SessionTranscript {
   core_components: string[];
   /** Whose session it is. Shown when an instructor is reading it. */
   student_name: string;
+  /** Whose session it is, for the instructor's way back to that student. */
+  student_id: string;
   index: number;
   status: SessionStatus;
   started_at: string;
