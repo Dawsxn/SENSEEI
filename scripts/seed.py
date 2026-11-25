@@ -8,14 +8,15 @@ students, two readings, and sessions that show every state the app has.
 
 What it sets up, and what each piece is there to show:
 
-- **DEMO_CLASS_1** has three students and both readings. Its sessions cover a
-  clean pass, a student flagged after running out of tries, a flag cleared by a
-  later pass (the earlier attempt stays marked), and a session left partway.
-- **DEMO_CLASS_2** shares the trial reading and one student with DEMO_CLASS_1,
-  so a reading and a student each sit in two classes.
-- **DEMO_CLASS_3** has the trial reading and no students: the empty states.
-- **Anthony Baybayon** is in no class, to show a student's empty page and
-  joining with a code.
+- **DEMO_CLASS_1** has all four students and both readings. Its sessions cover
+  a clean pass, a student flagged after running out of tries (Mariel), a flag
+  cleared by a later pass with the earlier attempt still marked (Paolo), and a
+  session left partway (Anthony).
+- **Dawson Catignas** has no sessions, so a live one can be run from a clean
+  start. He is also in DEMO_CLASS_2, which shares the trial reading, so a reading
+  and a student each sit in two classes.
+- **DEMO_CLASS_3** has the trial reading and no students: the empty states, and a
+  class to join with its code.
 
 The readings:
 
@@ -115,9 +116,8 @@ CLASSES = [
     ("DEMO_CLASS_3", "S03", "DEMC-2345"),
 ]
 
-#: Student index to the classes they are in, by index into CLASSES. Anthony
-#: (index 3) is in none.
-ENROLMENTS = {0: [0, 1], 1: [0], 2: [0]}
+#: Student index to the classes they are in, by index into CLASSES.
+ENROLMENTS = {0: [0, 1], 1: [0], 2: [0], 3: [0]}
 
 #: How long ago the students joined: before every scripted session.
 ENROLLED_DAYS_AGO = 14

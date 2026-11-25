@@ -15,8 +15,8 @@
 # are skipped.
 
 sessions:
-  # --- Dawson: a clean pass with one stumble ---------------------------------
-  - student: 0
+  # --- Anthony: a clean pass with one stumble --------------------------------
+  - student: 3
     reading: strategic_offensives
     days_ago: 6
     at: "14:05"
@@ -95,8 +95,8 @@ sessions:
               defenders are the weakness, and the attack is aimed right there. You
               have passed all four steps.
 
-  # --- Mariel, attempt 1: runs out of tries on Elaborate (flagged) -----------
-  - student: 1
+  # --- Paolo, attempt 1: runs out of tries on Elaborate (flagged) ------------
+  - student: 2
     reading: strategic_offensives
     days_ago: 9
     at: "10:40"
@@ -202,8 +202,8 @@ sessions:
               still needs them explained, along with why the attack has to rest on
               the company's strengths.
 
-  # --- Mariel, attempt 2: passes, which clears the flag ----------------------
-  - student: 1
+  # --- Paolo, attempt 2: passes, which clears the flag -----------------------
+  - student: 2
     reading: strategic_offensives
     days_ago: 3
     at: "19:15"
@@ -288,8 +288,8 @@ sessions:
               A fitting analogy: you can picture the board emptying, and it keeps
               both halves of the concept. You have passed all four steps.
 
-  # --- Paolo: runs out of tries on Exemplify (flagged) ------------------------
-  - student: 2
+  # --- Mariel: runs out of tries on Exemplify (flagged) ----------------------
+  - student: 1
     reading: strategic_offensives
     days_ago: 5
     at: "21:30"
@@ -385,8 +385,8 @@ sessions:
               Shopee's strengths and a weakness of Lazada's, and a non-example that
               is a specific action, not a kind of company.
 
-  # --- Dawson: Recovery to the Bisector, answering from the figures ----------
-  - student: 0
+  # --- Paolo: Recovery to the Bisector, answering from the figures -----------
+  - student: 2
     reading: tennis_recovery
     days_ago: 2
     at: "16:50"
@@ -450,8 +450,8 @@ sessions:
               A great picture: the posts mark the two extremes and the keeper stands
               on the line between them. You have passed all four steps.
 
-  # --- Mariel: Recovery to the Bisector, left partway through ----------------
-  - student: 1
+  # --- Anthony: Recovery to the Bisector, left partway through ---------------
+  - student: 3
     reading: tennis_recovery
     days_ago: 1
     at: "08:20"
