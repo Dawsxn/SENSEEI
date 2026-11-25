@@ -11,9 +11,10 @@
  * and could require the last one, but scrolling is not reading: it would stop
  * someone who read quickly and wave through someone who dragged the scrollbar.
  *
- * Going back still asks first. No session exists to discard, so the warning is
- * not the session one, but the student loses their place in the reading and the
- * back link sits next to nothing else, which makes it easy to hit by accident.
+ * Going back, to the reading's own page, still asks first. No session exists to
+ * discard, so the warning is not the session one, but the student loses their
+ * place in the reading and the back link sits next to nothing else, which makes
+ * it easy to hit by accident.
  *
  * Outside the trial, a reading that fails to load says so in place of the
  * reading, with no Done, since there is nothing to have read. Done starts a new
@@ -109,7 +110,7 @@ export function ReadingStepScreen() {
               className="flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
-              Readings
+              Back
             </button>
             <div className="h-4 w-px shrink-0 bg-border" />
           </>
@@ -214,13 +215,15 @@ export function ReadingStepScreen() {
 
       {confirmingLeave && (
         <ConfirmDialog
-          title="Go back to readings?"
-          confirmLabel="Go back"
-          onConfirm={() => navigate("/")}
+          title="Leave this reading?"
+          confirmLabel="Leave"
+          onConfirm={() =>
+            navigate(reading ? `/classes/${reading.class_id}/readings/${reading.id}` : "/")
+          }
           onCancel={() => setConfirmingLeave(false)}
         >
-          You have not started the session yet, so there is nothing to discard. You
-          will lose your place in the reading.
+          You haven&rsquo;t started the session yet, but you will lose your place in the
+          reading.
         </ConfirmDialog>
       )}
     </div>

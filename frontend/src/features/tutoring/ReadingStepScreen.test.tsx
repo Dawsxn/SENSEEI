@@ -151,7 +151,7 @@ describe("the reading step", () => {
   it("asks before going back, and stays put if the student declines", async () => {
     renderScreen();
     await dismissIntro();
-    await userEvent.click(screen.getByRole("button", { name: /Readings/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Back" }));
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
     expect(navigate).not.toHaveBeenCalled();
@@ -161,13 +161,14 @@ describe("the reading step", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("goes back to the reading list once confirmed, without starting anything", async () => {
+  it("goes back to the reading's page once confirmed, without starting anything", async () => {
     renderScreen();
     await dismissIntro();
-    await userEvent.click(screen.getByRole("button", { name: /Readings/ }));
-    await userEvent.click(screen.getByRole("button", { name: "Go back" }));
+    await userEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByText("Leave this reading?")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Leave" }));
 
-    expect(navigate).toHaveBeenCalledWith("/");
+    expect(navigate).toHaveBeenCalledWith("/classes/c1/readings/r1");
     expect(navigate).not.toHaveBeenCalledWith("/tutor/r1");
   });
 });

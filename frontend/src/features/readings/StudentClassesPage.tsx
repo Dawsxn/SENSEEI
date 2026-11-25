@@ -1,6 +1,8 @@
 /** A student's home: the classes they are in, as cards.
  *
- * Each card shows how far the student is through the class and opens it. The
+ * Each card shows how many readings the class has, and opens it; how far the
+ * student is through them is on the class page, in its To do and Finished
+ * counts. The
  * card's colour is the student's own choice, from the ⋯ button on its band.
  * Join a class sits beside the heading, in the same place however many classes
  * there are.
@@ -15,7 +17,7 @@ import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 import { CLASS_COLOURS, classColour, saveClassColour } from "./classColours";
 import { JoinClassDialog } from "./JoinClassDialog";
-import { Notice, ProgressBar } from "./parts";
+import { Notice } from "./parts";
 import { ClassesSkeleton } from "./skeletons";
 import type { StudentClassItem } from "./types";
 import { useMyClasses } from "./useReadings";
@@ -60,7 +62,6 @@ export function StudentClassesPage() {
 
 function ClassCard({ klass, index }: { klass: StudentClassItem; index: number }) {
   const [colour, setColour] = useState(() => classColour(klass.id, index));
-  const progress = klass.reading_count ? klass.finished_count / klass.reading_count : 0;
 
   return (
     <div className="relative rounded-lg border bg-background shadow-raised transition-shadow hover:shadow-md">
@@ -82,10 +83,8 @@ function ClassCard({ klass, index }: { klass: StudentClassItem; index: number })
             )}
           </div>
           <div className="text-[13px] text-muted-foreground">
-            {klass.finished_count} of {klass.reading_count}{" "}
-            {klass.reading_count === 1 ? "reading" : "readings"} finished
+            {klass.reading_count} {klass.reading_count === 1 ? "reading" : "readings"}
           </div>
-          <ProgressBar value={progress} />
         </div>
       </Link>
       <ColourPicker

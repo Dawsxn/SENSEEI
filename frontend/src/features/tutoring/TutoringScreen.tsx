@@ -107,10 +107,12 @@ export function TutoringScreen() {
 
   // Set just before leaving on purpose, so the back guard lets that one through.
   const leaving = useRef(false);
+  // To the reading's page, where its past sessions and Start are; home only if
+  // the reading never loaded.
   const leave = () => {
     forget();
     leaving.current = true;
-    navigate("/");
+    navigate(reading ? `/classes/${reading.class_id}/readings/${reading.id}` : "/");
   };
   const onExit = () => (running ? setConfirmingExit(true) : leave());
 

@@ -91,21 +91,6 @@ export function Breadcrumb({
   );
 }
 
-/** A progress bar in the accent colour. */
-export function ProgressBar({ value, className }: { value: number; className?: string }) {
-  return (
-    <div
-      role="progressbar"
-      aria-valuenow={Math.round(value * 100)}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      className={cn("h-1.5 overflow-hidden rounded-full bg-muted", className)}
-    >
-      <div className="h-full rounded-full bg-primary" style={{ width: `${value * 100}%` }} />
-    </div>
-  );
-}
-
 /** A dashed box for loading, errors and empty lists. */
 export function Notice({ children }: { children: ReactNode }) {
   return (

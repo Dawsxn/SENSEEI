@@ -15,8 +15,7 @@ export function ClassesSkeleton() {
           <div className="flex flex-col gap-2.5 px-4 pb-[18px] pt-3.5">
             <Skeleton className="h-4 w-28" />
             <Skeleton className="h-3.5 w-16" />
-            <Skeleton className="h-3.5 w-36" />
-            <Skeleton className="h-1.5 w-full rounded-full" />
+            <Skeleton className="h-3.5 w-20" />
           </div>
         </div>
       ))}

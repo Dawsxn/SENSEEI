@@ -64,15 +64,15 @@ function show(path: string) {
 beforeEach(() => localStorage.clear());
 
 describe("the classes page", () => {
-  it("shows each class with its progress, including one with no readings", async () => {
+  it("shows each class with how many readings it has, including none", async () => {
     api.getMyClasses.mockResolvedValue([
       { id: "c1", name: "STRAMA", section: "K31", label: "STRAMA K31", reading_count: 3, finished_count: 2 },
       { id: "c2", name: "CSARCH2", section: "S12", label: "CSARCH2 S12", reading_count: 0, finished_count: 0 },
     ]);
     show("/");
 
-    expect(await screen.findByText("2 of 3 readings finished")).toBeInTheDocument();
-    expect(screen.getByText("0 of 0 readings finished")).toBeInTheDocument();
+    expect(await screen.findByText("3 readings")).toBeInTheDocument();
+    expect(screen.getByText("0 readings")).toBeInTheDocument();
     expect(screen.getByText("K31")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /STRAMA/ })).toHaveAttribute("href", "/classes/c1");
   });

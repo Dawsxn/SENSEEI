@@ -134,12 +134,12 @@ describe("leaving a session", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("returns to the reading list once the student confirms", async () => {
+  it("returns to the reading's page once the student confirms", async () => {
     renderScreen(base, "awaiting_input");
     await userEvent.click(screen.getByRole("button", { name: "Leave session" }));
     await userEvent.click(screen.getByRole("button", { name: "Leave" }));
 
-    expect(navigate).toHaveBeenCalledWith("/");
+    expect(navigate).toHaveBeenCalledWith("/classes/c1/readings/r1");
     // kept on the server as left, rather than lingering as in progress
     expect(api.leaveSession).toHaveBeenCalledWith("s1");
   });
@@ -162,7 +162,7 @@ describe("leaving a session", () => {
     await userEvent.click(screen.getByRole("button", { name: "Leave session" }));
 
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
-    expect(navigate).toHaveBeenCalledWith("/");
+    expect(navigate).toHaveBeenCalledWith("/classes/c1/readings/r1");
     expect(api.leaveSession).not.toHaveBeenCalled();
   });
 });
