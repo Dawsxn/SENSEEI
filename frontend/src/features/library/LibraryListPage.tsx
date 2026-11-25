@@ -39,7 +39,7 @@ export function LibraryListPage() {
           {data && data.length === 0 && <Notice>No readings available</Notice>}
 
           {data && data.length > 0 && (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-lg border bg-card">
               {data.map((r, i) => (
                 <Link
                   key={r.id}
@@ -96,7 +96,7 @@ export function LibraryListPage() {
 
 function RowsSkeleton() {
   return (
-    <div className="overflow-hidden rounded-lg border" aria-hidden>
+    <div className="overflow-hidden rounded-lg border bg-card" aria-hidden>
       {["w-[180px]", "w-[140px]"].map((w, i) => (
         <div key={i} className={cn("flex items-center gap-5 py-4 pl-5 pr-4", i > 0 && "border-t")}>
           <div className="flex-1">

@@ -88,7 +88,7 @@ export function ClassReadingPage() {
                     <Link
                       key={s.id}
                       to={sessionsOf(s)}
-                      className="flex items-center gap-3 border-t border-fail-border bg-background px-4 py-3 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="flex items-center gap-3 border-t border-fail-border bg-card px-4 py-3 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {!trial && <Initials name={s.name} />}
                       <span className={cn("min-w-0 flex-1 truncate", trial ? "font-mono text-[13px] tracking-wider" : "text-[14px] font-medium")}>
@@ -121,7 +121,7 @@ export function ClassReadingPage() {
                     className={cn(
                       "flex-1 rounded-md py-[5px] text-[13px] font-medium sm:w-[112px] sm:flex-none",
                       tab === t.key
-                        ? "bg-background text-foreground shadow-raised"
+                        ? "bg-card text-foreground shadow-raised"
                         : "text-muted-foreground hover:text-foreground",
                     )}
                   >
@@ -137,7 +137,7 @@ export function ClassReadingPage() {
                     {trial ? "No participants yet." : "No students have joined this class yet."}
                   </Notice>
                 ) : (
-                  <div className="overflow-hidden rounded-lg border">
+                  <div className="overflow-hidden rounded-lg border bg-card">
                     {data.students.map((s, i) => (
                       <StudentRow key={s.id} student={s} trial={trial} to={s.session_id ? sessionsOf(s) : null} first={i === 0} />
                     ))}
@@ -209,7 +209,7 @@ function PageSkeleton() {
         <Skeleton className="h-4 w-64 max-w-full" />
       </div>
       <Skeleton className="h-9 w-full rounded-lg sm:w-[232px]" />
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-lg border bg-card">
         {[0, 1, 2].map((i) => (
           <div key={i} className={cn("flex items-center gap-3 px-5 py-4", i > 0 && "border-t")}>
             <Skeleton className="h-8 w-8 rounded-full" />

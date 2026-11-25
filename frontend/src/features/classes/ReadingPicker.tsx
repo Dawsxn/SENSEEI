@@ -63,7 +63,7 @@ export function ReadingPicker({
         aria-modal="true"
         aria-labelledby="picker-title"
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[85vh] w-full max-w-[480px] flex-col rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="flex max-h-[85vh] w-full max-w-[480px] flex-col rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         <h2 id="picker-title" className="text-[16px] font-semibold">
           Choose from your readings
@@ -78,7 +78,7 @@ export function ReadingPicker({
             </p>
           )}
           {available.length > 0 && (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-lg border bg-card">
               {available.map((r, i) => {
                 const on = chosen.includes(r.id);
                 return (

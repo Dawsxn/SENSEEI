@@ -6,7 +6,7 @@ import type { SessionStatus } from "../features/readings/types";
  *  neutral (a session is not resumable, so it reads as unfinished). */
 export function SessionStatusBadge({ status }: { status: SessionStatus }) {
   const styles: Record<SessionStatus, string> = {
-    complete: "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]",
+    complete: "border-accent-soft-border bg-accent-soft text-accent-soft-foreground",
     fallback: "border-fail-border bg-fail text-fail-foreground",
     timed_out: "border-fail-border bg-fail text-fail-foreground",
     in_progress: "border-border text-muted-foreground",

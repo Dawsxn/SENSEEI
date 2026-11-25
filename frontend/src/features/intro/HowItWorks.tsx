@@ -19,6 +19,7 @@ import { getRubric, markIntroSeen } from "../../lib/api";
 import { useMe } from "../auth/useAuth";
 import { SEEI } from "../trial/Briefing";
 import { MAX_ATTEMPTS } from "../tutoring/types";
+import { Logo } from "../../components/Logo";
 
 const LAST = 2;
 
@@ -32,7 +33,7 @@ export function HowItWorks() {
   const queryClient = useQueryClient();
   const [screen, setScreen] = useState(0);
 
-  async function finish() {
+  async function finish(to?: string) {
     if (me && !me.seen_intro) {
       try {
         await markIntroSeen();
@@ -41,7 +42,8 @@ export function HowItWorks() {
         // Not recorded: it shows once more next time, which is harmless.
       }
     }
-    if (next) navigate(next, { replace: true });
+    if (to) navigate(to);
+    else if (next) navigate(next, { replace: true });
     // Back where the student came from, or home if they arrived here directly
     // (the router marks the first page of a visit `default`).
     else if (location.key !== "default") navigate(-1);
@@ -51,13 +53,23 @@ export function HowItWorks() {
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-14 shrink-0 items-center justify-between border-b px-4 sm:px-6">
-        <span className="text-[15px] font-semibold tracking-[-0.01em]">
-          SEN<span className="text-primary">SEE-I</span>
-        </span>
+        {/* Home, except on the way into a first session, which it must not skip. */}
+        {next ? (
+          <Logo />
+        ) : (
+          <button
+            type="button"
+            onClick={() => finish("/")}
+            aria-label="SENSEE-I, go to classes"
+            className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Logo />
+          </button>
+        )}
         {!next && (
           <button
             type="button"
-            onClick={finish}
+            onClick={() => finish()}
             aria-label="Close"
             className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
@@ -110,7 +122,7 @@ function AboutSeei() {
     <>
       <Title>How SEE-I works</Title>
       <P>In SENSEE-I, you learn a concept from a reading by going through the four steps of SEE-I:</P>
-      <dl className="mt-5 rounded-lg border">
+      <dl className="mt-5 rounded-lg border bg-card">
         {SEEI.map(([step, text], i) => (
           <div
             key={step}
@@ -150,7 +162,7 @@ function SessionFlow() {
           }
         />
         <Stage
-          title="2. Answer"
+          title="2. SEE-I"
           text={`You then move to the tutoring screen, where you answer each SEE-I step with the reading still available. Each step allows up to ${MAX_ATTEMPTS} tries, and the count starts over at the next step.`}
           picture={
             <>
@@ -178,7 +190,7 @@ function SessionFlow() {
           title="3. Finish"
           text={`The session ends once you pass all four steps, or if you use all ${MAX_ATTEMPTS} tries on a step without passing it.`}
           picture={
-            <Frame className="flex-col items-start justify-center gap-1.5 bg-background px-3.5">
+            <Frame className="flex-col items-start justify-center gap-1.5 bg-card px-3.5">
               {SEEI.map(([step]) => (
                 <span
                   key={step}
@@ -197,7 +209,7 @@ function SessionFlow() {
 
 function Stage({ title, text, picture }: { title: string; text: string; picture: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-3.5 rounded-lg border p-4 sm:flex-row sm:items-center sm:gap-5">
+    <div className="flex flex-col gap-3.5 rounded-lg border bg-card p-4 sm:flex-row sm:items-center sm:gap-5">
       <div className="w-full shrink-0 sm:w-[200px]">{picture}</div>
       <div className="flex flex-col gap-1">
         <span className="text-[15px] font-semibold">{title}</span>
@@ -217,7 +229,7 @@ function Frame({ className = "", children }: { className?: string; children: Rea
 
 function Pane({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex flex-1 flex-col gap-1.5 rounded border bg-background p-2">{children}</div>
+    <div className="relative flex flex-1 flex-col gap-1.5 rounded border bg-card p-2">{children}</div>
   );
 }
 
@@ -252,14 +264,14 @@ function ComponentsAndRubric() {
   return (
     <>
       <Title>Core components and the rubric</Title>
-      <section className="mt-6 rounded-lg border px-4 py-4 sm:px-5">
+      <section className="mt-6 rounded-lg border bg-card px-4 py-4 sm:px-5">
         <ButtonLook icon={<Component className="h-4 w-4" />}>Components</ButtonLook>
         <P>
           These are the key ideas of the reading, which you should keep in mind as the session
           revolves around them. Some criteria from the rubric also reference them.
         </P>
       </section>
-      <section className="mt-4 rounded-lg border px-4 py-4 sm:px-5">
+      <section className="mt-4 rounded-lg border bg-card px-4 py-4 sm:px-5">
         <ButtonLook icon={<BookOpen className="h-4 w-4" />}>Rubric</ButtonLook>
         <P>
           The rubric holds the criteria that each of your answers is graded on. Each SEE-I step has
@@ -271,7 +283,7 @@ function ComponentsAndRubric() {
               Example
             </div>
             <div className="mt-1.5 flex gap-3 rounded-md bg-muted/50 p-3 text-[13px] leading-[1.55] text-foreground/70">
-              <span className="inline-flex h-5 shrink-0 items-center self-start rounded-full border bg-background px-2 text-[11px] font-medium text-foreground/80">
+              <span className="inline-flex h-5 shrink-0 items-center self-start rounded-full border bg-card px-2 text-[11px] font-medium text-foreground/80">
                 {example.name}
               </span>
               <span>{example.requirement}</span>

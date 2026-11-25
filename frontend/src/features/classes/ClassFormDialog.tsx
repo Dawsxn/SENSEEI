@@ -29,7 +29,7 @@ interface ClassFormDialogProps {
 }
 
 const INPUT =
-  "h-9 w-full rounded-md border bg-background px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
+  "h-9 w-full rounded-md border bg-card px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
 
 export function ClassFormDialog({
   mode,
@@ -90,7 +90,7 @@ export function ClassFormDialog({
         aria-labelledby="class-form-title"
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[420px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         <h2 id="class-form-title" className="text-[16px] font-semibold">
           {mode === "new" ? "New class" : "Edit class"}
@@ -137,7 +137,7 @@ export function ClassFormDialog({
                   className={cn(
                     "h-[30px] flex-1 rounded text-[13px] font-medium transition-colors disabled:cursor-not-allowed",
                     classMode === m
-                      ? "bg-background shadow-sm"
+                      ? "bg-card shadow-sm"
                       : "text-muted-foreground enabled:hover:text-foreground",
                   )}
                 >

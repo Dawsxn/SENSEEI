@@ -285,7 +285,7 @@ function Conversation({ lines }: { lines: ReturnType<typeof useChatbot>["state"]
       {lines.map((line) =>
         line.role === "user" ? (
           <div key={line.key} className="my-4 flex justify-end first:mt-0">
-            <div className="max-w-[85%] whitespace-pre-wrap rounded-lg bg-muted px-4 py-2.5 text-[14px] leading-relaxed text-[#3f3f46]">
+            <div className="max-w-[85%] whitespace-pre-wrap rounded-lg bg-muted px-4 py-2.5 text-[14px] leading-relaxed text-body">
               {line.content}
             </div>
           </div>
@@ -325,7 +325,7 @@ function Composer({ disabled, onSend }: { disabled: boolean; onSend: (text: stri
 
   return (
     <div className="shrink-0 border-t p-4">
-      <div className="flex items-end gap-2 rounded-md border px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
+      <div className="flex items-end gap-2 rounded-md border bg-card px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
         <textarea
           value={text}
           rows={1}

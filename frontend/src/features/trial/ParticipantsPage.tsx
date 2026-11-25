@@ -80,7 +80,7 @@ export function ParticipantsPage() {
           )}
 
           {batches.length > 0 && (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-lg border bg-card">
               <div className="hidden h-10 grid-cols-[1fr_160px_100px_100px_100px_24px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
                 <span>Batch</span>
                 <span>Created</span>

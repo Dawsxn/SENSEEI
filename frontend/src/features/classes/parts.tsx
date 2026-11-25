@@ -60,7 +60,7 @@ export function StepBar({
           key={i}
           className={cn(
             "h-1 flex-1 rounded-sm",
-            i < passed ? (stopped ? "bg-fail-border" : "bg-primary") : "bg-border",
+            i < passed ? (stopped ? "bg-fail-border" : "bg-brand-mint") : "bg-border",
           )}
         />
       ))}

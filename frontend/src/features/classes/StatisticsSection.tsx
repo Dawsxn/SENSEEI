@@ -99,7 +99,7 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-lg border bg-card">
       <div className="flex items-center gap-1.5 border-b px-4 py-3.5 text-[14px] font-semibold">
         {title}
         <InfoTip text={tip} align={tipAlign} />
@@ -122,7 +122,7 @@ function Row({
 }) {
   return (
     <div className="grid grid-cols-[74px_1fr_44px] items-center gap-2.5 text-[13px]">
-      <span className={`text-[#3f3f46] ${children ? "" : "col-span-2"}`}>{label}</span>
+      <span className={`text-body ${children ? "" : "col-span-2"}`}>{label}</span>
       {children}
       <span className="text-right text-muted-foreground">{value}</span>
     </div>

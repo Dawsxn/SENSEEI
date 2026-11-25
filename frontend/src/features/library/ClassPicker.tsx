@@ -22,7 +22,7 @@ export function ClassPicker({ selected, onChange }: ClassPickerProps) {
     return <p className="text-[14px] text-muted-foreground">No classes available</p>;
   }
   return (
-    <div className="overflow-hidden rounded-lg border">
+    <div className="overflow-hidden rounded-lg border bg-card">
       {classes.map((c, i) => (
         <label
           key={c.id}

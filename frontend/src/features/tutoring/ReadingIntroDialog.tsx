@@ -55,7 +55,7 @@ export function ReadingIntroDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="reading-intro-title"
-        className="w-full max-w-[460px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[460px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         <h2 id="reading-intro-title" className="text-[16px] font-semibold">
           Before you start

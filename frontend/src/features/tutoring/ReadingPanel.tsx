@@ -16,8 +16,8 @@ interface ReadingPanelProps {
 
 export function ReadingPanel({ content }: ReadingPanelProps) {
   return (
-    <div className="h-full overflow-y-auto">
-      <article className="mx-auto max-w-[72ch] whitespace-pre-line px-5 py-6 text-[15px] leading-[1.75] text-[#3f3f46] sm:px-6">
+    <div className="h-full overflow-y-auto bg-card">
+      <article className="mx-auto max-w-[72ch] whitespace-pre-line px-5 py-6 text-[15px] leading-[1.75] text-body sm:px-6">
         {content}
       </article>
     </div>

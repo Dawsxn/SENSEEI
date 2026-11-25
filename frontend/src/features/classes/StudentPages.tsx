@@ -54,7 +54,7 @@ function ListSkeleton({ label }: { label: string }) {
         <Skeleton className="h-6 w-40" />
         <Skeleton className="h-4 w-56 max-w-full" />
       </div>
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-lg border bg-card">
         {[0, 1, 2].map((i) => (
           <div key={i} className={cn("px-5 py-4", i > 0 && "border-t")}>
             <Skeleton className="h-4 w-44" />
@@ -116,7 +116,7 @@ export function ClassStudentPage() {
           {data.readings.length === 0 ? (
             <Notice>No readings available</Notice>
           ) : (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-lg border bg-card">
               {data.readings.map((r, i) => {
                 const stopped = r.status === "stopped_early" || r.status === "timed_out";
                 const to = r.session_id ? `/classes/${classId}/readings/${r.id}/students/${studentId}` : null;
@@ -209,7 +209,7 @@ export function StudentSessionsPage() {
           {data.sessions.length === 0 ? (
             <Notice>No sessions available</Notice>
           ) : (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-lg border bg-card">
               {data.sessions.map((s, i) => (
                 <Link
                   key={s.id}

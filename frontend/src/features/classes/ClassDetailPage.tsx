@@ -139,7 +139,7 @@ export function ClassDetailPage() {
                   </div>
                   <div className="flex w-full items-center gap-2 sm:w-auto">
                     {!trial && (
-                      <div className="flex h-9 flex-1 items-center gap-2.5 rounded-lg border pl-3 pr-1.5 sm:flex-none">
+                      <div className="flex h-9 flex-1 items-center gap-2.5 rounded-lg border bg-card pl-3 pr-1.5 sm:flex-none">
                         <span className="text-[12px] text-muted-foreground">Join code</span>
                         <span className="flex-1 font-mono text-[14px] font-medium tracking-[0.06em]">
                           {klass.join_code}
@@ -183,7 +183,7 @@ export function ClassDetailPage() {
                       className={cn(
                         "flex-1 rounded-md py-[5px] text-[13px] font-medium sm:w-[112px] sm:flex-none",
                         tab === t.key
-                          ? "bg-background text-foreground shadow-raised"
+                          ? "bg-card text-foreground shadow-raised"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
@@ -213,7 +213,7 @@ export function ClassDetailPage() {
                 (klass.readings.length === 0 ? (
                   <Notice>No readings available</Notice>
                 ) : (
-                  <div className="overflow-hidden rounded-lg border">
+                  <div className="overflow-hidden rounded-lg border bg-card">
                     {klass.readings.map((r, i) => {
                       const counts = dashboard?.readings.find((d) => d.id === r.id);
                       const sessions = counts?.session_count;
@@ -253,7 +253,7 @@ export function ClassDetailPage() {
                       : "No students have joined this class yet."}
                   </Notice>
                 ) : (
-                  <div className="overflow-hidden rounded-lg border">
+                  <div className="overflow-hidden rounded-lg border bg-card">
                     {klass.students.map((s, i) =>
                       trial ? (
                         <div
@@ -404,7 +404,7 @@ function ClassSkeleton() {
         <Skeleton className="h-4 w-12" />
       </div>
       <Skeleton className="h-9 w-full rounded-lg sm:w-[344px]" />
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-lg border bg-card">
         {[0, 1, 2].map((i) => (
           <div key={i} className={cn("flex flex-col gap-1.5 px-5 py-4", i > 0 && "border-t")}>
             <Skeleton className="h-4 w-40" />

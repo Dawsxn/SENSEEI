@@ -229,7 +229,7 @@ export function BatchPage() {
                   </div>
                 )}
 
-                <div className="overflow-hidden rounded-lg border">
+                <div className="overflow-hidden rounded-lg border bg-card">
                   <div className="hidden h-10 grid-cols-[200px_1fr_140px_28px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
                     <span>ID</span>
                     <span>Class</span>
@@ -358,7 +358,7 @@ function Row({
           {p.class_label} · {MODE_LABEL[p.mode]} · {status.label}
         </span>
       </span>
-      <span className="hidden text-[13px] text-[#3f3f46] sm:block">
+      <span className="hidden text-[13px] text-body sm:block">
         {p.class_label} <span className="text-muted-foreground">· {MODE_LABEL[p.mode]}</span>
       </span>
       <span className={`hidden text-[13px] sm:block ${status.tone}`}>{status.label}</span>
@@ -398,7 +398,7 @@ function Chip({
         "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         on
           ? "border-accent-soft-border bg-accent-soft text-accent-soft-foreground"
-          : "bg-background text-[#3f3f46] hover:bg-muted",
+          : "bg-background text-body hover:bg-muted",
       )}
     >
       {label}
@@ -478,7 +478,7 @@ function Slips({ groups }: { groups: Group[] }) {
           ...live.map((p) => (
           <div
             key={p.id}
-            className="flex break-inside-avoid flex-col gap-1.5 border border-dashed border-[#a1a1aa] px-4 py-4"
+            className="flex break-inside-avoid flex-col gap-1.5 border border-dashed border-placeholder px-4 py-4"
           >
             <span className="text-[10px] tracking-[0.06em] text-muted-foreground">
               PARTICIPANT ID

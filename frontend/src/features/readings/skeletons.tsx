@@ -10,7 +10,7 @@ export function ClassesSkeleton() {
       className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-5"
     >
       {[0, 1].map((i) => (
-        <div key={i} className="rounded-lg border">
+        <div key={i} className="rounded-lg border bg-card">
           <Skeleton className="mx-2 mt-2 h-16 sm:h-24" />
           <div className="flex flex-col gap-2.5 px-4 pb-[18px] pt-3.5">
             <Skeleton className="h-4 w-28" />
@@ -34,7 +34,7 @@ export function ClassSkeleton() {
         </div>
       </div>
       <Skeleton className="h-[34px] w-full rounded-lg sm:w-[318px]" />
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-lg border bg-card">
         {[0, 1, 2].map((i) => (
           <div key={i} className={`flex items-center gap-3 py-4 pl-4 pr-3 sm:gap-5 sm:pl-5 ${i ? "border-t" : ""}`}>
             <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -63,7 +63,7 @@ export function ReadingSkeleton() {
       <div className="grid items-start gap-7 lg:grid-cols-[1fr_420px] lg:gap-8">
         <div className="flex flex-col gap-2.5">
           <Skeleton className="h-3 w-32" />
-          <div className="flex flex-col gap-4 rounded-lg border px-4 py-4 sm:px-5">
+          <div className="flex flex-col gap-4 rounded-lg border bg-card px-4 py-4 sm:px-5">
             {["w-full", "w-11/12", "w-4/5"].map((w) => (
               <div key={w} className="flex gap-3">
                 <Skeleton className="h-4 w-4 shrink-0" />
@@ -84,7 +84,7 @@ export function ReadingSkeleton() {
 /** Rows in the past sessions box, while the sessions load. */
 export function SessionRowsSkeleton({ rows = 2 }: { rows?: number }) {
   return (
-    <div className="overflow-hidden rounded-lg border">
+    <div className="overflow-hidden rounded-lg border bg-card">
       {Array.from({ length: rows }, (_, i) => (
         <div key={i} className={`flex items-center gap-3 px-4 py-3 ${i ? "border-t" : ""}`}>
           <Skeleton className="h-4 w-[76px]" />

@@ -90,7 +90,7 @@ export function StudentClassPage() {
                       className={cn(
                         "flex-1 rounded-md py-[5px] text-[13px] font-medium sm:w-[104px] sm:flex-none",
                         filter === f.key
-                          ? "bg-background text-foreground shadow-raised"
+                          ? "bg-card text-foreground shadow-raised"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
@@ -106,7 +106,7 @@ export function StudentClassPage() {
               {shown.length === 0 ? (
                 <Notice>{EMPTY[filter]}</Notice>
               ) : (
-                <div className="overflow-hidden rounded-lg border">
+                <div className="overflow-hidden rounded-lg border bg-card">
                   {shown.map((r, i) => (
                     <Link
                       key={r.id}

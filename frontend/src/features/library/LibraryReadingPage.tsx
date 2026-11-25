@@ -155,7 +155,7 @@ export function LibraryReadingPage() {
                           className={cn(
                             "w-[88px] rounded-md py-[5px] text-[13px] font-medium disabled:opacity-50",
                             (f === "pdf" ? showPdf : !showPdf)
-                              ? "bg-background text-foreground shadow-raised"
+                              ? "bg-card text-foreground shadow-raised"
                               : "text-muted-foreground hover:text-foreground",
                           )}
                         >
@@ -167,7 +167,7 @@ export function LibraryReadingPage() {
                       <LockNote>The text can't be changed because students' answers are checked against it.</LockNote>
                     )}
                   </div>
-                  <section className="h-[calc(100vh-300px)] min-h-[420px] overflow-hidden rounded-lg border">
+                  <section className="h-[calc(100vh-300px)] min-h-[420px] overflow-hidden rounded-lg border bg-card">
                     {showPdf ? (
                       <Suspense fallback={<p className="p-6 text-[13px] text-muted-foreground">Loading the PDF…</p>}>
                         <PdfPanel
@@ -187,7 +187,7 @@ export function LibraryReadingPage() {
                   <LockNote>
                     Core components can't be changed because students' answers are checked against them.
                   </LockNote>
-                  <ol className="overflow-hidden rounded-lg border">
+                  <ol className="overflow-hidden rounded-lg border bg-card">
                     {reading.core_components.map((c, i) => (
                       <li key={i} className={cn("flex gap-3 px-4 py-3.5", i > 0 && "border-t")}>
                         <span className="w-4 shrink-0 text-[14px] font-medium leading-[1.5] text-muted-foreground/70">
@@ -218,7 +218,7 @@ export function LibraryReadingPage() {
                   {reading.classes.length === 0 ? (
                     <Notice>No classes available</Notice>
                   ) : (
-                    <div className="overflow-hidden rounded-lg border">
+                    <div className="overflow-hidden rounded-lg border bg-card">
                       {reading.classes.map((c, i) => (
                         <Link
                           key={c.id}

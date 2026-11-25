@@ -81,7 +81,7 @@ export function StudentReadingPage() {
                     <SectionLabel>
                       Core {r.core_components.length === 1 ? "component" : "components"}
                     </SectionLabel>
-                    <ol className="rounded-lg border px-4 py-0.5 sm:px-5 sm:py-1">
+                    <ol className="rounded-lg border bg-card px-4 py-0.5 sm:px-5 sm:py-1">
                       {r.core_components.map((c, i) => (
                         <li
                           key={i}
@@ -103,7 +103,7 @@ export function StudentReadingPage() {
                 <section className="flex flex-col gap-2.5">
                   <SectionLabel>Past sessions</SectionLabel>
                   {!sessions && <SessionRowsSkeleton />}
-                  <div className={cn("overflow-hidden rounded-lg border", !sessions && "hidden")}>
+                  <div className={cn("overflow-hidden rounded-lg border bg-card", !sessions && "hidden")}>
                     {sessions && sessions.length === 0 && (
                       <div className="px-4 py-7 text-center text-[14px] text-muted-foreground">
                         No attempts yet

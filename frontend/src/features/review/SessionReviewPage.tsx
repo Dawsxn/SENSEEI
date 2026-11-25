@@ -191,7 +191,7 @@ function ReviewSkeleton() {
           <Skeleton className="h-8 flex-1 sm:w-[86px] sm:flex-none" />
         </div>
       </div>
-      <div className="grid grid-cols-2 overflow-hidden rounded-lg border sm:grid-cols-4">
+      <div className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card sm:grid-cols-4">
         {STEPS.map((step, i) => (
           <div
             key={step}
@@ -224,7 +224,7 @@ function lastStep(steps: StepSummary[]): SeeiStep | null {
 /** Each SEE-I step: passed, not passed, or never reached, and how many tries. */
 function Summary({ t }: { t: SessionTranscript }) {
   return (
-    <div className="overflow-hidden rounded-lg border">
+    <div className="overflow-hidden rounded-lg border bg-card">
       <div className="grid grid-cols-2 sm:grid-cols-4">
         {STEPS.map((step, i) => {
           const s = t.steps.find((x) => x.step === step);
@@ -400,7 +400,7 @@ function JudgmentCard({ judgment, n }: { judgment: Judgment; n: number | null })
   const passed = judgment.criteria.filter((c) => c.passed);
   const pass = judgment.verdict === "PASS";
   return (
-    <div className="w-full max-w-[92%] rounded-lg border text-[13px] sm:max-w-[85%]">
+    <div className="w-full max-w-[92%] rounded-lg border bg-card text-[13px] sm:max-w-[85%]">
       <div className="flex items-center justify-between rounded-t-lg border-b bg-muted/40 px-3 py-2">
         <span className="font-medium">Try {n}</span>
         <span

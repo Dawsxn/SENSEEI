@@ -24,6 +24,7 @@ import { POSTTEST_NOTICES, PRETEST_NOTICES, TimeNotices } from "./TimeNotices";
 import { logTrial, setTrialContext, useTrialLogging } from "./trialLog";
 import type { SavedAnswer, TestItem, TestView, TestWhich } from "./types";
 import { useCountdown, useTrialStatus } from "./useTrial";
+import { Logo } from "../../components/Logo";
 
 /** How long typing pauses before an answer saves. */
 const SAVE_AFTER_MS = 700;
@@ -72,9 +73,7 @@ const logPaste = (e: React.ClipboardEvent) =>
 function TestTopBar({ saved, clock }: { saved?: boolean; clock?: React.ReactNode }) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4 sm:px-5">
-      <span className="text-[15px] font-semibold tracking-[-0.01em]">
-        SEN<span className="text-primary">SEE-I</span>
-      </span>
+      <Logo />
       <div className="ml-auto flex shrink-0 items-center gap-3">
         {saved && (
           <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
@@ -108,7 +107,7 @@ function Dialog({
       <div
         role="alertdialog"
         aria-modal="true"
-        className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[420px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         {title && <h2 className="mb-2 text-[16px] font-semibold">{title}</h2>}
         <p className={cn("text-[14px] leading-[1.6]", title && "text-muted-foreground")}>{body}</p>
@@ -280,7 +279,7 @@ export function PreTestScreen() {
           </label>
           <textarea
             id="pre-answer"
-            className="mt-2.5 h-[320px] w-full resize-none rounded-md border px-4 py-3.5 text-[15px] leading-[1.6] outline-none focus:ring-2 focus:ring-ring"
+            className="mt-2.5 h-[320px] w-full resize-none rounded-md border bg-card px-4 py-3.5 text-[15px] leading-[1.6] outline-none focus:ring-2 focus:ring-ring"
             placeholder="Type your answer"
             value={answers[item.id]?.text ?? ""}
             onChange={(e) => change(item.id, { text: e.target.value })}
@@ -433,7 +432,7 @@ export function PostTestScreen() {
                         className={cn(
                           "flex h-8 w-8 items-center justify-center rounded-md border text-[13px] font-medium",
                           done
-                            ? "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]"
+                            ? "border-accent-soft-border bg-accent-soft text-accent-soft-foreground"
                             : needsTick
                               ? "border-fail-border bg-fail text-fail-foreground"
                               : "border-border bg-background text-muted-foreground hover:text-foreground",
@@ -544,7 +543,7 @@ function Radio({
       <span
         className={cn(
           "mt-[3px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] peer-focus-visible:ring-2 peer-focus-visible:ring-ring",
-          checked ? "border-primary" : "border-[#a1a1aa]",
+          checked ? "border-primary" : "border-placeholder",
         )}
       >
         {checked && <span className="h-2 w-2 rounded-full bg-primary" />}
@@ -599,7 +598,7 @@ function Question({
         {item.kind === "text" && (
           <textarea
             aria-label={`Answer to question ${label(item.id)}`}
-            className="mt-2.5 h-[110px] w-full resize-y rounded-md border px-3 py-2.5 text-[14px] leading-[1.6] outline-none focus:ring-2 focus:ring-ring"
+            className="mt-2.5 h-[110px] w-full resize-y rounded-md border bg-card px-3 py-2.5 text-[14px] leading-[1.6] outline-none focus:ring-2 focus:ring-ring"
             placeholder="Type your answer"
             value={answer?.text ?? ""}
             onChange={(e) => onChange({ text: e.target.value })}
@@ -607,7 +606,7 @@ function Question({
           />
         )}
         {item.kind === "truefalse" && (
-          <div className="mt-2.5 overflow-hidden rounded-md border">
+          <div className="mt-2.5 overflow-hidden rounded-md border bg-card">
             {item.statements.map((st, i) => (
               <div
                 key={st.key}

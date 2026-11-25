@@ -24,7 +24,7 @@ export function ClassCard({ klass, index, meta }: { klass: CardClass; index: num
   const [colour, setColour] = useState(() => classColour(klass.id, index));
 
   return (
-    <div className="relative rounded-lg border bg-background shadow-raised transition-shadow hover:shadow-md">
+    <div className="relative rounded-lg border bg-card shadow-raised transition-shadow hover:shadow-md">
       {/* The whole card opens the class; the colour button sits above the link. */}
       <Link
         to={`/classes/${klass.id}`}
@@ -90,12 +90,12 @@ function ColourPicker({
         onClick={() => setOpen((v) => !v)}
         aria-label={`Change the colour of ${label}`}
         aria-expanded={open}
-        className="flex h-7 w-7 items-center justify-center rounded-md bg-background/70 text-foreground/75 hover:bg-background"
+        className="flex h-7 w-7 items-center justify-center rounded-md bg-card/70 text-foreground/75 hover:bg-card"
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>
       {open && (
-        <div className="absolute right-0 top-[34px] z-10 flex gap-2 rounded-lg border bg-background p-3 shadow-lg">
+        <div className="absolute right-0 top-[34px] z-10 flex gap-2 rounded-lg border bg-card p-3 shadow-lg">
           {CLASS_COLOURS.map((c) => (
             <button
               key={c.value}

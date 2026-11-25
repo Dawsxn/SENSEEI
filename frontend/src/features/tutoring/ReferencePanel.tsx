@@ -57,7 +57,7 @@ function Popover({
         aria-label={title}
         className={cn(
           "absolute right-2 top-[58px] z-50 w-[min(440px,calc(100vw-1rem))]",
-          "overflow-hidden rounded-lg border bg-background shadow-lg sm:right-4",
+          "overflow-hidden rounded-lg border bg-card shadow-lg sm:right-4",
           page &&
             "fixed inset-x-0 bottom-0 top-auto w-full rounded-b-none rounded-t-xl sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-[68px] sm:w-[440px] sm:rounded-lg",
           className,
@@ -101,7 +101,7 @@ export function ComponentsPanel({
           {components.map((text, i) => (
             <li key={i} className="flex gap-2.5">
               <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-muted-foreground/60" />
-              <span className="text-[13px] leading-[1.55] text-[#3f3f46]">{text}</span>
+              <span className="text-[13px] leading-[1.55] text-body">{text}</span>
             </li>
           ))}
         </ul>
@@ -164,7 +164,7 @@ export function RubricPanel({
                 <span className="flex w-[104px] shrink-0">
                   <Tag marked={missed.has(c.name)}>{c.name}</Tag>
                 </span>
-                <span className="text-[12px] leading-[1.55] text-[#52525b]">
+                <span className="text-[12px] leading-[1.55] text-body">
                   {c.requirement}
                 </span>
               </div>
@@ -195,7 +195,7 @@ function Tag({ marked, children }: { marked: boolean; children: React.ReactNode 
         "inline-flex h-5 items-center rounded-full border px-2 text-[11px] font-medium",
         marked
           ? "border-fail-border bg-fail text-fail-foreground"
-          : "border-border bg-muted/50 text-[#3f3f46]",
+          : "border-border bg-muted/50 text-body",
       )}
     >
       {children}

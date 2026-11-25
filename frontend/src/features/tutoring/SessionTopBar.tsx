@@ -84,7 +84,7 @@ export function SessionTopBar({
                 key={step}
                 className={cn(
                   "h-1 w-8 rounded-full",
-                  done && "bg-primary",
+                  done && "bg-brand-mint",
                   active && "bg-foreground",
                   stoppedHere && "bg-fail-border",
                   !done && !active && !stoppedHere && "bg-border",

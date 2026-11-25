@@ -62,7 +62,7 @@ export function Menu({
         <div
           role="menu"
           className={cn(
-            "absolute top-[calc(100%+6px)] z-40 min-w-[200px] rounded-lg border bg-background p-1 shadow-lg",
+            "absolute top-[calc(100%+6px)] z-40 min-w-[200px] rounded-lg border bg-card p-1 shadow-lg",
             align === "right" ? "right-0" : "left-0",
           )}
         >

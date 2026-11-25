@@ -8,10 +8,11 @@
  * The crash screen has the wordmark alone, not the full top bar: the top bar
  * reads the account, and whatever just failed may be what it would need. */
 
-import { isRouteErrorResponse, useNavigate, useRouteError } from "react-router-dom";
+import { Link, isRouteErrorResponse, useNavigate, useRouteError } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
 import { Button } from "../../components/ui/button";
+import { Logo } from "../../components/Logo";
 
 /** The catch-all route: an address that matches no page. */
 export function NotFoundPage() {
@@ -33,9 +34,9 @@ export function RouteErrorPage() {
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-14 shrink-0 items-center border-b px-4 sm:px-6">
-        <span className="text-[15px] font-semibold tracking-[-0.01em]">
-          SEN<span className="text-primary">SEE-I</span>
-        </span>
+        <Link to="/" aria-label="SENSEE-I, go to classes" className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Logo />
+        </Link>
       </header>
       {missing ? (
         <Message
