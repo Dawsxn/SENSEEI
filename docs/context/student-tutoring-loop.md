@@ -17,16 +17,41 @@ A session ends in one of two ways:
 | Complete | All four steps passed |
 | Fallback | The student hit the maximum attempts on some step |
 
-Both endings are terminal. A finished session of either kind is read-only, and
-the student can start the reading again from the reading's page.
+Both endings are terminal. A finished session of either kind is read-only. In
+place of the answer box, a strip says how it ended (Session complete, with "You
+passed all four steps of SEE-I.", or Session ended, which adds nothing to the
+fallback message already in the chat) and offers Back to reading, where the
+student can start again, and Review session.
 
-A session cannot be paused. If a student tries to leave mid-session, the app asks
+A session cannot be paused, and once left it cannot be resumed. If a student
+tries to leave mid-session, by the exit or by the browser's back, the app asks
 them to confirm, warning that the session will be discarded and cannot be
-resumed. On confirmation the session is discarded.
+resumed. On confirmation the session ends as `left`: kept on the server, never
+counted, and never offered back. A student who closes the tab instead leaves
+their session `in_progress`, and it becomes `abandoned` when they next start the
+same reading. Both are kept so that how often students quit partway, and on
+which step, can be read back.
+
+A reload is not leaving. The tab remembers the session it is in, so a reload
+picks the same session back up from the server, with its conversation, its step
+and the tries used. Closing the tab forgets it, and pressing Done on the reading
+step starts a new one.
+
+When something fails mid-session, a red strip says what, in the student's terms
+(no connection, or something going wrong while starting or while sending an
+answer), with Try again. Try again loads the session back as the server has it,
+and sends the student's answer again only if the server never received it, so
+nothing is typed twice and no try is counted twice. A reading that does not load
+replaces the screen with "Couldn't load this reading." and Try again, or, when it
+does not exist for the student, "This reading isn't available." and Back to
+classes; no session starts behind it.
 
 There is no time limit on a session in the app, except in trial mode.
 
-**In trial mode** (`docs/context/trial.md`) three of these rules change: a
+**In trial mode** (`docs/context/trial.md`) a participant has no exit and their
+session is picked back up after a reload from the server, as it always was; the
+end strip and the error strip keep the trial's own wording. And three of these
+rules change: a
 participant gets exactly one session, with no new attempt after it ends; the 40
 minutes from opening the reading are a hard limit, with a countdown; and a session
 cut off by time is kept and counted, never discarded.
@@ -64,10 +89,10 @@ cut off by time is kept and counted, never discarded.
 7. **Tutoring.** A split screen appears, reading on one half and chat on the
    other. The SEE-I process begins with State.
 
-**The session is created at the end of step 5, not the start of step 6.** Opening
-a reading and leaving therefore records nothing. This does not make abandoned
-sessions impossible: a student who reaches step 6 and leaves still leaves a row
-behind, which stays in place until the auto-discard flow exists.
+**The session is created at the end of step 6, not the start of step 7.** Opening
+a reading and leaving therefore records nothing. A student who reaches step 7
+and leaves still leaves a row behind, as `left` or, if they closed the tab,
+`abandoned` once they start the reading again.
 
 The reading stays visible for the whole session. Students are never asked to
 recall the text from memory.

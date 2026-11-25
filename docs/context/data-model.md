@@ -324,7 +324,7 @@ One complete pass through the four SEE-I steps for one reading.
 | id | |
 | student_id | |
 | reading_id | |
-| status | in_progress, complete, fallback, or timed_out (trial mode: the clock ran out) |
+| status | in_progress, complete, fallback, timed_out (trial mode: the clock ran out), left (the student used the exit), or abandoned (never finished or left; marked when the student next starts the reading) |
 | current_step | State, Elaborate, Exemplify, or Illustrate |
 | started_at | |
 | ended_at | Null while in progress |
@@ -337,9 +337,14 @@ change. The eval harness already pins and stamps these on every run; sessions
 need the same discipline, otherwise a rubric revision silently changes the
 meaning of historical pass rates.
 
-Sessions are not resumable. A student who leaves mid-session confirms that it
-will be discarded, and the row is discarded with it. Nothing in `in_progress`
-survives the student walking away.
+Sessions are not resumable once left. A student who leaves mid-session confirms
+it, and the row becomes `left`, with `ended_at` set. One who closes the tab leaves
+it `in_progress`, since the server never hears; when they next start the same
+reading it becomes `abandoned`, with `ended_at` set to their last answer, or to
+its start if there was none. Neither status is in `FINISHED_STATUSES`, so neither
+is listed or counted anywhere. They are kept rather than deleted to show how
+often students quit partway, and on which step. A reload is not leaving: the tab
+picks its session back up.
 
 A trial participant is the exception. They get one session, so a reload picks it
 back up from its transcript rather than starting another, and nothing they do

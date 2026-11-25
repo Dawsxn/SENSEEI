@@ -52,6 +52,22 @@ design changes, so it always matches.
 | Session review, student (replaces the two above) | [png/05c-session-review-student.png](png/05c-session-review-student.png) |
 | Session review, instructor (replaces the two above) | [png/05c-session-review-instructor.png](png/05c-session-review-instructor.png) |
 | Session review, rubric opened from a tag | [png/05c-session-review-rubric.png](png/05c-session-review-rubric.png) |
+| Session end, passed | [png/05d-1-passed.png](png/05d-1-passed.png) |
+| Session end, passed, phone | [png/05d-1-passed-phone.png](png/05d-1-passed-phone.png) |
+| Session end, out of tries | [png/05d-2-failed.png](png/05d-2-failed.png) |
+| Session end, out of tries, phone | [png/05d-2-failed-phone.png](png/05d-2-failed-phone.png) |
+| Session error, no connection | [png/05d-3-offline.png](png/05d-3-offline.png) |
+| Session error, no connection, phone | [png/05d-3-offline-phone.png](png/05d-3-offline-phone.png) |
+| Session error, answer failed | [png/05d-4-sendfail.png](png/05d-4-sendfail.png) |
+| Session error, answer failed, phone | [png/05d-4-sendfail-phone.png](png/05d-4-sendfail-phone.png) |
+| Session error, start failed | [png/05d-5-startfail.png](png/05d-5-startfail.png) |
+| Session error, start failed, phone | [png/05d-5-startfail-phone.png](png/05d-5-startfail-phone.png) |
+| Reading failed, tutoring screen | [png/05d-6-tutorfail.png](png/05d-6-tutorfail.png) |
+| Reading failed, tutoring screen, phone | [png/05d-6-tutorfail-phone.png](png/05d-6-tutorfail-phone.png) |
+| Reading failed, reading step | [png/05d-7-readfail.png](png/05d-7-readfail.png) |
+| Reading failed, reading step, phone | [png/05d-7-readfail-phone.png](png/05d-7-readfail-phone.png) |
+| Reading not available | [png/05d-8-readmissing.png](png/05d-8-readmissing.png) |
+| Reading not available, phone | [png/05d-8-readmissing-phone.png](png/05d-8-readmissing-phone.png) |
 | Instructor classes | [png/06-classes.png](png/06-classes.png) |
 | Instructor classes, empty | [png/06-classes-empty.png](png/06-classes-empty.png) |
 | New class | [png/06-new-class.png](png/06-new-class.png) |
