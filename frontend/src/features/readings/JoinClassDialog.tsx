@@ -38,7 +38,7 @@ export function JoinClassDialog({ onClose }: { onClose: () => void }) {
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 404
-          ? "That code doesn't match a class. Check it with your instructor."
+          ? "The code you entered is invalid or does not exist."
           : "That didn't work. Try again.",
       );
     } finally {

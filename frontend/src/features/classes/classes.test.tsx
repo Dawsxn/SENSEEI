@@ -99,7 +99,7 @@ describe("joining a class", () => {
 
     await userEvent.type(screen.getByLabelText("Join code"), "4KQ2-9TXN{Enter}");
 
-    expect(await screen.findByText(/doesn.t match a class/)).toBeInTheDocument();
+    expect(await screen.findByText("The code you entered is invalid or does not exist.")).toBeInTheDocument();
     expect(screen.getByLabelText("Join code")).toHaveValue("4KQ2-9TXN");
   });
 });
