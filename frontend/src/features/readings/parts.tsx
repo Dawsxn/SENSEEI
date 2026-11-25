@@ -45,6 +45,9 @@ const SESSION: Record<SessionStatus, [Tone, string]> = {
   fallback: ["failed", "Failed"],
   timed_out: ["failed", "Ran out of time"],
   in_progress: ["neutral", "In progress"],
+  // Never listed, since neither is finished; here so nothing renders blank.
+  left: ["neutral", "Left"],
+  abandoned: ["neutral", "Not finished"],
 };
 
 export function SessionStatusChip({ status }: { status: SessionStatus }) {

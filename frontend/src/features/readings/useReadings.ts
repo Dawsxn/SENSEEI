@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getMyClass, getMyClasses, getReading, getReadingSessions } from "../../lib/api";
+import { ApiError, getMyClass, getMyClasses, getReading, getReadingSessions } from "../../lib/api";
 
 /** The classes this student is in, with their progress. */
 export function useMyClasses() {
@@ -22,6 +22,8 @@ export function useReading(readingId: string | undefined) {
     queryKey: ["reading", readingId],
     queryFn: () => getReading(readingId!),
     enabled: !!readingId,
+    // A reading that does not exist will not start to on a second ask.
+    retry: (count, error) => !(error instanceof ApiError && error.status === 404) && count < 2,
   });
 }
 

@@ -10,12 +10,16 @@ export function SessionStatusBadge({ status }: { status: SessionStatus }) {
     fallback: "border-fail-border bg-fail text-fail-foreground",
     timed_out: "border-fail-border bg-fail text-fail-foreground",
     in_progress: "border-border text-muted-foreground",
+    left: "border-border text-muted-foreground",
+    abandoned: "border-border text-muted-foreground",
   };
   const label: Record<SessionStatus, string> = {
     complete: "Complete",
     fallback: "Failed",
     timed_out: "Ran out of time",
     in_progress: "In progress",
+    left: "Left",
+    abandoned: "Not finished",
   };
   return (
     <span

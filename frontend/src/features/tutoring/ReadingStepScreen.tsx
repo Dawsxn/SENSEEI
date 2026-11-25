@@ -15,6 +15,10 @@
  * not the session one, but the student loses their place in the reading and the
  * back link sits next to nothing else, which makes it easy to hit by accident.
  *
+ * Outside the trial, a reading that fails to load says so in place of the
+ * reading, with no Done, since there is nothing to have read. Done starts a new
+ * session, forgetting any this tab was in.
+ *
  * For a trial participant this is where their time starts. They have no back
  * link, since they have nowhere else to go, and no class label, which could name
  * their group. The countdown takes the right of the bar.
@@ -41,6 +45,8 @@ import {
 } from "../trial/useTrial";
 import { ReadingIntroDialog } from "./ReadingIntroDialog";
 import { ReadingPanel } from "./ReadingPanel";
+import { ReadingUnavailable } from "./ReadingUnavailable";
+import { forgetSession } from "./useTutoringSession";
 
 const PdfPanel = lazy(() =>
   import("./PdfPanel").then((m) => ({ default: m.PdfPanel })),
@@ -51,9 +57,11 @@ const READING_NUDGE_SECONDS = 10 * 60;
 
 export function ReadingStepScreen() {
   const { readingId } = useParams<{ readingId: string }>();
-  const { data: reading, isLoading, isError } = useReading(readingId);
+  const { data: reading, isLoading, isError, error, refetch } = useReading(readingId);
   const navigate = useNavigate();
   const participant = useIsParticipant();
+  // Outside the trial, a reading that failed replaces the page below the bar.
+  const unavailable = isError && !participant;
   const [showIntro, closeIntro] = useIntro(participant);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
   const timeUp = useTimeUp();
@@ -108,7 +116,7 @@ export function ReadingStepScreen() {
         )}
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="truncate text-[14px] font-medium">
-            {reading?.title ?? "…"}
+            {reading?.title ?? (unavailable ? "" : "…")}
           </span>
           {!participant && (
             <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">
@@ -125,7 +133,8 @@ export function ReadingStepScreen() {
 
       <div className="min-h-0 flex-1">
         {isLoading && <Notice>Loading reading…</Notice>}
-        {isError && <Notice>Couldn't load this reading.</Notice>}
+        {isError && participant && <Notice>Couldn't load this reading.</Notice>}
+        {unavailable && <ReadingUnavailable error={error} onRetry={() => void refetch()} />}
         {reading &&
           (reading.has_file ? (
             <Suspense fallback={<Notice>Loading reading…</Notice>}>
@@ -144,12 +153,14 @@ export function ReadingStepScreen() {
         <footer className="shrink-0 border-t px-6 py-4 text-center text-[13px] text-muted-foreground">
           {timeUpPopup ? "Time's up." : "Time's up. Please wait for the next instructions."}
         </footer>
-      ) : (
+      ) : unavailable ? null : (
         <footer className="flex shrink-0 items-center justify-end border-t px-4 py-3 sm:px-6">
           <Button
-            onClick={() =>
-              participant ? setConfirmingDone(true) : navigate(`/tutor/${readingId}`)
-            }
+            onClick={() => {
+              if (participant) return setConfirmingDone(true);
+              if (readingId) forgetSession(readingId);
+              navigate(`/tutor/${readingId}`);
+            }}
           >
             Done
           </Button>

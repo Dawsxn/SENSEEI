@@ -21,6 +21,8 @@ interface SessionTopBarProps {
   /** Trial mode: the participant's countdown. With it, there is no way out and
    *  no class label, which could name the participant's group. */
   clock?: React.ReactNode;
+  /** Only the exit: the reading never loaded, so nothing else applies. */
+  bare?: boolean;
 }
 
 /** The tutoring screen's own top bar: exit, the reading, step progress, rubric.
@@ -38,6 +40,7 @@ export function SessionTopBar({
   panel,
   onTogglePanel,
   clock,
+  bare = false,
 }: SessionTopBarProps) {
   const currentIndex = currentStep ? STEPS.indexOf(currentStep) : 0;
   // Only a completed session fills the bar. One that ended early (out of
@@ -69,54 +72,58 @@ export function SessionTopBar({
         )}
       </div>
 
-      <div className="hidden shrink-0 items-center gap-1.5 sm:flex" aria-label="Progress">
-        {STEPS.map((step, i) => {
-          const done = complete || i < currentIndex;
-          const active = !complete && !stopped && i === currentIndex;
-          const stoppedHere = stopped && i === currentIndex;
-          return (
-            <span
-              key={step}
-              className={cn(
-                "h-1 w-8 rounded-full",
-                done && "bg-primary",
-                active && "bg-foreground",
-                stoppedHere && "bg-fail-border",
-                !done && !active && !stoppedHere && "bg-border",
-              )}
-            />
-          );
-        })}
-      </div>
+      {!bare && (
+        <>
+        <div className="hidden shrink-0 items-center gap-1.5 sm:flex" aria-label="Progress">
+          {STEPS.map((step, i) => {
+            const done = complete || i < currentIndex;
+            const active = !complete && !stopped && i === currentIndex;
+            const stoppedHere = stopped && i === currentIndex;
+            return (
+              <span
+                key={step}
+                className={cn(
+                  "h-1 w-8 rounded-full",
+                  done && "bg-primary",
+                  active && "bg-foreground",
+                  stoppedHere && "bg-fail-border",
+                  !done && !active && !stoppedHere && "bg-border",
+                )}
+              />
+            );
+          })}
+        </div>
 
-      {/* What the student can look up mid-answer: the concept's core components,
-          and what each criterion asks for. */}
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-        {clock}
-        <Button
-          variant="secondary"
-          size="sm"
-          aria-label="View core components"
-          aria-expanded={panel === "components"}
-          className={cn(panel === "components" && "bg-muted")}
-          onClick={() => onTogglePanel("components")}
-        >
-          <Component className="h-[15px] w-[15px]" />
-          <span className="hidden sm:inline">Components</span>
-        </Button>
+        {/* What the student can look up mid-answer: the concept's core components,
+            and what each criterion asks for. */}
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {clock}
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="View core components"
+            aria-expanded={panel === "components"}
+            className={cn(panel === "components" && "bg-muted")}
+            onClick={() => onTogglePanel("components")}
+          >
+            <Component className="h-[15px] w-[15px]" />
+            <span className="hidden sm:inline">Components</span>
+          </Button>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          aria-label="View rubric"
-          aria-expanded={panel === "rubric"}
-          className={cn(panel === "rubric" && "bg-muted")}
-          onClick={() => onTogglePanel("rubric")}
-        >
-          <BookOpen className="h-[15px] w-[15px]" />
-          <span className="hidden sm:inline">Rubric</span>
-        </Button>
-      </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="View rubric"
+            aria-expanded={panel === "rubric"}
+            className={cn(panel === "rubric" && "bg-muted")}
+            onClick={() => onTogglePanel("rubric")}
+          >
+            <BookOpen className="h-[15px] w-[15px]" />
+            <span className="hidden sm:inline">Rubric</span>
+          </Button>
+        </div>
+        </>
+      )}
     </header>
   );
 }

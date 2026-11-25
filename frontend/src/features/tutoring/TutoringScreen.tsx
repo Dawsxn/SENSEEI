@@ -12,25 +12,33 @@
  * text when it is not. The viewer is loaded lazily because pdfjs is by far the
  * largest thing the app ships, and no other screen needs it.
  *
+ * A reload picks the same session back up, for everyone: a trial participant's
+ * from the server, anyone else's from what the tab remembers. Leaving is the
+ * exit, or the browser's back, and both ask first while the session runs; a
+ * session left that way is kept on the server as `left` and never offered back.
+ *
+ * Outside the trial the session waits for the reading, so a reading that fails
+ * to load starts nothing behind its notice.
+ *
  * A trial participant gets the same screen with a countdown, no way out, and an
- * ending in the trial's words. They have one session, so a reload picks it up
- * rather than starting another. */
+ * ending in the trial's words. */
 
-import { Suspense, lazy, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { useBlocker, useNavigate, useParams } from "react-router-dom";
 
 import { useReading } from "../readings/useReadings";
 import { TrialClock, useTimeUp } from "../trial/TrialClock";
 import { logTrial, setTrialContext, useTrialLogging } from "../trial/trialLog";
 import { useIsParticipant, useTestHandoff, useTrialStatus } from "../trial/useTrial";
-import { readingFileUrl } from "../../lib/api";
+import { leaveSession, readingFileUrl } from "../../lib/api";
 import { cn } from "../../lib/utils";
 import { ChatPanel } from "./ChatPanel";
 import { LeaveSessionDialog } from "./LeaveSessionDialog";
 import { ComponentsPanel, RubricPanel } from "./ReferencePanel";
 import { ReadingPanel } from "./ReadingPanel";
+import { ReadingUnavailable } from "./ReadingUnavailable";
 import { SessionTopBar } from "./SessionTopBar";
-import { useTutoringSession } from "./useTutoringSession";
+import { forgetSession, useTutoringSession } from "./useTutoringSession";
 
 const PdfPanel = lazy(() =>
   import("./PdfPanel").then((m) => ({ default: m.PdfPanel })),
@@ -40,14 +48,16 @@ type Pane = "reading" | "chat";
 
 export function TutoringScreen() {
   const { readingId } = useParams<{ readingId: string }>();
-  const { data: reading, isLoading, isError } = useReading(readingId);
+  const { data: reading, isLoading, isError, error, refetch } = useReading(readingId);
   const participant = useIsParticipant();
   const trial = useTrialStatus();
   const timeUp = useTimeUp();
-  const { state, submit } = useTutoringSession(readingId ?? "", {
+  const { state, submit, retry } = useTutoringSession(readingId ?? "", {
     resumeId: trial.data?.session?.id ?? null,
     // A participant's session may already exist; find out before starting one.
-    wait: participant && !trial.data,
+    // Anyone else's waits for the reading, so a broken one starts nothing.
+    wait: participant ? !trial.data : !reading,
+    remember: !participant,
   });
   const [pane, setPane] = useState<Pane>("chat");
   const [confirmingExit, setConfirmingExit] = useState(false);
@@ -83,17 +93,63 @@ export function TutoringScreen() {
     setPanel(null);
   };
 
-  const leave = () => navigate("/");
-
   // Only a running session has anything to lose. Once it has ended it is
   // read-only, so the exit just leaves rather than asking a question with one
   // sensible answer.
   const running = state.phase !== "terminal" && state.phase !== "idle";
+
+  /** Done with this session for good: the server keeps it as `left` if it was
+   *  still running, and the tab forgets it, so coming back starts a new one. */
+  const forget = () => {
+    if (running && state.sessionId) void leaveSession(state.sessionId).catch(() => {});
+    if (readingId) forgetSession(readingId);
+  };
+
+  // Set just before leaving on purpose, so the back guard lets that one through.
+  const leaving = useRef(false);
+  const leave = () => {
+    forget();
+    leaving.current = true;
+    navigate("/");
+  };
   const onExit = () => (running ? setConfirmingExit(true) : leave());
+
+  // The browser's back (or a phone's back gesture) asks the same question as
+  // the exit. A participant has no way out to guard.
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      !participant &&
+      running &&
+      !leaving.current &&
+      currentLocation.pathname !== nextLocation.pathname,
+  );
 
   // The criteria the newest tutor message reported, so the rubric panel can
   // mark the same ones the chat tagged.
   const unmet = [...state.messages].reverse().find((m) => m.unmet.length > 0)?.unmet ?? [];
+
+  // Outside the trial, a reading that failed takes the whole screen: nothing
+  // has started, so there is no progress or reference to show.
+  if (!participant && isError) {
+    return (
+      <div className="relative flex h-full flex-col">
+        <SessionTopBar
+          readingTitle=""
+          section=""
+          currentStep={null}
+          status={null}
+          phase="idle"
+          onExit={leave}
+          panel={null}
+          onTogglePanel={() => {}}
+          bare
+        />
+        <div className="min-h-0 flex-1">
+          <ReadingUnavailable error={error} onRetry={() => void refetch()} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex h-full flex-col">
@@ -126,6 +182,15 @@ export function TutoringScreen() {
       {confirmingExit && (
         <LeaveSessionDialog onConfirm={leave} onCancel={() => setConfirmingExit(false)} />
       )}
+      {blocker.state === "blocked" && (
+        <LeaveSessionDialog
+          onConfirm={() => {
+            forget();
+            blocker.proceed();
+          }}
+          onCancel={() => blocker.reset()}
+        />
+      )}
 
       <PaneToggle pane={pane} onChange={setPane} />
 
@@ -154,6 +219,17 @@ export function TutoringScreen() {
             trial={
               participant
                 ? { timeUp, onContinue: hasTests ? continueToPostTest : undefined }
+                : undefined
+            }
+            onRetry={participant ? undefined : () => void retry()}
+            links={
+              reading
+                ? {
+                    reading: `/classes/${reading.class_id}/readings/${reading.id}`,
+                    review: state.sessionId
+                      ? `/classes/${reading.class_id}/readings/${reading.id}/sessions/${state.sessionId}`
+                      : null,
+                  }
                 : undefined
             }
           />

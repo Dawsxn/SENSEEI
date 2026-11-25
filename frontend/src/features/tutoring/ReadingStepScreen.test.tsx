@@ -13,6 +13,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "../../lib/api";
 import type { ReadingDetail } from "../readings/types";
 import { ReadingStepScreen } from "./ReadingStepScreen";
 
@@ -41,10 +42,20 @@ vi.mock("./PdfPanel", () => ({
   PdfPanel: ({ fileUrl }: { fileUrl: string }) => <div>pdf viewer: {fileUrl}</div>,
 }));
 
-const reading = vi.hoisted(() => ({ current: null as ReadingDetail | null }));
+const reading = vi.hoisted(() => ({
+  current: null as ReadingDetail | null,
+  error: null as unknown,
+  refetch: vi.fn(),
+}));
 
 vi.mock("../readings/useReadings", () => ({
-  useReading: () => ({ data: reading.current, isLoading: false, isError: false }),
+  useReading: () => ({
+    data: reading.error ? undefined : reading.current,
+    isLoading: false,
+    isError: !!reading.error,
+    error: reading.error,
+    refetch: reading.refetch,
+  }),
 }));
 
 const base: ReadingDetail = {
@@ -52,6 +63,7 @@ const base: ReadingDetail = {
   title: "Recovery to the Bisector",
   description: null,
   class_name: "STSWENG - S11",
+  class_id: "c1",
   content: "the extracted text",
   core_components: [],
   has_file: true,
@@ -69,7 +81,12 @@ function renderScreen(detail: ReadingDetail = base) {
 const dismissIntro = () =>
   userEvent.click(screen.getByRole("button", { name: "Start" }));
 
-beforeEach(() => navigate.mockClear());
+beforeEach(() => {
+  navigate.mockClear();
+  reading.error = null;
+  reading.refetch.mockClear();
+  sessionStorage.clear();
+});
 
 describe("the reading step", () => {
   it("opens on the intro, and Start dismisses it", async () => {
@@ -104,6 +121,31 @@ describe("the reading step", () => {
     await userEvent.click(screen.getByRole("button", { name: "Done" }));
 
     expect(navigate).toHaveBeenCalledWith("/tutor/r1");
+  });
+
+  it("starts a new session from Done, not one this tab was in before", async () => {
+    sessionStorage.setItem("senseei.session.r1", "old");
+    renderScreen();
+    await dismissIntro();
+    await userEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(sessionStorage.getItem("senseei.session.r1")).toBeNull();
+  });
+
+  it("says when the reading did not load, offers Try again, and has no Done", async () => {
+    reading.error = new ApiError(500, "reading r1: 500");
+    renderScreen();
+    expect(screen.getByText("Couldn't load this reading.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Done" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(reading.refetch).toHaveBeenCalled();
+  });
+
+  it("offers the way back when the reading does not exist", async () => {
+    reading.error = new ApiError(404, "reading r1: 404");
+    renderScreen();
+    expect(screen.getByText("This reading isn't available.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Back to classes" }));
+    expect(navigate).toHaveBeenCalledWith("/");
   });
 
   it("asks before going back, and stays put if the student declines", async () => {

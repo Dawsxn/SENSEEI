@@ -36,13 +36,23 @@ export interface ReadingDetail {
   title: string;
   description: string | null;
   class_name: string;
+  /** The class it is read under, for links back to its page and reviews. */
+  class_id: string;
   content: string;
   core_components: string[];
   /** Whether the original upload is stored. False falls back to `content`. */
   has_file: boolean;
 }
 
-export type SessionStatus = "in_progress" | "complete" | "fallback" | "timed_out";
+/** `left` and `abandoned` are sessions the student walked away from: by the
+ *  exit, or by closing the tab. Neither is ever listed or counted. */
+export type SessionStatus =
+  | "in_progress"
+  | "complete"
+  | "fallback"
+  | "timed_out"
+  | "left"
+  | "abandoned";
 
 export interface ReadingSessionItem {
   id: string;

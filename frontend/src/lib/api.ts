@@ -162,7 +162,9 @@ export async function logout(): Promise<void> {
 
 export async function getReading(readingId: string): Promise<ReadingDetail> {
   const response = await fetch(`/readings/${readingId}`);
-  if (!response.ok) throw new Error(`reading ${readingId}: ${response.status}`);
+  // An ApiError, so a reading that does not exist (404) can be told apart
+  // from one that failed to load.
+  if (!response.ok) throw new ApiError(response.status, `reading ${readingId}: ${response.status}`);
   return response.json();
 }
 
@@ -193,14 +195,21 @@ export async function getReadingSessions(
 
 export async function getTranscript(sessionId: string): Promise<SessionTranscript> {
   const response = await fetch(`/sessions/${sessionId}/transcript`);
-  if (!response.ok) throw new Error(`transcript ${sessionId}: ${response.status}`);
+  if (!response.ok) throw new ApiError(response.status, `transcript ${sessionId}: ${response.status}`);
   return response.json();
 }
 
 export async function getSession(sessionId: string): Promise<SessionState> {
   const response = await fetch(`/sessions/${sessionId}`);
-  if (!response.ok) throw new Error(`session ${sessionId}: ${response.status}`);
+  if (!response.ok) throw new ApiError(response.status, `session ${sessionId}: ${response.status}`);
   return response.json();
+}
+
+/** Leave a running session through its exit, once the student has confirmed.
+ *  The server keeps it, marked `left`; it is never offered back. */
+export async function leaveSession(sessionId: string): Promise<void> {
+  const response = await fetch(`/sessions/${sessionId}/leave`, { method: "POST" });
+  if (!response.ok) throw new ApiError(response.status, `leave ${sessionId}: ${response.status}`);
 }
 
 export async function getMessages(sessionId: string): Promise<TutorMessageRow[]> {
