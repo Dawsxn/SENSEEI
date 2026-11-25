@@ -73,6 +73,25 @@ design changes, so it always matches.
 | Page not found, phone | [png/08-notfound-phone.png](png/08-notfound-phone.png) |
 | Page crashed | [png/08-crash.png](png/08-crash.png) |
 | Page crashed, phone | [png/08-crash-phone.png](png/08-crash-phone.png) |
+| Instructor classes, cards (replaces the two below) | [png/06c-1-list.png](png/06c-1-list.png) |
+| Instructor classes, cards, phone | [png/06c-1-list-phone.png](png/06c-1-list-phone.png) |
+| Instructor classes, none | [png/06c-2-empty.png](png/06c-2-empty.png) |
+| Instructor classes, loading | [png/06c-3-loading.png](png/06c-3-loading.png) |
+| New class (replaces the one below) | [png/06c-5-new-typed.png](png/06c-5-new-typed.png) |
+| New class, phone | [png/06c-5-new-typed-phone.png](png/06c-5-new-typed-phone.png) |
+| Class, Readings tab (replaces Class below) | [png/06d-01-readings.png](png/06d-01-readings.png) |
+| Class, Readings tab, phone | [png/06d-01-readings-phone.png](png/06d-01-readings-phone.png) |
+| Class, Add reading | [png/06d-02-add-menu.png](png/06d-02-add-menu.png) |
+| Class, Choose from your readings | [png/06d-03-picker.png](png/06d-03-picker.png) |
+| Class, class menu | [png/06d-04-more-menu.png](png/06d-04-more-menu.png) |
+| Class, Students tab | [png/06d-05-students.png](png/06d-05-students.png) |
+| Class, Students tab, phone | [png/06d-05-students-phone.png](png/06d-05-students-phone.png) |
+| Class, student menu | [png/06d-06-student-menu.png](png/06d-06-student-menu.png) |
+| Class, Statistics tab | [png/06d-07-stats.png](png/06d-07-stats.png) |
+| Class, Statistics tab, phone | [png/06d-07-stats-phone.png](png/06d-07-stats-phone.png) |
+| Class, no readings | [png/06d-08-readings-empty.png](png/06d-08-readings-empty.png) |
+| Class, no students | [png/06d-09-students-empty.png](png/06d-09-students-empty.png) |
+| Class, no statistics | [png/06d-10-stats-empty.png](png/06d-10-stats-empty.png) |
 | Instructor classes | [png/06-classes.png](png/06-classes.png) |
 | Instructor classes, empty | [png/06-classes-empty.png](png/06-classes-empty.png) |
 | New class | [png/06-new-class.png](png/06-new-class.png) |

@@ -439,7 +439,7 @@ Each maps onto the schema:
 | Statistic | Query over |
 | --- | --- |
 | Pass rate per SEE-I step | attempt joined to assessment, grouped by step |
-| Most frequently failed criteria | criterion_judgment where passed is false |
+| Most frequently failed criteria | criterion_judgment where passed is false, counted per step, since the same criterion name (Completeness, Accuracy) belongs to more than one |
 | Average attempts to pass each step | attempt, max attempt_number per session and step |
 
 If a schema change makes any of these three awkward, the schema is wrong.
