@@ -115,8 +115,8 @@ def resolve(
 #: written by the Tutor: it is the same sentence every time, and generating it
 #: invites the model to soften it or add a hint the student cannot act on.
 FALLBACK_MESSAGE = (
-    "You have used all your attempts for this step. Your instructor has been "
-    "notified and can go through it with you."
+    "You have used the maximum number of tries for this step without passing. "
+    "This marks the end of this session. Your instructor has been notified."
 )
 
 #: The same, for a trial participant. There is no instructor to be notified: the

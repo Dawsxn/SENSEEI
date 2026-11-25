@@ -25,6 +25,9 @@ class UserOut(BaseModel):
     can_switch: bool = False
     #: Trial mode: a participant signed in by ID, whose screens are the trial's.
     participant: bool = False
+    #: Whether the student has seen the SEE-I walkthrough, which shows once,
+    #: before their first session.
+    seen_intro: bool = False
 
 
 class DevLoginIn(BaseModel):

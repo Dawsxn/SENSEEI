@@ -45,6 +45,11 @@ class User(Entity, SoftDelete, table=True):
     #: exports substitute this for name and email; the app itself never uses it.
     participant_identifier: str | None = Field(default=None, index=True)
 
+    #: When the student first went through, or past, the SEE-I walkthrough. Null
+    #: until then, which is what shows it before their first session. On the
+    #: account rather than in the browser, so a new phone does not show it again.
+    intro_seen_at: datetime | None = Field(default=None, sa_type=TS)
+
     created_at: datetime = Field(default_factory=utcnow, sa_type=TS)
 
 
