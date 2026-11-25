@@ -39,14 +39,15 @@ function withQuery(ui: React.ReactElement) {
 // rejection as unhandled even after the component has caught it.
 
 describe("the class form", () => {
-  it("shows the label students will see, and submits on Enter", async () => {
+  it("starts empty, trims what is typed, and submits on Enter", async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
     render(<ClassFormDialog mode="new" onSubmit={onSubmit} onCancel={vi.fn()} />);
+    expect(screen.getByLabelText("Name")).not.toHaveAttribute("placeholder");
 
     await userEvent.type(screen.getByLabelText("Name"), " STRAMA ");
     await userEvent.type(screen.getByLabelText("Section"), "K32{Enter}");
 
-    expect(screen.getByText("Students see this as STRAMA K32.")).toBeInTheDocument();
+    expect(screen.queryByText(/Students see this as/)).not.toBeInTheDocument();
     expect(onSubmit).toHaveBeenCalledWith({ name: "STRAMA", section: "K32" });
   });
 
@@ -81,7 +82,7 @@ describe("the class form", () => {
 });
 
 describe("joining a class", () => {
-  it("says what was joined, and admits when it has no readings yet", async () => {
+  it("says what was joined", async () => {
     joinClass.mockResolvedValue({ class_id: "c1", label: "STRAMA K32", reading_count: 0 });
     withQuery(<JoinClassDialog onClose={vi.fn()} />);
 
@@ -89,7 +90,6 @@ describe("joining a class", () => {
 
     expect(joinClass).toHaveBeenLastCalledWith("R96E RZAE");
     expect(await screen.findByText("You joined STRAMA K32")).toBeInTheDocument();
-    expect(screen.getByText(/no readings yet/)).toBeInTheDocument();
   });
 
   it("keeps the dialog open with an inline error for a wrong code", async () => {
@@ -100,7 +100,7 @@ describe("joining a class", () => {
 
     await userEvent.type(screen.getByLabelText("Join code"), "4KQ2-9TXN{Enter}");
 
-    expect(await screen.findByText(/doesn.t match a class/)).toBeInTheDocument();
+    expect(await screen.findByText("The code you entered is invalid or does not exist.")).toBeInTheDocument();
     expect(screen.getByLabelText("Join code")).toHaveValue("4KQ2-9TXN");
   });
 });

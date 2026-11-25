@@ -118,14 +118,16 @@ async def statistics(db: AsyncSession, scope: Scope) -> dict:
         for step, total, passed, avg_attempts in graded
     }
 
+    # Counted per step, not per name: several steps have a criterion with the
+    # same name (Completeness, Accuracy), and each means something different.
     failures = (
         await db.execute(
-            select(CriterionJudgment.criterion, func.count().label("failures"))
+            select(Attempt.step, CriterionJudgment.criterion, func.count().label("failures"))
             .join(Assessment, Assessment.id == CriterionJudgment.assessment_id)
             .join(Attempt, Attempt.id == Assessment.attempt_id)
             .where(in_scope, CriterionJudgment.passed.is_(False))
-            .group_by(CriterionJudgment.criterion)
-            .order_by(func.count().desc(), CriterionJudgment.criterion)
+            .group_by(Attempt.step, CriterionJudgment.criterion)
+            .order_by(func.count().desc(), Attempt.step, CriterionJudgment.criterion)
             .limit(TOP_CRITERIA)
         )
     ).all()
@@ -152,7 +154,10 @@ async def statistics(db: AsyncSession, scope: Scope) -> dict:
     return {
         "session_count": session_count or 0,
         "pass_rates": pass_rates,
-        "failed_criteria": [{"criterion": c, "failures": n} for c, n in failures],
+        "failed_criteria": [
+            {"step": SeeiStep(step).value, "criterion": c, "failures": n}
+            for step, c, n in failures
+        ],
         "average_attempts": attempts,
     }
 
@@ -164,9 +169,12 @@ async def class_dashboard(
     and those readings with a session count each. Raises ClassNotFound if the
     class is not this instructor's."""
     await _owned(db, instructor_id, class_id)
+    flagged = _flagged(await _latest_sessions(db, class_id))
     return {
         "statistics": await statistics(db, Scope(class_id)),
-        "readings": await _readings_with_counts(db, class_id),
+        "readings": await _readings_with_counts(db, class_id, flagged),
+        # A student is flagged in the class if they are on any of its readings.
+        "flagged_student_ids": sorted({s.student_id for s in flagged}, key=str),
     }
 
 
@@ -225,28 +233,54 @@ async def roster(
     if not students:
         return []
 
-    # DISTINCT ON keeps one row per student: the newest, by the ordering below.
-    latest = (
-        await db.execute(
-            select(Session)
-            .where(
-                Session.student_id.in_([s.id for s in students]),
-                Session.reading_id == reading_id,
-                Session.status.in_(FINISHED),
-            )
-            .order_by(Session.student_id, Session.started_at.desc())
-            .distinct(Session.student_id)
-        )
-    ).scalars().all()
+    latest = await _latest_sessions(db, class_id, reading_id=reading_id)
     sessions = {s.student_id: s for s in latest}
+    passed = await _passed_steps(db, latest)
+    return [
+        {
+            "id": student.id,
+            "name": student.name,
+            "email": student.email,
+            **_progress(sessions.get(student.id), passed),
+        }
+        for student in students
+    ]
 
-    passed_steps = dict(
+
+async def _latest_sessions(
+    db: AsyncSession,
+    class_id: uuid.UUID,
+    *,
+    reading_id: uuid.UUID | None = None,
+    student_id: uuid.UUID | None = None,
+) -> list[Session]:
+    """Each student's latest finished session on each reading, in this class.
+
+    The one an instructor acts on, and the one that decides a flag: a student is
+    flagged on a reading while their latest session there ran out of tries, and
+    is no longer once a later one passes. DISTINCT ON keeps one row per student
+    and reading: the newest, by the ordering below.
+    """
+    q = select(Session).where(Session.id.in_(_sessions(Scope(class_id, reading_id))))
+    if student_id is not None:
+        q = q.where(Session.student_id == student_id)
+    q = q.order_by(
+        Session.student_id, Session.reading_id, Session.started_at.desc()
+    ).distinct(Session.student_id, Session.reading_id)
+    return list((await db.execute(q)).scalars().all())
+
+
+async def _passed_steps(db: AsyncSession, sessions: list[Session]) -> dict:
+    """How many distinct steps each of these sessions passed."""
+    if not sessions:
+        return {}
+    return dict(
         (
             await db.execute(
                 select(Attempt.session_id, func.count(func.distinct(Attempt.step)))
                 .join(Assessment, Assessment.attempt_id == Attempt.id)
                 .where(
-                    Attempt.session_id.in_([s.id for s in latest]),
+                    Attempt.session_id.in_([s.id for s in sessions]),
                     Assessment.verdict == Verdict.PASS.value,
                 )
                 .group_by(Attempt.session_id)
@@ -254,38 +288,42 @@ async def roster(
         ).all()
     )
 
-    out = []
-    for student in students:
-        sess = sessions.get(student.id)
-        ended = SessionStatus(sess.status) if sess is not None else None
-        # Out of attempts, or (trial mode) out of time: either way they stopped
-        # short of Illustrate, on a step that matters to whoever reads this.
-        stopped = ended in (SessionStatus.FALLBACK, SessionStatus.TIMED_OUT)
-        out.append(
-            {
-                "id": student.id,
-                "name": student.name,
-                "email": student.email,
-                "session_id": sess.id if sess else None,
-                "status": (
-                    "not_started" if sess is None
-                    else "stopped_early" if ended is SessionStatus.FALLBACK
-                    else "timed_out" if ended is SessionStatus.TIMED_OUT
-                    else "completed"
-                ),
-                "steps_passed": passed_steps.get(sess.id, 0) if sess else 0,
-                # The step they stopped on, which is where the instructor's
-                # attention belongs.
-                "stopped_on": SeeiStep(sess.current_step).value if stopped else None,
-                "last_session_at": (sess.ended_at or sess.started_at) if sess else None,
-            }
-        )
-    return out
+
+def _progress(sess: Session | None, passed: dict) -> dict:
+    """Where a student got to on one reading, from their latest finished session."""
+    ended = SessionStatus(sess.status) if sess is not None else None
+    # Out of attempts, or (trial mode) out of time: either way they stopped
+    # short of Illustrate, on a step that matters to whoever reads this.
+    stopped = ended in (SessionStatus.FALLBACK, SessionStatus.TIMED_OUT)
+    return {
+        "session_id": sess.id if sess else None,
+        "status": (
+            "not_started" if sess is None
+            else "stopped_early" if ended is SessionStatus.FALLBACK
+            else "timed_out" if ended is SessionStatus.TIMED_OUT
+            else "completed"
+        ),
+        "steps_passed": passed.get(sess.id, 0) if sess else 0,
+        # The step they stopped on, which is where the instructor's attention
+        # belongs.
+        "stopped_on": SeeiStep(sess.current_step).value if stopped else None,
+        "last_session_at": (sess.ended_at or sess.started_at) if sess else None,
+    }
 
 
-async def _readings_with_counts(db: AsyncSession, class_id: uuid.UUID) -> list[dict]:
-    """The class's readings with how many finished sessions each has, for the
-    class page's readings card."""
+def _flagged(sessions: list[Session]) -> list[Session]:
+    """The latest sessions that raise a flag: they ran out of tries."""
+    return [s for s in sessions if SessionStatus(s.status) is SessionStatus.FALLBACK]
+
+
+async def _readings_with_counts(
+    db: AsyncSession, class_id: uuid.UUID, flagged: list[Session]
+) -> list[dict]:
+    """The class's readings with how many finished sessions each has, and how
+    many students are flagged on each, for the class page's readings tab."""
+    flags: dict[uuid.UUID, int] = {}
+    for sess in flagged:
+        flags[sess.reading_id] = flags.get(sess.reading_id, 0) + 1
     counts = dict(
         (
             await db.execute(
@@ -312,14 +350,135 @@ async def _readings_with_counts(db: AsyncSession, class_id: uuid.UUID) -> list[d
             "title": r.title,
             "description": r.description,
             "session_count": counts.get(r.id, 0),
+            "flagged_count": flags.get(r.id, 0),
         }
         for r in readings
     ]
 
 
+class StudentNotInClass(Exception):
+    """No such student in this class."""
+
+
+async def _enrolled(db: AsyncSession, class_id: uuid.UUID, student_id: uuid.UUID):
+    hit = (
+        await db.execute(
+            select(User, Enrolment.enrolled_at)
+            .join(Enrolment, Enrolment.student_id == User.id)
+            .where(
+                Enrolment.class_id == class_id,
+                Enrolment.student_id == student_id,
+                Enrolment.deleted_at.is_(None),
+            )
+        )
+    ).first()
+    if hit is None:
+        raise StudentNotInClass
+    return hit
+
+
+async def _assigned_readings(db: AsyncSession, class_id: uuid.UUID) -> list[Reading]:
+    return list(
+        await db.scalars(
+            select(Reading)
+            .join(
+                ReadingAssignment,
+                (ReadingAssignment.reading_id == Reading.id)
+                & (ReadingAssignment.class_id == class_id)
+                & (ReadingAssignment.deleted_at.is_(None)),
+            )
+            .where(Reading.deleted_at.is_(None))
+            .order_by(Reading.created_at)
+        )
+    )
+
+
+async def student_in_class(
+    db: AsyncSession,
+    instructor_id: uuid.UUID,
+    class_id: uuid.UUID,
+    student_id: uuid.UUID,
+) -> dict:
+    """One student in one class, and how far they got on each of its readings:
+    a reading's roster turned the other way."""
+    klass = await _owned(db, instructor_id, class_id)
+    student, enrolled_at = await _enrolled(db, class_id, student_id)
+    latest = await _latest_sessions(db, class_id, student_id=student_id)
+    sessions = {s.reading_id: s for s in latest}
+    passed = await _passed_steps(db, latest)
+    return {
+        "id": student.id,
+        "name": student.name,
+        "email": student.email,
+        "enrolled_at": enrolled_at,
+        "class_id": klass.id,
+        "class_label": f"{klass.name} {klass.section}".strip(),
+        "readings": [
+            {
+                "id": r.id,
+                "title": r.title,
+                "description": r.description,
+                **_progress(sessions.get(r.id), passed),
+            }
+            for r in await _assigned_readings(db, class_id)
+        ],
+    }
+
+
+async def student_sessions(
+    db: AsyncSession,
+    instructor_id: uuid.UUID,
+    class_id: uuid.UUID,
+    reading_id: uuid.UUID,
+    student_id: uuid.UUID,
+) -> dict:
+    """Every finished session one student has on one reading, newest first.
+
+    Numbered as the review numbers them (Attempt 1 is the oldest), so the list
+    and the session it opens agree. A flagged one stays flagged here after a
+    later one passes: the flag on the roster clears, the history does not.
+    """
+    klass = await _owned(db, instructor_id, class_id)
+    reading = next((r for r in await _assigned_readings(db, class_id) if r.id == reading_id), None)
+    if reading is None:
+        raise ReadingNotInClass
+    student, _ = await _enrolled(db, class_id, student_id)
+    rows = list(
+        await db.scalars(
+            select(Session)
+            .where(
+                Session.student_id == student_id,
+                Session.reading_id == reading_id,
+                Session.status.in_(FINISHED),
+            )
+            .order_by(Session.started_at)
+        )
+    )
+    return {
+        "id": student.id,
+        "name": student.name,
+        "email": student.email,
+        "class_id": klass.id,
+        "class_label": f"{klass.name} {klass.section}".strip(),
+        "reading_id": reading.id,
+        "reading_title": reading.title,
+        "sessions": [
+            {
+                "id": s.id,
+                "index": i,
+                "status": SessionStatus(s.status).value,
+                "started_at": s.started_at,
+                "ended_at": s.ended_at,
+            }
+            for i, s in reversed(list(enumerate(rows, start=1)))
+        ],
+    }
+
+
 __all__ = [
     "ClassNotFound",
     "ReadingNotInClass",
+    "StudentNotInClass",
     "Scope",
     "class_dashboard",
     "reading_in_class",

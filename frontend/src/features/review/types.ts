@@ -9,7 +9,8 @@ export interface StepSummary {
   passed: boolean;
 }
 
-/** How the Assessment Agent judged one answer. Sent to instructors only. */
+/** How the Assessment Agent judged one answer. A student gets it with every
+ *  `reason` empty; only the instructor sees why. */
 export interface Judgment {
   verdict: "PASS" | "FAIL";
   /** Failed first, then in the rubric's order. */
@@ -30,8 +31,13 @@ export interface SessionTranscript {
   reading_id: string;
   reading_title: string;
   class_name: string;
+  /** The class it is reviewed under, so an old `/review/:id` link can find it. */
+  class_id: string;
+  core_components: string[];
   /** Whose session it is. Shown when an instructor is reading it. */
   student_name: string;
+  /** Whose session it is, for the instructor's way back to that student. */
+  student_id: string;
   index: number;
   status: SessionStatus;
   started_at: string;

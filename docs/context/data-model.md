@@ -94,6 +94,7 @@ both. The trial instance adds a third, the grader, who only grades the tests.
 | email | |
 | google_sub | Google account subject, the stable identifier from sign-in |
 | participant_identifier | Null for ordinary users. On the trial instance, the participant's ID, see [participant](#participant) |
+| intro_seen_at | When the student first went through the SEE-I walkthrough. Null until then, which is what shows it before their first session |
 | created_at | |
 
 Sign-in is Google OAuth, restricted to DLSU addresses. A non-DLSU Google account
@@ -323,7 +324,7 @@ One complete pass through the four SEE-I steps for one reading.
 | id | |
 | student_id | |
 | reading_id | |
-| status | in_progress, complete, fallback, or timed_out (trial mode: the clock ran out) |
+| status | in_progress, complete, fallback, timed_out (trial mode: the clock ran out), left (the student used the exit), or abandoned (never finished or left; marked when the student next starts the reading) |
 | current_step | State, Elaborate, Exemplify, or Illustrate |
 | started_at | |
 | ended_at | Null while in progress |
@@ -336,9 +337,14 @@ change. The eval harness already pins and stamps these on every run; sessions
 need the same discipline, otherwise a rubric revision silently changes the
 meaning of historical pass rates.
 
-Sessions are not resumable. A student who leaves mid-session confirms that it
-will be discarded, and the row is discarded with it. Nothing in `in_progress`
-survives the student walking away.
+Sessions are not resumable once left. A student who leaves mid-session confirms
+it, and the row becomes `left`, with `ended_at` set. One who closes the tab leaves
+it `in_progress`, since the server never hears; when they next start the same
+reading it becomes `abandoned`, with `ended_at` set to their last answer, or to
+its start if there was none. Neither status is in `FINISHED_STATUSES`, so neither
+is listed or counted anywhere. They are kept rather than deleted to show how
+often students quit partway, and on which step. A reload is not leaving: the tab
+picks its session back up.
 
 A trial participant is the exception. They get one session, so a reload picks it
 back up from its transcript rather than starting another, and nothing they do
@@ -349,6 +355,14 @@ The flag belongs to the session, not to the student: it is a fact about one
 session that ended a particular way, derived from `status` rather than stored.
 It is not dismissible. A student with three fallback sessions on a reading has
 three of them, and clearing one would mean editing the record of what happened.
+
+Where the instructor looks, a student is **flagged on a reading** while their
+latest finished session there is a fallback. A later session that passes clears
+that, with nothing to dismiss; the earlier session stays marked Flagged in the
+student's list of sessions. The flag shows as a red Flagged marker on the
+student's row and in a Flagged box at the top of the reading's page in the
+class, as a count on the reading in the class's Readings tab, and on the
+student in the Students tab.
 
 Students can view all of their past sessions for a reading, not only the most
 recent.
@@ -433,7 +447,7 @@ Each maps onto the schema:
 | Statistic | Query over |
 | --- | --- |
 | Pass rate per SEE-I step | attempt joined to assessment, grouped by step |
-| Most frequently failed criteria | criterion_judgment where passed is false |
+| Most frequently failed criteria | criterion_judgment where passed is false, counted per step, since the same criterion name (Completeness, Accuracy) belongs to more than one |
 | Average attempts to pass each step | attempt, max attempt_number per session and step |
 
 If a schema change makes any of these three awkward, the schema is wrong.

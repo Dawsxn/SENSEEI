@@ -14,7 +14,7 @@ and is recorded here because it is not derivable from the repo yet.
 | Vite | Build tool |
 | Tailwind CSS | |
 | shadcn/ui | Components are copied into the repo rather than imported, so they are ours to edit |
-| Geist | Typeface, via Google Fonts. Not Inter |
+| Nunito | Typeface, via Google Fonts. Rounded, to match the logo |
 | TanStack Query | Server state. The tutoring loop is request-response, which is what it is for |
 | Recharts | Available for instructor dashboard charts, unused so far: the three statistics are a bar, a ranked list and four numbers, which are plain CSS |
 

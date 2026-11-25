@@ -11,9 +11,14 @@
  * and could require the last one, but scrolling is not reading: it would stop
  * someone who read quickly and wave through someone who dragged the scrollbar.
  *
- * Going back still asks first. No session exists to discard, so the warning is
- * not the session one, but the student loses their place in the reading and the
- * back link sits next to nothing else, which makes it easy to hit by accident.
+ * Going back, to the reading's own page, still asks first. No session exists to
+ * discard, so the warning is not the session one, but the student loses their
+ * place in the reading and the back link sits next to nothing else, which makes
+ * it easy to hit by accident.
+ *
+ * Outside the trial, a reading that fails to load says so in place of the
+ * reading, with no Done, since there is nothing to have read. Done starts a new
+ * session, forgetting any this tab was in.
  *
  * For a trial participant this is where their time starts. They have no back
  * link, since they have nowhere else to go, and no class label, which could name
@@ -41,6 +46,8 @@ import {
 } from "../trial/useTrial";
 import { ReadingIntroDialog } from "./ReadingIntroDialog";
 import { ReadingPanel } from "./ReadingPanel";
+import { ReadingUnavailable } from "./ReadingUnavailable";
+import { forgetSession } from "./useTutoringSession";
 
 const PdfPanel = lazy(() =>
   import("./PdfPanel").then((m) => ({ default: m.PdfPanel })),
@@ -51,9 +58,11 @@ const READING_NUDGE_SECONDS = 10 * 60;
 
 export function ReadingStepScreen() {
   const { readingId } = useParams<{ readingId: string }>();
-  const { data: reading, isLoading, isError } = useReading(readingId);
+  const { data: reading, isLoading, isError, error, refetch } = useReading(readingId);
   const navigate = useNavigate();
   const participant = useIsParticipant();
+  // Outside the trial, a reading that failed replaces the page below the bar.
+  const unavailable = isError && !participant;
   const [showIntro, closeIntro] = useIntro(participant);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
   const timeUp = useTimeUp();
@@ -101,14 +110,14 @@ export function ReadingStepScreen() {
               className="flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
-              Readings
+              Back
             </button>
             <div className="h-4 w-px shrink-0 bg-border" />
           </>
         )}
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="truncate text-[14px] font-medium">
-            {reading?.title ?? "…"}
+            {reading?.title ?? (unavailable ? "" : "…")}
           </span>
           {!participant && (
             <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">
@@ -125,7 +134,8 @@ export function ReadingStepScreen() {
 
       <div className="min-h-0 flex-1">
         {isLoading && <Notice>Loading reading…</Notice>}
-        {isError && <Notice>Couldn't load this reading.</Notice>}
+        {isError && participant && <Notice>Couldn't load this reading.</Notice>}
+        {unavailable && <ReadingUnavailable error={error} onRetry={() => void refetch()} />}
         {reading &&
           (reading.has_file ? (
             <Suspense fallback={<Notice>Loading reading…</Notice>}>
@@ -144,19 +154,22 @@ export function ReadingStepScreen() {
         <footer className="shrink-0 border-t px-6 py-4 text-center text-[13px] text-muted-foreground">
           {timeUpPopup ? "Time's up." : "Time's up. Please wait for the next instructions."}
         </footer>
-      ) : (
+      ) : unavailable ? null : (
         <footer className="flex shrink-0 items-center justify-end border-t px-4 py-3 sm:px-6">
           <Button
-            onClick={() =>
-              participant ? setConfirmingDone(true) : navigate(`/tutor/${readingId}`)
-            }
+            onClick={() => setConfirmingDone(true)}
           >
             Done
           </Button>
         </footer>
       )}
 
-      {showIntro && !participant && <ReadingIntroDialog onStart={closeIntro} />}
+      {showIntro && !participant && reading && (
+        <ReadingIntroDialog
+          onStart={closeIntro}
+          body={`The goal of this session is to understand the concept: ${reading.title.toLowerCase()}. Take your time with the reading first, and press Done when you've finished it.`}
+        />
+      )}
       {showIntro && participant && (
         <ReadingIntroDialog onStart={closeIntro} startOnly>
           <div className="text-[14px] leading-[1.6] text-muted-foreground">
@@ -182,29 +195,37 @@ export function ReadingStepScreen() {
           </div>
         </ReadingIntroDialog>
       )}
+      {/* The trial's wording, for everyone. Outside the trial the concept is the
+          reading's own title, and the tab forgets any session it was in. */}
       {confirmingDone && (
         <ConfirmDialog
           title="Start the tutoring session?"
           confirmLabel="Start session"
           cancelLabel="Cancel"
-          onConfirm={() => navigate(`/tutor/${readingId}`)}
+          onConfirm={() => {
+            if (!participant && readingId) forgetSession(readingId);
+            navigate(`/tutor/${readingId}`);
+          }}
           onCancel={() => setConfirmingDone(false)}
         >
-          Only continue if you&rsquo;re confident you understand the concept of {concept}. The
-          reading stays open beside the session.
+          Only continue if you&rsquo;re confident you understand the concept of{" "}
+          {participant ? concept : (reading?.title.toLowerCase() ?? "the reading")}. The reading
+          stays open beside the session.
         </ConfirmDialog>
       )}
       {timeUpPopup && <TimeUpDialog onContinue={() => void moveOn()} />}
 
       {confirmingLeave && (
         <ConfirmDialog
-          title="Go back to readings?"
-          confirmLabel="Go back"
-          onConfirm={() => navigate("/")}
+          title="Leave this reading?"
+          confirmLabel="Leave"
+          onConfirm={() =>
+            navigate(reading ? `/classes/${reading.class_id}/readings/${reading.id}` : "/")
+          }
           onCancel={() => setConfirmingLeave(false)}
         >
-          You have not started the session yet, so there is nothing to discard. You
-          will lose your place in the reading.
+          You haven&rsquo;t started the session yet, but you will lose your place in the
+          reading.
         </ConfirmDialog>
       )}
     </div>

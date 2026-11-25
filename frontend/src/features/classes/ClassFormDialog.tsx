@@ -1,13 +1,9 @@
-/** Create a class, or edit one. The same two fields either way.
- *
- * Name and section are stored apart but students only ever see them joined, so
- * the dialog shows the joined label as it is typed. That line is the only place
- * an instructor sees what their students will.
+/** Create a class, or edit one. The same two fields either way, left empty
+ *  rather than holding example values that read as if they were filled in.
  *
  * On the trial instance a class is one of the study's groups, so it also has a
- * mode, and can take the pre-test and post-test written for its reading.
- * Participants never see the class's name, so the preview line gives way to
- * that. The mode and the tests are fixed once a participant has signed in.
+ * mode, and can take the pre-test and post-test written for its reading. The
+ * mode and the tests are fixed once a participant has signed in.
  */
 
 import { useEffect, useState } from "react";
@@ -33,7 +29,7 @@ interface ClassFormDialogProps {
 }
 
 const INPUT =
-  "h-9 w-full rounded-md border bg-background px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
+  "h-9 w-full rounded-md border bg-card px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
 
 export function ClassFormDialog({
   mode,
@@ -94,7 +90,7 @@ export function ClassFormDialog({
         aria-labelledby="class-form-title"
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[420px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         <h2 id="class-form-title" className="text-[16px] font-semibold">
           {mode === "new" ? "New class" : "Edit class"}
@@ -107,7 +103,6 @@ export function ClassFormDialog({
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="STRAMA"
               maxLength={60}
               className={`${INPUT} mt-1.5`}
             />
@@ -117,7 +112,6 @@ export function ClassFormDialog({
             <input
               value={section}
               onChange={(e) => setSection(e.target.value)}
-              placeholder="K31"
               maxLength={20}
               className={`${INPUT} mt-1.5`}
             />
@@ -143,7 +137,7 @@ export function ClassFormDialog({
                   className={cn(
                     "h-[30px] flex-1 rounded text-[13px] font-medium transition-colors disabled:cursor-not-allowed",
                     classMode === m
-                      ? "bg-background shadow-sm"
+                      ? "bg-card shadow-sm"
                       : "text-muted-foreground enabled:hover:text-foreground",
                   )}
                 >
@@ -173,12 +167,8 @@ export function ClassFormDialog({
                 : "Mode and tests can’t be changed once a participant signs in."}
             </p>
           </>
-        ) : (
-          <p className="mt-2 min-h-[18px] text-[12px] text-muted-foreground">
-            {label && `Students see this as ${label}.`}
-          </p>
-        )}
-        {error && <p className="mt-1 text-[13px] text-fail-foreground">{error}</p>}
+        ) : null}
+        {error && <p className="mt-2 text-[13px] text-fail-foreground">{error}</p>}
 
         <div className="mt-5 flex justify-end gap-2">
           <Button type="button" variant="secondary" size="sm" onClick={onCancel}>

@@ -1,0 +1,264 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    html, body { height: 100%; }
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #09090b; background: #ffffff; }
+    .top { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; }
+    .brand { display: flex; align-items: center; gap: 32px; height: 56px; }
+    .word { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .tabs { display: flex; gap: 24px; height: 56px; }
+    .tabs span { display: flex; align-items: center; font-size: 14px; font-weight: 500; color: #71717a; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .tabs span.on { color: #09090b; border-color: #09090b; }
+    .tabs2 { display: none; }
+    .avatar { width: 32px; height: 32px; border-radius: 999px; background: #f4f4f5; }
+
+    .wrap { max-width: 1148px; margin: 0 auto; padding: 24px 24px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; }
+    .crumbs { font-size: 13px; display: inline-flex; align-items: center; gap: 6px; color: #52525b; }
+    .crumbs b { font-weight: 400; color: #09090b; }
+    .back { display: none; font-size: 13px; color: #52525b; align-items: center; gap: 4px; }
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-top: 10px; }
+    h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .sub { font-size: 14px; color: #71717a; margin-top: 4px; }
+    .btn { height: 32px; padding: 0 12px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+
+    .seg { display: inline-flex; align-self: flex-start; padding: 3px; background: #f4f4f5; border-radius: 8px; gap: 2px; }
+    .seg span { width: 112px; text-align: center; font-size: 13px; font-weight: 500; color: #71717a; padding: 5px 0; border-radius: 6px; }
+    .seg span.on { background: #ffffff; color: #09090b; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .seg em { font-style: normal; color: #a1a1aa; margin-left: 4px; }
+
+    .list { border: 1px solid #e4e4e7; border-radius: 10px; overflow: hidden; }
+    .lrow { display: flex; align-items: center; gap: 16px; padding: 12px 16px 12px 20px; border-top: 1px solid #e4e4e7; }
+    .lrow:first-child { border-top: none; }
+    .main { flex: 1; min-width: 0; }
+    .title { font-size: 14px; font-weight: 500; }
+    .desc { font-size: 13px; color: #71717a; margin-top: 2px; }
+    .date { font-size: 13px; color: #71717a; width: 64px; text-align: right; white-space: nowrap; }
+    .chev { width: 18px; height: 18px; stroke: #a1a1aa; flex-shrink: 0; }
+    .chev.none { stroke: transparent; }
+    .init { width: 32px; height: 32px; border-radius: 999px; background: #f4f4f5; font-size: 11px; font-weight: 500; color: #71717a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .steps { display: flex; gap: 4px; width: 132px; flex-shrink: 0; }
+    .steps i { flex: 1; height: 4px; border-radius: 2px; background: #e4e4e7; }
+    .steps i.ok { background: #16a34a; }
+    .steps i.bad { background: #fca5a5; }
+    .badge { display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 22px; border-radius: 999px; border: 1px solid; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+    .ns { border-color: #e4e4e7; color: #71717a; background: #ffffff; }
+    .ok { border-color: #bbf7d0; color: #15803d; background: #f0fdf4; }
+    .bad { border-color: #fecaca; color: #b91c1c; background: #fef2f2; }
+    .att { font-size: 14px; font-weight: 500; width: 84px; }
+    .badge svg { margin-right: 5px; }
+    .callout { border: 1px solid #fecaca; background: #fef2f2; border-radius: 10px; overflow: hidden; }
+    .chead { display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 14px; font-weight: 600; color: #b91c1c; }
+    .chead span { font-weight: 400; color: #dc2626; }
+    .crow { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #ffffff; border-top: 1px solid #fecaca; font-size: 13px; }
+    .crow .why { flex: 1; color: #52525b; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .scard { border: 1px solid #e4e4e7; border-radius: 10px; }
+    .shead { display: flex; align-items: center; gap: 6px; padding: 14px 16px; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; }
+    .info { width: 14px; height: 14px; border: 1.5px solid #a1a1aa; border-radius: 999px; box-sizing: border-box; }
+    .sbody { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+    .srow { display: flex; align-items: center; gap: 12px; }
+    .srow .lab { width: 76px; color: #3f3f46; }
+    .srow .lab2 { flex: 1; color: #3f3f46; }
+    .srow .lab2 span { color: #a1a1aa; }
+    .track { flex: 1; height: 6px; border-radius: 999px; background: #f4f4f5; overflow: hidden; }
+    .track i { display: block; height: 100%; background: #16a34a; border-radius: 999px; }
+    .num { width: 40px; text-align: right; color: #52525b; }
+
+    /* the review's header, for its new breadcrumb */
+    .chip { display: inline-flex; align-items: center; height: 22px; padding: 0 10px; border-radius: 999px; border: 1px solid #bbf7d0; color: #15803d; background: #f0fdf4; font-size: 12px; font-weight: 500; }
+    .meta { font-size: 13px; color: #71717a; }
+    .sum { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #e4e4e7; border-radius: 10px; }
+    .sum div { padding: 12px 14px; border-left: 1px solid #e4e4e7; font-size: 13px; }
+    .sum div:first-child { border-left: none; }
+    .sum b { display: block; font-size: 14px; font-weight: 500; }
+    .sum span { color: #71717a; }
+
+    @media (max-width: 1023px) {
+      .wrap { padding: 24px 32px 40px; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 639px) {
+      .top { padding: 0 16px; }
+      .tabs { display: none; }
+      .tabs2 { display: flex; gap: 24px; height: 48px; padding: 0 16px; border-bottom: 1px solid #e4e4e7; }
+      .tabs2 span { display: flex; align-items: center; font-size: 14px; font-weight: 500; color: #71717a; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+      .tabs2 span.on { color: #09090b; border-color: #09090b; }
+      .wrap { padding: 16px 16px 32px; gap: 16px; }
+      .crumbs { display: none; }
+      .back { display: inline-flex; }
+      .head { flex-direction: column; gap: 12px; }
+      .head .btn { align-self: stretch; justify-content: center; height: 36px; }
+      h1 { font-size: 22px; }
+      .seg { display: flex; align-self: stretch; }
+      .seg span { flex: 1; width: auto; }
+      .lrow { gap: 12px; padding: 12px 12px 12px 16px; flex-wrap: wrap; }
+      .date, .hide-phone { display: none; }
+      .steps { order: 5; width: 100%; padding-left: 44px; box-sizing: border-box; }
+      .stats { grid-template-columns: 1fr; }
+      .sum { grid-template-columns: 1fr 1fr; }
+      .sum div:nth-child(3) { border-left: none; border-top: 1px solid #e4e4e7; }
+      .sum div:nth-child(4) { border-top: 1px solid #e4e4e7; }
+    }
+  </style>
+</helmet>
+<div>
+  <div class="top">
+    <div class="brand">
+      <span class="word">SEN<span style="color: #16a34a;">SEE-I</span></span>
+      <div class="tabs"><span class="on">Classes</span><span>Readings</span></div>
+    </div>
+    <span class="avatar"></span>
+  </div>
+  <div class="tabs2"><span class="on">Classes</span><span>Readings</span></div>
+
+  <div class="wrap">
+    <!-- the reading in this class -->
+    <sc-if value="{{reading}}">
+    <div>
+      <div class="crumbs"><span>Classes</span>&rsaquo;<span>STRAMA K31</span>&rsaquo;<b>Strategy</b></div>
+      <div class="back">&lsaquo;&nbsp;STRAMA K31</div>
+      <div class="head">
+        <div><h1>Strategy</h1><div class="sub">Coordinated actions to outperform rivals</div></div>
+        <button class="btn">View reading</button>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="chead"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>Flagged<span>1</span></div>
+      <div class="crow"><span class="init" style="width: 28px; height: 28px;">RL</span><b style="font-weight: 500; font-size: 14px;">Rafael Lim</b><span class="why"></span><span class="date">Nov 18</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+    </div>
+    <div class="seg"><span class="{{tS}}">Students<em>4</em></span><span class="{{tT}}">Statistics</span></div>
+
+    <sc-if value="{{students}}">
+    <div class="list">
+      <div class="lrow">
+        <span class="init">CO</span>
+        <div class="main"><div class="title">Chelsea Ocampo</div><div class="desc hide-phone">chelsea_ocampo@dlsu.edu.ph</div></div>
+        <span class="steps"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span>
+        <span class="badge ok">Complete</span>
+        <span class="date">Nov 17</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+      <div class="lrow">
+        <span class="init">NT</span>
+        <div class="main"><div class="title">Nikko Tan</div><div class="desc hide-phone">nikko_tan@dlsu.edu.ph</div></div>
+        <span class="steps"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span>
+        <span class="badge ok">Complete</span>
+        <span class="date">Nov 25</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+      <div class="lrow">
+        <span class="init">RL</span>
+        <div class="main"><div class="title">Rafael Lim</div><div class="desc hide-phone">rafael_lim@dlsu.edu.ph</div></div>
+        <span class="steps"><i class="ok"></i><i class="bad"></i><i></i><i></i></span>
+        <span class="badge bad"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>Flagged</span>
+        <span class="date">Nov 18</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+      <div class="lrow">
+        <span class="init">BV</span>
+        <div class="main"><div class="title">Bea Villanueva</div><div class="desc hide-phone">bea_villanueva@dlsu.edu.ph</div></div>
+        <span class="steps"><i></i><i></i><i></i><i></i></span>
+        <span class="badge ns">Not started</span>
+        <span class="date"></span>
+        <svg class="chev none" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{stats}}">
+    <div class="stats">
+      <div class="scard">
+        <div class="shead">Pass rate by step <span class="info"></span></div>
+        <div class="sbody">
+          <div class="srow"><span class="lab">State</span><span class="track"><i style="width: 33%;"></i></span><span class="num">33%</span></div>
+          <div class="srow"><span class="lab">Elaborate</span><span class="track"><i style="width: 100%;"></i></span><span class="num">100%</span></div>
+          <div class="srow"><span class="lab">Exemplify</span><span class="track"><i style="width: 100%;"></i></span><span class="num">100%</span></div>
+          <div class="srow"><span class="lab">Illustrate</span><span class="track"><i style="width: 100%;"></i></span><span class="num">100%</span></div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="shead">Most-failed criteria <span class="info"></span></div>
+        <div class="sbody">
+          <div class="srow"><span class="lab2">Brevity <span>&middot; State</span></span><span class="num">4</span></div>
+          <div class="srow"><span class="lab2">Clarity <span>&middot; State</span></span><span class="num">4</span></div>
+          <div class="srow"><span class="lab2">Completeness <span>&middot; State</span></span><span class="num">4</span></div>
+          <div class="srow"><span class="lab2">Accuracy <span>&middot; State</span></span><span class="num">3</span></div>
+          <div class="srow"><span class="lab2">Own Words <span>&middot; State</span></span><span class="num">3</span></div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="shead">Average tries to pass <span class="info"></span></div>
+        <div class="sbody">
+          <div class="srow"><span class="lab2">State</span><span class="num">1.8</span></div>
+          <div class="srow"><span class="lab2">Elaborate</span><span class="num">1.0</span></div>
+          <div class="srow"><span class="lab2">Exemplify</span><span class="num">1.0</span></div>
+          <div class="srow"><span class="lab2">Illustrate</span><span class="num">1.0</span></div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+    </sc-if>
+
+    <!-- one student's sessions on this reading -->
+    <sc-if value="{{student}}">
+    <div>
+      <div class="crumbs"><span>Classes</span>&rsaquo;<span>STRAMA K31</span>&rsaquo;<span>Strategy</span>&rsaquo;<b>Nikko Tan</b></div>
+      <div class="back">&lsaquo;&nbsp;Strategy</div>
+      <div class="head">
+        <div><h1>Nikko Tan</h1><div class="sub">nikko_tan@dlsu.edu.ph</div></div>
+      </div>
+    </div>
+    <div style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #71717a;">Sessions</div>
+    <div class="list">
+      <div class="lrow"><span class="att">Attempt 3</span><span class="badge ok">Complete</span><div class="main"></div><span class="date" style="width: auto;">Nov 25, 2026</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+      <div class="lrow"><span class="att">Attempt 2</span><span class="badge ok">Complete</span><div class="main"></div><span class="date" style="width: auto;">Nov 25, 2026</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+      <div class="lrow"><span class="att">Attempt 1</span><span class="badge bad"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>Flagged</span><div class="main"></div><span class="date" style="width: auto;">Nov 15, 2026</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+    </div>
+    </sc-if>
+
+    <!-- the review, opened from one of those -->
+    <sc-if value="{{review}}">
+    <div>
+      <div class="crumbs"><span>Classes</span>&rsaquo;<span>STRAMA K31</span>&rsaquo;<span>Strategy</span>&rsaquo;<span>Nikko Tan</span>&rsaquo;<b>Attempt 3</b></div>
+      <div class="back">&lsaquo;&nbsp;Nikko Tan</div>
+      <div class="head">
+        <div><h1>Nikko Tan</h1><div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;"><span class="chip">Complete</span><span class="meta">Strategy &middot; Attempt 3 &middot; Nov 25, 2026, 3:42 PM &middot; 1 minute</span></div></div>
+        <div style="display: flex; gap: 8px;"><button class="btn">Components</button><button class="btn">Rubric</button></div>
+      </div>
+    </div>
+    <div class="sum">
+      <div><b>&#10003; State</b><span>2 tries</span></div>
+      <div><b>&#10003; Elaborate</b><span>1 try</span></div>
+      <div><b>&#10003; Exemplify</b><span>1 try</span></div>
+      <div><b>&#10003; Illustrate</b><span>1 try</span></div>
+    </div>
+    <div style="font-size: 13px; color: #a1a1aa;">The conversation follows, as it does now.</div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"screen":{"editor":"select","options":["students","stats","student","review"],"default":"students"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.screen ?? 'students';
+    return {
+      reading: s === 'students' || s === 'stats',
+      students: s === 'students', stats: s === 'stats',
+      tS: s === 'students' ? 'on' : '', tT: s === 'stats' ? 'on' : '',
+      student: s === 'student', review: s === 'review',
+    };
+  }
+}
+</script>
+</body>
+</html>

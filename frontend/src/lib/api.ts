@@ -13,8 +13,9 @@ import type {
 } from "../features/auth/types";
 import type {
   ReadingDetail,
-  ReadingListItem,
   ReadingSessionItem,
+  StudentClassDetail,
+  StudentClassItem,
 } from "../features/readings/types";
 import type {
   ClassDashboard,
@@ -23,6 +24,8 @@ import type {
   ClassListItem,
   ClassReadingDetail,
   JoinResult,
+  StudentInClass,
+  StudentSessions,
 } from "../features/classes/types";
 import type {
   ExtractResult,
@@ -152,19 +155,18 @@ export async function devLogin(userId: string): Promise<void> {
   if (!response.ok) throw new Error(`dev login: ${response.status}`);
 }
 
+/** Record that the walkthrough has been seen, so it does not open unasked again. */
+export const markIntroSeen = () => send<void>("/auth/me/intro", "POST");
+
 export async function logout(): Promise<void> {
   await fetch("/auth/logout", { method: "POST" });
 }
 
-export async function getReadings(): Promise<ReadingListItem[]> {
-  const response = await fetch("/readings");
-  if (!response.ok) throw new Error(`readings: ${response.status}`);
-  return response.json();
-}
-
 export async function getReading(readingId: string): Promise<ReadingDetail> {
   const response = await fetch(`/readings/${readingId}`);
-  if (!response.ok) throw new Error(`reading ${readingId}: ${response.status}`);
+  // An ApiError, so a reading that does not exist (404) can be told apart
+  // from one that failed to load.
+  if (!response.ok) throw new ApiError(response.status, `reading ${readingId}: ${response.status}`);
   return response.json();
 }
 
@@ -195,14 +197,21 @@ export async function getReadingSessions(
 
 export async function getTranscript(sessionId: string): Promise<SessionTranscript> {
   const response = await fetch(`/sessions/${sessionId}/transcript`);
-  if (!response.ok) throw new Error(`transcript ${sessionId}: ${response.status}`);
+  if (!response.ok) throw new ApiError(response.status, `transcript ${sessionId}: ${response.status}`);
   return response.json();
 }
 
 export async function getSession(sessionId: string): Promise<SessionState> {
   const response = await fetch(`/sessions/${sessionId}`);
-  if (!response.ok) throw new Error(`session ${sessionId}: ${response.status}`);
+  if (!response.ok) throw new ApiError(response.status, `session ${sessionId}: ${response.status}`);
   return response.json();
+}
+
+/** Leave a running session through its exit, once the student has confirmed.
+ *  The server keeps it, marked `left`; it is never offered back. */
+export async function leaveSession(sessionId: string): Promise<void> {
+  const response = await fetch(`/sessions/${sessionId}/leave`, { method: "POST" });
+  if (!response.ok) throw new ApiError(response.status, `leave ${sessionId}: ${response.status}`);
 }
 
 export async function getMessages(sessionId: string): Promise<TutorMessageRow[]> {
@@ -272,6 +281,15 @@ export const getClassStatistics = (classId: string) =>
   send<ClassDashboard>(`/instructor/classes/${classId}/statistics`, "GET");
 export const getClassReading = (classId: string, readingId: string) =>
   send<ClassReadingDetail>(`/instructor/classes/${classId}/readings/${readingId}`, "GET");
+export const getClassStudent = (classId: string, studentId: string) =>
+  send<StudentInClass>(`/instructor/classes/${classId}/students/${studentId}`, "GET");
+export const getStudentSessions = (classId: string, readingId: string, studentId: string) =>
+  send<StudentSessions>(
+    `/instructor/classes/${classId}/readings/${readingId}/students/${studentId}`,
+    "GET",
+  );
+export const getMyClasses = () => send<StudentClassItem[]>("/enrolments", "GET");
+export const getMyClass = (id: string) => send<StudentClassDetail>(`/enrolments/${id}`, "GET");
 export const joinClass = (joinCode: string) =>
   send<JoinResult>("/enrolments", "POST", { join_code: joinCode });
 
@@ -304,6 +322,9 @@ export const updateLibraryReading = (
   id: string,
   fields: { title: string; description: string | null },
 ) => send<LibraryReading>(`/instructor/readings/${id}`, "PATCH", fields);
+/** Give a class readings the instructor already has, leaving their other classes be. */
+export const addReadingsToClass = (classId: string, readingIds: string[]) =>
+  send<void>(`/instructor/classes/${classId}/readings`, "POST", { reading_ids: readingIds });
 export const setReadingClasses = (id: string, classIds: string[]) =>
   send<LibraryReading>(`/instructor/readings/${id}/classes`, "PUT", { class_ids: classIds });
 export const deleteLibraryReading = (id: string) =>

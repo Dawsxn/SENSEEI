@@ -10,7 +10,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+        primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
         secondary: "border bg-background hover:bg-muted",
         ghost: "hover:bg-muted",
         // Destructive actions use the design system's soft failure treatment,

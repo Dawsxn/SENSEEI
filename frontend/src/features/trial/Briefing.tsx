@@ -14,6 +14,7 @@ import { Button } from "../../components/ui/button";
 import { useReading } from "../readings/useReadings";
 import type { ClassMode } from "../classes/types";
 import { useTrialStatus } from "./useTrial";
+import { Logo } from "../../components/Logo";
 
 /** The concept the reading teaches, for the instructions: its title, in a
  *  sentence ("the concept of strategic offensives"). */
@@ -26,9 +27,7 @@ export function useConcept(): string {
 function TopBar() {
   return (
     <header className="flex h-14 shrink-0 items-center border-b px-4 sm:px-5">
-      <span className="text-[15px] font-semibold tracking-[-0.01em]">
-        SEN<span className="text-primary">SEE-I</span>
-      </span>
+      <Logo />
     </header>
   );
 }
@@ -47,7 +46,7 @@ function Page({ children, wide = false }: { children: React.ReactNode; wide?: bo
 }
 
 const P = ({ children }: { children: React.ReactNode }) => (
-  <p className="mt-3 text-[15px] leading-[1.65] text-[#3f3f46]">{children}</p>
+  <p className="mt-3 text-[15px] leading-[1.65] text-body">{children}</p>
 );
 
 function Continue({ onClick }: { onClick: () => void }) {
@@ -111,7 +110,7 @@ export function Welcome({ onContinue }: { onContinue: () => void }) {
       </p>
       <ol
         aria-label="Your steps"
-        className="mt-8 flex flex-col items-stretch gap-3 rounded-lg border px-5 py-6 sm:flex-row sm:items-start sm:justify-center sm:gap-0"
+        className="mt-8 flex flex-col items-stretch gap-3 rounded-lg border bg-card px-5 py-6 sm:flex-row sm:items-start sm:justify-center sm:gap-0"
       >
         {steps.map(([name, time], i) => (
           <li key={name} className="flex items-center gap-3 sm:contents">
@@ -145,7 +144,7 @@ export function Welcome({ onContinue }: { onContinue: () => void }) {
 // --------------------------------------------------------------------------- #
 // the SEE-I group's guide
 
-const SEEI: [string, string][] = [
+export const SEEI: [string, string][] = [
   ["State", "Say what the concept is, briefly and clearly."],
   ["Elaborate", "Explain it in more detail, in your own words."],
   ["Exemplify", "Give your own example of it, plus one thing that is not an example."],
@@ -160,7 +159,7 @@ export function AboutSeei({ onContinue }: { onContinue: () => void }) {
         SENSEE-I is a learning tool that helps you understand a concept from a reading. It uses
         SEE-I, four steps that show how well you understand something:
       </P>
-      <dl className="mt-5 rounded-lg border">
+      <dl className="mt-5 rounded-lg border bg-card">
         {SEEI.map(([step, text], i) => (
           <div key={step} className={i ? "flex flex-col gap-1 border-t px-5 py-4 sm:flex-row sm:gap-5" : "flex flex-col gap-1 px-5 py-4 sm:flex-row sm:gap-5"}>
             <dt className="w-[96px] shrink-0 pt-0.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-primary">
@@ -205,7 +204,7 @@ export function SessionGuide({ onContinue }: { onContinue: () => void }) {
     <Page wide>
       <h1 className="text-[24px] font-semibold tracking-[-0.02em]">How the session works</h1>
       <div className="mt-6 flex flex-col gap-8 lg:flex-row lg:items-start">
-        <div className="relative w-full overflow-hidden rounded-lg border lg:w-[880px] lg:shrink-0">
+        <div className="relative w-full overflow-hidden rounded-lg border bg-card lg:w-[880px] lg:shrink-0">
           <img
             src="/guide/session-guide.png"
             alt="The tutoring session: the reading on the left, the chat on the right"
@@ -228,7 +227,7 @@ export function SessionGuide({ onContinue }: { onContinue: () => void }) {
               <Mark n={i + 1} />
               <p className="text-[15px] leading-[1.6]">
                 <span className="font-semibold">{g.name}.</span>{" "}
-                <span className="text-[#3f3f46]">{g.text}</span>
+                <span className="text-body">{g.text}</span>
               </p>
             </li>
           ))}

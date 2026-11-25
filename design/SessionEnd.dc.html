@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    html, body { height: 100%; }
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #09090b; background: #ffffff; }
+    .app { height: 100vh; display: flex; flex-direction: column; }
+    .bar { height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 16px; padding: 0 16px 0 20px; border-bottom: 1px solid #e4e4e7; }
+    .x { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #52525b; }
+    .title { font-size: 15px; font-weight: 500; }
+    .sec { font-size: 15px; color: #71717a; margin-left: 8px; }
+    .prog { display: flex; gap: 6px; margin-left: 4px; }
+    .prog i { display: block; width: 32px; height: 4px; border-radius: 2px; background: #e4e4e7; }
+    .prog i.done { background: #16a34a; }
+    .prog i.on { background: #09090b; }
+    .tools { margin-left: auto; display: flex; gap: 8px; }
+    .tool { height: 32px; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px; font-size: 13px; font-weight: 500; }
+    .tool .lbl { display: inline; }
+    .tabs { display: none; }
+    .body { flex: 1; min-height: 0; display: flex; }
+    .reading { width: 46%; border-right: 1px solid #e4e4e7; background: #f4f4f5; display: flex; flex-direction: column; }
+    .rbar { height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 12px; color: #71717a; background: #ffffff; border-bottom: 1px solid #e4e4e7; }
+    .pdf { flex: 1; margin: 18px; background: #ffffff; border: 1px solid #e4e4e7; padding: 28px 32px; display: flex; flex-direction: column; gap: 9px; overflow: hidden; }
+    .pdf i { display: block; height: 6px; border-radius: 3px; background: #e4e4e7; }
+    .pdf i.h { height: 12px; width: 60%; background: #fecaca; margin: 10px 0 4px; }
+    .pdf i.s { width: 70%; }
+    .chat { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .log { flex: 1; min-height: 0; overflow: hidden; padding: 20px 24px 8px; display: flex; flex-direction: column; justify-content: flex-end; gap: 16px; }
+    .step { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #16a34a; }
+    .step::after { content: ""; flex: 1; height: 1px; background: #e4e4e7; }
+    .step .ok { order: 2; color: #16a34a; font-size: 14px; }
+    .step.cur { color: #71717a; }
+    .tutor { font-size: 14px; line-height: 1.65; }
+    .me { align-self: flex-end; max-width: 75%; background: #f0fdf4; border-radius: 10px; padding: 10px 14px; font-size: 14px; line-height: 1.6; color: #3f3f46; }
+    .tags { display: flex; gap: 6px; margin-top: 8px; }
+    .tag { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; font-size: 12px; font-weight: 500; }
+    .fb { border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; border-radius: 8px; padding: 12px 14px; font-size: 14px; line-height: 1.6; }
+
+    /* the new end strip */
+    .end { flex-shrink: 0; display: flex; align-items: center; gap: 16px; border-top: 1px solid #e4e4e7; padding: 14px 16px 14px 24px; }
+    .end .txt { flex: 1; min-width: 0; }
+    .end b { display: block; font-size: 14px; font-weight: 600; }
+    .end span { display: block; margin-top: 2px; font-size: 13px; color: #71717a; }
+    .btns { display: flex; gap: 8px; }
+    .btn { height: 36px; padding: 0 16px; border-radius: 6px; font-family: inherit; font-size: 14px; font-weight: 500; border: 1px solid transparent; background: #16a34a; color: #ffffff; white-space: nowrap; }
+    .btn.sec2 { background: #ffffff; color: #09090b; border-color: #e4e4e7; }
+
+    /* the error strip */
+    .err { flex-shrink: 0; display: flex; align-items: center; gap: 16px; border-top: 1px solid #fecaca; background: #fef2f2; padding: 12px 16px 12px 24px; color: #b91c1c; font-size: 13px; line-height: 1.55; }
+    .err .txt { flex: 1; }
+    .err .btn { height: 32px; padding: 0 14px; font-size: 13px; background: #ffffff; color: #b91c1c; border-color: #fecaca; }
+
+    /* the input, still there behind an error */
+    .input { flex-shrink: 0; border-top: 1px solid #e4e4e7; padding: 14px 16px; }
+    .box { display: flex; align-items: center; justify-content: space-between; border: 1px solid #e4e4e7; border-radius: 8px; padding: 8px 8px 8px 14px; font-size: 14px; color: #a1a1aa; }
+    .box .btn { height: 32px; padding: 0 14px; font-size: 13px; opacity: 0.5; }
+
+    /* a page that could not load */
+    .blank { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+    .blank p { margin: 0; font-size: 14px; color: #52525b; }
+    .rtop { height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #52525b; }
+    .rtop .div { width: 1px; height: 18px; background: #e4e4e7; }
+
+    @media (max-width: 1023px) {
+      .reading { display: none; }
+      .sec, .prog, .tool .lbl { display: none; }
+      .tool { width: 40px; justify-content: center; padding: 0; height: 32px; }
+      .tabs { display: flex; gap: 4px; padding: 6px 8px; border-bottom: 1px solid #e4e4e7; }
+      .tabs span { flex: 1; text-align: center; padding: 6px 0; border-radius: 6px; font-size: 14px; font-weight: 500; color: #71717a; }
+      .tabs span.on { background: #f4f4f5; color: #09090b; }
+      .log { padding: 16px 20px 8px; }
+    }
+    @media (max-width: 639px) {
+      .end { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px 16px 16px; }
+      .end .btns { flex-direction: column-reverse; }
+      .end .btn { height: 40px; width: 100%; }
+      .err { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 16px 14px; }
+      .err .btn { height: 36px; width: 100%; }
+      .blank .btn { width: 100%; height: 40px; }
+    }
+  </style>
+</helmet>
+<div class="app">
+
+  <!-- the reading step: a reading that could not load, or does not exist -->
+  <sc-if value="{{readstep}}">
+  <div class="rtop"><span>&lsaquo;&nbsp; Readings</span><span class="div"></span></div>
+  <div class="blank">
+    <p>{{blankText}}</p>
+    <button class="btn {{blankBtnClass}}">{{blankBtn}}</button>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{session}}">
+  <div class="bar">
+    <span class="x"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+    <span class="title">{{title}}<span class="sec">{{section}}</span></span>
+    <sc-if value="{{hasReading}}"><span class="prog"><sc-for list="{{bars}}" as="b"><i class="{{b.cls}}"></i></sc-for></span>
+    <span class="tools">
+      <span class="tool"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l3 3-3 3-3-3zM18 9l3 3-3 3-3-3zM6 9l3 3-3 3-3-3zM12 15l3 3-3 3-3-3z"/></svg><span class="lbl">Components</span></span>
+      <span class="tool"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></svg><span class="lbl">Rubric</span></span>
+    </span></sc-if>
+  </div>
+  <sc-if value="{{hasReading}}"><div class="tabs"><span>Reading</span><span class="on">Chat</span></div></sc-if>
+  <div class="body">
+    <sc-if value="{{hasReading}}"><div class="reading">
+      <div class="rbar"><span>&lsaquo;&nbsp; 1 of 2 &nbsp;&rsaquo;</span><span>94%</span></div>
+      <div class="pdf"><i class="h"></i><i></i><i></i><i></i><i class="s"></i><i></i><i></i><i class="s"></i><i class="h"></i><i></i><i></i><i></i><i class="s"></i><i></i><i></i><i class="s"></i><i></i><i></i><i></i></div>
+    </div></sc-if>
+    <div class="chat">
+
+      <sc-if value="{{passed}}">
+      <div class="log">
+        <div class="step">Exemplify<span class="ok">&#10003;</span></div>
+        <div class="tutor">Both examples fit, and your non-example shows where the line is. Now for the last step: describe a business model through an analogy, simile, or metaphor of your own.</div>
+        <div class="step">Illustrate<span class="ok">&#10003;</span></div>
+        <div class="me">A business model is like a recipe. The ingredients are what the customer pays for, and the method is how the company makes money from them.</div>
+        <div class="tutor">That works well. The recipe captures both halves: the value the customer gets and the way the company profits from delivering it.</div>
+      </div>
+      <div class="end">
+        <div class="txt"><b>Session complete</b><span>You passed all four steps of SEE-I.</span></div>
+        <div class="btns"><button class="btn sec2">Review session</button><button class="btn">Back to reading</button></div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{failed}}">
+      <div class="log">
+        <div class="me">A business model is what a company sells.</div>
+        <div class="tutor">You named one part of it. Think about what else the reading says a business model has to explain.<div class="tags"><span class="tag">Accuracy</span><span class="tag">Completeness</span></div></div>
+        <div class="me">A business model is the plan a company follows to sell its product.</div>
+        <div class="tutor">That is closer, but it still leaves out how the company makes a profit.<div class="tags"><span class="tag">Completeness</span></div></div>
+        <div class="fb">You have used the maximum number of tries for this step without passing. This marks the end of this session. Your instructor has been notified.</div>
+      </div>
+      <div class="end">
+        <div class="txt"><b>Session ended</b></div>
+        <div class="btns"><button class="btn sec2">Review session</button><button class="btn">Back to reading</button></div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{erroring}}">
+      <div class="log">
+        <div class="step cur">State</div>
+        <div class="tutor">To start, state in a sentence or two what a business model is.</div>
+        <sc-if value="{{sent}}"><div class="me">A business model is how a company plans to make money from what it offers customers.</div></sc-if>
+      </div>
+      <div class="err">
+        <div class="txt">{{errText}}</div>
+        <button class="btn">Try again</button>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{startfail}}">
+      <div class="log"></div>
+      <div class="err">
+        <div class="txt">Something went wrong while starting this session.</div>
+        <button class="btn">Try again</button>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{tutorblank}}">
+      <div class="blank">
+        <p>Couldn't load this reading.</p>
+        <button class="btn sec2">Try again</button>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"screen":{"editor":"select","options":["passed","failed","offline","sendfail","startfail","tutorfail","readfail","readmissing"],"default":"passed"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.screen ?? 'passed';
+    const session = !['readfail', 'readmissing'].includes(s);
+    const done = s === 'passed' ? 4 : s === 'failed' ? 0 : 0;
+    const bars = [0, 1, 2, 3].map((i) => ({
+      cls: i < done ? 'done' : (i === done && s !== 'tutorfail' ? 'on' : (s === 'tutorfail' && i === 0 ? 'on' : '')),
+    }));
+    return {
+      session,
+      readstep: !session,
+      title: s === 'tutorfail' ? '' : 'Business Model',
+      section: s === 'tutorfail' ? '' : 'STRAMA K31',
+      bars,
+      hasReading: s !== 'tutorfail',
+      passed: s === 'passed',
+      failed: s === 'failed',
+      erroring: s === 'offline' || s === 'sendfail',
+      sent: true,
+      errText: s === 'offline'
+        ? "You're not connected to the internet. Check your connection and try again."
+        : 'Something went wrong while sending your answer.',
+      startfail: s === 'startfail',
+      tutorblank: s === 'tutorfail',
+      blankText: s === 'readmissing' ? "This reading isn't available." : "Couldn't load this reading.",
+      blankBtn: s === 'readmissing' ? 'Back to classes' : 'Try again',
+      blankBtnClass: s === 'readmissing' ? '' : 'sec2',
+    };
+  }
+}
+</script>
+</body>
+</html>

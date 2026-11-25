@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #09090b; background: #ffffff; }
+    .top { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; }
+    .wrap { max-width: 1148px; margin: 0 auto; padding: 24px 24px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; }
+    .crumbs { font-size: 13px; display: inline-flex; align-items: center; gap: 6px; color: #52525b; }
+    .back { display: none; font-size: 13px; color: #52525b; align-items: center; gap: 4px; }
+    .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .prog { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #71717a; }
+    .bar { width: 160px; height: 6px; border-radius: 999px; background: #f4f4f5; overflow: hidden; }
+    .bar div { height: 100%; width: 50%; background: #16a34a; border-radius: 999px; }
+    .seg { align-self: flex-start; display: inline-flex; padding: 3px; background: #f4f4f5; border-radius: 8px; gap: 2px; }
+    .seg span { width: 104px; text-align: center; font-size: 13px; font-weight: 500; color: #71717a; padding: 5px 0; border-radius: 6px; }
+    .seg span.on { background: #ffffff; color: #09090b; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .seg em { font-style: normal; color: #a1a1aa; margin-left: 4px; }
+    .badge { display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 22px; border-radius: 999px; border: 1px solid; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+    .ns { border-color: #e4e4e7; color: #71717a; background: #ffffff; }
+    .ok { border-color: #bbf7d0; color: #15803d; background: #f0fdf4; }
+    .bad { border-color: #fecaca; color: #b91c1c; background: #fef2f2; }
+    .list { border: 1px solid #e4e4e7; border-radius: 10px; overflow: hidden; }
+    .lrow { display: flex; align-items: center; gap: 20px; padding: 14px 16px 14px 20px; border-top: 1px solid #e4e4e7; }
+    .lrow:first-child { border-top: none; }
+    .main { flex: 1; min-width: 0; }
+    .title { font-size: 14px; font-weight: 500; }
+    .desc { font-size: 13px; color: #71717a; margin-top: 2px; }
+    .chev { width: 18px; height: 18px; stroke: #a1a1aa; flex-shrink: 0; }
+
+    @media (max-width: 1023px) {
+      .wrap { padding: 24px 32px 40px; }
+    }
+    /* phone: back link, progress under the name, filter across the width */
+    @media (max-width: 639px) {
+      .top { padding: 0 16px; }
+      .wrap { padding: 16px 16px 32px; gap: 16px; }
+      .crumbs { display: none; }
+      .back { display: inline-flex; }
+      .head { flex-direction: column; align-items: stretch; gap: 10px; }
+      h1 { font-size: 22px; }
+      .bar { flex: 1; width: auto; }
+      .seg { align-self: stretch; display: flex; }
+      .seg span { flex: 1; width: auto; }
+      .lrow { gap: 12px; padding: 14px 12px 14px 16px; }
+    }
+  </style>
+</helmet>
+<div>
+  <div class="top">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="21" height="21" viewBox="0 0 100 100" fill="#16a34a">
+        <path d="M32 26 C42 23 58 23 68 26 C58 29 42 29 32 26 Z"></path>
+        <path d="M50 70 C38 56 25 46 8 40 C10 42 11 44 12 46 C27 53 40 60 50 78 Z"></path>
+        <path d="M50 70 C62 56 75 46 92 40 C90 42 89 44 88 46 C73 53 60 60 50 78 Z"></path>
+        <path d="M47 66 C49 64 51 64 53 66 C52 74 51 79 50 86 C49 79 48 74 47 66 Z"></path>
+      </svg>
+      <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: #16a34a;">SEE-I</span></span>
+    </div>
+    <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #71717a;">NT</div>
+  </div>
+
+  <div class="wrap">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="crumbs"><span>Classes</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg><span style="color: #09090b;">STRAMA K31</span></div>
+      <div class="back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>Classes</div>
+      <div class="head">
+        <div><h1>STRAMA</h1><div style="font-size: 14px; font-weight: 500; color: #52525b; margin-top: 2px;">K31</div></div>
+      </div>
+    </div>
+
+    <div class="seg">
+      <span class="on">All<em>4</em></span>
+      <span>To do<em>2</em></span>
+      <span>Finished<em>2</em></span>
+    </div>
+
+    <div class="list">
+      <div class="lrow">
+        <div class="main"><div class="title">Business Model</div><div class="desc">Customer value proposition, profit formula</div></div>
+        <span class="badge ok">Complete</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+      <div class="lrow">
+        <div class="main"><div class="title">Strategy</div><div class="desc">Coordinated actions to outperform rivals</div></div>
+        <span class="badge bad">Failed</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+      <div class="lrow">
+        <div class="main"><div class="title">Strategic Vision</div><div class="desc">Direction, market position, future course</div></div>
+        <span class="badge ns">Not started</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+      <div class="lrow">
+        <div class="main"><div class="title">Recovery to the Bisector</div><div class="desc">Where to stand between shots in tennis</div></div>
+        <span class="badge ns">Not started</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

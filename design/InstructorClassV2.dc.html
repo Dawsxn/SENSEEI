@@ -1,0 +1,318 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    html, body { height: 100%; }
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #09090b; background: #ffffff; }
+    .top { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; }
+    .brand { display: flex; align-items: center; gap: 32px; height: 56px; }
+    .word { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .tabs { display: flex; gap: 24px; height: 56px; }
+    .tabs span { display: flex; align-items: center; font-size: 14px; font-weight: 500; color: #71717a; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .tabs span.on { color: #09090b; border-color: #09090b; }
+    .tabs2 { display: none; }
+    .avatar { width: 32px; height: 32px; border-radius: 999px; background: #f4f4f5; }
+
+    .wrap { max-width: 1148px; margin: 0 auto; padding: 24px 24px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; }
+    .crumbs { font-size: 13px; display: inline-flex; align-items: center; gap: 6px; color: #52525b; }
+    .back { display: none; font-size: 13px; color: #52525b; align-items: center; gap: 4px; }
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-top: 10px; }
+    h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .sub { font-size: 14px; font-weight: 500; color: #52525b; margin-top: 2px; }
+    .right { display: flex; align-items: center; gap: 10px; position: relative; }
+    .code { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 6px 0 12px; border: 1px solid #e4e4e7; border-radius: 8px; }
+    .code small { font-size: 12px; color: #71717a; }
+    .code b { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; }
+    .btn { height: 32px; padding: 0 12px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; display: inline-flex; align-items: center; gap: 6px; }
+    .btn.sm { height: 26px; padding: 0 8px; font-size: 12px; }
+    .btn.primary { background: #16a34a; border-color: #16a34a; color: #ffffff; }
+    .btn.danger { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+    .icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+    .icon.sm { width: 30px; height: 30px; border: none; background: transparent; }
+
+    .bar2 { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; }
+    .seg { display: inline-flex; padding: 3px; background: #f4f4f5; border-radius: 8px; gap: 2px; }
+    .seg span { width: 112px; text-align: center; font-size: 13px; font-weight: 500; color: #71717a; padding: 5px 0; border-radius: 6px; }
+    .seg span.on { background: #ffffff; color: #09090b; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .seg em { font-style: normal; color: #a1a1aa; margin-left: 4px; }
+
+    .list { border: 1px solid #e4e4e7; border-radius: 10px; overflow: hidden; }
+    .lrow { display: flex; align-items: center; gap: 16px; padding: 14px 16px 14px 20px; border-top: 1px solid #e4e4e7; position: relative; }
+    .lrow:first-child { border-top: none; }
+    .main { flex: 1; min-width: 0; }
+    .title { font-size: 14px; font-weight: 500; }
+    .desc { font-size: 13px; color: #71717a; margin-top: 2px; }
+    .count { font-size: 13px; color: #71717a; white-space: nowrap; }
+    .flagpill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: 999px; border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; font-size: 12px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+    .chev { width: 18px; height: 18px; stroke: #a1a1aa; flex-shrink: 0; }
+    .init { width: 32px; height: 32px; border-radius: 999px; background: #f4f4f5; font-size: 11px; font-weight: 500; color: #71717a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .notice { border: 1px dashed #e4e4e7; border-radius: 10px; padding: 40px 16px; text-align: center; font-size: 14px; color: #71717a; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .steps { display: flex; gap: 4px; width: 132px; flex-shrink: 0; }
+    .steps i { flex: 1; height: 4px; border-radius: 2px; background: #e4e4e7; }
+    .steps i.ok { background: #16a34a; }
+    .steps i.bad { background: #fca5a5; }
+    .badge { display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: 96px; height: 22px; border-radius: 999px; border: 1px solid; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+    .ns { border-color: #e4e4e7; color: #71717a; background: #ffffff; }
+    .badb { border-color: #fecaca; color: #b91c1c; background: #fef2f2; }
+    .date { font-size: 13px; color: #71717a; width: 52px; text-align: right; }
+    .chev.none { stroke: transparent; }
+    .label { font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #71717a; }
+    .scard { border: 1px solid #e4e4e7; border-radius: 10px; }
+    .shead { display: flex; align-items: center; gap: 6px; padding: 14px 16px; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; }
+    .info { width: 14px; height: 14px; border: 1.5px solid #a1a1aa; border-radius: 999px; box-sizing: border-box; }
+    .sbody { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+    .srow { display: flex; align-items: center; gap: 12px; }
+    .srow .lab { width: 76px; color: #3f3f46; }
+    .srow .lab2 { flex: 1; color: #3f3f46; }
+    .srow .lab2 span { color: #a1a1aa; }
+    .track { flex: 1; height: 6px; border-radius: 999px; background: #f4f4f5; overflow: hidden; }
+    .track i { display: block; height: 100%; background: #16a34a; border-radius: 999px; }
+    .num { width: 40px; text-align: right; color: #52525b; font-variant-numeric: tabular-nums; }
+
+    .pop { position: absolute; z-index: 5; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 4px; min-width: 200px; }
+    .pop div { padding: 8px 10px; font-size: 13px; border-radius: 6px; }
+    .pop div.red { color: #b91c1c; }
+    .pop div.hl { background: #f4f4f5; }
+
+    .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+    .dlg { width: 100%; max-width: 480px; background: #ffffff; border-radius: 10px; padding: 24px; box-shadow: 0 16px 40px rgba(0,0,0,0.18); box-sizing: border-box; }
+    .dlg h2 { margin: 0; font-size: 16px; font-weight: 600; }
+    .dlg p { margin: 6px 0 0; font-size: 14px; color: #71717a; }
+    .pick { margin-top: 16px; border: 1px solid #e4e4e7; border-radius: 8px; }
+    .pick label { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-top: 1px solid #e4e4e7; }
+    .pick label:first-child { border-top: none; }
+    .box { width: 16px; height: 16px; border: 1px solid #a1a1aa; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+    .box.on { background: #16a34a; border-color: #16a34a; }
+    .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    @media (max-width: 1023px) {
+      .wrap { padding: 24px 32px 40px; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 639px) {
+      .top { padding: 0 16px; }
+      .tabs { display: none; }
+      .tabs2 { display: flex; gap: 24px; height: 48px; padding: 0 16px; border-bottom: 1px solid #e4e4e7; }
+      .tabs2 span { display: flex; align-items: center; font-size: 14px; font-weight: 500; color: #71717a; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+      .tabs2 span.on { color: #09090b; border-color: #09090b; }
+      .wrap { padding: 16px 16px 32px; gap: 16px; }
+      .crumbs { display: none; }
+      .back { display: inline-flex; }
+      .head { flex-wrap: wrap; }
+      h1 { font-size: 22px; }
+      .right { width: 100%; order: 3; }
+      .code { flex: 1; }
+      .more-wide { position: absolute; top: 0; right: 0; }
+      .bar2 { flex-direction: column; align-items: stretch; }
+      .seg { display: flex; }
+      .seg span { flex: 1; width: auto; }
+      .bar2 .btn { justify-content: center; height: 36px; }
+      .lrow { gap: 12px; padding: 14px 12px 14px 16px; }
+      .joined { display: none; }
+      .studentlist .lrow { flex-wrap: wrap; }
+      .studentlist .steps { order: 5; width: 100%; }
+      .studentlist .date { display: none; }
+      .stats { grid-template-columns: 1fr; }
+      .scrim { align-items: flex-end; padding: 0; }
+      .dlg { max-width: none; border-radius: 14px 14px 0 0; }
+      .acts .btn { flex: 1; justify-content: center; height: 36px; }
+      .pop { left: 0; right: 0; }
+    }
+  </style>
+</helmet>
+<div>
+  <div class="top">
+    <div class="brand">
+      <span class="word">SEN<span style="color: #16a34a;">SEE-I</span></span>
+      <div class="tabs"><span class="on">Classes</span><span>Readings</span></div>
+    </div>
+    <span class="avatar"></span>
+  </div>
+  <div class="tabs2"><span class="on">Classes</span><span>Readings</span></div>
+
+  <div class="wrap">
+    <sc-if value="{{studentPage}}">
+    <div>
+      <div class="crumbs"><span>Classes</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg><span>STRAMA K31</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg><span style="color: #09090b;">Rafael Lim</span></div>
+      <div class="back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>STRAMA K31</div>
+      <div class="head">
+        <div><h1>Rafael Lim</h1><div class="sub" style="font-weight: 400; color: #71717a;">rafael_lim@dlsu.edu.ph &middot; Joined Nov 24</div></div>
+        <button class="btn icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="#3f3f46"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+      </div>
+    </div>
+    <div class="label">Readings</div>
+    <div class="list studentlist">
+      <div class="lrow">
+        <div class="main"><div class="title">Strategy</div><div class="desc">Coordinated actions to outperform rivals</div></div>
+        <span class="steps"><i class="ok"></i><i class="bad"></i><i></i><i></i></span>
+        <span class="badge badb"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>Flagged</span>
+        <span class="date">Nov 18</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+      <div class="lrow">
+        <div class="main"><div class="title">Strategic Vision</div><div class="desc">Direction, market position, future course</div></div>
+        <span class="steps"><i></i><i></i><i></i><i></i></span>
+        <span class="badge ns">Not started</span>
+        <span class="date"></span>
+        <svg class="chev none" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+    </div>
+    </sc-if>
+    <sc-if value="{{classPage}}">
+    <div style="position: relative;">
+      <div class="crumbs"><span>Classes</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg><span style="color: #09090b;">STRAMA K31</span></div>
+      <div class="back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>Classes</div>
+      <div class="head">
+        <div><h1>STRAMA</h1><div class="sub">K31</div></div>
+        <div class="right">
+          <div class="code"><small>Join code</small><b>4KQ2-9TXM</b><button class="btn sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>Copy</button></div>
+          <button class="btn icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="#3f3f46"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+          <sc-if value="{{moreMenu}}"><div class="pop" style="top: 42px; right: 0;"><div class="hl">Edit class</div><div>New join code</div><div class="red">Delete class</div></div></sc-if>
+        </div>
+      </div>
+    </div>
+
+    <div class="bar2">
+      <div class="seg">
+        <span class="{{tR}}">Readings<em>{{nR}}</em></span>
+        <span class="{{tS}}">Students<em>{{nS}}</em></span>
+        <span class="{{tT}}">Statistics</span>
+      </div>
+      <sc-if value="{{readings}}"><button class="btn">+ Add reading</button></sc-if>
+      <sc-if value="{{addMenu}}"><div class="pop" style="top: 42px; right: 0;"><div class="hl">Upload a new reading</div><div>Choose from your readings</div></div></sc-if>
+    </div>
+
+    <sc-if value="{{readingRows}}">
+    <div class="list">
+      <div class="lrow">
+        <div class="main"><div class="title">Strategy</div><div class="desc">Coordinated actions to outperform rivals</div></div>
+        <span class="flagpill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>1 flagged</span>
+        <span class="count">5 sessions</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+      <div class="lrow">
+        <div class="main"><div class="title">Strategic Vision</div><div class="desc">Direction, market position, future course</div></div>
+        <span class="count">2 sessions</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+    </div>
+    </sc-if>
+    <sc-if value="{{readingsEmpty}}"><div class="notice">No readings available</div></sc-if>
+
+    <sc-if value="{{studentRows}}">
+    <div class="list">
+      <div class="lrow">
+        <span class="init">NT</span>
+        <div class="main"><div class="title">Nikko Tan</div><div class="desc">nikko_tan@dlsu.edu.ph</div></div>
+        <span class="count joined">Joined Nov 24</span>
+        <button class="btn icon sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="#71717a"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+        <sc-if value="{{rowMenu}}"><div class="pop" style="top: 48px; right: 12px; left: auto;"><div class="red hl">Remove from class</div></div></sc-if>
+      </div>
+      <div class="lrow">
+        <span class="init">CO</span>
+        <div class="main"><div class="title">Chelsea Ocampo</div><div class="desc">chelsea_ocampo@dlsu.edu.ph</div></div>
+        <span class="count joined">Joined Nov 24</span>
+        <button class="btn icon sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="#71717a"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+      <div class="lrow">
+        <span class="init">RL</span>
+        <div class="main"><div class="title">Rafael Lim</div><div class="desc">rafael_lim@dlsu.edu.ph</div></div>
+        <span class="flagpill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>Flagged</span>
+        <span class="count joined">Joined Nov 24</span>
+        <button class="btn icon sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="#71717a"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </div>
+    </div>
+    </sc-if>
+    <sc-if value="{{studentsEmpty}}"><div class="notice">No students have joined this class yet.</div></sc-if>
+
+    <sc-if value="{{statCards}}">
+    <div class="stats">
+      <div class="scard">
+        <div class="shead">Pass rate by step <span class="info"></span></div>
+        <div class="sbody">
+          <div class="srow"><span class="lab">State</span><span class="track"><i style="width: 28%;"></i></span><span class="num">28%</span></div>
+          <div class="srow"><span class="lab">Elaborate</span><span class="track"><i style="width: 83%;"></i></span><span class="num">83%</span></div>
+          <div class="srow"><span class="lab">Exemplify</span><span class="track"><i style="width: 71%;"></i></span><span class="num">71%</span></div>
+          <div class="srow"><span class="lab">Illustrate</span><span class="track"><i style="width: 100%;"></i></span><span class="num">100%</span></div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="shead">Most-failed criteria <span class="info"></span></div>
+        <div class="sbody">
+          <div class="srow"><span class="lab2">Completeness <span>&middot; State</span></span><span class="num">8</span></div>
+          <div class="srow"><span class="lab2">Clarity <span>&middot; State</span></span><span class="num">6</span></div>
+          <div class="srow"><span class="lab2">Brevity <span>&middot; State</span></span><span class="num">5</span></div>
+          <div class="srow"><span class="lab2">Own Words <span>&middot; State</span></span><span class="num">5</span></div>
+          <div class="srow"><span class="lab2">Explicit Mapping <span>&middot; Exemplify</span></span><span class="num">2</span></div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="shead">Average tries to pass <span class="info"></span></div>
+        <div class="sbody">
+          <div class="srow"><span class="lab2">State</span><span class="num">1.6</span></div>
+          <div class="srow"><span class="lab2">Elaborate</span><span class="num">1.2</span></div>
+          <div class="srow"><span class="lab2">Exemplify</span><span class="num">1.4</span></div>
+          <div class="srow"><span class="lab2">Illustrate</span><span class="num">1.0</span></div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+    <sc-if value="{{statsEmpty}}"><div class="notice">Statistics show once a student finishes a session.</div></sc-if>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{picker}}">
+  <div class="scrim">
+    <div class="dlg">
+      <h2>Choose from your readings</h2>
+      <div class="pick">
+        <label><span class="box on"></span><div><div class="title">Business Model</div><div class="desc">Customer value proposition, profit formula</div></div></label>
+        <label><span class="box"></span><div><div class="title">Recovery to the Bisector</div><div class="desc">Where to stand between shots in tennis</div></div></label>
+      </div>
+      <div class="acts"><button class="btn">Cancel</button><button class="btn primary">Add</button></div>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"screen":{"editor":"select","options":["readings","add-menu","picker","more-menu","students","student-menu","stats","readings-empty","students-empty","stats-empty","student-page"],"default":"readings"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.screen ?? 'readings';
+    const tab = s.startsWith('student') ? 'S' : s.startsWith('stats') ? 'T' : 'R';
+    const empty = s.endsWith('-empty');
+    return {
+      tR: tab === 'R' ? 'on' : '', tS: tab === 'S' ? 'on' : '', tT: tab === 'T' ? 'on' : '',
+      nR: s === 'readings-empty' ? '0' : '2', nS: s === 'students-empty' ? '0' : '3',
+      readings: tab === 'R',
+      readingRows: tab === 'R' && !empty,
+      readingsEmpty: s === 'readings-empty',
+      studentRows: tab === 'S' && !empty,
+      studentsEmpty: s === 'students-empty',
+      statCards: tab === 'T' && !empty,
+      statsEmpty: s === 'stats-empty',
+      moreMenu: s === 'more-menu',
+      addMenu: s === 'add-menu',
+      rowMenu: s === 'student-menu',
+      picker: s === 'picker',
+      studentPage: s === 'student-page',
+      classPage: s !== 'student-page',
+    };
+  }
+}
+</script>
+</body>
+</html>

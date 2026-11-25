@@ -45,8 +45,8 @@ from backend.orchestrator import MAX_ATTEMPTS  # noqa: E402
 
 # Static, not written by the Tutor: it is the same sentence every time, and
 # generating it invites the model to soften it or add a hint nobody can use.
-FALLBACK = ("You have used all your attempts for this step. Your instructor has "
-            "been notified and can go through it with you.")
+FALLBACK = ("You have used the maximum number of tries for this step without passing. "
+            "This marks the end of this session. Your instructor has been notified.")
 
 DIM, BOLD, GREEN, RED, RESET = "\033[2m", "\033[1m", "\033[32m", "\033[31m", "\033[0m"
 

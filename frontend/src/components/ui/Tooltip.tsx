@@ -32,7 +32,7 @@ export function Tooltip({ text, align = "right", children }: TooltipProps) {
       {children}
       <span
         role="tooltip"
-        className={`pointer-events-none absolute top-full z-20 mt-1.5 hidden w-max max-w-[230px] rounded-md border bg-background px-2.5 py-1.5 text-[12px] font-normal leading-snug text-muted-foreground shadow-lg group-focus-within:block group-hover:block ${
+        className={`pointer-events-none absolute top-full z-20 mt-1.5 hidden w-max max-w-[230px] rounded-md border bg-card px-2.5 py-1.5 text-[12px] font-normal leading-snug text-muted-foreground shadow-lg group-focus-within:block group-hover:block ${
           align === "right" ? "left-0" : "right-0"
         }`}
       >

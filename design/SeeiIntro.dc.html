@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #09090b; background: #ffffff; }
+    .top { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; }
+    .page { max-width: 688px; margin: 0 auto; padding: 40px 24px 48px; box-sizing: border-box; }
+    .count { font-size: 13px; color: #71717a; margin-bottom: 10px; }
+    h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    p { margin: 12px 0 0; font-size: 15px; line-height: 1.65; color: #3f3f46; }
+    dl { margin: 20px 0 0; border: 1px solid #e4e4e7; border-radius: 10px; }
+    dl div { display: flex; gap: 20px; padding: 16px 20px; border-top: 1px solid #e4e4e7; }
+    dl div:first-child { border-top: none; }
+    dt { width: 96px; flex-shrink: 0; padding-top: 2px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #16a34a; }
+    dd { margin: 0; font-size: 15px; line-height: 1.6; }
+    .parts { margin: 20px 0 0; display: flex; flex-direction: column; border: 1px solid #e4e4e7; border-radius: 10px; }
+    .part { display: flex; gap: 14px; padding: 16px 20px; border-top: 1px solid #e4e4e7; align-items: flex-start; }
+    .part:first-child { border-top: none; }
+    .icon { width: 36px; height: 36px; flex-shrink: 0; border: 1px solid #e4e4e7; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .part b { font-weight: 600; }
+    .part span { font-size: 15px; line-height: 1.6; color: #3f3f46; }
+    .narrow { display: none; }
+    .stages { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+    .stage { display: flex; gap: 20px; align-items: center; border: 1px solid #e4e4e7; border-radius: 10px; padding: 16px; }
+    .pic { width: 200px; flex-shrink: 0; }
+    .screen { height: 112px; border: 1px solid #d4d4d8; border-radius: 8px; background: #fafafa; display: flex; gap: 6px; padding: 8px; box-sizing: border-box; }
+    .pane { flex: 1; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 6px; position: relative; }
+    .ln { display: block; height: 5px; border-radius: 3px; background: #d4d4d8; }
+    .ln.s { width: 65%; }
+    .done { position: absolute; right: 6px; bottom: 6px; font-size: 9px; font-weight: 600; color: #ffffff; background: #16a34a; border-radius: 4px; padding: 2px 6px; }
+    .chat .tb { display: block; height: 5px; width: 80%; border-radius: 3px; background: #d4d4d8; }
+    .chat .tb.s { width: 55%; }
+    .chat .sb { display: block; height: 14px; width: 60%; margin-left: auto; border-radius: 4px; background: #dcfce7; }
+    .chat .box { display: block; margin-top: auto; height: 14px; border: 1px solid #d4d4d8; border-radius: 4px; }
+    .three { flex-direction: column; justify-content: center; align-items: flex-start; gap: 5px; padding: 10px 14px; background: #ffffff; }
+    .pill { font-size: 11px; font-weight: 600; color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 999px; padding: 1px 8px; }
+    .tabs { display: flex; gap: 4px; }
+    .tabs span { flex: 1; text-align: center; font-size: 10px; font-weight: 500; color: #71717a; padding: 3px 0; border-radius: 4px; }
+    .tabs span.on { background: #e4e4e7; color: #09090b; }
+    .ref { margin-top: 16px; border: 1px solid #e4e4e7; border-radius: 10px; padding: 16px 20px; }
+    .ref p { margin-top: 10px; }
+    .mini { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 6px; font-size: 13px; font-weight: 500; }
+    .exlabel { margin-top: 14px; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: #71717a; }
+    .crit { display: flex; gap: 12px; margin-top: 6px; padding: 12px; background: #fafafa; border-radius: 8px; font-size: 13px; line-height: 1.55; color: #52525b; }
+    .ctag { flex-shrink: 0; align-self: flex-start; height: 20px; display: inline-flex; align-items: center; padding: 0 8px; border: 1px solid #e4e4e7; border-radius: 999px; font-size: 11px; font-weight: 500; color: #3f3f46; background: #ffffff; }
+    .tag { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; font-size: 12px; font-weight: 500; vertical-align: middle; }
+    .cap { display: flex; flex-direction: column; gap: 4px; }
+    .cap b { font-size: 15px; font-weight: 600; }
+    .cap span { font-size: 15px; line-height: 1.6; color: #3f3f46; }
+    .actions { display: flex; justify-content: flex-end; margin-top: 28px; }
+    .btn { height: 36px; padding: 0 20px; border-radius: 6px; font-family: inherit; font-size: 14px; font-weight: 500; background: #16a34a; color: #ffffff; border: none; }
+    .dots { display: inline-flex; gap: 4px; margin-left: 6px; vertical-align: middle; }
+    .dots i { width: 6px; height: 6px; border-radius: 999px; background: #d4d4d8; display: block; }
+    .dots i.on { background: #16a34a; }
+
+    /* the reading page, with the link */
+    .wrap { max-width: 1148px; margin: 0 auto; padding: 24px 24px 48px; box-sizing: border-box; }
+    .crumbs { font-size: 13px; color: #52525b; }
+    .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-top: 10px; }
+    .sub { font-size: 14px; color: #71717a; margin-top: 4px; }
+    .startcol { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .help { position: relative; width: 32px; height: 32px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: #f4f4f5; }
+    .tip { position: absolute; top: 40px; right: -4px; white-space: nowrap; font-size: 12px; font-weight: 500; color: #ffffff; background: #18181b; border-radius: 6px; padding: 5px 8px; z-index: 3; }
+    .link { font-size: 13px; color: #52525b; text-decoration: underline; text-underline-offset: 3px; }
+    .ghost { margin-top: 28px; display: grid; grid-template-columns: 1fr 420px; gap: 32px; }
+    .ghost div { height: 220px; border: 1px solid #e4e4e7; border-radius: 10px; background: #fafafa; }
+
+    /* the dialog */
+    .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .dlg { width: 100%; max-width: 460px; background: #ffffff; border-radius: 10px; padding: 24px; box-shadow: 0 16px 40px rgba(0,0,0,0.18); box-sizing: border-box; }
+    .dlg h2 { margin: 0; font-size: 16px; font-weight: 600; }
+    .dlg p { font-size: 14px; color: #71717a; margin-top: 8px; line-height: 1.6; }
+
+    @media (max-width: 1023px) { .wide { display: none !important; } .narrow { display: block !important; } }
+    @media (max-width: 639px) {
+      .top { padding: 0 16px; }
+      .page { padding: 24px 16px 32px; }
+      h1 { font-size: 22px; }
+      dl div { flex-direction: column; gap: 4px; padding: 14px 16px; }
+      .part { padding: 14px 16px; }
+      .stage { flex-direction: column; align-items: stretch; gap: 14px; }
+      .pic { width: 100%; }
+      .screen { height: 120px; }
+      .actions .btn { width: 100%; height: 40px; }
+      .wrap { padding: 16px 16px 32px; }
+      .head { flex-direction: column; align-items: stretch; gap: 16px; }
+      .startcol { align-items: stretch; }
+      .startcol .btn { width: 100%; height: 40px; }
+      .link { text-align: center; }
+      .ghost { grid-template-columns: 1fr; }
+      .scrim { align-items: flex-end; padding: 0; }
+      .dlg { border-radius: 14px 14px 0 0; max-width: none; }
+    }
+  </style>
+</helmet>
+<div>
+  <div class="top">
+    <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">SEN<span style="color: #16a34a;">SEE-I</span></span>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <sc-if value="{{reading}}"><div class="help"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><span class="tip">How SEE-I works</span></div></sc-if>
+      <div style="width: 28px; height: 28px; border-radius: 999px; background: #f4f4f5;"></div>
+    </div>
+  </div>
+
+  <sc-if value="{{about}}">
+  <div class="page">
+    <div class="count">1 of 3</div>
+    <h1>How SEE-I works</h1>
+    <p>In SENSEE-I, you learn a concept from a reading by going through the four steps of SEE-I:</p>
+    <dl>
+      <div><dt>State</dt><dd>Say what the concept is, briefly and clearly.</dd></div>
+      <div><dt>Elaborate</dt><dd>Explain it in more detail, in your own words.</dd></div>
+      <div><dt>Exemplify</dt><dd>Give your own example of it, plus one thing that is not an example.</dd></div>
+      <div><dt>Illustrate</dt><dd>Compare it to something outside the reading, like an analogy or metaphor, that is easy to picture.</dd></div>
+    </dl>
+    <div class="actions"><button class="btn">Continue</button></div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{session}}">
+  <div class="page">
+    <div class="count">2 of 3</div>
+    <h1>How a session works</h1>
+    <div class="stages">
+      <div class="stage">
+        <div class="pic"><div class="screen one"><div class="pane"><i class="ln"></i><i class="ln"></i><i class="ln s"></i><i class="ln"></i><i class="ln s"></i><span class="done">Done</span></div></div></div>
+        <div class="cap"><b>1. Read</b><span>The session starts on a reading-only screen, where you read the material in full. Press Done once you've finished.</span></div>
+      </div>
+      <div class="stage">
+        <div class="pic wide"><div class="screen two"><div class="pane"><i class="ln"></i><i class="ln"></i><i class="ln s"></i><i class="ln"></i><i class="ln s"></i></div><div class="pane chat"><i class="tb"></i><i class="sb"></i><i class="tb s"></i><i class="box"></i></div></div></div><div class="pic narrow"><div class="screen two" style="flex-direction:column"><div class="tabs"><span>Reading</span><span class="on">Chat</span></div><div class="pane chat"><i class="tb"></i><i class="sb"></i><i class="tb s"></i><i class="box"></i></div></div></div>
+        <div class="cap"><b>2. Answer</b><span>You then move to the tutoring screen, where you answer each SEE-I step with the reading still available. Each step allows up to 5 tries, and the count starts over at the next step.</span></div>
+      </div>
+      <div class="stage">
+        <div class="pic"><div class="screen three"><span class="pill">✓ State</span><span class="pill">✓ Elaborate</span><span class="pill">✓ Exemplify</span><span class="pill">✓ Illustrate</span></div></div>
+        <div class="cap"><b>3. Finish</b><span>The session ends once you pass all four steps, or if you use all 5 tries on a step without passing it.</span></div>
+      </div>
+    </div>
+    <div class="actions"><button class="btn">Continue</button></div>
+  </div>
+  </sc-if>
+
+
+  <sc-if value="{{guides}}">
+  <div class="page">
+    <div class="count">3 of 3</div>
+    <h1>Core components and the rubric</h1>
+    <div class="ref">
+      <div class="refhead"><span class="mini"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12zM12 2l3.5 3.5L12 9 8.5 5.5zM18.5 8.5 22 12l-3.5 3.5L15 12zM12 15l3.5 3.5L12 22l-3.5-3.5z"/></svg>Components</span></div>
+      <p>These are the key ideas of the reading, which you should keep in mind as the session revolves around them. Some criteria from the rubric also reference them.</p>
+    </div>
+    <div class="ref">
+      <div class="refhead"><span class="mini"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/></svg>Rubric</span></div>
+      <p>The rubric holds the criteria that each of your answers is graded on. Each SEE-I step has its own, which describes the traits of an expected answer for that specific step.</p>
+      <div class="exlabel">Example</div>
+      <div class="crit"><span class="ctag">Brevity</span><span>The statement is concise and straight to the point. It does not contain any unnecessary filler, repetition, or tangents.</span></div>
+      <p>When an answer fails a certain criterion, its name shows as a red tag under the tutor's reply.</p>
+    </div>
+    <div class="actions"><button class="btn">Continue</button></div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{reading}}">
+  <div class="wrap">
+    <div class="crumbs">Classes &rsaquo; STRAMA K31 &rsaquo; Business Model</div>
+    <div class="head">
+      <div><h1>Business Model</h1><div class="sub">Customer value proposition, profit formula</div></div>
+      <div class="startcol"><button class="btn">Start</button></div>
+    </div>
+    <div class="ghost"><div></div><div></div></div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{before}}">
+  <div class="wrap"><div class="ghost"><div></div><div></div></div></div>
+  <div class="scrim">
+    <div class="dlg">
+      <h2>Before you start</h2>
+      <p>The goal of this session is to understand the concept: business model. Take your time with the reading first, and press Done when you've finished it.</p>
+      <div class="actions" style="margin-top: 20px;"><button class="btn" style="height: 32px; padding: 0 14px; font-size: 13px;">Start</button></div>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"screen":{"editor":"select","options":["about","session","guides","reading","before"],"default":"about"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.screen ?? 'about';
+    return { about: s === 'about', session: s === 'session', guides: s === 'guides', reading: s === 'reading', before: s === 'before' };
+  }
+}
+</script>
+</body>
+</html>

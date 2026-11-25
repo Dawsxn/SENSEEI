@@ -32,13 +32,13 @@ export function JoinClassDialog({ onClose }: { onClose: () => void }) {
     setError(null);
     try {
       const result = await joinClass(code);
-      // The new class's readings belong in the list behind this dialog.
-      await queryClient.invalidateQueries({ queryKey: ["readings"] });
+      // The new class belongs on the page behind this dialog.
+      await queryClient.invalidateQueries({ queryKey: ["my-classes"] });
       setJoined(result);
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 404
-          ? "That code doesn't match a class. Check it with your instructor."
+          ? "The code you entered is invalid or does not exist."
           : "That didn't work. Try again.",
       );
     } finally {
@@ -56,18 +56,13 @@ export function JoinClassDialog({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-labelledby="join-title"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[420px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         {joined ? (
           <>
             <h2 id="join-title" className="text-[16px] font-semibold">
               You joined {joined.label}
             </h2>
-            <p className="mt-1.5 text-[14px] text-muted-foreground">
-              {joined.reading_count > 0
-                ? "Its readings are now in your list."
-                : "It has no readings yet. They will appear in your list once added."}
-            </p>
             <div className="mt-5 flex justify-end">
               <Button size="sm" onClick={onClose} autoFocus>
                 Done
@@ -96,7 +91,7 @@ export function JoinClassDialog({ onClose }: { onClose: () => void }) {
               autoComplete="off"
               spellCheck={false}
               className={
-                "mt-4 h-10 w-full rounded-md border bg-background px-3 font-mono text-[16px] tracking-[0.08em] outline-none focus-visible:ring-2 " +
+                "mt-4 h-10 w-full rounded-md border bg-card px-3 font-mono text-[16px] tracking-[0.08em] outline-none focus-visible:ring-2 " +
                 (error
                   ? "border-fail-border focus-visible:ring-fail-border/60"
                   : "focus-visible:border-ring focus-visible:ring-ring/30")

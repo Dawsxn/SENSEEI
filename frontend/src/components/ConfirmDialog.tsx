@@ -47,7 +47,7 @@ export function ConfirmDialog({
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
-        className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[420px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="confirm-dialog-title" className="text-[16px] font-semibold">

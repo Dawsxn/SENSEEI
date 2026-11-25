@@ -70,6 +70,24 @@ async def test_dev_login_then_me(users):
 
 
 @pytest.mark.anyio
+async def test_the_walkthrough_is_marked_seen_once(users):
+    async with make_client() as client:
+        await client.post("/auth/dev/login", json={"user_id": str(users["student"])})
+        assert (await client.get("/auth/me")).json()["seen_intro"] is False
+
+        assert (await client.post("/auth/me/intro")).status_code == 204
+        assert (await client.get("/auth/me")).json()["seen_intro"] is True
+        # going through it again from the help icon changes nothing
+        assert (await client.post("/auth/me/intro")).status_code == 204
+        assert (await client.get("/auth/me")).json()["seen_intro"] is True
+
+
+@pytest.mark.anyio
+async def test_marking_the_walkthrough_needs_a_session(users):
+    async with make_client() as client:
+        assert (await client.post("/auth/me/intro")).status_code == 401
+
+@pytest.mark.anyio
 async def test_dev_users_lists_the_seeded_accounts(users):
     async with make_client() as client:
         rows = (await client.get("/auth/dev/users")).json()

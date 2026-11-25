@@ -10,6 +10,9 @@ export interface AuthUser {
   can_switch?: boolean;
   /** Trial mode: signed in with a participant ID rather than Google. */
   participant?: boolean;
+  /** Whether the SEE-I walkthrough has been seen; it shows once, before the
+   *  student's first session. */
+  seen_intro?: boolean;
 }
 
 export interface AuthConfig {

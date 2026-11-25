@@ -87,11 +87,14 @@ async def world(point_app_at_test_db):
 
         class_a = Class(instructor_id=instructor.id, name="STRAMA", section="K31", join_code="AAA-1")
         class_b = Class(instructor_id=instructor.id, name="BUSANA", section="S15", join_code="BBB-1")
-        s.add_all([class_a, class_b])
+        # C is a class the student joined before it had any readings
+        class_c = Class(instructor_id=instructor.id, name="CSARCH2", section="S12", join_code="CCC-1")
+        s.add_all([class_a, class_b, class_c])
         await s.flush()
 
-        # the student is in A only
+        # the student is in A and C, never B
         s.add(Enrolment(student_id=student.id, class_id=class_a.id))
+        s.add(Enrolment(student_id=student.id, class_id=class_c.id))
 
         def reading(title, desc):
             return Reading(uploaded_by=instructor.id, title=title, description=desc, content=f"{title} body")
@@ -133,6 +136,7 @@ async def world(point_app_at_test_db):
         ids = {
             "done": r_done.id, "new": r_new.id, "failed": r_failed.id,
             "progress": r_progress.id, "other": r_other.id,
+            "class_a": class_a.id, "class_b": class_b.id, "class_c": class_c.id,
         }
     await engine.dispose()
     return ids
@@ -239,3 +243,54 @@ async def test_file_of_a_reading_without_one_is_404(world):
     async with make_client() as client:
         r = await client.get(f"/readings/{world['new']}/file")
     assert r.status_code == 404
+
+
+# --------------------------------------------------------------------------- #
+# the student's classes
+
+
+@pytest.mark.anyio
+async def test_classes_lists_only_the_students_own_with_progress(world):
+    async with make_client() as client:
+        rows = (await client.get("/enrolments")).json()
+
+    by_id = {r["id"]: r for r in rows}
+    assert str(world["class_b"]) not in by_id
+    a = by_id[str(world["class_a"])]
+    assert (a["name"], a["section"], a["label"]) == ("STRAMA", "K31", "STRAMA K31")
+    # four readings; the completed and the failed one are finished, while the
+    # in-progress one is not, since it cannot be resumed
+    assert (a["reading_count"], a["finished_count"]) == (4, 2)
+
+
+@pytest.mark.anyio
+async def test_a_class_without_readings_is_still_listed(world):
+    async with make_client() as client:
+        by_id = {r["id"]: r for r in (await client.get("/enrolments")).json()}
+
+    c = by_id[str(world["class_c"])]
+    assert (c["label"], c["reading_count"], c["finished_count"]) == ("CSARCH2 S12", 0, 0)
+
+
+@pytest.mark.anyio
+async def test_class_detail_has_its_readings_and_their_status(world):
+    async with make_client() as client:
+        detail = (await client.get(f"/enrolments/{world['class_a']}")).json()
+
+    assert detail["label"] == "STRAMA K31"
+    by_id = {r["id"]: r["status"] for r in detail["readings"]}
+    assert by_id == {
+        str(world["done"]): "complete",
+        str(world["new"]): "not_started",
+        str(world["failed"]): "failed",
+        str(world["progress"]): "not_started",
+    }
+
+
+@pytest.mark.anyio
+async def test_class_detail_of_a_class_the_student_is_not_in_is_404(world):
+    async with make_client() as client:
+        other = await client.get(f"/enrolments/{world['class_b']}")
+        missing = await client.get(f"/enrolments/{uuid.uuid4()}")
+    assert other.status_code == 404
+    assert missing.status_code == 404

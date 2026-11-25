@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
@@ -30,6 +31,25 @@ interface ChatPanelProps {
    *  attempt limit, so no attempt dots. With tests, `onContinue` is the end
    *  strip's Continue to post-test. */
   trial?: { timeUp: boolean; onContinue?: () => void };
+  /** Outside the trial: Try again on the error strip. */
+  onRetry?: () => void;
+  /** Outside the trial: where the end strip's buttons go, once the reading's
+   *  class is known. */
+  links?: { reading: string; review: string | null };
+}
+
+/** What went wrong, in the student's terms. The detail from the stream says
+ *  which: nothing reached the server, or something failed while starting or
+ *  while answering, which the chat itself tells apart. */
+function errorText(state: TutoringState): string {
+  const offline =
+    state.error?.startsWith("could not reach the server") ||
+    (typeof navigator !== "undefined" && navigator.onLine === false);
+  if (offline) return "You're not connected to the internet. Check your connection and try again.";
+  if (!state.messages.some((m) => m.role === "student")) {
+    return "Something went wrong while starting this session.";
+  }
+  return "Something went wrong while sending your answer.";
 }
 
 /** Is a tutor reply expected but not yet producing text? Covers both the opening
@@ -44,7 +64,7 @@ function awaitingReply(state: TutoringState): boolean {
   return tutor && last.streaming && last.content === "";
 }
 
-export function ChatPanel({ state, onSubmit, trial }: ChatPanelProps) {
+export function ChatPanel({ state, onSubmit, trial, onRetry, links }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const waiting = awaitingReply(state);
 
@@ -94,7 +114,7 @@ export function ChatPanel({ state, onSubmit, trial }: ChatPanelProps) {
         {waiting && <TypingIndicator />}
       </div>
 
-      <Composer state={state} onSubmit={onSubmit} trial={trial} />
+      <Composer state={state} onSubmit={onSubmit} trial={trial} onRetry={onRetry} links={links} />
     </div>
   );
 }
@@ -122,7 +142,7 @@ function StepDivider({
       </span>
       <span className="h-px flex-1 bg-border" />
       {passed ? (
-        <Check className="h-4 w-4 text-primary" />
+        <Check className="h-4 w-4 text-brand-mint" />
       ) : current ? (
         <AttemptDots used={attemptsUsed} />
       ) : null}
@@ -137,7 +157,7 @@ function AttemptDots({ used }: { used: number }) {
   return (
     <span
       className="flex items-center gap-1"
-      aria-label={`Attempt ${active + 1} of ${MAX_ATTEMPTS}`}
+      aria-label={`Try ${active + 1} of ${MAX_ATTEMPTS}`}
     >
       {Array.from({ length: MAX_ATTEMPTS }, (_, i) => (
         <span
@@ -156,9 +176,9 @@ function Message({ message }: { message: ChatMessage }) {
   if (message.role === "student") {
     return (
       <div className="my-4 flex justify-end">
-        {/* Student bubble uses the success-tint green (#f0fdf4), per the
-            Tutoring chat pattern in design-system.md. */}
-        <div className="max-w-[85%] rounded-lg bg-[#f0fdf4] px-4 py-2.5 text-[14px] leading-relaxed text-[#3f3f46]">
+        {/* Student bubble uses the accent tint, per the Tutoring chat
+            pattern in design-system.md. */}
+        <div className="max-w-[85%] rounded-lg bg-accent-soft px-4 py-2.5 text-[14px] leading-relaxed text-body">
           {message.content}
         </div>
       </div>
@@ -228,7 +248,8 @@ function TypingIndicator() {
   );
 }
 
-function Composer({ state, onSubmit, trial }: ChatPanelProps) {
+function Composer({ state, onSubmit, trial, onRetry, links }: ChatPanelProps) {
+  const navigate = useNavigate();
   const [text, setText] = useState("");
   // The trial records when typing starts after each reply, against when the
   // reply arrived: thinking time, apart from typing time.
@@ -272,7 +293,7 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
       state.status === "complete"
         ? ["Session complete", "You finished all four steps."]
         : state.status === "fallback"
-          ? ["Session ended", "You've used all your attempts, so the session has ended."]
+          ? ["Session ended", "You've used all your tries for this step, so the session has ended."]
           : ["Time's up", "Your session has ended, and anything you typed was sent."];
     return (
       <div className="flex shrink-0 items-center gap-4 border-t py-3.5 pl-6 pr-4">
@@ -297,21 +318,71 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
     );
   }
 
+  // Where to go once it has ended. Out of tries, the chat above already says
+  // why in red, so the strip does not say it again.
   if (state.phase === "terminal") {
+    const complete = state.status === "complete";
     return (
-      <div className="shrink-0 border-t px-6 py-4 text-center text-[13px] text-muted-foreground">
-        {state.status === "complete"
-          ? "You've completed all four steps for this reading."
-          : "This session has ended. Your instructor has been notified."}
+      <div className="flex shrink-0 flex-col gap-3 border-t px-4 pb-4 pt-3.5 sm:flex-row sm:items-center sm:gap-4 sm:py-3.5 sm:pl-6 sm:pr-4">
+        <div className="min-w-0 flex-1">
+          <div className="text-[14px] font-semibold">
+            {complete ? "Session complete" : "Session ended"}
+          </div>
+          {complete && (
+            <div className="mt-0.5 text-[13px] text-muted-foreground">
+              You passed all four steps of SEE-I.
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row">
+          {links?.review && (
+            <Button
+              variant="secondary"
+              className="h-10 w-full sm:h-9 sm:w-auto"
+              onClick={() => navigate(links.review!)}
+            >
+              Review session
+            </Button>
+          )}
+          <Button
+            className="h-10 w-full sm:h-9 sm:w-auto"
+            onClick={() => navigate(links?.reading ?? "/")}
+          >
+            Back to reading
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // The trial's strip stays as it was run. A participant's reload does pick
+  // their session back up, so its advice holds.
+  if (state.phase === "error" && trial) {
+    return (
+      <div className="shrink-0 border-t border-fail-border bg-fail px-6 py-4 text-[13px] text-fail-foreground">
+        Something went wrong: {state.error}. Your attempts are unaffected — reload
+        to continue.
       </div>
     );
   }
 
   if (state.phase === "error") {
     return (
-      <div className="shrink-0 border-t border-fail-border bg-fail px-6 py-4 text-[13px] text-fail-foreground">
-        Something went wrong: {state.error}. Your attempts are unaffected — reload
-        to continue.
+      <div
+        role="alert"
+        className="flex shrink-0 flex-col gap-2.5 border-t border-fail-border bg-fail px-4 pb-3.5 pt-3 text-[13px] leading-[1.55] text-fail-foreground sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-6 sm:pr-4"
+      >
+        <div className="flex-1">{errorText(state)}</div>
+        {onRetry && (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="h-9 w-full border-fail-border bg-background text-fail-foreground hover:bg-background/80 sm:h-8 sm:w-auto"
+            onClick={onRetry}
+          >
+            Try again
+          </Button>
+        )}
       </div>
     );
   }
@@ -323,7 +394,7 @@ function Composer({ state, onSubmit, trial }: ChatPanelProps) {
 
   return (
     <div className="shrink-0 border-t p-4">
-      <div className="flex items-end gap-2 rounded-md border px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
+      <div className="flex items-end gap-2 rounded-md border bg-card px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
         <textarea
           ref={box}
           value={text}

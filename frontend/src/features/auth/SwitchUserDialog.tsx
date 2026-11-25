@@ -48,7 +48,7 @@ export function SwitchUserDialog({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-label="Switch user"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[380px] rounded-t-lg bg-background p-5 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[380px] rounded-t-lg bg-card p-5 shadow-lg sm:rounded-lg"
       >
         <h2 className="text-[16px] font-semibold">Switch user</h2>
         <div className="mt-4 flex max-h-[60vh] flex-col gap-1.5 overflow-y-auto">

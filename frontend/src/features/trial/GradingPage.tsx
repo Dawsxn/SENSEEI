@@ -53,7 +53,7 @@ export function GradingPage() {
                   <select
                     value={batch ?? ""}
                     onChange={(e) => show({ batch: e.target.value || null, id: null })}
-                    className="h-8 rounded-md border bg-background px-2 text-[13px] text-foreground"
+                    className="h-8 rounded-md border bg-card px-2 text-[13px] text-foreground"
                   >
                     <option value="">All batches</option>
                     {batches.map(([id, name]) => (
@@ -78,7 +78,7 @@ export function GradingPage() {
 
           {people.length > 0 && (
             <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[240px_1fr_380px]">
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-hidden rounded-lg border bg-card">
                 {people.map((p) => {
                   const done = p.posttest_ended && p.left === 0;
                   return (
@@ -93,7 +93,7 @@ export function GradingPage() {
                       )}
                     >
                       <span className="font-mono text-[13px] tracking-[0.05em]">{p.code}</span>
-                      <span className={cn("text-[12px]", done ? "text-[#15803d]" : "text-muted-foreground")}>
+                      <span className={cn("text-[12px]", done ? "text-primary" : "text-muted-foreground")}>
                         {done ? "Graded" : `${p.left} left`}
                       </span>
                     </button>
@@ -143,12 +143,12 @@ function Participant({ code }: { code: string }) {
         <span className="mb-3 block font-mono text-[15px] font-medium tracking-[0.05em]">{data.code}</span>
         <Summary data={data} />
         {data.posttest_ended && data.left === 0 && (
-          <div className="mb-3 rounded-md border border-[#bbf7d0] bg-[#f0fdf4] px-3.5 py-2.5 text-[13px] text-[#15803d]">
+          <div className="mb-3 rounded-md border border-accent-soft-border bg-accent-soft px-3.5 py-2.5 text-[13px] text-accent-soft-foreground">
             All of this participant&rsquo;s answers are graded.
           </div>
         )}
         {data.choices.length > 0 && (
-          <div className="mb-3 overflow-hidden rounded-lg border">
+          <div className="mb-3 overflow-hidden rounded-lg border bg-card">
             <div className="border-b px-4 py-2.5 text-[12px] font-semibold">
               Multiple choice <span className="font-normal text-muted-foreground">&middot; scored automatically</span>
             </div>
@@ -158,7 +158,7 @@ function Participant({ code }: { code: string }) {
                 className="grid grid-cols-[40px_1fr_80px] items-center border-b px-4 py-2 text-[13px] last:border-b-0"
               >
                 <span className="font-semibold">Q{c.item.replace(/^q/, "")}</span>
-                <span className={c.correct ? "text-[#15803d]" : "text-[#b91c1c]"}>
+                <span className={c.correct ? "text-primary" : "text-fail-foreground"}>
                   {c.choice ? `Picked ${c.choice} · ` : "No answer · "}
                   {c.correct ? "Correct" : `Answer is ${c.answer}`}
                 </span>
@@ -215,9 +215,9 @@ function Summary({ data }: { data: GradingDetail }) {
   return (
     <div className="mb-3 grid grid-cols-3 gap-2.5">
       {cells.map((c) => (
-        <div key={c.label} className="rounded-lg border px-3.5 py-2.5">
+        <div key={c.label} className="rounded-lg border bg-card px-3.5 py-2.5">
           <div className="text-[12px] text-muted-foreground">{c.label}</div>
-          <div className={cn("mt-0.5 text-[18px] font-semibold", c.value === null && "text-[#a1a1aa]")}>
+          <div className={cn("mt-0.5 text-[18px] font-semibold", c.value === null && "text-placeholder")}>
             {c.value ?? "Not graded yet"}
           </div>
         </div>
@@ -231,7 +231,7 @@ function Summary({ data }: { data: GradingDetail }) {
 function SetCard({ set }: { set: GradingSet }) {
   const mark = (v: boolean | null) => (v === null ? "Blank" : v ? "True" : "False");
   return (
-    <div className="mb-3 overflow-hidden rounded-lg border">
+    <div className="mb-3 overflow-hidden rounded-lg border bg-card">
       <div className="flex items-baseline gap-3 border-b px-4 py-2.5">
         <span className="flex-1 text-[13px]">
           <span className="text-[12px] font-semibold">Q{set.item.replace(/^q/, "")}</span>
@@ -249,11 +249,11 @@ function SetCard({ set }: { set: GradingSet }) {
             key={st.key}
             className="grid grid-cols-[1fr_auto] gap-3 border-b px-4 py-2 text-[13px] leading-[1.5] last:border-b-0"
           >
-            <span className="text-[#3f3f46]">
+            <span className="text-body">
               <span className="mr-1.5 font-medium text-muted-foreground">{st.key}.</span>
               {st.text}
             </span>
-            <span className={cn("whitespace-nowrap", right ? "text-[#15803d]" : "text-[#b91c1c]")}>
+            <span className={cn("whitespace-nowrap", right ? "text-primary" : "text-fail-foreground")}>
               {mark(st.picked)} &middot; {right ? "Correct" : `Answer is ${mark(st.answer)}`}
             </span>
           </div>
@@ -279,8 +279,8 @@ function WrittenCard({
     <div
       onClick={onFocus}
       className={cn(
-        "mb-3 cursor-pointer rounded-lg border",
-        focused ? "border-primary shadow-[0_0_0_3px_#dcfce7]" : "border-border",
+        "mb-3 cursor-pointer rounded-lg border bg-card",
+        focused ? "border-primary shadow-[0_0_0_3px_hsl(var(--ring)/0.3)]" : "border-border",
       )}
     >
       <div className="flex items-start gap-3 px-4 pt-3">
@@ -302,7 +302,7 @@ function WrittenCard({
               <p
                 className={cn(
                   "mt-1 whitespace-pre-wrap text-[14px] leading-[1.6]",
-                  !part.text?.trim() && "text-[#a1a1aa]",
+                  !part.text?.trim() && "text-placeholder",
                 )}
               >
                 {part.text?.trim() ? part.text : "No answer"}
@@ -314,7 +314,7 @@ function WrittenCard({
         <p
           className={cn(
             "mx-4 mt-2 whitespace-pre-wrap text-[14px] leading-[1.6]",
-            !answered && "text-[#a1a1aa]",
+            !answered && "text-placeholder",
           )}
         >
           {answered ? w.text : "No answer"}
@@ -333,7 +333,7 @@ function WrittenCard({
             className={cn(
               "h-8 w-9 rounded-md border text-[14px] font-semibold",
               w.score === n
-                ? "border-primary bg-[#f0fdf4] text-[#15803d]"
+                ? "border-primary bg-accent-soft text-accent-soft-foreground"
                 : "border-border bg-background hover:bg-muted",
             )}
           >
@@ -347,19 +347,19 @@ function WrittenCard({
 
 function Rubric({ w }: { w: GradingWritten }) {
   return (
-    <div className="sticky top-4 rounded-lg border px-5 py-4">
+    <div className="sticky top-4 rounded-lg border bg-card px-5 py-4">
       <div className="text-[12px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
         {w.test === "pre" ? "Pre-test" : `Question ${w.item.replace(/^q/, "")}`}
       </div>
       <div className="mt-3.5 text-[12px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
         Reference answer
       </div>
-      <p className="mt-2 text-[13px] leading-[1.6] text-[#3f3f46]">{w.reference}</p>
-      <div className="mt-4 overflow-hidden rounded-md border">
+      <p className="mt-2 text-[13px] leading-[1.6] text-body">{w.reference}</p>
+      <div className="mt-4 overflow-hidden rounded-md border bg-card">
         {w.criteria.map((c) => (
           <div key={c.points} className="grid grid-cols-[36px_1fr] border-b text-[12.5px] leading-[1.5] last:border-b-0">
-            <span className="border-r bg-[#fafafa] py-2 text-center font-semibold">{c.points}</span>
-            <span className="px-2.5 py-2 text-[#3f3f46]">{c.text}</span>
+            <span className="border-r bg-muted py-2 text-center font-semibold">{c.points}</span>
+            <span className="px-2.5 py-2 text-body">{c.text}</span>
           </div>
         ))}
       </div>

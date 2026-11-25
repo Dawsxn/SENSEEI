@@ -27,7 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..auth import google_oauth, is_dlsu_email, is_grader, is_instructor
 from ..db import get_session
 from ..deps import get_current_user
-from ..models import Role, User
+from ..models import Role, User, utcnow
 from ..schemas import DevLoginIn, ParticipantSignInIn, UserOut
 from ..services import auth_service, trial_service
 from ..settings import get_settings
@@ -90,7 +90,24 @@ async def me(request: Request, user: User = Depends(get_current_user)) -> UserOu
         role=user.role,
         can_switch=may_act_as(request),
         participant=user.participant_identifier is not None,
+        seen_intro=user.intro_seen_at is not None,
     )
+
+
+@router.post("/me/intro", status_code=204)
+async def mark_intro_seen(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
+) -> None:
+    """Record that the signed-in user has been through the SEE-I walkthrough.
+
+    The first time only: going through it again from the help icon keeps the
+    original time.
+    """
+    row = await db.get(User, user.id)
+    if row is not None and row.intro_seen_at is None:
+        row.intro_seen_at = utcnow()
+        await db.commit()
 
 
 @router.get("/config")

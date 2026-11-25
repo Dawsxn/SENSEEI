@@ -8,6 +8,17 @@ export function formatDate(iso: string): string {
   });
 }
 
+/** "Nov 13, 2026, 10:02 AM": when something started, to tell apart two on one day. */
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 /** "Sep 21" for a date this year, "Sep 21, 2025" otherwise. For narrow columns,
  *  where the year is noise until it stops being obvious. */
 export function formatShortDate(iso: string): string {

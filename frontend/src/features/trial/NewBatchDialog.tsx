@@ -13,7 +13,7 @@ import { useClasses } from "../classes/useClasses";
 import type { NewBatch } from "./types";
 
 const INPUT =
-  "h-9 w-full rounded-md border bg-background px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
+  "h-9 w-full rounded-md border bg-card px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
 
 interface NewBatchDialogProps {
   defaultName: string;
@@ -67,7 +67,7 @@ export function NewBatchDialog({ defaultName, onSubmit, onCancel }: NewBatchDial
         aria-labelledby="new-batch-title"
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[420px] rounded-t-lg bg-background p-6 shadow-lg sm:rounded-lg"
+        className="w-full max-w-[420px] rounded-t-lg bg-card p-6 shadow-lg sm:rounded-lg"
       >
         <h2 id="new-batch-title" className="text-[16px] font-semibold">
           New batch

@@ -65,9 +65,10 @@ the LLM, once per reading, to describe its figures; it is not an agent (see
   after `docker compose up -d --wait`.
 - `migrations/` — Alembic, reading its URL from `backend.settings`. Bring a
   local database up to date with `alembic upgrade head`. `scripts/seed.py` then
-  fills it with development data (one instructor, two classes, five students,
-  three readings, some with real sessions), sourced from the eval dataset so the
-  app and the eval study the same material.
+  fills it with the demo (one instructor, three classes, four students, two
+  readings, and scripted sessions in `scripts/fixtures/demo_sessions.yaml` that
+  cover every session state). The trial reading is read from the git-ignored
+  `scripts/fixtures/local/` and left out when it is not there.
 - `scripts/session.py` — plays one tutoring session in the terminal, so the
   agents can be exercised without a database, server or UI. `--offline` stubs
   both and costs nothing. It has its own inline copy of the loop for the terminal;

@@ -27,11 +27,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.figures import Figure, FigureDescriber
 
+from .analytics_service import Scope, _sessions
 from .ownership import owned_by
 from ..models import (
     FINISHED_STATUSES,
     Class,
     CoreComponent,
+    Enrolment,
     Reading,
     ReadingAssignment,
     ReadingFile,
@@ -329,13 +331,32 @@ async def get_reading(
     has_file = await db.scalar(
         select(ReadingFile.id).where(ReadingFile.reading_id == reading_id)
     )
+    session_count = await db.scalar(
+        select(func.count())
+        .select_from(Session)
+        .where(Session.reading_id == reading_id, Session.status.in_(FINISHED_STATUSES))
+    )
+    classes = (await _classes_of(db, [reading_id]))[reading_id]
+    for c in classes:
+        c["student_count"] = await db.scalar(
+            select(func.count())
+            .select_from(Enrolment)
+            .where(Enrolment.class_id == c["id"], Enrolment.deleted_at.is_(None))
+        )
+        # counted the way the class's own page counts them
+        c["session_count"] = await db.scalar(
+            select(func.count()).select_from(
+                _sessions(Scope(c["id"], reading_id)).subquery()
+            )
+        )
     return {
         "id": reading.id,
         "title": reading.title,
         "description": reading.description,
         "content": reading.content,
         "core_components": list(components),
-        "classes": (await _classes_of(db, [reading_id]))[reading_id],
+        "classes": classes,
+        "session_count": session_count or 0,
         "has_file": has_file is not None,
         "created_at": reading.created_at,
     }
@@ -402,6 +423,43 @@ async def set_classes(
     )
     await db.commit()
     return await get_reading(db, instructor_id, reading_id)
+
+
+async def add_to_class(
+    db: AsyncSession,
+    instructor_id: uuid.UUID,
+    class_id: uuid.UUID,
+    reading_ids: list[uuid.UUID],
+) -> None:
+    """Give one class some readings the instructor already has.
+
+    The class page's way in, beside uploading a new one; the reading's own page
+    still sets all its classes at once (`set_classes`). A reading the class
+    already has is left as it is. Nothing is added unless every reading is the
+    instructor's own.
+    """
+    await _live_classes(db, instructor_id, [class_id])
+    wanted = list(dict.fromkeys(reading_ids))
+    for reading_id in wanted:
+        await _owned(db, instructor_id, reading_id)
+    have = set(
+        await db.scalars(
+            select(ReadingAssignment.reading_id).where(
+                ReadingAssignment.class_id == class_id,
+                ReadingAssignment.deleted_at.is_(None),
+            )
+        )
+    )
+    new = [r for r in wanted if r not in have]
+    if not new:
+        return
+    # Trial mode: one reading a class, so a class that has one takes no more,
+    # and an empty one takes only one.
+    await _refuse_second_reading(db, [class_id])
+    if get_settings().trial_mode and len(new) > 1:
+        raise ClassHasReading
+    db.add_all(ReadingAssignment(reading_id=r, class_id=class_id) for r in new)
+    await db.commit()
 
 
 async def delete_reading(

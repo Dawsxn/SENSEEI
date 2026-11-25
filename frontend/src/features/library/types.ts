@@ -5,6 +5,13 @@ export interface ClassRef {
   label: string;
 }
 
+/** A class a reading is in, as the reading's page lists it. */
+export interface LibraryClass extends ClassRef {
+  student_count: number;
+  /** Finished sessions on this reading by the class's students. */
+  session_count: number;
+}
+
 export interface LibraryItem {
   id: string;
   title: string;
@@ -21,7 +28,8 @@ export interface LibraryReading {
   description: string | null;
   content: string;
   core_components: string[];
-  classes: ClassRef[];
+  classes: LibraryClass[];
+  session_count: number;
   has_file: boolean;
   created_at: string;
 }

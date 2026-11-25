@@ -2,15 +2,20 @@ import type { ReactNode } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import { RequireAuth } from "./features/auth/RequireAuth";
-import { HomeRoute, RequireGrader, RequireInstructor } from "./features/auth/RoleRoutes";
+import { ByRole, HomeRoute, RequireGrader, RequireInstructor } from "./features/auth/RoleRoutes";
 import { ClassDetailPage } from "./features/classes/ClassDetailPage";
 import { ClassReadingPage } from "./features/classes/ClassReadingPage";
 import { ClassListPage } from "./features/classes/ClassListPage";
+import { ClassStudentPage, StudentSessionsPage } from "./features/classes/StudentPages";
 import { SignInScreen } from "./features/auth/SignInScreen";
+import { NotFoundPage, RouteErrorPage } from "./features/errors/ErrorPages";
+import { HowItWorks } from "./features/intro/HowItWorks";
 import { LibraryListPage } from "./features/library/LibraryListPage";
 import { LibraryReadingPage } from "./features/library/LibraryReadingPage";
+import { StudentClassPage } from "./features/readings/StudentClassPage";
+import { StudentReadingPage } from "./features/readings/StudentReadingPage";
 import { UploadReadingPage } from "./features/library/UploadReadingPage";
-import { SessionReviewPage } from "./features/review/SessionReviewPage";
+import { OldReviewLink, SessionReviewPage } from "./features/review/SessionReviewPage";
 import { ReadingStepScreen } from "./features/tutoring/ReadingStepScreen";
 import { TutoringScreen } from "./features/tutoring/TutoringScreen";
 import { BatchPage } from "./features/trial/BatchPage";
@@ -30,35 +35,66 @@ const grader = (page: ReactNode) => signedIn(<RequireGrader>{page}</RequireGrade
 // students' API. Pages and API share one origin, so a page path that is also an
 // API path answers a refresh with JSON (docs/context/tech-stack.md).
 const router = createBrowserRouter([
-  // The sign-in screen is open; every other route requires a session.
-  { path: "/login", element: <SignInScreen /> },
-  { path: "/", element: signedIn(<HomeRoute />) },
-  // The reading step comes before the session and creates nothing; the session
-  // row is written when /tutor is reached.
-  { path: "/read/:readingId", element: signedIn(<ReadingStepScreen />) },
-  { path: "/tutor/:readingId", element: signedIn(<TutoringScreen />) },
-  { path: "/review/:sessionId", element: signedIn(<SessionReviewPage />) },
-  { path: "/classes", element: instructor(<ClassListPage />) },
-  { path: "/classes/:classId", element: instructor(<ClassDetailPage />) },
+  // One pathless parent, so every page shares the error screen: a crash shows
+  // "Something went wrong" rather than React Router's developer page.
   {
-    path: "/classes/:classId/readings/:readingId",
-    element: instructor(<ClassReadingPage />),
+    errorElement: <RouteErrorPage />,
+    children: [
+      // The sign-in screen is open; every other route requires a session.
+      { path: "/login", element: <SignInScreen /> },
+      { path: "/", element: signedIn(<HomeRoute />) },
+      // The SEE-I walkthrough: before a student's first session, and from the help icon.
+      { path: "/how-it-works", element: signedIn(<HowItWorks />) },
+      // The reading step comes before the session and creates nothing; the session
+      // row is written when /tutor is reached.
+      { path: "/read/:readingId", element: signedIn(<ReadingStepScreen />) },
+      { path: "/tutor/:readingId", element: signedIn(<TutoringScreen />) },
+      // Sessions moved under their reading; an old link finds its new address.
+      { path: "/review/:sessionId", element: signedIn(<OldReviewLink />) },
+      { path: "/classes", element: instructor(<ClassListPage />) },
+      // A class and a reading in it share one address across roles; a student's
+      // list of classes is their home, `/`.
+      {
+        path: "/classes/:classId",
+        element: signedIn(<ByRole instructor={<ClassDetailPage />} student={<StudentClassPage />} />),
+      },
+      {
+        path: "/classes/:classId/readings/:readingId",
+        element: signedIn(
+          <ByRole instructor={<ClassReadingPage />} student={<StudentReadingPage />} />,
+        ),
+      },
+      // The instructor's two views of one student: in the class, and on a reading.
+      { path: "/classes/:classId/students/:studentId", element: instructor(<ClassStudentPage />) },
+      {
+        path: "/classes/:classId/readings/:readingId/students/:studentId",
+        element: instructor(<StudentSessionsPage />),
+      },
+      {
+        path: "/classes/:classId/readings/:readingId/sessions/:sessionId",
+        element: signedIn(
+          <ByRole instructor={<SessionReviewPage />} student={<SessionReviewPage />} />,
+        ),
+      },
+      { path: "/library", element: instructor(<LibraryListPage />) },
+      { path: "/library/new", element: instructor(<UploadReadingPage />) },
+      { path: "/library/:readingId", element: instructor(<LibraryReadingPage />) },
+      // Trial mode only; the API under them answers 404 anywhere else.
+      { path: "/participants", element: instructor(<ParticipantsPage />) },
+      { path: "/participants/:batchId", element: instructor(<BatchPage />) },
+      // The trial's control groups. A participant lands on theirs from `/`.
+      { path: "/chat/:readingId", element: signedIn(<ChatbotScreen />) },
+      { path: "/reading/:readingId", element: signedIn(<ReadingOnlyScreen />) },
+      // The pre-test and post-test, for a class that has them, and the screen after.
+      { path: "/pretest", element: signedIn(<PreTestScreen />) },
+      { path: "/posttest", element: signedIn(<PostTestScreen />) },
+      { path: "/finished", element: signedIn(<TestDoneScreen />) },
+      // Grading the tests: the research team and the grader. `?id=` opens one ID.
+      { path: "/grading", element: grader(<GradingPage />) },
+      // Any other address.
+      { path: "*", element: signedIn(<NotFoundPage />) },
+    ],
   },
-  { path: "/library", element: instructor(<LibraryListPage />) },
-  { path: "/library/new", element: instructor(<UploadReadingPage />) },
-  { path: "/library/:readingId", element: instructor(<LibraryReadingPage />) },
-  // Trial mode only; the API under them answers 404 anywhere else.
-  { path: "/participants", element: instructor(<ParticipantsPage />) },
-  { path: "/participants/:batchId", element: instructor(<BatchPage />) },
-  // The trial's control groups. A participant lands on theirs from `/`.
-  { path: "/chat/:readingId", element: signedIn(<ChatbotScreen />) },
-  { path: "/reading/:readingId", element: signedIn(<ReadingOnlyScreen />) },
-  // The pre-test and post-test, for a class that has them, and the screen after.
-  { path: "/pretest", element: signedIn(<PreTestScreen />) },
-  { path: "/posttest", element: signedIn(<PostTestScreen />) },
-  { path: "/finished", element: signedIn(<TestDoneScreen />) },
-  // Grading the tests: the research team and the grader. `?id=` opens one ID.
-  { path: "/grading", element: grader(<GradingPage />) },
 ]);
 
 export default function App() {

@@ -26,14 +26,23 @@ design changes, so it always matches.
 | Screen | Image |
 | --- | --- |
 | Sign in | [png/01-sign-in.png](png/01-sign-in.png) |
-| Reading list | [png/02-reading-list.png](png/02-reading-list.png) |
+| Reading list (replaced by the three below) | [png/02-reading-list.png](png/02-reading-list.png) |
+| Student classes | [png/02c-student-classes.png](png/02c-student-classes.png) |
+| Student class | [png/02d-student-class.png](png/02d-student-class.png) |
+| Student reading | [png/03d-student-reading.png](png/03d-student-reading.png) |
 | Join a class | [png/02b-join-class.png](png/02b-join-class.png) |
 | Join a class, wrong code | [png/02b-join-wrong.png](png/02b-join-wrong.png) |
 | Reading detail, full page | [png/03-reading-detail.png](png/03-reading-detail.png) |
 | Reading detail, dialog | [png/03b-reading-detail-dialog.png](png/03b-reading-detail-dialog.png) |
+| Walkthrough, 1 of 3 | [png/03e-walkthrough-1.png](png/03e-walkthrough-1.png) |
+| Walkthrough, 2 of 3 | [png/03e-walkthrough-2.png](png/03e-walkthrough-2.png) |
+| Walkthrough, 3 of 3 | [png/03e-walkthrough-3.png](png/03e-walkthrough-3.png) |
+| Help icon on the reading page | [png/03e-help-icon.png](png/03e-help-icon.png) |
+| Before you start, with the concept | [png/03e-before-you-start.png](png/03e-before-you-start.png) |
 | Reading step, intro dialog | [png/03c-reading-step-intro.png](png/03c-reading-step-intro.png) |
 | Reading step | [png/03c-reading-step.png](png/03c-reading-step.png) |
 | Reading step, text fallback | [png/03c-reading-step-text.png](png/03c-reading-step-text.png) |
+| Reading step, leaving before Done | [png/03c-reading-step-leave.png](png/03c-reading-step-leave.png) |
 | Tutoring session | [png/04-tutoring-session.png](png/04-tutoring-session.png) |
 | Tutoring session, PDF reading | [png/04b-tutoring-pdf-reading.png](png/04b-tutoring-pdf-reading.png) |
 | Criterion feedback, six approaches | [png/04c-criterion-feedback.png](png/04c-criterion-feedback.png) |
@@ -41,6 +50,71 @@ design changes, so it always matches.
 | Reference panel, rubric | [png/04d-panel-rubric.png](png/04d-panel-rubric.png) |
 | Session review, student | [png/05-session-review.png](png/05-session-review.png) |
 | Session review, instructor | [png/05b-session-review-instructor.png](png/05b-session-review-instructor.png) |
+| Session review, student (replaces the two above) | [png/05c-session-review-student.png](png/05c-session-review-student.png) |
+| Session review, instructor (replaces the two above) | [png/05c-session-review-instructor.png](png/05c-session-review-instructor.png) |
+| Session review, rubric opened from a tag | [png/05c-session-review-rubric.png](png/05c-session-review-rubric.png) |
+| Session end, passed | [png/05d-1-passed.png](png/05d-1-passed.png) |
+| Session end, passed, phone | [png/05d-1-passed-phone.png](png/05d-1-passed-phone.png) |
+| Session end, out of tries | [png/05d-2-failed.png](png/05d-2-failed.png) |
+| Session end, out of tries, phone | [png/05d-2-failed-phone.png](png/05d-2-failed-phone.png) |
+| Session error, no connection | [png/05d-3-offline.png](png/05d-3-offline.png) |
+| Session error, no connection, phone | [png/05d-3-offline-phone.png](png/05d-3-offline-phone.png) |
+| Session error, answer failed | [png/05d-4-sendfail.png](png/05d-4-sendfail.png) |
+| Session error, answer failed, phone | [png/05d-4-sendfail-phone.png](png/05d-4-sendfail-phone.png) |
+| Session error, start failed | [png/05d-5-startfail.png](png/05d-5-startfail.png) |
+| Session error, start failed, phone | [png/05d-5-startfail-phone.png](png/05d-5-startfail-phone.png) |
+| Reading failed, tutoring screen | [png/05d-6-tutorfail.png](png/05d-6-tutorfail.png) |
+| Reading failed, tutoring screen, phone | [png/05d-6-tutorfail-phone.png](png/05d-6-tutorfail-phone.png) |
+| Reading failed, reading step | [png/05d-7-readfail.png](png/05d-7-readfail.png) |
+| Reading failed, reading step, phone | [png/05d-7-readfail-phone.png](png/05d-7-readfail-phone.png) |
+| Reading not available | [png/05d-8-readmissing.png](png/05d-8-readmissing.png) |
+| Reading not available, phone | [png/05d-8-readmissing-phone.png](png/05d-8-readmissing-phone.png) |
+| Page not found | [png/08-notfound.png](png/08-notfound.png) |
+| Page not found, phone | [png/08-notfound-phone.png](png/08-notfound-phone.png) |
+| Page crashed | [png/08-crash.png](png/08-crash.png) |
+| Page crashed, phone | [png/08-crash-phone.png](png/08-crash-phone.png) |
+| Instructor classes, cards (replaces the two below) | [png/06c-1-list.png](png/06c-1-list.png) |
+| Instructor classes, cards, phone | [png/06c-1-list-phone.png](png/06c-1-list-phone.png) |
+| Instructor classes, none | [png/06c-2-empty.png](png/06c-2-empty.png) |
+| Instructor classes, loading | [png/06c-3-loading.png](png/06c-3-loading.png) |
+| New class (replaces the one below) | [png/06c-5-new-typed.png](png/06c-5-new-typed.png) |
+| New class, phone | [png/06c-5-new-typed-phone.png](png/06c-5-new-typed-phone.png) |
+| Class, Readings tab (replaces Class below) | [png/06d-01-readings.png](png/06d-01-readings.png) |
+| Class, Readings tab, phone | [png/06d-01-readings-phone.png](png/06d-01-readings-phone.png) |
+| Class, Add reading | [png/06d-02-add-menu.png](png/06d-02-add-menu.png) |
+| Class, Choose from your readings | [png/06d-03-picker.png](png/06d-03-picker.png) |
+| Class, class menu | [png/06d-04-more-menu.png](png/06d-04-more-menu.png) |
+| Class, Students tab | [png/06d-05-students.png](png/06d-05-students.png) |
+| Class, Students tab, phone | [png/06d-05-students-phone.png](png/06d-05-students-phone.png) |
+| Class, student menu | [png/06d-06-student-menu.png](png/06d-06-student-menu.png) |
+| Class, Statistics tab | [png/06d-07-stats.png](png/06d-07-stats.png) |
+| Class, Statistics tab, phone | [png/06d-07-stats-phone.png](png/06d-07-stats-phone.png) |
+| Class, no readings | [png/06d-08-readings-empty.png](png/06d-08-readings-empty.png) |
+| Class, no students | [png/06d-09-students-empty.png](png/06d-09-students-empty.png) |
+| Class, no statistics | [png/06d-10-stats-empty.png](png/06d-10-stats-empty.png) |
+| Class, a student in it | [png/06d-11-student-page.png](png/06d-11-student-page.png) |
+| Class, a student in it, phone | [png/06d-11-student-page-phone.png](png/06d-11-student-page-phone.png) |
+| Reading in a class, with the Flagged box | [png/06e-1-students.png](png/06e-1-students.png) |
+| Reading in a class, phone | [png/06e-1-students-phone.png](png/06e-1-students-phone.png) |
+| Reading in a class, Statistics | [png/06e-2-stats.png](png/06e-2-stats.png) |
+| Reading in a class, Statistics, phone | [png/06e-2-stats-phone.png](png/06e-2-stats-phone.png) |
+| A student's sessions on a reading | [png/06e-3-student.png](png/06e-3-student.png) |
+| A student's sessions on a reading, phone | [png/06e-3-student-phone.png](png/06e-3-student-phone.png) |
+| Instructor review, breadcrumb to the student | [png/06e-4-review.png](png/06e-4-review.png) |
+| Instructor review, phone | [png/06e-4-review-phone.png](png/06e-4-review-phone.png) |
+| Readings list | [png/06f-list.png](png/06f-list.png) |
+| Readings list, phone | [png/06f-list-phone.png](png/06f-list-phone.png) |
+| Reading, PDF | [png/06f-reading.png](png/06f-reading.png) |
+| Reading, phone | [png/06f-reading-phone.png](png/06f-reading-phone.png) |
+| Reading, Text with the lock note | [png/06f-reading-text.png](png/06f-reading-text.png) |
+| Reading, Core components | [png/06f-components.png](png/06f-components.png) |
+| Reading, Classes | [png/06f-classes.png](png/06f-classes.png) |
+| Reading, menu | [png/06f-menu.png](png/06f-menu.png) |
+| Change classes | [png/06f-pick.png](png/06f-pick.png) |
+| Delete reading | [png/06f-delete.png](png/06f-delete.png) |
+| Upload, a failed read keeps the file | [png/06f-upload-error.png](png/06f-upload-error.png) |
+| Upload, Details with help text | [png/06f-upload-details.png](png/06f-upload-details.png) |
+| Upload, Details, phone | [png/06f-upload-details-phone.png](png/06f-upload-details-phone.png) |
 | Instructor classes | [png/06-classes.png](png/06-classes.png) |
 | Instructor classes, empty | [png/06-classes-empty.png](png/06-classes-empty.png) |
 | New class | [png/06-new-class.png](png/06-new-class.png) |

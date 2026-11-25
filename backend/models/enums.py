@@ -33,6 +33,14 @@ class SessionStatus(str, Enum):
     FALLBACK = "fallback"
     #: Trial mode only: the participant's session time ran out mid-session.
     TIMED_OUT = "timed_out"
+    #: The student left with the session's exit and confirmed it. Kept rather
+    #: than deleted, so how often students quit partway, and where, can be read
+    #: back. Never counted, and never shown to the student again.
+    LEFT = "left"
+    #: Never finished and never left: the tab was closed, or the phone dropped
+    #: the page. Marked when the same student next starts the same reading, the
+    #: first moment it is certain the session is dead. Never counted either.
+    ABANDONED = "abandoned"
 
 
 #: The statuses of a session that has ended, which is what every count and

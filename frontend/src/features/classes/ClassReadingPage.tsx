@@ -1,93 +1,151 @@
-/** One reading inside one class: how it went, and how far each student got.
+/** One reading inside one class: who is flagged, how far each student got, and
+ *  how the reading went, a tab each for the last two.
  *
  * The pairing is the point. A reading's numbers only mean something for the
- * class that read it, and progress here is progress on this reading, not on the
- * course. That is also why this page lives under the class rather than under the
- * reading: the Readings tab shows a reading itself, with no statistics at all.
+ * class that read it, and progress here is progress on this reading. That is
+ * also why this page lives under the class; View reading opens the reading
+ * itself, under Readings.
  *
- * A student who ran out of attempts carries a flag. `student-tutoring-loop.md`
- * calls that flag half the purpose of the fallback: ending the session without
- * telling the instructor does half the job.
+ * A student who ran out of tries is flagged, and the flagged ones are listed in
+ * a red box above everything else. `student-tutoring-loop.md` calls that flag
+ * half the purpose of the fallback: ending the session without telling the
+ * instructor does half the job. A student's row opens all their sessions on the
+ * reading, not just the latest, so an earlier flag is never out of reach.
  */
 
-import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
-
-import { useTrialMode } from "../auth/useAuth";
+import { useState } from "react";
+import { ChevronRight, Flag } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
+import { Loading, Skeleton } from "../../components/ui/Skeleton";
+import { Button } from "../../components/ui/button";
 import { formatShortDate } from "../../lib/format";
+import { cn } from "../../lib/utils";
+import { useTrialMode } from "../auth/useAuth";
+import { Breadcrumb, Notice } from "../readings/parts";
+import { Initials, ProgressChip, StepBar } from "./parts";
 import { StatisticsSection } from "./StatisticsSection";
-import type { ReadingProgress, RosterStudent } from "./types";
+import type { RosterStudent } from "./types";
 import { useClassReading } from "./useClasses";
 
-const STATUS: Record<ReadingProgress, string> = {
-  completed: "Completed",
-  stopped_early: "Stopped early",
-  timed_out: "Ran out of time",
-  not_started: "Not started",
-};
+type Tab = "students" | "statistics";
 
 export function ClassReadingPage() {
   const { classId, readingId } = useParams<{ classId: string; readingId: string }>();
   const { data, isLoading, isError } = useClassReading(classId, readingId);
+  const [tab, setTab] = useState<Tab>("students");
   const navigate = useNavigate();
   const trial = useTrialMode();
+  const people = trial ? "Participants" : "Students";
+  const flagged = data?.students.filter((s) => s.status === "stopped_early") ?? [];
+  const sessionsOf = (s: RosterStudent) => `/classes/${classId}/readings/${readingId}/students/${s.id}`;
 
   return (
     <div className="flex h-full flex-col">
       <AppTopBar />
       <main className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-[1100px] px-4 py-5 sm:px-6 sm:py-6">
-          <button
-            onClick={() => navigate(`/classes/${classId}`)}
-            className="mb-4 flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            {data?.class_label ?? "Class"}
-          </button>
-
-          {isLoading && <Notice>Loading reading…</Notice>}
-          {isError && <Notice>This reading isn&rsquo;t in this class.</Notice>}
+        <div className="mx-auto flex max-w-[1148px] flex-col gap-4 px-4 py-4 sm:gap-5 sm:px-8 sm:py-6 lg:px-6">
+          {isLoading && <PageSkeleton />}
+          {isError && <Notice>This reading isn't in this class.</Notice>}
 
           {data && (
-            <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1">
-                <h1 className="text-[22px] font-semibold tracking-[-0.02em] sm:text-[24px]">
-                  {data.title}
-                </h1>
-                {data.description && (
-                  <p className="text-[14px] text-muted-foreground">{data.description}</p>
-                )}
+            <>
+              <div className="flex flex-col gap-2.5">
+                <Breadcrumb
+                  trail={[
+                    { label: "Classes", to: "/classes" },
+                    { label: data.class_label, to: `/classes/${classId}` },
+                  ]}
+                  current={data.title}
+                />
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                  <div className="min-w-0">
+                    <h1 className="text-[22px] font-semibold tracking-[-0.02em] sm:text-[24px]">{data.title}</h1>
+                    {data.description && (
+                      <p className="mt-1 text-[14px] text-muted-foreground">{data.description}</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-10 w-full sm:h-8 sm:w-auto"
+                    onClick={() => navigate(`/library/${readingId}`)}
+                  >
+                    View reading
+                  </Button>
+                </div>
               </div>
 
-              <StatisticsSection statistics={data.statistics} scope="For this reading only." />
-
-              <section className="overflow-hidden rounded-lg border">
-                <div className="hidden h-10 grid-cols-[1fr_160px_200px_120px_24px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
-                  <span>{trial ? "Participant" : "Student"}</span>
-                  <span>Progress</span>
-                  <span>Status</span>
-                  <span>Last session</span>
-                  <span />
-                </div>
-
-                {data.students.length === 0 ? (
-                  <p className="px-6 py-12 text-center text-[14px] font-medium">
-                    {trial ? "No participants yet" : "No students yet"}
-                  </p>
-                ) : (
-                  data.students.map((s) => (
-                    <StudentRow
+              {flagged.length > 0 && (
+                <section aria-label="Flagged" className="overflow-hidden rounded-lg border border-fail-border bg-fail">
+                  <div className="flex items-center gap-2 px-4 py-3 text-[14px] font-semibold text-fail-foreground">
+                    <Flag className="h-3.5 w-3.5" aria-hidden />
+                    Flagged
+                    <span className="font-normal">{flagged.length}</span>
+                  </div>
+                  {flagged.map((s) => (
+                    <Link
                       key={s.id}
-                      student={s}
-                      trial={trial}
-                      onOpen={() => s.session_id && navigate(`/review/${s.session_id}`)}
-                    />
-                  ))
-                )}
-              </section>
-            </div>
+                      to={sessionsOf(s)}
+                      className="flex items-center gap-3 border-t border-fail-border bg-card px-4 py-3 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {!trial && <Initials name={s.name} />}
+                      <span className={cn("min-w-0 flex-1 truncate", trial ? "font-mono text-[13px] tracking-wider" : "text-[14px] font-medium")}>
+                        {s.name}
+                      </span>
+                      {s.last_session_at && (
+                        <span className="whitespace-nowrap text-[13px] text-muted-foreground">
+                          {formatShortDate(s.last_session_at)}
+                        </span>
+                      )}
+                      <ChevronRight className="h-[18px] w-[18px] shrink-0 text-muted-foreground/70" />
+                    </Link>
+                  ))}
+                </section>
+              )}
+
+              <div role="tablist" className="flex gap-0.5 self-stretch rounded-lg bg-muted p-[3px] sm:self-start">
+                {(
+                  [
+                    { key: "students", label: people, count: data.students.length },
+                    { key: "statistics", label: "Statistics" },
+                  ] as { key: Tab; label: string; count?: number }[]
+                ).map((t) => (
+                  <button
+                    key={t.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === t.key}
+                    onClick={() => setTab(t.key)}
+                    className={cn(
+                      "flex-1 rounded-md py-[5px] text-[13px] font-medium sm:w-[112px] sm:flex-none",
+                      tab === t.key
+                        ? "bg-card text-foreground shadow-raised"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {t.label}
+                    {t.count !== undefined && <span className="ml-1 text-muted-foreground/70">{t.count}</span>}
+                  </button>
+                ))}
+              </div>
+
+              {tab === "students" &&
+                (data.students.length === 0 ? (
+                  <Notice>
+                    {trial ? "No participants yet." : "No students have joined this class yet."}
+                  </Notice>
+                ) : (
+                  <div className="overflow-hidden rounded-lg border bg-card">
+                    {data.students.map((s, i) => (
+                      <StudentRow key={s.id} student={s} trial={trial} to={s.session_id ? sessionsOf(s) : null} first={i === 0} />
+                    ))}
+                  </div>
+                ))}
+
+              {tab === "statistics" && <StatisticsSection statistics={data.statistics} />}
+            </>
           )}
         </div>
       </main>
@@ -95,113 +153,70 @@ export function ClassReadingPage() {
   );
 }
 
+/** A student and how far they got. Opens their sessions on the reading, once
+ *  there is one to open. On a phone the progress takes a line of its own. */
 function StudentRow({
   student,
   trial,
-  onOpen,
+  to,
+  first,
 }: {
   student: RosterStudent;
   /** Trial mode: the student is a participant ID, with no name or email. */
   trial: boolean;
-  onOpen: () => void;
+  to: string | null;
+  first: boolean;
 }) {
   const stopped = student.status === "stopped_early" || student.status === "timed_out";
-  const started = student.status !== "not_started";
-
-  return (
-    <button
-      onClick={onOpen}
-      disabled={!started}
-      className="grid w-full grid-cols-[1fr_24px] items-center gap-4 border-b px-4 py-2.5 text-left last:border-b-0 enabled:hover:bg-muted/40 sm:grid-cols-[1fr_160px_200px_120px_24px]"
-    >
-      <span className="flex min-w-0 items-center gap-3">
+  const body = (
+    <>
+      {!trial && <Initials name={student.name} />}
+      <span className="min-w-0 flex-1">
+        <span className={cn("block truncate", trial ? "font-mono text-[13px] tracking-wider" : "text-[14px] font-medium")}>
+          {student.name}
+        </span>
         {!trial && (
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-medium text-muted-foreground">
-            {initials(student.name)}
-          </span>
-        )}
-        <span className="min-w-0">
-          <span
-            className={`flex items-center gap-1.5 ${
-              trial ? "font-mono text-[13px] tracking-wider" : "text-[14px] font-medium"
-            }`}
-          >
-            <span className="truncate">{student.name}</span>
-            {stopped && <Flag className="h-3 w-3 shrink-0 text-fail-foreground" />}
-          </span>
-          {!trial && (
-            <span className="block truncate text-[12px] text-muted-foreground">
-              {student.email}
-            </span>
-          )}
-          {/* On narrow screens the columns collapse into this line. */}
-          <span className="mt-1 flex items-center gap-2 sm:hidden">
-            <Progress passed={student.steps_passed} stopped={stopped} />
-            <span
-              className={`text-[12px] ${stopped ? "text-fail-foreground" : "text-muted-foreground"}`}
-            >
-              {stopped && student.stopped_on
-                ? `Stopped on ${student.stopped_on}`
-                : STATUS[student.status]}
-              {student.last_session_at && `, ${formatShortDate(student.last_session_at)}`}
-            </span>
-          </span>
-        </span>
-      </span>
-
-      <span className="hidden sm:block">
-        <Progress passed={student.steps_passed} stopped={stopped} />
-      </span>
-      <span className="hidden flex-col gap-0.5 sm:flex">
-        <span
-          className={`text-[13px] ${
-            stopped ? "text-fail-foreground" : started ? "" : "text-muted-foreground/70"
-          }`}
-        >
-          {STATUS[student.status]}
-        </span>
-        {stopped && student.stopped_on && (
-          <span className="text-[12px] text-muted-foreground">
-            Stopped on {student.stopped_on}
-          </span>
+          <span className="hidden truncate text-[13px] text-muted-foreground sm:block">{student.email}</span>
         )}
       </span>
-      <span className="hidden whitespace-nowrap text-[13px] text-muted-foreground sm:block">
+      <StepBar passed={student.steps_passed} stopped={stopped} className="order-last w-full basis-full pl-11 sm:order-none sm:w-[132px] sm:basis-auto sm:pl-0" />
+      <ProgressChip status={student.status} />
+      <span className="hidden w-[52px] whitespace-nowrap text-right text-[13px] text-muted-foreground sm:block">
         {student.last_session_at ? formatShortDate(student.last_session_at) : ""}
       </span>
-      <ChevronRight
-        className={`h-3.5 w-3.5 text-muted-foreground/70 ${started ? "" : "invisible"}`}
-      />
-    </button>
+      <ChevronRight className={cn("h-[18px] w-[18px] shrink-0 text-muted-foreground/70", !to && "invisible")} />
+    </>
+  );
+  const cls = cn(
+    "flex flex-wrap items-center gap-x-3 gap-y-2.5 py-3 pl-4 pr-3 sm:flex-nowrap sm:gap-4 sm:pl-5 sm:pr-4",
+    !first && "border-t",
+  );
+  return to ? (
+    <Link to={to} className={cn(cls, "hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none")}>
+      {body}
+    </Link>
+  ) : (
+    <div className={cls}>{body}</div>
   );
 }
 
-/** One mark per SEE-I step, filled for each step passed. A stopped session's
- *  marks are pale red, so a row that needs attention reads as one at a glance. */
-function Progress({ passed, stopped }: { passed: number; stopped: boolean }) {
+function PageSkeleton() {
   return (
-    <span className="flex gap-[3px]">
-      {[0, 1, 2, 3].map((i) => (
-        <span
-          key={i}
-          className={`h-1 w-[22px] rounded-sm ${
-            i < passed ? (stopped ? "bg-fail-border" : "bg-primary") : "bg-border"
-          }`}
-        />
-      ))}
-    </span>
+    <Loading label="Loading the reading" className="flex flex-col gap-4 sm:gap-5">
+      <Skeleton className="h-3.5 w-52" />
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-4 w-64 max-w-full" />
+      </div>
+      <Skeleton className="h-9 w-full rounded-lg sm:w-[232px]" />
+      <div className="overflow-hidden rounded-lg border bg-card">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className={cn("flex items-center gap-3 px-5 py-4", i > 0 && "border-t")}>
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        ))}
+      </div>
+    </Loading>
   );
-}
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join("");
-}
-
-function Notice({ children }: { children: React.ReactNode }) {
-  return <p className="py-10 text-center text-[14px] text-muted-foreground">{children}</p>;
 }

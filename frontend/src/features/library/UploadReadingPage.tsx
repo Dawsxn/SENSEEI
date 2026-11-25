@@ -10,6 +10,7 @@
  * file itself changes, so corrections are never thrown away by a Back.
  *
  * Leaving midway asks first, since the work so far lives only in this page.
+ * A failed read keeps the chosen file, with Try again when trying again could help.
  *
  * Started from a class (`?class=`), it arrives with that class already ticked
  * and goes back there rather than to the readings list. Ticked, not locked: an
@@ -18,7 +19,7 @@
  */
 
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
-import { Check, ChevronLeft, Info, Lock, Plus, Upload } from "lucide-react";
+import { Check, Info, Plus, Upload } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useBlocker, useNavigate, useSearchParams } from "react-router-dom";
 
@@ -26,6 +27,8 @@ import { AppTopBar } from "../../components/AppTopBar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Button } from "../../components/ui/button";
 import { ApiError, createReading, extractReading } from "../../lib/api";
+import { cn } from "../../lib/utils";
+import { Breadcrumb } from "../readings/parts";
 import { useClasses } from "../classes/useClasses";
 import { ClassPicker } from "./ClassPicker";
 import type { ExtractResult } from "./types";
@@ -40,7 +43,7 @@ const STEPS = ["PDF", "Text", "Details"] as const;
 type Step = "pdf" | "loading" | "text" | "details";
 
 const INPUT =
-  "h-9 w-full rounded-md border bg-background px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
+  "h-9 w-full rounded-md border bg-card px-3 text-[14px] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
 
 /** Words a title leaves lower case unless they start it. */
 const MINOR = new Set(["a", "an", "and", "as", "at", "by", "for", "in", "of", "on", "or", "the", "to"]);
@@ -67,8 +70,11 @@ function uploadError(err: unknown): string {
     // Trial site only: a class there has one reading.
     if (err.detail === "class_has_reading") return "A class you ticked already has a reading.";
   }
-  return "That didn't work. Try again.";
+  return "Something went wrong while reading your PDF.";
 }
+
+/** Errors about the file itself, which trying again will not fix. */
+const FILE_FAULTS = new Set(["not_pdf", "too_large", "no_text"]);
 
 export function UploadReadingPage() {
   const navigate = useNavigate();
@@ -82,10 +88,15 @@ export function UploadReadingPage() {
         label: classes?.find((c) => c.id === fromClass)?.label ?? "Class",
       }
     : { path: "/library", label: "Readings" };
+  const trail = fromClass
+    ? [{ label: "Classes", to: "/classes" }, { label: origin.label, to: origin.path }]
+    : [{ label: origin.label, to: origin.path }];
 
   const [step, setStep] = useState<Step>("pdf");
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  // A failed read of the chosen file. The file stays, so it can be tried again.
+  const [readError, setReadError] = useState<{ text: string; retry: boolean } | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   // The file the current text was extracted from. A different file means the
@@ -124,6 +135,7 @@ export function UploadReadingPage() {
     if (!isPdf) return setFileError("Not a PDF.");
     if (picked.size > MAX_BYTES) return setFileError("Over 20 MB.");
     setFileError(null);
+    setReadError(null);
     setFile(picked);
     if (!title.trim()) setTitle(titleFromFilename(picked.name));
   }
@@ -132,6 +144,7 @@ export function UploadReadingPage() {
     if (!file || !title.trim()) return;
     if (extractedFrom === file) return setStep("text");
     setStep("loading");
+    setReadError(null);
     try {
       const result = await extractReading(file);
       setExtracted(result);
@@ -139,8 +152,8 @@ export function UploadReadingPage() {
       setExtractedFrom(file);
       setStep("text");
     } catch (err) {
-      setFile(null);
-      setFileError(uploadError(err));
+      const fault = err instanceof ApiError && FILE_FAULTS.has(err.detail ?? "");
+      setReadError({ text: uploadError(err), retry: !fault });
       setStep("pdf");
     }
   }
@@ -175,30 +188,31 @@ export function UploadReadingPage() {
     <div className="flex h-full flex-col">
       <AppTopBar />
       <main className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto flex max-w-[1360px] flex-col px-4 py-5 sm:px-6 sm:py-6">
-          <button
-            onClick={() => navigate(origin.path)}
-            className="mb-4 flex w-fit items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            {origin.label}
-          </button>
-
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-[22px] font-semibold tracking-[-0.02em] sm:text-[24px]">
-              Upload a reading
-            </h1>
-            <Stepper current={stepIndex} />
+        <div
+          className={cn(
+            "mx-auto flex flex-col gap-5 px-4 py-4 sm:px-8 sm:py-6 lg:px-6",
+            step === "text" ? "max-w-[1148px]" : "max-w-[760px]",
+          )}
+        >
+          <div className="flex flex-col gap-2.5">
+            <Breadcrumb trail={trail} current="Upload reading" />
+            <h1 className="text-[22px] font-semibold tracking-[-0.02em] sm:text-[24px]">Upload reading</h1>
           </div>
+          <Stepper current={stepIndex} />
 
           {step === "pdf" && (
             <PdfStep
               file={file}
               error={fileError}
+              readError={readError}
+              onRetry={toText}
               title={title}
               description={description}
               onFile={choose}
-              onRemove={() => setFile(null)}
+              onRemove={() => {
+                setFile(null);
+                setReadError(null);
+              }}
               onTitle={setTitle}
               onDescription={setDescription}
               onNext={toText}
@@ -272,7 +286,7 @@ function Stepper({ current }: { current: number }) {
               {done ? <Check className="h-3 w-3" strokeWidth={3} /> : i + 1}
             </span>
             <span
-              className={`hidden text-[13px] font-medium sm:inline ${
+              className={`text-[13px] font-medium ${
                 done || on ? "text-foreground" : "text-muted-foreground"
               }`}
             >
@@ -289,6 +303,8 @@ function Stepper({ current }: { current: number }) {
 interface PdfStepProps {
   file: File | null;
   error: string | null;
+  readError: { text: string; retry: boolean } | null;
+  onRetry: () => void;
   title: string;
   description: string;
   onFile: (file: File | undefined) => void;
@@ -299,7 +315,7 @@ interface PdfStepProps {
 }
 
 function PdfStep(props: PdfStepProps) {
-  const { file, error, title, description, onFile, onRemove, onTitle, onDescription, onNext } =
+  const { file, error, readError, onRetry, title, description, onFile, onRemove, onTitle, onDescription, onNext } =
     props;
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
@@ -307,14 +323,15 @@ function PdfStep(props: PdfStepProps) {
 
   return (
     <form
-      className="mx-auto flex w-full max-w-[560px] flex-col gap-5 pt-2"
+      className="flex w-full flex-col gap-5"
       onSubmit={(e) => {
         e.preventDefault();
         if (ready) onNext();
       }}
     >
       {file ? (
-        <div className="flex items-center gap-3 rounded-lg border px-3.5 py-3">
+        <div>
+        <div className={`flex items-center gap-3 rounded-lg border bg-card px-3.5 py-3 ${readError ? "border-fail-border" : ""}`}>
           <span className="flex h-9 w-8 shrink-0 items-center justify-center rounded bg-fail text-[9px] font-semibold text-fail-foreground">
             PDF
           </span>
@@ -330,6 +347,20 @@ function PdfStep(props: PdfStepProps) {
             Remove
           </button>
         </div>
+        {readError && (
+          <div
+            role="alert"
+            className="mt-2 flex items-center justify-between gap-3 rounded-lg bg-fail px-3 py-2.5 text-[13px] text-fail-foreground"
+          >
+            {readError.text}
+            {readError.retry && (
+              <Button type="button" variant="secondary" size="sm" className="h-7 shrink-0" onClick={onRetry}>
+                Try again
+              </Button>
+            )}
+          </div>
+        )}
+        </div>
       ) : (
         <div>
           <div
@@ -344,7 +375,7 @@ function PdfStep(props: PdfStepProps) {
               onFile(e.dataTransfer.files[0]);
             }}
             className={`flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-12 text-center ${
-              over ? "border-primary bg-primary/5" : error ? "border-fail-border bg-muted/40" : "border-[#d4d4d8] bg-muted/40"
+              over ? "border-primary bg-primary/5" : error ? "border-fail-border bg-muted/40" : "border-border bg-muted/40"
             }`}
           >
             <Upload className="h-7 w-7 text-muted-foreground/70" strokeWidth={1.6} />
@@ -454,8 +485,8 @@ function TextStep({ file, extracted, text, onText, onBack, onNext }: TextStepPro
           <p
             className={`flex items-center gap-2 rounded-md border px-3 py-2 text-[13px] ${
               note.tone === "warn"
-                ? "border-[#fde68a] bg-[#fffbeb] text-[#92400e]"
-                : "border-[#bbf7d0] bg-[#f0fdf4] text-[#166534]"
+                ? "border-warn-border bg-warn text-warn-foreground"
+                : "border-accent-soft-border bg-accent-soft text-accent-soft-foreground"
             }`}
           >
             <Info className="h-3.5 w-3.5 shrink-0" />
@@ -470,7 +501,7 @@ function TextStep({ file, extracted, text, onText, onBack, onNext }: TextStepPro
             key={p}
             onClick={() => setPane(p)}
             className={`h-[30px] flex-1 rounded text-[13px] font-medium ${
-              pane === p ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+              pane === p ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
             }`}
           >
             {p === "pdf" ? "PDF" : "Text"}
@@ -480,7 +511,7 @@ function TextStep({ file, extracted, text, onText, onBack, onNext }: TextStepPro
 
       <div className="grid h-[calc(100vh-300px)] min-h-[420px] gap-4 lg:grid-cols-2">
         <div
-          className={`min-h-0 overflow-hidden rounded-lg border ${pane === "pdf" ? "block" : "hidden"} lg:block`}
+          className={`min-h-0 overflow-hidden rounded-lg border bg-card ${pane === "pdf" ? "block" : "hidden"} lg:block`}
         >
           <Suspense fallback={<p className="p-6 text-[13px] text-muted-foreground">Loading the PDF…</p>}>
             {url && <PdfPanel fileUrl={url} fallback={null} />}
@@ -491,7 +522,7 @@ function TextStep({ file, extracted, text, onText, onBack, onNext }: TextStepPro
           value={text}
           onChange={(e) => onText(e.target.value)}
           spellCheck
-          className={`${pane === "text" ? "block" : "hidden"} min-h-0 w-full resize-none rounded-lg border bg-background px-4 py-3.5 text-[14px] leading-[1.65] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 lg:block`}
+          className={`${pane === "text" ? "block" : "hidden"} min-h-0 w-full resize-none rounded-lg border bg-card px-4 py-3.5 text-[14px] leading-[1.65] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 lg:block`}
         />
       </div>
 
@@ -536,9 +567,15 @@ function DetailsStep(props: DetailsStepProps) {
     onComponents(components.map((c, j) => (j === i ? value : c)));
 
   return (
-    <div className="mx-auto flex w-full max-w-[640px] flex-col gap-7 pt-1">
+    <div className="flex w-full flex-col gap-7">
       <section className="flex flex-col gap-2.5">
-        <h2 className="text-[16px] font-semibold">Core components</h2>
+        <div>
+          <h2 className="text-[16px] font-semibold">Core components</h2>
+          <p className="mt-1 text-[13px] leading-[1.5] text-muted-foreground">
+            Write the key ideas a student should take from this reading, one per box. Students&rsquo; answers
+            are checked against them, and they can&rsquo;t be changed after you save.
+          </p>
+        </div>
         {components.map((c, i) => (
           <div key={i} className="flex items-center gap-2.5">
             <span className="w-4 shrink-0 text-right text-[13px] text-muted-foreground">{i + 1}</span>
@@ -575,23 +612,22 @@ function DetailsStep(props: DetailsStepProps) {
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <h2 className="text-[16px] font-semibold">Classes</h2>
+        <div>
+          <h2 className="text-[16px] font-semibold">Classes (optional)</h2>
+          <p className="mt-1 text-[13px] leading-[1.5] text-muted-foreground">
+            Students in the classes you tick can open this reading. You can change this later.
+          </p>
+        </div>
         <ClassPicker selected={classIds} onChange={onClassIds} />
       </section>
 
-      <div className="flex flex-col gap-3 border-t pt-[18px] sm:flex-row sm:items-center sm:justify-between">
-        <p className="flex items-center gap-2 text-[13px] text-muted-foreground">
-          <Lock className="h-3.5 w-3.5 shrink-0" />
-          Text and core components can&rsquo;t be changed after saving.
-        </p>
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onBack}>
-            Back
-          </Button>
-          <Button onClick={onSave} disabled={!ready || saving}>
-            Save reading
-          </Button>
-        </div>
+      <div className="flex justify-between gap-2">
+        <Button variant="secondary" onClick={onBack}>
+          Back
+        </Button>
+        <Button onClick={onSave} disabled={!ready || saving}>
+          Save reading
+        </Button>
       </div>
       {error && <p className="-mt-4 text-right text-[13px] text-fail-foreground">{error}</p>}
     </div>

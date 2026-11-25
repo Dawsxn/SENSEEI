@@ -38,3 +38,6 @@ scripts/runs/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Readings that may not be published (the trial reading): the seed loads them if present
+scripts/fixtures/local/

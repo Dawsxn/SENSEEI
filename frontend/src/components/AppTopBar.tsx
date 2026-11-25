@@ -1,22 +1,20 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, User, Users } from "lucide-react";
+import { CircleHelp, LogOut, User, Users } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { SwitchUserDialog } from "../features/auth/SwitchUserDialog";
 import { useMe, useTrialMode } from "../features/auth/useAuth";
-import { JoinClassDialog } from "../features/readings/JoinClassDialog";
 import { logout } from "../lib/api";
-import { Button } from "./ui/button";
+import { Logo } from "./Logo";
 
-/** The app shell's top bar: the wordmark, the instructor's two sections, Join a
- *  class, and the account menu. Join a class is for students only; instructors
- *  make classes rather than join them. The sections are for instructors only;
- *  a student has one page to be on. On a phone the sections drop to a row of
- *  their own under the bar, where there is room for them. */
+/** The app shell's top bar: the wordmark, the instructor's two sections, a
+ *  student's way back to the SEE-I walkthrough, and the account menu. The sections are for instructors only; a student moves
+ *  between their classes from the pages themselves, and joins one from the
+ *  Classes page. On a phone the sections drop to a row of their own under the
+ *  bar, where there is room for them. */
 export function AppTopBar() {
   const { data: user } = useMe();
-  const [joining, setJoining] = useState(false);
   const instructor = user?.role === "instructor";
   // A grader sees one section, Grading, and nothing else.
   const sections = instructor || user?.role === "grader";
@@ -25,25 +23,28 @@ export function AppTopBar() {
     <header className="shrink-0 border-b">
       <div className="flex h-14 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-8">
-          {/* SEE-I is set in the accent colour: the framework name sits inside
-              the product name (design/README.md). */}
-          <span className="text-[15px] font-semibold tracking-[-0.01em]">
-            SEN<span className="text-primary">SEE-I</span>
-          </span>
+          {/* Home: the classes page, for students and instructors alike. */}
+          <Link to="/" aria-label="SENSEE-I, go to classes" className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Logo />
+          </Link>
           {sections && <Sections className="hidden h-14 sm:flex" />}
         </div>
 
-        <div className="flex items-center gap-3">
-          {user?.role === "student" && (
-            <Button variant="secondary" size="sm" onClick={() => setJoining(true)}>
-              Join a class
-            </Button>
+        <div className="flex items-center gap-2">
+          {user?.role === "student" && !user.participant && (
+            <Link
+              to="/how-it-works"
+              aria-label="How SENSEE-I works"
+              title="How SENSEE-I works"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground"
+            >
+              <CircleHelp className="h-[18px] w-[18px]" />
+            </Link>
           )}
           <AccountMenu />
         </div>
       </div>
       {sections && <Sections className="flex h-12 px-4 sm:hidden" />}
-      {joining && <JoinClassDialog onClose={() => setJoining(false)} />}
     </header>
   );
 }
@@ -118,7 +119,7 @@ function AccountMenu() {
         <User className="h-4 w-4" />
       </button>
       {open && (
-        <div className="absolute right-0 top-10 z-50 w-56 overflow-hidden rounded-md border bg-background shadow-raised">
+        <div className="absolute right-0 top-10 z-50 w-56 overflow-hidden rounded-md border bg-card shadow-raised">
           {user && (
             <div className="border-b px-3 py-2.5">
               <div className="truncate text-[14px] font-medium">{user.name}</div>

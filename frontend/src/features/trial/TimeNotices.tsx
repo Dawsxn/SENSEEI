@@ -51,7 +51,7 @@ export function TimeNoticeCard({ notice, onClose }: { notice: TimeNotice; onClos
     <div
       role="status"
       aria-live="polite"
-      className="fixed left-1/2 top-[68px] z-40 flex w-[420px] max-w-[calc(100%-32px)] -translate-x-1/2 items-start gap-3 rounded-lg border bg-background px-4 py-3.5 shadow-lg"
+      className="fixed left-1/2 top-[68px] z-40 flex w-[420px] max-w-[calc(100%-32px)] -translate-x-1/2 items-start gap-3 rounded-lg border bg-card px-4 py-3.5 shadow-lg"
     >
       <Clock className="mt-px h-[18px] w-[18px] shrink-0 text-primary" aria-hidden />
       <div className="min-w-0 flex-1">

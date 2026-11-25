@@ -2,12 +2,13 @@
 
 The instructor routes are all scoped to classes the signed-in instructor owns,
 and one that is not theirs is a 404, the same as one that does not exist. The
-single student route is joining by code.
+student routes are joining by code and reading the classes joined.
 
 The instructor routes live under `/instructor`, not at `/classes`, because
 `/classes` is the address of the instructor's page. The pages and the API share
 one origin, so an API path that matches a page path answers a refreshed or
-bookmarked page with JSON.
+bookmarked page with JSON. For the same reason a student's classes are read
+from `/enrolments`, where joining one already lives.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
@@ -29,9 +31,13 @@ from ..schemas import (
     JoinCodeOut,
     JoinIn,
     JoinOut,
+    StudentClassDetail,
+    StudentClassItem,
+    StudentInClassOut,
+    StudentSessionsOut,
 )
-from ..services import analytics_service, class_service
-from ..services.analytics_service import ReadingNotInClass
+from ..services import analytics_service, class_service, library_service, reading_service
+from ..services.analytics_service import ReadingNotInClass, StudentNotInClass
 from ..services.class_service import (
     ClassNotFound,
     DuplicateClass,
@@ -54,6 +60,10 @@ MODE_LOCKED = HTTPException(
 NO_SUCH_TEST = HTTPException(
     status_code=422, detail="that test is not for any of this class's readings"
 )
+
+
+class AddReadingsIn(BaseModel):
+    reading_ids: list[uuid.UUID]
 
 
 def _fields(body: ClassIn) -> Fields:
@@ -183,6 +193,59 @@ async def replace_join_code(
     return JoinCodeOut(join_code=row["join_code"])
 
 
+@router.get("/instructor/classes/{class_id}/students/{student_id}", response_model=StudentInClassOut)
+async def student_in_class(
+    class_id: uuid.UUID,
+    student_id: uuid.UUID,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> StudentInClassOut:
+    """One student in the class, and where they are on each of its readings."""
+    try:
+        row = await analytics_service.student_in_class(db, user.id, class_id, student_id)
+    except (ClassNotFound, StudentNotInClass):
+        raise NOT_FOUND
+    return StudentInClassOut(**row)
+
+
+@router.get(
+    "/instructor/classes/{class_id}/readings/{reading_id}/students/{student_id}",
+    response_model=StudentSessionsOut,
+)
+async def student_sessions(
+    class_id: uuid.UUID,
+    reading_id: uuid.UUID,
+    student_id: uuid.UUID,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> StudentSessionsOut:
+    """Every finished session one student has on one of the class's readings."""
+    try:
+        row = await analytics_service.student_sessions(db, user.id, class_id, reading_id, student_id)
+    except (ClassNotFound, ReadingNotInClass, StudentNotInClass):
+        raise NOT_FOUND
+    return StudentSessionsOut(**row)
+
+
+@router.post("/instructor/classes/{class_id}/readings", status_code=204)
+async def add_readings(
+    class_id: uuid.UUID,
+    body: AddReadingsIn,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> Response:
+    """Add readings the instructor already has to this class."""
+    try:
+        await library_service.add_to_class(db, user.id, class_id, body.reading_ids)
+    except library_service.UnknownClass:
+        raise NOT_FOUND
+    except library_service.ReadingNotFound:
+        raise HTTPException(status_code=404, detail="reading not found")
+    except library_service.ClassHasReading:
+        raise HTTPException(status_code=409, detail="class_has_reading")
+    return Response(status_code=204)
+
+
 @router.delete("/instructor/classes/{class_id}/students/{student_id}", status_code=204)
 async def remove_student(
     class_id: uuid.UUID,
@@ -195,6 +258,28 @@ async def remove_student(
     except ClassNotFound:
         raise NOT_FOUND
     return Response(status_code=204)
+
+
+@router.get("/enrolments", response_model=list[StudentClassItem])
+async def list_my_classes(
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> list[StudentClassItem]:
+    """The classes this student is in, with how far they are through each."""
+    return [StudentClassItem(**row) for row in await reading_service.list_classes(db, user.id)]
+
+
+@router.get("/enrolments/{class_id}", response_model=StudentClassDetail)
+async def get_my_class(
+    class_id: uuid.UUID,
+    user: User = Depends(require_student),
+    db: AsyncSession = Depends(get_session),
+) -> StudentClassDetail:
+    """One class the student is in, with its readings. Any other class is a 404."""
+    detail = await reading_service.get_class(db, user.id, class_id)
+    if detail is None:
+        raise NOT_FOUND
+    return StudentClassDetail(**detail)
 
 
 @router.post("/enrolments", response_model=JoinOut)

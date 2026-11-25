@@ -4,7 +4,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { RouterProvider, createMemoryRouter } from "react-router-dom";
+import { MemoryRouter, RouterProvider, createMemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../lib/api";
@@ -77,7 +77,9 @@ describe("a session picked back up", () => {
     reading_id: "r1",
     reading_title: "Cognitive Offloading",
     class_name: "TRIAL S1-A",
-    student_name: "P-7K3Q-9TXM",
+    class_id: "c1",
+    core_components: [],
+    student_name: "P-7K3Q-9TXM", student_id: "u1",
     index: 1,
     status: "in_progress",
     started_at: "2026-10-28T01:00:00Z",
@@ -121,18 +123,19 @@ describe("how a participant's session ends", () => {
         onSubmit={vi.fn()}
         trial={{ timeUp: false }}
       />,
+      { wrapper: MemoryRouter },
     );
     expect(screen.getByText("You're done. Please stay at your seat until time is up.")).toBeInTheDocument();
   });
 
   it("stops them answering once time is up", () => {
-    render(<ChatPanel state={running} onSubmit={vi.fn()} trial={{ timeUp: true }} />);
+    render(<ChatPanel state={running} onSubmit={vi.fn()} trial={{ timeUp: true }} />, { wrapper: MemoryRouter });
     expect(screen.getByText("Time's up. Please wait for the next instructions.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Submit" })).not.toBeInTheDocument();
   });
 
   it("is unchanged for an ordinary student", () => {
-    render(<ChatPanel state={running} onSubmit={vi.fn()} />);
+    render(<ChatPanel state={running} onSubmit={vi.fn()} />, { wrapper: MemoryRouter });
     expect(screen.getByRole("button", { name: "Submit" })).toBeInTheDocument();
   });
 });

@@ -1,102 +1,92 @@
 /** An instructor's readings, and the way to upload a new one.
  *
- * As on the classes page, with nothing yet the upload button lives in the empty
- * state. A reading assigned to no class is shown greyed as Not assigned, since
- * that is a reading no student can see.
- *
- * The button above the list is an icon alone, since the heading beside it says
- * what it makes. The one in the empty state keeps its words: there, the button
- * is the instruction.
+ * Rows as on a class page. Each shows the classes it is in as chips, two at
+ * most with a "+N" for the rest, so a row keeps one height; the reading's own
+ * page lists them all. A reading in no class says so, since no student sees it.
  */
 
-import { ChevronRight, Upload } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { AppTopBar } from "../../components/AppTopBar";
-import { Tooltip } from "../../components/ui/Tooltip";
+import { Skeleton } from "../../components/ui/Skeleton";
 import { Button } from "../../components/ui/button";
-import { formatShortDate } from "../../lib/format";
+import { cn } from "../../lib/utils";
+import { Notice } from "../readings/parts";
 import { useLibrary } from "./useLibrary";
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+const SHOWN = 2;
 
 export function LibraryListPage() {
   const { data, isLoading, isError } = useLibrary();
   const navigate = useNavigate();
-  const readings = data ?? [];
-  const upload = () => navigate("/library/new");
 
   return (
     <div className="flex h-full flex-col">
       <AppTopBar />
       <main className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8">
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Readings</h1>
-            {readings.length > 0 && (
-              <Tooltip text="Upload a reading" align="left">
-                <Button variant="accent" size="icon" aria-label="Upload a reading" onClick={upload}>
-                  <Upload className="h-4 w-4" />
-                </Button>
-              </Tooltip>
-            )}
+        <div className="mx-auto flex max-w-[1148px] flex-col gap-5 px-4 py-5 sm:gap-6 sm:px-8 sm:py-7 lg:px-6 lg:py-8">
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-[22px] font-semibold tracking-[-0.02em] sm:text-[24px]">Readings</h1>
+            <Button variant="secondary" size="sm" onClick={() => navigate("/library/new")}>
+              + Upload reading
+            </Button>
           </div>
 
-          {isLoading && <Notice>Loading readings…</Notice>}
-          {isError && <Notice>Couldn&rsquo;t load your readings.</Notice>}
+          {isLoading && <RowsSkeleton />}
+          {isError && <Notice>Couldn't load your readings. Try again.</Notice>}
+          {data && data.length === 0 && <Notice>No readings available</Notice>}
 
-          {data && readings.length === 0 && (
-            <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-16 text-center">
-              <span className="text-[15px] font-semibold">No readings yet</span>
-              <Button className="mt-3" onClick={upload}>
-                <Upload className="h-4 w-4" />
-                Upload a reading
-              </Button>
-            </div>
-          )}
-
-          {readings.length > 0 && (
-            <div className="overflow-hidden rounded-lg border">
-              <div className="hidden h-10 grid-cols-[1fr_200px_100px_100px_24px] items-center gap-4 border-b px-4 text-[12px] font-medium text-muted-foreground sm:grid">
-                <span>Title</span>
-                <span>Classes</span>
-                <span>Sessions</span>
-                <span>Added</span>
-                <span />
-              </div>
-              {readings.map((r) => {
-                const classes = r.classes.length ? r.classes.join(", ") : "Not assigned";
-                const tone = r.classes.length ? "text-[#3f3f46]" : "text-muted-foreground/70";
-                return (
-                  <button
-                    key={r.id}
-                    onClick={() => navigate(`/library/${r.id}`)}
-                    className="grid w-full grid-cols-[1fr_24px] items-center gap-4 border-b px-4 py-3.5 text-left last:border-b-0 hover:bg-muted/40 sm:grid-cols-[1fr_200px_100px_100px_24px]"
-                  >
-                    <span className="min-w-0">
-                      <span className="block text-[14px] font-medium">{r.title}</span>
-                      {r.description && (
-                        <span className="mt-0.5 hidden truncate text-[12px] text-muted-foreground sm:block">
-                          {r.description}
-                        </span>
-                      )}
-                      {/* On narrow screens the columns collapse into this line. */}
-                      <span className="mt-0.5 block text-[12px] text-muted-foreground sm:hidden">
-                        <span className={r.classes.length ? "" : "text-muted-foreground/70"}>
-                          {classes}
-                        </span>{" "}
-                        · {r.session_count} sessions · {formatShortDate(r.created_at)}
-                      </span>
-                    </span>
-                    <span className={`hidden text-[13px] sm:block ${tone}`}>{classes}</span>
-                    <span className="hidden text-[13px] text-muted-foreground sm:block">
-                      {r.session_count}
-                    </span>
-                    <span className="hidden whitespace-nowrap text-[13px] text-muted-foreground sm:block">
-                      {formatShortDate(r.created_at)}
-                    </span>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/70" />
-                  </button>
-                );
-              })}
+          {data && data.length > 0 && (
+            <div className="overflow-hidden rounded-lg border bg-card">
+              {data.map((r, i) => (
+                <Link
+                  key={r.id}
+                  to={`/library/${r.id}`}
+                  className={cn(
+                    "flex flex-wrap items-center gap-x-3 gap-y-2 py-3.5 pl-4 pr-3 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none sm:flex-nowrap sm:gap-5 sm:pl-5 sm:pr-4",
+                    i > 0 && "border-t",
+                  )}
+                >
+                  <div className="min-w-0 flex-1 basis-[calc(100%-30px)] sm:basis-auto">
+                    <div className="text-[14px] font-medium">{r.title}</div>
+                    {r.description && (
+                      <div className="mt-0.5 text-[13px] text-muted-foreground">{r.description}</div>
+                    )}
+                  </div>
+                  <ChevronRight className="order-1 h-[18px] w-[18px] shrink-0 text-muted-foreground/70 sm:order-none sm:hidden" />
+                  <div className="order-2 flex min-w-0 flex-1 gap-1.5 overflow-hidden sm:order-none sm:w-[300px] sm:flex-none">
+                    {r.classes.length === 0 ? (
+                      <span className="text-[12px] text-muted-foreground/70">Not in a class</span>
+                    ) : (
+                      <>
+                        {r.classes.slice(0, SHOWN).map((label) => (
+                          <span
+                            key={label}
+                            title={label}
+                            className="h-[22px] min-w-0 truncate rounded-full bg-muted px-2 text-[12px] font-medium leading-[22px] text-foreground/80"
+                          >
+                            {label}
+                          </span>
+                        ))}
+                        {r.classes.length > SHOWN && (
+                          <span
+                            title={r.classes.slice(SHOWN).join(", ")}
+                            className="inline-flex h-[22px] shrink-0 items-center rounded-full border px-2 text-[12px] font-medium text-muted-foreground"
+                          >
+                            +{r.classes.length - SHOWN}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <span className="order-3 shrink-0 whitespace-nowrap text-[13px] text-muted-foreground sm:order-none sm:w-[84px] sm:text-right">
+                    {plural(r.session_count, "session", "sessions")}
+                  </span>
+                  <ChevronRight className="hidden h-[18px] w-[18px] shrink-0 text-muted-foreground/70 sm:block" />
+                </Link>
+              ))}
             </div>
           )}
         </div>
@@ -105,6 +95,18 @@ export function LibraryListPage() {
   );
 }
 
-function Notice({ children }: { children: React.ReactNode }) {
-  return <p className="py-10 text-center text-[14px] text-muted-foreground">{children}</p>;
+function RowsSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-lg border bg-card" aria-hidden>
+      {["w-[180px]", "w-[140px]"].map((w, i) => (
+        <div key={i} className={cn("flex items-center gap-5 py-4 pl-5 pr-4", i > 0 && "border-t")}>
+          <div className="flex-1">
+            <Skeleton className={cn("h-3.5", w)} />
+            <Skeleton className="mt-2 h-3 w-[240px] max-w-full" />
+          </div>
+          <Skeleton className="h-[22px] w-[84px] rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
 }

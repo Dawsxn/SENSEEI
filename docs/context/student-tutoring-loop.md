@@ -17,46 +17,83 @@ A session ends in one of two ways:
 | Complete | All four steps passed |
 | Fallback | The student hit the maximum attempts on some step |
 
-Both endings are terminal. A finished session of either kind is read-only, and
-both give the student the option to start a new attempt at that reading.
+Both endings are terminal. A finished session of either kind is read-only. In
+place of the answer box, a strip says how it ended (Session complete, with "You
+passed all four steps of SEE-I.", or Session ended, which adds nothing to the
+fallback message already in the chat) and offers Back to reading, where the
+student can start again, and Review session.
 
-A session cannot be paused. If a student tries to leave mid-session, the app asks
+A session cannot be paused, and once left it cannot be resumed. If a student
+tries to leave mid-session, by the exit or by the browser's back, the app asks
 them to confirm, warning that the session will be discarded and cannot be
-resumed. On confirmation the session is discarded.
+resumed. On confirmation the session ends as `left`: kept on the server, never
+counted, and never offered back. A student who closes the tab instead leaves
+their session `in_progress`, and it becomes `abandoned` when they next start the
+same reading. Both are kept so that how often students quit partway, and on
+which step, can be read back.
+
+A reload is not leaving. The tab remembers the session it is in, so a reload
+picks the same session back up from the server, with its conversation, its step
+and the tries used. Closing the tab forgets it, and pressing Done on the reading
+step starts a new one.
+
+When something fails mid-session, a red strip says what, in the student's terms
+(no connection, or something going wrong while starting or while sending an
+answer), with Try again. Try again loads the session back as the server has it,
+and sends the student's answer again only if the server never received it, so
+nothing is typed twice and no try is counted twice. A reading that does not load
+replaces the screen with "Couldn't load this reading." and Try again, or, when it
+does not exist for the student, "This reading isn't available." and Back to
+classes; no session starts behind it.
 
 There is no time limit on a session in the app, except in trial mode.
 
-**In trial mode** (`docs/context/trial.md`) three of these rules change: a
+**In trial mode** (`docs/context/trial.md`) a participant has no exit and their
+session is picked back up after a reload from the server, as it always was; the
+end strip and the error strip keep the trial's own wording. And three of these
+rules change: a
 participant gets exactly one session, with no new attempt after it ends; the 40
 minutes from opening the reading are a hard limit, with a countdown; and a session
 cut off by time is kept and counted, never discarded.
 
 ## Entering a session
 
-1. **Reading list.** The student opens the app to the readings assigned to the
-   classes they are enrolled in. Enrolment determines visibility: a student sees
-   a reading only if one of their classes has it assigned.
+1. **Classes, then readings.** The student opens the app to the classes they
+   are enrolled in, each with how many readings it has, and opens a class to see
+   its readings, with how many are still to do and how many are finished. Enrolment determines visibility: a student
+   sees a reading only if one of their classes has it assigned.
 2. **Core components.** Each reading carries one or more core components, the
    essential defining parts of the concept, supplied by the instructor at upload.
-3. **Already-attempted readings.** Selecting one shows a read-only view of the
-   most recent session by default, with the option to start a new attempt
-   (§4.3.1). Earlier sessions on that reading remain viewable. There is no cap on
-   how many times a student may re-attempt a reading.
-4. **Reading detail.** A dialog over the list, showing the reading's class, its
-   core component(s), and any past sessions on it.
-5. **Reading step.** The reading is shown on its own, as the instructor's
+3. **Already-attempted readings.** The reading's page lists every past session
+   on it, and each opens read-only under the reading (§4.3.1): a summary of the
+   steps reached, then the conversation, with the criteria each answer missed
+   shown as they were during the session, and the core components and rubric a
+   tap away. The instructor sees the same page with the Assessment Agent's
+   reason for each criterion. Starting again is from the reading's page. There
+   is no cap on how many times a student may re-attempt a reading.
+4. **Reading detail.** A page of its own under the class, showing the
+   reading's core component(s), any past sessions on it, and Start.
+5. **Walkthrough, the first time only.** Before a student's first session on
+   any reading, Start goes through three screens: the four SEE-I steps, how a
+   session runs (the reading alone, then the tutoring screen with the reading
+   still available, then the end), and what the core components and the rubric
+   are. Seeing it is recorded on the account, so it does not show again on
+   another device; the help icon in the top bar opens it any time. The trial
+   keeps its own briefing and never shows this.
+6. **Reading step.** The reading is shown on its own, as the instructor's
    original PDF where one is stored and as the extracted text otherwise. An
-   opening dialog says what the session will ask for. The student must
+   opening dialog names the concept the session is about. The student must
    explicitly tell the system they have finished; there is no automatic advance,
    and the button is never gated on scroll position, because scrolling is not
-   reading.
-6. **Tutoring.** A split screen appears, reading on one half and chat on the
+   reading. Back returns to the reading's page, after asking, since the student
+   would lose their place.
+7. **Tutoring.** A split screen appears, reading on one half and chat on the
    other. The SEE-I process begins with State.
 
-**The session is created at the end of step 5, not the start of step 6.** Opening
-a reading and leaving therefore records nothing. This does not make abandoned
-sessions impossible: a student who reaches step 6 and leaves still leaves a row
-behind, which stays in place until the auto-discard flow exists.
+**The session is created at the end of step 6, not the start of step 7.** Opening
+a reading and leaving therefore records nothing. A student who reaches step 7
+and leaves still leaves a row behind, as `left` or, if they closed the tab,
+`abandoned` once they start the reading again.
 
 The reading stays visible for the whole session. Students are never asked to
 recall the text from memory.
@@ -218,7 +255,12 @@ When a student exhausts their attempts on a step:
    clarification. **This message is static, not written by the Tutor Agent.** It
    is identical every time, and generating it would invite the model to soften
    it or add a hint that cannot be acted on.
-3. A flag appears next to that student's name on the instructor's class roster.
+3. The student is flagged for the instructor: a red Flagged marker on their row
+   for that reading, in a Flagged box at the top of the reading's page in the
+   class, as a count on the reading in the class, and on the student in the
+   class's Students tab. It clears when a later session on the reading passes;
+   the flagged session stays marked in the student's list of sessions. The
+   student sees the session as Failed.
 
 The flag is half the purpose. The fallback prevents endless loops and student
 frustration, and routes the student to a human who can review the reasoning chain
