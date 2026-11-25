@@ -303,6 +303,7 @@ async def get_transcript(
         "class_id": class_id,
         "core_components": list(components),
         "student_name": student_name,
+        "student_id": sess.student_id,
         "index": index or 1,
         "status": SessionStatus(sess.status).value,
         "started_at": sess.started_at,

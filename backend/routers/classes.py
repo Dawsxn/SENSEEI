@@ -33,9 +33,11 @@ from ..schemas import (
     JoinOut,
     StudentClassDetail,
     StudentClassItem,
+    StudentInClassOut,
+    StudentSessionsOut,
 )
 from ..services import analytics_service, class_service, library_service, reading_service
-from ..services.analytics_service import ReadingNotInClass
+from ..services.analytics_service import ReadingNotInClass, StudentNotInClass
 from ..services.class_service import (
     ClassNotFound,
     DuplicateClass,
@@ -189,6 +191,40 @@ async def replace_join_code(
     except ClassNotFound:
         raise NOT_FOUND
     return JoinCodeOut(join_code=row["join_code"])
+
+
+@router.get("/instructor/classes/{class_id}/students/{student_id}", response_model=StudentInClassOut)
+async def student_in_class(
+    class_id: uuid.UUID,
+    student_id: uuid.UUID,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> StudentInClassOut:
+    """One student in the class, and where they are on each of its readings."""
+    try:
+        row = await analytics_service.student_in_class(db, user.id, class_id, student_id)
+    except (ClassNotFound, StudentNotInClass):
+        raise NOT_FOUND
+    return StudentInClassOut(**row)
+
+
+@router.get(
+    "/instructor/classes/{class_id}/readings/{reading_id}/students/{student_id}",
+    response_model=StudentSessionsOut,
+)
+async def student_sessions(
+    class_id: uuid.UUID,
+    reading_id: uuid.UUID,
+    student_id: uuid.UUID,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> StudentSessionsOut:
+    """Every finished session one student has on one of the class's readings."""
+    try:
+        row = await analytics_service.student_sessions(db, user.id, class_id, reading_id, student_id)
+    except (ClassNotFound, ReadingNotInClass, StudentNotInClass):
+        raise NOT_FOUND
+    return StudentSessionsOut(**row)
 
 
 @router.post("/instructor/classes/{class_id}/readings", status_code=204)

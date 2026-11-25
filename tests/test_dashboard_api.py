@@ -310,3 +310,81 @@ async def test_a_transcript_stays_closed_to_everyone_else(world):
     answers = [e for e in r.json()["timeline"] if e["role"] == "student"]
     assert {c["criterion"] for c in answers[1]["judgment"]["criteria"]} == {"Completeness", "Coherence"}
     assert all(c["reason"] is None for a in answers for c in a["judgment"]["criteria"])
+
+
+# --------------------------------------------------------------------------- #
+# flags: who ran out of tries, and when that clears
+
+
+async def _add_session(url, student_id, reading_id, plan, days_ago):
+    engine = create_async_engine(url)
+    async with async_sessionmaker(engine, expire_on_commit=False)() as s:
+        student = await s.get(User, student_id)
+        reading = await s.get(Reading, reading_id)
+        session, rows = build_session(student, reading, plan, days_ago)
+        s.add(session)
+        await s.flush()
+        for attempt, assessment, fails in rows:
+            attempt.session_id = session.id
+            s.add(attempt)
+            await s.flush()
+            assessment.attempt_id = attempt.id
+            s.add(assessment)
+        await s.commit()
+        sid = session.id
+    await engine.dispose()
+    return sid
+
+
+@pytest.mark.anyio
+async def test_a_student_out_of_tries_is_flagged_on_the_reading_and_in_the_class(world):
+    async with signed_in(world["prof"]) as prof:
+        body = (await prof.get(f"/instructor/classes/{world['class']}/statistics")).json()
+    assert body["readings"][0]["flagged_count"] == 1
+    assert body["flagged_student_ids"] == [str(world["bea"])]
+
+
+@pytest.mark.anyio
+async def test_a_later_pass_clears_the_flag_but_not_the_history(world, point_app_at_test_db):
+    later = await _add_session(
+        point_app_at_test_db, world["bea"], world["reading"], [(1, []), (1, []), (1, []), (1, [])], days_ago=1
+    )
+    async with signed_in(world["prof"]) as prof:
+        body = (await prof.get(f"/instructor/classes/{world['class']}/statistics")).json()
+        assert body["readings"][0]["flagged_count"] == 0
+        assert body["flagged_student_ids"] == []
+
+        history = (
+            await prof.get(f"/instructor/classes/{world['class']}/readings/{world['reading']}/students/{world['bea']}")
+        ).json()
+    assert history["reading_title"] == "Strategy"
+    assert [(s["index"], s["status"], s["id"]) for s in history["sessions"]] == [
+        (2, "complete", str(later)),
+        (1, "fallback", str(world["bea_session"])),
+    ]
+
+
+@pytest.mark.anyio
+async def test_a_student_in_the_class_shows_where_they_are_on_each_reading(world):
+    async with signed_in(world["prof"]) as prof:
+        bea = (await prof.get(f"/instructor/classes/{world['class']}/students/{world['bea']}")).json()
+        chelsea = (await prof.get(f"/instructor/classes/{world['class']}/students/{world['chelsea']}")).json()
+    assert bea["class_label"] == "STRAMA K31"
+    assert [(r["title"], r["status"], r["stopped_on"]) for r in bea["readings"]] == [
+        ("Strategy", "stopped_early", "Elaborate")
+    ]
+    assert [(r["title"], r["status"]) for r in chelsea["readings"]] == [("Strategy", "not_started")]
+
+
+@pytest.mark.anyio
+async def test_a_student_page_is_only_for_this_instructors_class_and_its_students(world):
+    async with signed_in(world["prof"]) as prof:
+        # Mateo is not in the other class
+        assert (await prof.get(f"/instructor/classes/{world['elsewhere']}/students/{world['mateo']}")).status_code == 404
+        assert (
+            await prof.get(f"/instructor/classes/{world['class']}/readings/{world['unassigned']}/students/{world['mateo']}")
+        ).status_code == 404
+    async with signed_in(world["other"]) as other:
+        assert (await other.get(f"/instructor/classes/{world['class']}/students/{world['bea']}")).status_code == 404
+    async with signed_in(world["bea"]) as bea:
+        assert (await bea.get(f"/instructor/classes/{world['class']}/students/{world['bea']}")).status_code == 403

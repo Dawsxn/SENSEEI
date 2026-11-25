@@ -183,6 +183,8 @@ class SessionTranscript(BaseModel):
     core_components: list[str]
     #: Whose session it is. The student knows; the instructor reading it needs telling.
     student_name: str
+    #: Whose session it is, for the instructor's way back to that student.
+    student_id: uuid.UUID
     index: int  # which attempt at the reading this session is
     status: SessionStatus
     started_at: datetime
@@ -380,11 +382,15 @@ class ClassReadingItem(BaseModel):
     title: str
     description: str | None
     session_count: int
+    #: Students whose latest finished session on it ran out of tries.
+    flagged_count: int
 
 
 class ClassDashboardOut(BaseModel):
     statistics: Statistics
     readings: list[ClassReadingItem]
+    #: Students flagged on any of the class's readings.
+    flagged_student_ids: list[uuid.UUID]
 
 
 #: Where a student got to on one reading: never started, finished, or ran out of
@@ -403,6 +409,49 @@ class RosterStudent(BaseModel):
     #: Their latest finished session, which the row opens. None if not started.
     session_id: uuid.UUID | None
     last_session_at: datetime | None
+
+
+class StudentReadingProgress(BaseModel):
+    """One reading, as far as one student got on it."""
+
+    id: uuid.UUID
+    title: str
+    description: str | None
+    status: ReadingProgress
+    steps_passed: int
+    stopped_on: SeeiStep | None
+    session_id: uuid.UUID | None
+    last_session_at: datetime | None
+
+
+class StudentInClassOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    email: str
+    enrolled_at: datetime
+    class_id: uuid.UUID
+    class_label: str
+    readings: list[StudentReadingProgress]
+
+
+class StudentSessionItem(BaseModel):
+    id: uuid.UUID
+    #: Attempt N: its order among the student's sessions on the reading.
+    index: int
+    status: SessionStatus
+    started_at: datetime
+    ended_at: datetime | None
+
+
+class StudentSessionsOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    email: str
+    class_id: uuid.UUID
+    class_label: str
+    reading_id: uuid.UUID
+    reading_title: str
+    sessions: list[StudentSessionItem]
 
 
 class ClassReadingOut(BaseModel):
