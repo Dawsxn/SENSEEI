@@ -56,7 +56,7 @@ export function LibraryListPage() {
                     )}
                   </div>
                   <ChevronRight className="order-1 h-[18px] w-[18px] shrink-0 text-muted-foreground/70 sm:order-none sm:hidden" />
-                  <div className="order-2 flex min-w-0 flex-1 gap-1.5 sm:order-none sm:w-[260px] sm:flex-none">
+                  <div className="order-2 flex min-w-0 flex-1 gap-1.5 overflow-hidden sm:order-none sm:w-[300px] sm:flex-none">
                     {r.classes.length === 0 ? (
                       <span className="text-[12px] text-muted-foreground/70">Not in a class</span>
                     ) : (
@@ -64,7 +64,8 @@ export function LibraryListPage() {
                         {r.classes.slice(0, SHOWN).map((label) => (
                           <span
                             key={label}
-                            className="inline-flex h-[22px] shrink-0 items-center rounded-full bg-muted px-2 text-[12px] font-medium text-foreground/80"
+                            title={label}
+                            className="h-[22px] min-w-0 truncate rounded-full bg-muted px-2 text-[12px] font-medium leading-[22px] text-foreground/80"
                           >
                             {label}
                           </span>

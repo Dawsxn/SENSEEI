@@ -24,7 +24,7 @@ import { Breadcrumb, Notice, SessionStatusChip } from "../readings/parts";
 import { useMyClass } from "../readings/useReadings";
 import { ComponentsPanel, RubricPanel } from "../tutoring/ReferencePanel";
 import type { SeeiStep } from "../tutoring/types";
-import type { Judgment, SessionTranscript, StepSummary, TranscriptEntry } from "./types";
+import type { Judgment, SessionTranscript, TranscriptEntry } from "./types";
 import { useTranscript } from "./useTranscript";
 
 const STEPS: SeeiStep[] = ["State", "Elaborate", "Exemplify", "Illustrate"];
@@ -56,7 +56,9 @@ export function SessionReviewPage() {
         ? null
         : kind === "components"
           ? { kind }
-          : { kind, step: lastStep(t?.steps ?? []), unmet: [], from: null },
+          : // From the button, the rubric reads from the top. A tapped tag
+            // opens on its own step instead (onTag below).
+            { kind, step: "State", unmet: [], from: null },
     );
 
   return (
@@ -215,10 +217,6 @@ function ReviewSkeleton() {
       </div>
     </Loading>
   );
-}
-
-function lastStep(steps: StepSummary[]): SeeiStep | null {
-  return steps.length ? steps[steps.length - 1].step : null;
 }
 
 /** Each SEE-I step: passed, not passed, or never reached, and how many tries. */
