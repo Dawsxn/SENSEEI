@@ -1,0 +1,318 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
+  <style>
+    html, body { height: 100%; }
+    body { margin: 0; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #09090b; background: #ffffff; }
+    .top { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 24px; border-bottom: 1px solid #e4e4e7; }
+    .brand { display: flex; align-items: center; gap: 32px; height: 56px; }
+    .word { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .tabs { display: flex; gap: 24px; height: 56px; }
+    .tabs span { display: flex; align-items: center; font-size: 14px; font-weight: 500; color: #71717a; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .tabs span.on { color: #09090b; border-color: #09090b; }
+    .tabs2 { display: none; }
+    .avatar { width: 32px; height: 32px; border-radius: 999px; background: #f4f4f5; }
+
+    .wrap { max-width: 1148px; margin: 0 auto; padding: 32px 24px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; }
+    .narrow { max-width: 760px; }
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; position: relative; }
+    .crumbs { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #71717a; margin-bottom: 8px; }
+    h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .sub { font-size: 14px; color: #71717a; margin-top: 4px; }
+    .btn { height: 32px; padding: 0 12px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; border: 1px solid #e4e4e7; background: #ffffff; color: #09090b; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .btn.primary { background: #16a34a; border-color: #16a34a; color: #ffffff; }
+    .btn.danger { background: #dc2626; border-color: #dc2626; color: #ffffff; }
+    .btn.muted { opacity: 0.5; }
+    .icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+
+    .ptabs { display: flex; gap: 24px; border-bottom: 1px solid #e4e4e7; }
+    .ptabs span { padding: 0 0 10px; font-size: 14px; font-weight: 500; color: #71717a; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .ptabs span.on { color: #09090b; border-color: #09090b; }
+    .ptabs em { font-style: normal; color: #a1a1aa; margin-left: 4px; }
+
+    .list { border: 1px solid #e4e4e7; border-radius: 10px; overflow: hidden; }
+    .lrow { display: flex; align-items: center; gap: 16px; padding: 14px 16px 14px 20px; border-top: 1px solid #e4e4e7; }
+    .lrow:first-child { border-top: none; }
+    .main { flex: 1; min-width: 0; }
+    .title { font-size: 14px; font-weight: 500; }
+    .desc { font-size: 13px; color: #71717a; margin-top: 2px; }
+    .chips { display: flex; gap: 6px; flex-wrap: nowrap; width: 260px; flex-shrink: 0; }
+    .chip { height: 22px; padding: 0 8px; border-radius: 999px; background: #f4f4f5; font-size: 12px; font-weight: 500; color: #3f3f46; display: inline-flex; align-items: center; }
+    .chip.more { background: transparent; border: 1px solid #e4e4e7; color: #71717a; }
+    .chip.none { background: transparent; color: #a1a1aa; padding: 0; }
+    .count { font-size: 13px; color: #71717a; white-space: nowrap; width: 84px; text-align: right; }
+    .chev { width: 18px; height: 18px; stroke: #a1a1aa; flex-shrink: 0; }
+    .notice { border: 1px dashed #e4e4e7; border-radius: 10px; padding: 40px 16px; text-align: center; font-size: 14px; color: #71717a; }
+    .sk { background: #f4f4f5; border-radius: 6px; }
+
+    .bar2 { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .seg { display: inline-flex; padding: 3px; background: #f4f4f5; border-radius: 8px; gap: 2px; }
+    .seg span { width: 88px; text-align: center; font-size: 13px; font-weight: 500; color: #71717a; padding: 5px 0; border-radius: 6px; }
+    .seg span.on { background: #ffffff; color: #09090b; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .lock { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #71717a; }
+    .lock svg { flex-shrink: 0; }
+    .viewer { border: 1px solid #e4e4e7; border-radius: 10px; background: #fafafa; height: 420px; padding: 28px; box-sizing: border-box; display: flex; justify-content: center; overflow: hidden; }
+    .page { width: 440px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 36px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
+    .ln { height: 8px; background: #e4e4e7; border-radius: 4px; }
+    .ln.h { height: 14px; width: 55%; background: #d4d4d8; margin-bottom: 8px; }
+    .comps { border: 1px solid #e4e4e7; border-radius: 10px; }
+    .comps div { display: flex; gap: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.5; border-top: 1px solid #e4e4e7; }
+    .comps div:first-child { border-top: none; }
+    .comps b { font-weight: 500; color: #a1a1aa; width: 16px; flex-shrink: 0; }
+
+    .pop { position: absolute; right: 0; top: 42px; z-index: 5; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 4px; min-width: 180px; }
+    .pop div { padding: 8px 10px; font-size: 13px; border-radius: 6px; }
+    .pop div.red { color: #b91c1c; }
+    .pop div.hl { background: #f4f4f5; }
+    .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+    .dlg { width: 100%; max-width: 440px; background: #ffffff; border-radius: 10px; padding: 24px; box-shadow: 0 16px 40px rgba(0,0,0,0.18); box-sizing: border-box; }
+    .dlg h2 { margin: 0; font-size: 16px; font-weight: 600; }
+    .dlg p { margin: 6px 0 0; font-size: 14px; line-height: 1.5; color: #71717a; }
+    .pick { margin-top: 16px; border: 1px solid #e4e4e7; border-radius: 8px; }
+    .pick label { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid #e4e4e7; font-size: 14px; }
+    .pick label:first-child { border-top: none; }
+    .box { width: 16px; height: 16px; border: 1px solid #a1a1aa; border-radius: 4px; flex-shrink: 0; box-sizing: border-box; }
+    .box.on { background: #16a34a; border-color: #16a34a; }
+    .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    /* upload */
+    .stepper { display: flex; align-items: center; gap: 10px; }
+    .st { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #a1a1aa; }
+    .st i { font-style: normal; width: 22px; height: 22px; border-radius: 999px; border: 1px solid #e4e4e7; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    .st.on { color: #09090b; }
+    .st.on i { background: #09090b; border-color: #09090b; color: #ffffff; }
+    .st.done { color: #52525b; }
+    .st.done i { background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; }
+    .sep { width: 28px; height: 1px; background: #e4e4e7; }
+    .form { display: flex; flex-direction: column; gap: 20px; }
+    .fl { font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block; }
+    .help { font-size: 13px; line-height: 1.5; color: #71717a; margin: -2px 0 10px; }
+    .input { min-height: 36px; border: 1px solid #e4e4e7; border-radius: 6px; padding: 8px 10px; box-sizing: border-box; font-size: 14px; line-height: 1.5; }
+    .input.ph { color: #a1a1aa; }
+    .file { display: flex; align-items: center; gap: 12px; border: 1px solid #e4e4e7; border-radius: 8px; padding: 12px 14px; }
+    .file .fi { width: 32px; height: 32px; border-radius: 6px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; }
+    .file .nm { flex: 1; font-size: 14px; font-weight: 500; }
+    .file .nm span { display: block; font-size: 12px; font-weight: 400; color: #71717a; margin-top: 2px; }
+    .file.bad { border-color: #fecaca; }
+    .err { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: #fef2f2; color: #b91c1c; font-size: 13px; }
+    .comp { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+    .comp .input { flex: 1; }
+    .link { font-size: 13px; font-weight: 500; color: #16a34a; }
+    .foot { display: flex; justify-content: space-between; padding-top: 4px; }
+
+    @media (max-width: 639px) {
+      .top { padding: 0 16px; }
+      .tabs { display: none; }
+      .tabs2 { display: flex; gap: 24px; height: 48px; padding: 0 16px; border-bottom: 1px solid #e4e4e7; }
+      .tabs2 span { display: flex; align-items: center; font-size: 14px; font-weight: 500; color: #71717a; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+      .tabs2 span.on { color: #09090b; border-color: #09090b; }
+      .wrap { padding: 20px 16px 32px; gap: 16px; }
+      h1 { font-size: 22px; }
+      .lrow { flex-wrap: wrap; gap: 8px 12px; padding: 14px 16px; }
+      .main { flex-basis: calc(100% - 30px); }
+      .lrow .chev { order: 1; }
+      .chips { order: 2; width: auto; flex: 1; }
+      .count { order: 3; width: auto; }
+      .viewer { height: 340px; padding: 12px; }
+      .page { padding: 24px; }
+      .bar2 { flex-direction: column; align-items: flex-start; }
+      .sep { width: 12px; }
+      .scrim { align-items: flex-end; padding: 0; }
+      .dlg { max-width: none; border-radius: 14px 14px 0 0; }
+      .acts .btn { height: 36px; flex: 1; justify-content: center; }
+    }
+  </style>
+</helmet>
+<div>
+  <div class="top">
+    <div class="brand">
+      <span class="word">SEN<span style="color: #16a34a;">SEE-I</span></span>
+      <div class="tabs"><span>Classes</span><span class="on">Readings</span></div>
+    </div>
+    <span class="avatar"></span>
+  </div>
+  <div class="tabs2"><span>Classes</span><span class="on">Readings</span></div>
+
+  <!-- 13: the readings list -->
+  <sc-if value="{{isList}}">
+  <div class="wrap">
+    <div class="head">
+      <h1>Readings</h1>
+      <button class="btn">+ Upload reading</button>
+    </div>
+    <sc-if value="{{listRows}}">
+    <div class="list">
+      <sc-for list="{{rows}}" as="r">
+      <div class="lrow">
+        <div class="main"><div class="title">{{r.title}}</div><div class="desc">{{r.desc}}</div></div>
+        <div class="chips">{{r.chips}}</div>
+        <span class="count">{{r.count}}</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      </sc-for>
+    </div>
+    </sc-if>
+    <sc-if value="{{listEmpty}}"><div class="notice">No readings available</div></sc-if>
+    <sc-if value="{{listLoading}}">
+    <div class="list">
+      <div class="lrow"><div class="main"><div class="sk" style="height: 14px; width: 180px;"></div><div class="sk" style="height: 12px; width: 280px; margin-top: 8px;"></div></div><div class="sk" style="height: 22px; width: 84px; border-radius: 999px;"></div></div>
+      <div class="lrow"><div class="main"><div class="sk" style="height: 14px; width: 140px;"></div><div class="sk" style="height: 12px; width: 240px; margin-top: 8px;"></div></div><div class="sk" style="height: 22px; width: 84px; border-radius: 999px;"></div></div>
+    </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <!-- 14-17: one reading -->
+  <sc-if value="{{isReading}}">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <div class="crumbs"><span>Readings</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg><span style="color: #09090b;">Strategy</span></div>
+        <h1>Strategy</h1>
+        <div class="sub">Coordinated actions to outperform rivals</div>
+      </div>
+      <button class="btn icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="#3f3f46"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+      <sc-if value="{{menu}}"><div class="pop"><div class="hl">Edit reading</div><div class="red">Delete reading</div></div></sc-if>
+    </div>
+    <div class="ptabs"><span class="{{tabReading}}">Reading</span><span class="{{tabComps}}">Core components<em>1</em></span><span class="{{tabClasses}}">Classes<em>3</em></span></div>
+
+    <sc-if value="{{showReading}}">
+    <div class="bar2">
+      <div class="seg"><span class="{{segPdf}}">PDF</span><span class="{{segText}}">Text</span></div>
+      <sc-if value="{{segTextOn}}"><div class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>The text can't be changed because students' answers are checked against it.</div></sc-if>
+    </div>
+    <div class="viewer"><div class="page" style="{{pageStyle}}">
+      <div class="ln h"></div><div class="ln"></div><div class="ln"></div><div class="ln" style="width: 88%;"></div><div class="ln"></div><div class="ln" style="width: 64%;"></div>
+      <div style="height: 10px;"></div><div class="ln"></div><div class="ln"></div><div class="ln" style="width: 92%;"></div><div class="ln"></div><div class="ln" style="width: 40%;"></div>
+    </div></div>
+    </sc-if>
+
+    <sc-if value="{{showComps}}">
+    <div class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Core components can't be changed because students' answers are checked against them.</div>
+    <div class="comps"><div><b>1</b>A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.</div></div>
+    </sc-if>
+
+    <sc-if value="{{showClasses}}">
+    <div class="bar2"><span class="lock">Students in these classes can open this reading.</span><button class="btn">Change classes</button></div>
+    <div class="list">
+      <div class="lrow">
+        <div class="main"><div class="title">STRAMA K31</div><div class="desc">3 students</div></div>
+        <span class="count">5 sessions</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      <div class="lrow"><div class="main"><div class="title">STRAMA K32</div><div class="desc">4 students</div></div><span class="count">7 sessions</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div>
+      <div class="lrow"><div class="main"><div class="title">STSWENG S11</div><div class="desc">3 students</div></div><span class="count">0 sessions</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div>
+    </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{pick}}">
+  <div class="scrim"><div class="dlg">
+    <h2>Change classes</h2>
+    <p>Students in the classes you tick can open this reading.</p>
+    <div class="pick"><label><span class="box on"></span>STRAMA K31</label><label><span class="box on"></span>STRAMA K32</label><label><span class="box on"></span>STSWENG S11</label></div>
+    <div class="acts"><button class="btn">Cancel</button><button class="btn primary">Save</button></div>
+  </div></div>
+  </sc-if>
+
+  <sc-if value="{{del}}">
+  <div class="scrim"><div class="dlg">
+    <h2>Delete Strategy?</h2>
+    <p>This removes the reading from 3 classes and deletes its 12 sessions. You can't undo this.</p>
+    <div class="acts"><button class="btn">Cancel</button><button class="btn danger">Delete reading</button></div>
+  </div></div>
+  </sc-if>
+  </sc-if>
+
+  <!-- 18-23: upload -->
+  <sc-if value="{{isUpload}}">
+  <div class="wrap narrow">
+    <div>
+      <div class="crumbs"><span>Readings</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg><span style="color: #09090b;">Upload reading</span></div>
+      <h1>Upload reading</h1>
+    </div>
+    <div class="stepper">
+      <span class="st {{st1}}"><i>{{n1}}</i>PDF</span><span class="sep"></span>
+      <span class="st {{st2}}"><i>2</i>Text</span><span class="sep"></span>
+      <span class="st {{st3}}"><i>3</i>Details</span>
+    </div>
+
+    <sc-if value="{{upPdf}}">
+    <div class="form">
+      <div>
+        <span class="fl">PDF</span>
+        <div class="file bad">
+          <span class="fi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg></span>
+          <span class="nm">Strategic Vision.pdf<span>2.4 MB</span></span>
+          <button class="btn">Remove</button>
+        </div>
+        <div class="err">Something went wrong while reading your PDF.<button class="btn" style="height: 28px;">Try again</button></div>
+      </div>
+      <div><span class="fl">Title</span><div class="input">Strategic Vision</div></div>
+      <div><span class="fl">Description (optional)</span><div class="input ph" style="height: 72px;"></div></div>
+      <div class="foot"><span></span><button class="btn primary">Next</button></div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{upDetails}}">
+    <div class="form">
+      <div>
+        <span class="fl">Core components</span>
+        <p class="help">Write the key ideas a student should take from this reading, one per box. Students' answers are checked against them, and they can't be changed after you save.</p>
+        <div class="comp"><div class="input">A company's strategy is the coordinated set of actions that its managers take to outperform the company's competitors and achieve superior profitability.</div><button class="btn">Remove</button></div>
+        <div class="comp"><div class="input ph">&nbsp;</div><button class="btn">Remove</button></div>
+        <span class="link">+ Add a core component</span>
+      </div>
+      <div>
+        <span class="fl">Classes (optional)</span>
+        <p class="help">Students in the classes you tick can open this reading. You can change this later.</p>
+        <div class="pick" style="margin-top: 0;"><label><span class="box on"></span>STRAMA K31</label><label><span class="box"></span>STSWENG S11</label></div>
+      </div>
+      <div class="foot"><button class="btn">Back</button><button class="btn primary">Save reading</button></div>
+    </div>
+    </sc-if>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"screen":{"editor":"select","options":["list","list-empty","list-loading","reading","reading-text","components","classes","menu","pick","delete","upload-error","upload-details"],"default":"list"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.screen ?? 'list';
+    const reading = ['reading', 'reading-text', 'components', 'classes', 'menu', 'pick', 'delete'].includes(s);
+    const tab = s === 'components' ? 'c' : (s === 'classes' || s === 'pick') ? 'k' : 'r';
+    const text = s === 'reading-text';
+    const chip = (t) => `<span class="chip">${t}</span>`;
+    return {
+      isList: s.startsWith('list'),
+      listRows: s === 'list', listEmpty: s === 'list-empty', listLoading: s === 'list-loading',
+      rows: [
+        { title: 'Strategy', desc: 'Coordinated actions to outperform rivals', chips: chip('STRAMA K31') + chip('STRAMA K32') + '<span class="chip more">+1</span>', count: '12 sessions' },
+        { title: 'Strategic Vision', desc: 'Mission, vision and values', chips: chip('STRAMA K31'), count: '2 sessions' },
+        { title: 'Business Model', desc: 'How a company creates and captures value', chips: chip('STSWENG S11'), count: '10 sessions' },
+        { title: 'The Recovery to the Bisector', desc: '', chips: '<span class="chip none">Not in a class</span>', count: '0 sessions' },
+      ],
+      isReading: reading,
+      tabReading: tab === 'r' ? 'on' : '', tabComps: tab === 'c' ? 'on' : '', tabClasses: tab === 'k' ? 'on' : '',
+      showReading: tab === 'r', showComps: tab === 'c', showClasses: tab === 'k',
+      segPdf: text ? '' : 'on', segText: text ? 'on' : '', segTextOn: text,
+      pageStyle: text ? 'width: 100%; box-shadow: none; border: none;' : '',
+      menu: s === 'menu', pick: s === 'pick', del: s === 'delete',
+      isUpload: s.startsWith('upload'),
+      upPdf: s === 'upload-error', upDetails: s === 'upload-details',
+      st1: s === 'upload-details' ? 'done' : 'on', n1: s === 'upload-details' ? '&#10003;' : '1',
+      st2: s === 'upload-details' ? 'done' : '', st3: s === 'upload-details' ? 'on' : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

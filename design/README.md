@@ -102,6 +102,19 @@ design changes, so it always matches.
 | A student's sessions on a reading, phone | [png/06e-3-student-phone.png](png/06e-3-student-phone.png) |
 | Instructor review, breadcrumb to the student | [png/06e-4-review.png](png/06e-4-review.png) |
 | Instructor review, phone | [png/06e-4-review-phone.png](png/06e-4-review-phone.png) |
+| Readings list | [png/06f-list.png](png/06f-list.png) |
+| Readings list, phone | [png/06f-list-phone.png](png/06f-list-phone.png) |
+| Reading, PDF | [png/06f-reading.png](png/06f-reading.png) |
+| Reading, phone | [png/06f-reading-phone.png](png/06f-reading-phone.png) |
+| Reading, Text with the lock note | [png/06f-reading-text.png](png/06f-reading-text.png) |
+| Reading, Core components | [png/06f-components.png](png/06f-components.png) |
+| Reading, Classes | [png/06f-classes.png](png/06f-classes.png) |
+| Reading, menu | [png/06f-menu.png](png/06f-menu.png) |
+| Change classes | [png/06f-pick.png](png/06f-pick.png) |
+| Delete reading | [png/06f-delete.png](png/06f-delete.png) |
+| Upload, a failed read keeps the file | [png/06f-upload-error.png](png/06f-upload-error.png) |
+| Upload, Details with help text | [png/06f-upload-details.png](png/06f-upload-details.png) |
+| Upload, Details, phone | [png/06f-upload-details-phone.png](png/06f-upload-details-phone.png) |
 | Instructor classes | [png/06-classes.png](png/06-classes.png) |
 | Instructor classes, empty | [png/06-classes-empty.png](png/06-classes-empty.png) |
 | New class | [png/06-new-class.png](png/06-new-class.png) |
