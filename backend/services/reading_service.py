@@ -118,12 +118,15 @@ async def get_reading_detail(
     """
     hit = (
         await db.execute(
-            _visible_readings(user_id).where(Reading.id == reading_id).limit(1)
+            _visible_readings(user_id)
+            .add_columns(Class.id)
+            .where(Reading.id == reading_id)
+            .limit(1)
         )
     ).first()
     if hit is None:
         return None
-    reading, class_name = hit
+    reading, class_name, class_id = hit
 
     components = await db.scalars(
         select(CoreComponent.text)
@@ -140,6 +143,7 @@ async def get_reading_detail(
         "title": reading.title,
         "description": reading.description,
         "class_name": class_name,
+        "class_id": class_id,
         "content": reading.content,
         "core_components": list(components),
         "has_file": has_file is not None,

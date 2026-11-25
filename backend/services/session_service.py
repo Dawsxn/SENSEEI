@@ -56,6 +56,7 @@ from ..models import (
     Session,
     SessionStatus,
     TutorMessage,
+    User,
     Verdict,
     utcnow,
 )
@@ -230,6 +231,7 @@ async def start_session(
         if refused is not None:
             yield _sse("error", {"detail": refused})
             return
+        await _abandon_unfinished(db, user_id, reading_id)
 
         sess = Session(
             student_id=user_id,
@@ -269,6 +271,64 @@ async def start_session(
             {"status": sess.status.value, "current_step": sess.current_step.value,
              "terminal": False, "attempts_used": 0, "attempts_left": attempts_left(0, _limit())},
         )
+
+
+async def _abandon_unfinished(
+    db: AsyncSession, user_id: uuid.UUID, reading_id: uuid.UUID
+) -> None:
+    """Mark the student's unfinished sessions on this reading `abandoned`.
+
+    A session the student walked away from without the exit (a closed tab, a
+    phone that dropped the page) stays `in_progress`, since the server never
+    hears that it ended. Starting the same reading again is the first moment it
+    is certain to be dead. Its end is set to its last answer, or its start if it
+    had none, which is when the student was last there.
+
+    Not for a trial participant: they get one session, and theirs is picked back
+    up rather than replaced.
+    """
+    participant = await db.scalar(
+        select(User.participant_identifier).where(User.id == user_id)
+    )
+    if participant is not None:
+        return
+    stale = await db.scalars(
+        select(Session).where(
+            Session.student_id == user_id,
+            Session.reading_id == reading_id,
+            Session.status == SessionStatus.IN_PROGRESS.value,
+        )
+    )
+    for sess in list(stale):
+        last = await db.scalar(
+            select(func.max(Attempt.submitted_at)).where(Attempt.session_id == sess.id)
+        )
+        sess.status = SessionStatus.ABANDONED
+        sess.ended_at = last or sess.started_at
+    await db.flush()
+
+
+async def leave_session(
+    db: AsyncSession, user: User, session_id: uuid.UUID
+) -> bool:
+    """Mark a running session `left`: the student used the exit and confirmed.
+
+    False if there is no such session of theirs. One that has already ended is
+    left as it is, since leaving a finished session changes nothing. A trial
+    participant has no exit, so a request from one is refused the same way.
+    """
+    if user.participant_identifier is not None:
+        return False
+    sess = await db.scalar(
+        select(Session).where(Session.id == session_id, Session.student_id == user.id)
+    )
+    if sess is None:
+        return False
+    if SessionStatus(sess.status) is SessionStatus.IN_PROGRESS:
+        sess.status = SessionStatus.LEFT
+        sess.ended_at = utcnow()
+        await db.commit()
+    return True
 
 
 async def submit_response(

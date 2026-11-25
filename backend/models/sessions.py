@@ -25,11 +25,12 @@ from .enums import SeeiStep, SessionStatus, Verdict
 class Session(Entity, table=True):
     """One complete pass through the four steps, for one reading.
 
-    Not resumable. A student who leaves mid-session confirms it will be
-    discarded, and the row is discarded with it, so nothing in `in_progress`
-    survives them walking away. That discard is a real delete, not a soft one:
-    a soft-deleted abandoned session would be junk every analytics query had to
-    filter out forever.
+    Not resumable once left. A student who leaves through the exit confirms it,
+    and the row becomes `left`; one who closes the tab leaves it `in_progress`
+    until they next start the same reading, when it becomes `abandoned`. Both
+    are kept, to show how often students quit partway, and neither is counted:
+    every count and statistic is over `FINISHED_STATUSES`. A reload is not
+    leaving, so it picks the same session back up.
 
     The version columns exist so a session stays interpretable after the rubric
     or a prompt changes. Without them, a rubric revision silently changes the

@@ -445,3 +445,75 @@ async def test_a_failed_attempt_names_the_criteria_it_missed(seeded):
     finally:
         from backend.main import app
         app.dependency_overrides.clear()
+
+
+# --------------------------------------------------------------------------- #
+# leaving, and sessions walked away from
+
+
+async def _status_of(session_id) -> tuple[str, object]:
+    from backend.models import Session
+
+    engine = create_async_engine(seeded_url())
+    async with async_sessionmaker(engine)() as s:
+        sess = await s.get(Session, session_id)
+        out = (sess.status, sess.ended_at)
+    await engine.dispose()
+    return out
+
+
+@pytest.mark.anyio
+async def test_leaving_marks_the_session_left_and_keeps_it(seeded):
+    import uuid
+
+    client = make_client(_stub_agents(StubProvider(1), StubProvider(1)))
+    try:
+        start = await client.post("/sessions", json={"reading_id": str(seeded["reading_id"])})
+        session_id = uuid.UUID(dict(parse_sse(start.text))["session"]["id"])
+
+        r = await client.post(f"/sessions/{session_id}/leave")
+        assert r.status_code == 204
+        status, ended = await _status_of(session_id)
+        assert status == "left" and ended is not None
+
+        # once it has ended, leaving again changes nothing
+        assert (await client.post(f"/sessions/{session_id}/leave")).status_code == 204
+        assert (await _status_of(session_id))[1] == ended
+        # and it cannot be answered any more
+        r = await client.post(f"/sessions/{session_id}/responses", json={"text": "late"})
+        assert ("error", {"detail": "session has already ended"}) in parse_sse(r.text)
+
+        assert (await client.post(f"/sessions/{uuid.uuid4()}/leave")).status_code == 404
+    finally:
+        from backend.main import app
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.anyio
+async def test_starting_again_marks_the_unfinished_one_abandoned(seeded):
+    import uuid
+
+    client = make_client(_stub_agents(StubProvider(2), StubProvider(2)))
+    try:
+        first = await client.post("/sessions", json={"reading_id": str(seeded["reading_id"])})
+        first_id = uuid.UUID(dict(parse_sse(first.text))["session"]["id"])
+        await client.post(f"/sessions/{first_id}/responses", json={"text": "one answer"})
+        # the tab is closed here: the server hears nothing
+
+        second = await client.post("/sessions", json={"reading_id": str(seeded["reading_id"])})
+        second_id = uuid.UUID(dict(parse_sse(second.text))["session"]["id"])
+
+        status, ended = await _status_of(first_id)
+        assert status == "abandoned"
+        # ended when the student was last there: their one answer
+        engine = create_async_engine(seeded_url())
+        async with async_sessionmaker(engine)() as s:
+            last = await s.scalar(
+                select(func.max(Attempt.submitted_at)).where(Attempt.session_id == first_id)
+            )
+        await engine.dispose()
+        assert ended == last
+        assert (await _status_of(second_id))[0] == "in_progress"
+    finally:
+        from backend.main import app
+        app.dependency_overrides.clear()

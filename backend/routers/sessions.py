@@ -70,6 +70,17 @@ async def submit_response(
     )
 
 
+@router.post("/{session_id}/leave", status_code=204)
+async def leave_session(
+    session_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
+) -> None:
+    """The student left a running session through its exit and confirmed."""
+    if not await session_service.leave_session(db, user, session_id):
+        raise HTTPException(status_code=404, detail="session not found")
+
+
 @router.get("/{session_id}", response_model=SessionOut)
 async def get_session_state(
     session_id: uuid.UUID,

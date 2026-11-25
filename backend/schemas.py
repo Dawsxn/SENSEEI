@@ -75,6 +75,9 @@ class ReadingDetail(BaseModel):
     title: str
     description: str | None
     class_name: str
+    #: The class it is read under, so the session screen can link back to the
+    #: reading's page and to the session's review.
+    class_id: uuid.UUID
     content: str
     core_components: list[str]
     #: Whether the original upload is stored and can be fetched from
