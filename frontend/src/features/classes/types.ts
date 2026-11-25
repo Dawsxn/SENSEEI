@@ -75,7 +75,8 @@ export interface Statistics {
   /** Finished sessions the numbers cover. Zero means there is nothing to show. */
   session_count: number;
   pass_rates: { step: SeeiStep; passed: number; total: number; percent: number }[];
-  failed_criteria: { criterion: string; failures: number }[];
+  /** Per step: the same criterion name can belong to more than one. */
+  failed_criteria: { step: SeeiStep; criterion: string; failures: number }[];
   average_attempts: { step: SeeiStep; average: number }[];
 }
 

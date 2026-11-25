@@ -313,6 +313,9 @@ export const updateLibraryReading = (
   id: string,
   fields: { title: string; description: string | null },
 ) => send<LibraryReading>(`/instructor/readings/${id}`, "PATCH", fields);
+/** Give a class readings the instructor already has, leaving their other classes be. */
+export const addReadingsToClass = (classId: string, readingIds: string[]) =>
+  send<void>(`/instructor/classes/${classId}/readings`, "POST", { reading_ids: readingIds });
 export const setReadingClasses = (id: string, classIds: string[]) =>
   send<LibraryReading>(`/instructor/readings/${id}/classes`, "PUT", { class_ids: classIds });
 export const deleteLibraryReading = (id: string) =>

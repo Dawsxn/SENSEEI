@@ -26,8 +26,8 @@ const STATS: Statistics = {
     { step: "Elaborate", passed: 1, total: 5, percent: 20 },
   ],
   failed_criteria: [
-    { criterion: "Completeness", failures: 4 },
-    { criterion: "Coherence", failures: 3 },
+    { step: "Elaborate", criterion: "Completeness", failures: 4 },
+    { step: "Elaborate", criterion: "Coherence", failures: 3 },
   ],
   average_attempts: [{ step: "Elaborate", average: 2 }],
 };
@@ -99,7 +99,7 @@ describe("the statistics", () => {
       />,
     );
 
-    expect(screen.getByText("No sessions yet")).toBeInTheDocument();
+    expect(screen.getByText("Statistics show once a student finishes a session.")).toBeInTheDocument();
     expect(screen.queryByText("Pass rate by step")).not.toBeInTheDocument();
   });
 });

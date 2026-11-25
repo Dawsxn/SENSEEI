@@ -1,8 +1,12 @@
 /** The three statistics, over a class or over one reading in it.
  *
  * One component for both, because the two views must count the same things and
- * say so the same way. What changes is `scope`, the tooltip on the heading that
- * says which sessions these numbers cover.
+ * say so the same way. With `scope`, it has its own Statistics heading, whose
+ * tooltip says which sessions these numbers cover; on the class page the
+ * Statistics tab is the heading, so it goes without.
+ *
+ * A criterion is named with its step, since the same name can belong to more
+ * than one (Completeness in State and in Elaborate).
  *
  * A step nobody has reached is missing from the data rather than zero, and is
  * left out here too: no data and a pass rate of zero are different, and only one
@@ -10,6 +14,7 @@
  */
 
 import { InfoTip } from "../../components/ui/Tooltip";
+import { Notice } from "../readings/parts";
 import type { Statistics } from "./types";
 
 /** What each number is counting, for anyone who has not read the rubric. */
@@ -21,8 +26,9 @@ const TIPS = {
 
 interface StatisticsSectionProps {
   statistics: Statistics;
-  /** Which sessions the numbers cover, as the heading's tooltip. */
-  scope: string;
+  /** Which sessions the numbers cover, as the heading's tooltip. Without it,
+   *  there is no heading. */
+  scope?: string;
 }
 
 export function StatisticsSection({ statistics, scope }: StatisticsSectionProps) {
@@ -30,18 +36,15 @@ export function StatisticsSection({ statistics, scope }: StatisticsSectionProps)
 
   return (
     <section className="flex flex-col gap-2.5">
-      <h2 className="flex items-center gap-1.5 text-[16px] font-semibold">
-        Statistics
-        <InfoTip text={scope} />
-      </h2>
+      {scope && (
+        <h2 className="flex items-center gap-1.5 text-[16px] font-semibold">
+          Statistics
+          <InfoTip text={scope} />
+        </h2>
+      )}
 
       {empty ? (
-        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-dashed px-6 py-10 text-center">
-          <span className="text-[14px] font-semibold">No sessions yet</span>
-          <span className="text-[13px] text-muted-foreground">
-            Statistics appear once a student finishes a session.
-          </span>
-        </div>
+        <Notice>Statistics show once a student finishes a session.</Notice>
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">
           <Card title="Pass rate by step" tip={TIPS.pass}>
@@ -59,7 +62,16 @@ export function StatisticsSection({ statistics, scope }: StatisticsSectionProps)
 
           <Card title="Most-failed criteria" tip={TIPS.criteria}>
             {statistics.failed_criteria.map((c) => (
-              <Row key={c.criterion} label={c.criterion} value={String(c.failures)} />
+              <Row
+                key={`${c.step}-${c.criterion}`}
+                label={
+                  <>
+                    {c.criterion}
+                    <span className="text-muted-foreground/70"> · {c.step}</span>
+                  </>
+                }
+                value={String(c.failures)}
+              />
             ))}
           </Card>
 
@@ -104,7 +116,7 @@ function Row({
   value,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   value: string;
   children?: React.ReactNode;
 }) {

@@ -39,14 +39,15 @@ function withQuery(ui: React.ReactElement) {
 // rejection as unhandled even after the component has caught it.
 
 describe("the class form", () => {
-  it("shows the label students will see, and submits on Enter", async () => {
+  it("starts empty, trims what is typed, and submits on Enter", async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
     render(<ClassFormDialog mode="new" onSubmit={onSubmit} onCancel={vi.fn()} />);
+    expect(screen.getByLabelText("Name")).not.toHaveAttribute("placeholder");
 
     await userEvent.type(screen.getByLabelText("Name"), " STRAMA ");
     await userEvent.type(screen.getByLabelText("Section"), "K32{Enter}");
 
-    expect(screen.getByText("Students see this as STRAMA K32.")).toBeInTheDocument();
+    expect(screen.queryByText(/Students see this as/)).not.toBeInTheDocument();
     expect(onSubmit).toHaveBeenCalledWith({ name: "STRAMA", section: "K32" });
   });
 
