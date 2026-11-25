@@ -157,11 +157,7 @@ export function ReadingStepScreen() {
       ) : unavailable ? null : (
         <footer className="flex shrink-0 items-center justify-end border-t px-4 py-3 sm:px-6">
           <Button
-            onClick={() => {
-              if (participant) return setConfirmingDone(true);
-              if (readingId) forgetSession(readingId);
-              navigate(`/tutor/${readingId}`);
-            }}
+            onClick={() => setConfirmingDone(true)}
           >
             Done
           </Button>
@@ -199,16 +195,22 @@ export function ReadingStepScreen() {
           </div>
         </ReadingIntroDialog>
       )}
+      {/* The trial's wording, for everyone. Outside the trial the concept is the
+          reading's own title, and the tab forgets any session it was in. */}
       {confirmingDone && (
         <ConfirmDialog
           title="Start the tutoring session?"
           confirmLabel="Start session"
           cancelLabel="Cancel"
-          onConfirm={() => navigate(`/tutor/${readingId}`)}
+          onConfirm={() => {
+            if (!participant && readingId) forgetSession(readingId);
+            navigate(`/tutor/${readingId}`);
+          }}
           onCancel={() => setConfirmingDone(false)}
         >
-          Only continue if you&rsquo;re confident you understand the concept of {concept}. The
-          reading stays open beside the session.
+          Only continue if you&rsquo;re confident you understand the concept of{" "}
+          {participant ? concept : (reading?.title.toLowerCase() ?? "the reading")}. The reading
+          stays open beside the session.
         </ConfirmDialog>
       )}
       {timeUpPopup && <TimeUpDialog onContinue={() => void moveOn()} />}

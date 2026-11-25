@@ -113,13 +113,18 @@ describe("the reading step", () => {
     expect(screen.queryByText(/pdf viewer/)).not.toBeInTheDocument();
   });
 
-  it("enters the session only when the student presses Done", async () => {
+  it("enters the session only once the student presses Done and confirms", async () => {
     renderScreen();
     await dismissIntro();
     expect(navigate).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(screen.getByText("Start the tutoring session?")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(navigate).not.toHaveBeenCalled();
 
+    await userEvent.click(screen.getByRole("button", { name: "Done" }));
+    await userEvent.click(screen.getByRole("button", { name: "Start session" }));
     expect(navigate).toHaveBeenCalledWith("/tutor/r1");
   });
 
@@ -128,6 +133,7 @@ describe("the reading step", () => {
     renderScreen();
     await dismissIntro();
     await userEvent.click(screen.getByRole("button", { name: "Done" }));
+    await userEvent.click(screen.getByRole("button", { name: "Start session" }));
     expect(sessionStorage.getItem("senseei.session.r1")).toBeNull();
   });
 
