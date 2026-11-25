@@ -72,8 +72,7 @@
           <sc-if value="{{joined}}"><div class="name">{{c.name}} {{c.section}}</div></sc-if>
           <sc-if value="{{under}}"><div><div class="name">{{c.name}}</div><div class="sec">{{c.section}}</div></div></sc-if>
           <sc-if value="{{chip}}"><div class="name">{{c.name}}</div></sc-if>
-          <span class="meta">{{c.done}} of {{c.total}} readings finished</span>
-          <div class="bar"><div style="width: {{c.pct}}%;"></div></div>
+          <span class="meta">{{c.count}}</span>
         </div>
       </div>
       </sc-for>
@@ -90,9 +89,9 @@ class Component extends DCLogic {
       under: layout === 'under',
       chip: layout === 'chip',
       cards: [
-        { name: 'STRAMA', section: 'K31', colour: '#86efac', done: 2, total: 4, pct: 50 },
-        { name: 'STSWENG', section: 'S11', colour: '#93c5fd', done: 1, total: 2, pct: 50 },
-        { name: 'CSARCH2', section: 'Thursday Evening Blk', colour: '#fcd34d', done: 0, total: 3, pct: 0 },
+        { name: 'STRAMA', section: 'K31', colour: '#86efac', count: '4 readings' },
+        { name: 'STSWENG', section: 'S11', colour: '#93c5fd', count: '2 readings' },
+        { name: 'CSARCH2', section: 'Thursday Evening Blk', colour: '#fcd34d', count: '1 reading' },
       ],
     };
   }

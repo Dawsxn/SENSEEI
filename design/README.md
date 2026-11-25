@@ -42,6 +42,7 @@ design changes, so it always matches.
 | Reading step, intro dialog | [png/03c-reading-step-intro.png](png/03c-reading-step-intro.png) |
 | Reading step | [png/03c-reading-step.png](png/03c-reading-step.png) |
 | Reading step, text fallback | [png/03c-reading-step-text.png](png/03c-reading-step-text.png) |
+| Reading step, leaving before Done | [png/03c-reading-step-leave.png](png/03c-reading-step-leave.png) |
 | Tutoring session | [png/04-tutoring-session.png](png/04-tutoring-session.png) |
 | Tutoring session, PDF reading | [png/04b-tutoring-pdf-reading.png](png/04b-tutoring-pdf-reading.png) |
 | Criterion feedback, six approaches | [png/04c-criterion-feedback.png](png/04c-criterion-feedback.png) |
@@ -68,6 +69,10 @@ design changes, so it always matches.
 | Reading failed, reading step, phone | [png/05d-7-readfail-phone.png](png/05d-7-readfail-phone.png) |
 | Reading not available | [png/05d-8-readmissing.png](png/05d-8-readmissing.png) |
 | Reading not available, phone | [png/05d-8-readmissing-phone.png](png/05d-8-readmissing-phone.png) |
+| Page not found | [png/08-notfound.png](png/08-notfound.png) |
+| Page not found, phone | [png/08-notfound-phone.png](png/08-notfound-phone.png) |
+| Page crashed | [png/08-crash.png](png/08-crash.png) |
+| Page crashed, phone | [png/08-crash-phone.png](png/08-crash-phone.png) |
 | Instructor classes | [png/06-classes.png](png/06-classes.png) |
 | Instructor classes, empty | [png/06-classes-empty.png](png/06-classes-empty.png) |
 | New class | [png/06-new-class.png](png/06-new-class.png) |

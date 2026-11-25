@@ -59,8 +59,8 @@ cut off by time is kept and counted, never discarded.
 ## Entering a session
 
 1. **Classes, then readings.** The student opens the app to the classes they
-   are enrolled in, each with how many of its readings they have finished, and
-   opens a class to see its readings. Enrolment determines visibility: a student
+   are enrolled in, each with how many readings it has, and opens a class to see
+   its readings, with how many are still to do and how many are finished. Enrolment determines visibility: a student
    sees a reading only if one of their classes has it assigned.
 2. **Core components.** Each reading carries one or more core components, the
    essential defining parts of the concept, supplied by the instructor at upload.
@@ -85,7 +85,8 @@ cut off by time is kept and counted, never discarded.
    opening dialog names the concept the session is about. The student must
    explicitly tell the system they have finished; there is no automatic advance,
    and the button is never gated on scroll position, because scrolling is not
-   reading.
+   reading. Back returns to the reading's page, after asking, since the student
+   would lose their place.
 7. **Tutoring.** A split screen appears, reading on one half and chat on the
    other. The SEE-I process begins with State.
 
