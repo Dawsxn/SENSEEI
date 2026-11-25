@@ -305,3 +305,28 @@ async def test_another_instructors_reading_does_not_exist_for_you(people):
             await other.delete(f"/instructor/readings/{rid}"),
         ):
             assert r.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_a_class_can_take_a_reading_already_in_the_library(people):
+    async with signed_in(people["prof"]) as prof:
+        rid = await save(prof, people["a"])
+        r = await prof.post(f"/instructor/classes/{people['b']}/readings", json={"reading_ids": [rid]})
+        assert r.status_code == 204
+        labels = [c["label"] for c in (await prof.get(f"/instructor/readings/{rid}")).json()["classes"]]
+        assert sorted(labels) == ["STRAMA K31", "STSWENG S11"]
+        # adding it again changes nothing
+        r = await prof.post(f"/instructor/classes/{people['b']}/readings", json={"reading_ids": [rid]})
+        assert r.status_code == 204
+        assert len((await prof.get(f"/instructor/readings/{rid}")).json()["classes"]) == 2
+
+
+@pytest.mark.anyio
+async def test_only_your_own_class_and_reading_can_be_paired(people):
+    async with signed_in(people["prof"]) as prof:
+        rid = await save(prof, people["a"])
+        r = await prof.post(f"/instructor/classes/{people['theirs']}/readings", json={"reading_ids": [rid]})
+        assert r.status_code == 404
+    async with signed_in(people["other"]) as other:
+        r = await other.post(f"/instructor/classes/{people['theirs']}/readings", json={"reading_ids": [rid]})
+        assert r.status_code == 404

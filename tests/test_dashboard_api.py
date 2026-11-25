@@ -185,8 +185,8 @@ async def test_the_class_statistics_count_every_finished_session(world):
     assert rates["Elaborate"] == (1, 5, 20)
     assert rates["Illustrate"] == (1, 1, 100)
 
-    failures = {c["criterion"]: c["failures"] for c in stats["failed_criteria"]}
-    assert failures == {"Completeness": 4, "Coherence": 3}
+    failures = {(c["step"], c["criterion"]): c["failures"] for c in stats["failed_criteria"]}
+    assert failures == {("Elaborate", "Completeness"): 4, ("Elaborate", "Coherence"): 3}
     assert [c["criterion"] for c in stats["failed_criteria"]][0] == "Completeness"
 
     averages = {a["step"]: a["average"] for a in stats["average_attempts"]}

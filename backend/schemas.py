@@ -354,6 +354,8 @@ class StepPassRate(BaseModel):
 
 
 class FailedCriterion(BaseModel):
+    #: The step the criterion belongs to: the same name can appear in several.
+    step: SeeiStep
     criterion: str
     failures: int
 

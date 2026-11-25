@@ -404,6 +404,43 @@ async def set_classes(
     return await get_reading(db, instructor_id, reading_id)
 
 
+async def add_to_class(
+    db: AsyncSession,
+    instructor_id: uuid.UUID,
+    class_id: uuid.UUID,
+    reading_ids: list[uuid.UUID],
+) -> None:
+    """Give one class some readings the instructor already has.
+
+    The class page's way in, beside uploading a new one; the reading's own page
+    still sets all its classes at once (`set_classes`). A reading the class
+    already has is left as it is. Nothing is added unless every reading is the
+    instructor's own.
+    """
+    await _live_classes(db, instructor_id, [class_id])
+    wanted = list(dict.fromkeys(reading_ids))
+    for reading_id in wanted:
+        await _owned(db, instructor_id, reading_id)
+    have = set(
+        await db.scalars(
+            select(ReadingAssignment.reading_id).where(
+                ReadingAssignment.class_id == class_id,
+                ReadingAssignment.deleted_at.is_(None),
+            )
+        )
+    )
+    new = [r for r in wanted if r not in have]
+    if not new:
+        return
+    # Trial mode: one reading a class, so a class that has one takes no more,
+    # and an empty one takes only one.
+    await _refuse_second_reading(db, [class_id])
+    if get_settings().trial_mode and len(new) > 1:
+        raise ClassHasReading
+    db.add_all(ReadingAssignment(reading_id=r, class_id=class_id) for r in new)
+    await db.commit()
+
+
 async def delete_reading(
     db: AsyncSession, instructor_id: uuid.UUID, reading_id: uuid.UUID
 ) -> None:

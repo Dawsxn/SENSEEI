@@ -16,6 +16,7 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
@@ -33,7 +34,7 @@ from ..schemas import (
     StudentClassDetail,
     StudentClassItem,
 )
-from ..services import analytics_service, class_service, reading_service
+from ..services import analytics_service, class_service, library_service, reading_service
 from ..services.analytics_service import ReadingNotInClass
 from ..services.class_service import (
     ClassNotFound,
@@ -57,6 +58,10 @@ MODE_LOCKED = HTTPException(
 NO_SUCH_TEST = HTTPException(
     status_code=422, detail="that test is not for any of this class's readings"
 )
+
+
+class AddReadingsIn(BaseModel):
+    reading_ids: list[uuid.UUID]
 
 
 def _fields(body: ClassIn) -> Fields:
@@ -184,6 +189,25 @@ async def replace_join_code(
     except ClassNotFound:
         raise NOT_FOUND
     return JoinCodeOut(join_code=row["join_code"])
+
+
+@router.post("/instructor/classes/{class_id}/readings", status_code=204)
+async def add_readings(
+    class_id: uuid.UUID,
+    body: AddReadingsIn,
+    user: User = Depends(require_instructor),
+    db: AsyncSession = Depends(get_session),
+) -> Response:
+    """Add readings the instructor already has to this class."""
+    try:
+        await library_service.add_to_class(db, user.id, class_id, body.reading_ids)
+    except library_service.UnknownClass:
+        raise NOT_FOUND
+    except library_service.ReadingNotFound:
+        raise HTTPException(status_code=404, detail="reading not found")
+    except library_service.ClassHasReading:
+        raise HTTPException(status_code=409, detail="class_has_reading")
+    return Response(status_code=204)
 
 
 @router.delete("/instructor/classes/{class_id}/students/{student_id}", status_code=204)

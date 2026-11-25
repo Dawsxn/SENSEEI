@@ -118,14 +118,16 @@ async def statistics(db: AsyncSession, scope: Scope) -> dict:
         for step, total, passed, avg_attempts in graded
     }
 
+    # Counted per step, not per name: several steps have a criterion with the
+    # same name (Completeness, Accuracy), and each means something different.
     failures = (
         await db.execute(
-            select(CriterionJudgment.criterion, func.count().label("failures"))
+            select(Attempt.step, CriterionJudgment.criterion, func.count().label("failures"))
             .join(Assessment, Assessment.id == CriterionJudgment.assessment_id)
             .join(Attempt, Attempt.id == Assessment.attempt_id)
             .where(in_scope, CriterionJudgment.passed.is_(False))
-            .group_by(CriterionJudgment.criterion)
-            .order_by(func.count().desc(), CriterionJudgment.criterion)
+            .group_by(Attempt.step, CriterionJudgment.criterion)
+            .order_by(func.count().desc(), Attempt.step, CriterionJudgment.criterion)
             .limit(TOP_CRITERIA)
         )
     ).all()
@@ -152,7 +154,10 @@ async def statistics(db: AsyncSession, scope: Scope) -> dict:
     return {
         "session_count": session_count or 0,
         "pass_rates": pass_rates,
-        "failed_criteria": [{"criterion": c, "failures": n} for c, n in failures],
+        "failed_criteria": [
+            {"step": SeeiStep(step).value, "criterion": c, "failures": n}
+            for step, c, n in failures
+        ],
         "average_attempts": attempts,
     }
 
