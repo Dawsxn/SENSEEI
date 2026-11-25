@@ -82,7 +82,7 @@
           </span>
         </div>
       </div>
-      <p class="note" style="margin: 0 0 16px;">Descriptive figures for the IDs shown as Finished on the batch page (left out: 12 issued but never used). With a few people per group, one participant can move a mean a long way, so read them as a description, not a test.</p>
+      <p class="note" style="margin: 0 0 16px;">Only participants marked Finished on the batch page are counted (not counted: 12 IDs were never used). The groups are small, so one person can change an average a lot.</p>
 
       <div class="vtabs">
         <span class="vtab {{t1}}">Group comparison</span>
@@ -98,7 +98,7 @@
         <sc-if value="{{showDist}}" hint-placeholder-val="{{true}}">
         <div class="card" style="padding-bottom: 16px;">
           <h2 class="h2">Distributions</h2>
-          <p class="note">Each curve is a normal distribution with the group's mean and SD; the dots under the axis are the actual values, one per participant. With so few people per group, read the dots first.</p>
+          <p class="note">Each dot under the axis is one participant. The curves are drawn from each group's mean and SD.</p>
           <div class="vtabs" style="margin: 12px 0 10px;">
             <span class="vtab" style="font-size: 13px;">Pre-test score</span>
             <span class="vtab vtab-on" style="font-size: 13px;">Post-test score</span>
@@ -131,7 +131,7 @@
         </sc-if>
         <div class="card">
           <h2 class="h2">Descriptive statistics</h2>
-          <p class="note">Every measure in full, by group. Green marks the best of Chatbot, Reading only and SEE-I all on each mean and median: the highest, or the lowest where the measure says lower is better.</p>
+          <p class="note">Calibration is how often a participant's "sure" or "not sure" matched whether they got full marks. Green shows the best of Chatbot, Reading only and SEE-I all. For sure but wrong, lower is better.</p>
           <table>
             <tr><th></th><th>Chatbot<br><span style="font-weight: 400;">n = 5</span></th><th>Reading only<br><span style="font-weight: 400;">n = 6</span></th><th>SEE-I all<br><span style="font-weight: 400;">n = 5</span></th><th class="split">SEE-I completed<br><span style="font-weight: 400;">n = 2</span></th><th>SEE-I not completed<br><span style="font-weight: 400;">n = 3</span></th></tr>
             <sc-for list="{{scores}}" as="r" hint-placeholder-count="7">
@@ -141,7 +141,7 @@
         </div>
         <div class="card">
           <h2 class="h2">Post-test by dimension</h2>
-          <p class="note">Points scored as a share of the points available, over every answer in the column.</p>
+          <p class="note">The share of available points each group scored. Green shows the highest of Chatbot, Reading only and SEE-I all.</p>
           <table>
             <tr><th></th><th>Chatbot</th><th>Reading only</th><th>SEE-I all</th><th class="split">SEE-I completed</th><th>SEE-I not completed</th></tr>
             <sc-for list="{{dims}}" as="r" hint-placeholder-count="5">
@@ -164,7 +164,7 @@
         </div>
         <div class="card">
           <h2 class="h2">Steps</h2>
-          <p class="note">Attempts to pass is the attempt number of the pass, among those who passed.</p>
+          <p class="note">Attempts to pass is the average attempt on which participants passed the step. It only counts those who passed.</p>
           <table>
             <tr><th>Step</th><th>Reached</th><th>Passed</th><th>Attempts</th><th>Pass rate</th><th>Attempts to pass</th><th>Most attempts</th></tr>
             <sc-for list="{{steps}}" as="r" hint-placeholder-count="4">
@@ -184,7 +184,7 @@
           </div>
           <div class="card">
             <h2 class="h2">Fixed on the next attempt</h2>
-            <p class="note">A criterion failed on one attempt and passed on the next. Failures with no next attempt are left out.</p>
+            <p class="note">How often a failed criterion was passed on the next attempt. A fail on someone's last attempt isn't counted.</p>
             <table>
               <tr><th>Criterion</th><th>Failed</th><th>Fixed</th><th>Rate</th></tr>
               <sc-for list="{{fixes}}" as="r" hint-placeholder-count="3">
@@ -199,7 +199,7 @@
       <sc-if value="{{behaviour}}" hint-placeholder-val="{{false}}">
         <div class="card">
           <h2 class="h2">By group</h2>
-          <p class="note">Pastes record their length only, never the text. Thinking time is from a reply arriving to the first key typed after it.</p>
+          <p class="note">Only the length of a paste is recorded, not the text. Thinking time is how long someone waited after a reply before they started typing.</p>
           <table>
             <tr><th></th><th>Chatbot</th><th>Reading only</th><th>SEE-I all</th><th class="split">SEE-I completed</th><th>SEE-I not completed</th></tr>
             <sc-for list="{{habits}}" as="r" hint-placeholder-count="6">
@@ -209,7 +209,7 @@
         </div>
         <div class="card">
           <h2 class="h2">Worth a second look</h2>
-          <p class="note">Flags only. Whether to exclude anyone is the team's decision, against the cut-offs set from the dry run.</p>
+          <p class="note">These are only flags. Decide on exclusions using the cut-offs from the dry run.</p>
           <table>
             <tr><th>ID</th><th class="left">Group</th><th class="left">Flags</th><th>Test pastes</th><th>Test tab leaves</th></tr>
             <sc-for list="{{flagged}}" as="r" hint-placeholder-count="3">
@@ -223,7 +223,7 @@
       <sc-if value="{{participants}}" hint-placeholder-val="{{false}}">
         <div class="card">
           <h2 class="h2">Every participant</h2>
-          <p class="note">Untick an ID to leave it out of every figure on this page. Nothing is saved: a reload, or another batch, puts everyone back.</p>
+          <p class="note">Untick an ID to leave it out of the figures. This isn't saved, so reloading or changing batch brings everyone back.</p>
           <table>
             <tr><th class="left">In</th><th class="left">ID</th><th class="left">Group</th><th class="left">SEE-I</th><th>Pre</th><th>Post</th><th>Calibration</th><th>Sure but wrong</th><th>Time</th><th>Turns / questions</th><th>Pastes</th><th class="left">Flags</th></tr>
             <sc-for list="{{people}}" as="p" hint-placeholder-count="8">
