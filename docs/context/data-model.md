@@ -356,6 +356,14 @@ session that ended a particular way, derived from `status` rather than stored.
 It is not dismissible. A student with three fallback sessions on a reading has
 three of them, and clearing one would mean editing the record of what happened.
 
+Where the instructor looks, a student is **flagged on a reading** while their
+latest finished session there is a fallback. A later session that passes clears
+that, with nothing to dismiss; the earlier session stays marked Flagged in the
+student's list of sessions. The flag shows as a red Flagged marker on the
+student's row and in a Flagged box at the top of the reading's page in the
+class, as a count on the reading in the class's Readings tab, and on the
+student in the Students tab.
+
 Students can view all of their past sessions for a reading, not only the most
 recent.
 

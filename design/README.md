@@ -92,6 +92,16 @@ design changes, so it always matches.
 | Class, no readings | [png/06d-08-readings-empty.png](png/06d-08-readings-empty.png) |
 | Class, no students | [png/06d-09-students-empty.png](png/06d-09-students-empty.png) |
 | Class, no statistics | [png/06d-10-stats-empty.png](png/06d-10-stats-empty.png) |
+| Class, a student in it | [png/06d-11-student-page.png](png/06d-11-student-page.png) |
+| Class, a student in it, phone | [png/06d-11-student-page-phone.png](png/06d-11-student-page-phone.png) |
+| Reading in a class, with the Flagged box | [png/06e-1-students.png](png/06e-1-students.png) |
+| Reading in a class, phone | [png/06e-1-students-phone.png](png/06e-1-students-phone.png) |
+| Reading in a class, Statistics | [png/06e-2-stats.png](png/06e-2-stats.png) |
+| Reading in a class, Statistics, phone | [png/06e-2-stats-phone.png](png/06e-2-stats-phone.png) |
+| A student's sessions on a reading | [png/06e-3-student.png](png/06e-3-student.png) |
+| A student's sessions on a reading, phone | [png/06e-3-student-phone.png](png/06e-3-student-phone.png) |
+| Instructor review, breadcrumb to the student | [png/06e-4-review.png](png/06e-4-review.png) |
+| Instructor review, phone | [png/06e-4-review-phone.png](png/06e-4-review-phone.png) |
 | Instructor classes | [png/06-classes.png](png/06-classes.png) |
 | Instructor classes, empty | [png/06-classes-empty.png](png/06-classes-empty.png) |
 | New class | [png/06-new-class.png](png/06-new-class.png) |

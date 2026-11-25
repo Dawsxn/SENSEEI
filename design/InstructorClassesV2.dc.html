@@ -37,8 +37,11 @@
     .name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
     .sec { font-size: 13px; font-weight: 500; color: #52525b; margin-top: 2px; }
     .meta { font-size: 13px; color: #71717a; }
+    .flagpill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: 999px; border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; font-size: 12px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
     .notice { border: 1px dashed #e4e4e7; border-radius: 10px; padding: 40px 16px; text-align: center; font-size: 14px; color: #71717a; }
     .sk { background: #f4f4f5; border-radius: 6px; }
+    .nothing { display: none; }
+    .flagpill { align-self: flex-start; }
 
     /* New class */
     .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -140,8 +143,8 @@ class Component extends DCLogic {
       typedSection: typed ? 'K32' : '',
       createMuted: typed ? '' : 'muted',
       rows: [
-        { name: 'STRAMA', section: 'K31', colour: '#86efac', meta: '3 students &middot; 2 readings' },
-        { name: 'STSWENG', section: 'S11', colour: '#93c5fd', meta: '3 students &middot; 2 readings' },
+        { name: 'STRAMA', section: 'K31', colour: '#86efac', meta: '3 students &middot; 2 readings', flagCls: 'flagpill', flags: '1 flagged' },
+        { name: 'STSWENG', section: 'S11', colour: '#93c5fd', meta: '3 students &middot; 2 readings', flagCls: 'nothing', flags: '' },
       ],
     };
   }

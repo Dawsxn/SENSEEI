@@ -255,7 +255,12 @@ When a student exhausts their attempts on a step:
    clarification. **This message is static, not written by the Tutor Agent.** It
    is identical every time, and generating it would invite the model to soften
    it or add a hint that cannot be acted on.
-3. A flag appears next to that student's name on the instructor's class roster.
+3. The student is flagged for the instructor: a red Flagged marker on their row
+   for that reading, in a Flagged box at the top of the reading's page in the
+   class, as a count on the reading in the class, and on the student in the
+   class's Students tab. It clears when a later session on the reading passes;
+   the flagged session stays marked in the student's list of sessions. The
+   student sees the session as Failed.
 
 The flag is half the purpose. The fallback prevents endless loops and student
 frustration, and routes the student to a human who can review the reasoning chain
